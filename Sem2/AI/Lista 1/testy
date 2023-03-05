@@ -1,0 +1,260 @@
+zad1:
+  defaults:
+    timeout: 10 # second
+    input_file: zad1_input.txt
+    output_file: zad1_output.txt
+  validator: whitespace_relaxed_validator
+  cases:
+# single-line input and output can be formatted as:
+    - inp: black g8 h1 c4
+      out: 10
+# multiline input and output can formatted as:
+    - inp: |
+        black b4 f3 e8
+      out: |
+        6
+    - inp: white a1 e3 b7
+      out: 9
+    - inp: black h7 a2 f2
+      out: 6
+    - inp: black a2 e4 a4
+      out: 8
+zad2:
+  defaults:
+    timeout: 60
+    input_file: zad2_input.txt
+    output_file: zad2_output.txt
+  validator: "lambda opts, out: perlines_validator(opts, out, zad2_line_compare)"
+  cases:
+    - inp: |
+        księgapierwsza
+        gospodarstwo
+        powrótpaniczaspotkaniesiępierwszewpokoikudrugieustołuważnasędziegonaukaogrzecznościpodkomorzegouwagipolitycznenadmodamipocząteksporuokusegoisokołażalewojskiegoostatniwoźnytrybunałurzutokanaówczesnystanpolitycznylitwyieuropy
+        litwoojczyznomojatyjesteśjakzdrowie
+        ileciętrzebacenićtentylkosiędowie
+        ktocięstraciłdziśpięknośćtwąwcałejozdobie
+        widzęiopisujębotęskniępotobie
+        pannoświętacojasnejbroniszczęstochowy
+        iwostrejświeciszbramietycogródzamkowy
+        nowogródzkiochraniaszzjegowiernymludem
+        jakmniedzieckodozdrowiapowróciłaścudem
+        gdyodpłaczącejmatkipodtwojąopiekę
+        ofiarowanymartwąpodniosłempowiekę
+        izarazmogłempieszodotwychświątyńprogu
+        iśćzawróconeżyciepodziękowaćbogu
+        taknaspowróciszcudemnaojczyznyłono
+        tymczasemprzenośmojąduszęutęsknioną
+        dotychpagórkówleśnychdotychłąkzielonych
+        szerokonadbłękitnymniemnemrozciągnionych
+        dotychpólmalowanychzbożemrozmaitem
+        wyzłacanychpszenicąposrebrzanychżytem
+        gdziebursztynowyświerzopgrykajakśniegbiała
+        gdziepanieńskimrumieńcemdzięcielinapała
+        awszystkoprzepasanejakbywstęgąmiedzą
+        zielonąnaniejzrzadkacichegruszesiedzą
+        śródtakichpólprzedlatynadbrzegiemruczaju
+        napagórkuniewielkimwebrzozowymgaju
+        stałdwórszlacheckizdrzewaleczpodmurowany
+        świeciłysięzdalekapobielaneściany
+        tymbielszeżeodbiteodciemnejzieleni
+      out: |
+        księga pierwsza
+        gospodarstwo
+        powrót panicza spotkanie się pierwsze w pokoiku drugie u stołu ważna sędziego nauka o grzeczności podkomorzego uwagi polityczne nad modami początek sporu o kusego i sokoła żale wojskiego ostatni woźny trybunału rzut oka na ówczesny stan polityczny litwy i europy
+        litwo ojczyznom o jaty jesteś jak zdrowie
+        ile cię trzeba cenić ten tylko się dowie
+        kto cię stracił dziś piękność twą w całej ozdobie
+        widzę i opisuję bo tęsknię po tobie
+        panno święta co jasnej bronisz częstochowy
+        i w ostrej świecisz bramie ty co gród zamkowy
+        nowogródzki ochraniasz z jego wiernym ludem
+        jak mnie dziecko do zdrowia powróciłaś cudem
+        gdy od płaczącej matki pod twoją opiekę
+        ofiarowany martwą podniosłem powiekę
+        i zaraz mogłem pieszo do twych świątyń progu
+        iść zawrócone życie podziękować bogu
+        tak nas powrócisz cudem na ojczyzny łono
+        tymczasem przenoś moją duszę utęsknioną
+        do tych pagórków leśnych do tych łąk zielonych
+        szeroko nad błękitnym niemnem rozciągnionych
+        do tych pól malowanych zbożem rozmaitem
+        wyzłacanych pszenicą posrebrzanych żytem
+        gdzie bursztynowy świerzop gry kajak śnieg biała
+        gdzie panieńskim rumieńcem dzięcielina pała
+        a wszystko przepasane jakby wstęgą miedzą
+        zieloną na niej z rzadka ciche grusze siedzą
+        śród takich pól przed laty nad brzegiem ruczaju
+        na pagórku niewielkim we brzozowym gaju
+        stał dwór szlachecki z drzewa lecz podmurowany
+        świeciły się z daleka pobielane ściany
+        tym bielsze że odbite od ciemnej zieleni
+zad4:
+  defaults:
+    timeout: 10 # second
+    input_file: zad4_input.txt
+    output_file: zad4_output.txt
+  validator: perlines_validator
+  cases:
+    - inp: |
+        0010001000 5
+        0010001000 4
+        0010001000 3
+        0010001000 2
+        0010001000 1
+        0010001000 0
+        0010101000 5
+        0010101000 4
+        0010101000 3
+        0010101000 2
+        0010101000 1
+        0010101000 0
+      out: |
+        3
+        4
+        3
+        2
+        1
+        2
+        2
+        3
+        2
+        3
+        2
+        3
+    - inp: |
+        0000000001 1
+        0000000010 1
+        1000000000 1
+        0100000000 1
+      out: |
+        0
+        0
+        0
+        0
+zad5:
+  defaults:
+    timeout: 30 # second
+    input_file: zad5_input.txt
+    output_file: zad5_output.txt
+  validator: perlines_validator
+  cases:
+    - inp: |
+        7 7
+        7
+        7
+        7
+        7
+        7
+        7
+        7
+        7
+        7
+        7
+        7
+        7
+        7
+        7
+      out: |
+        #######
+        #######
+        #######
+        #######
+        #######
+        #######
+        #######
+    - inp: |
+        7 7
+        2
+        2
+        7
+        7
+        2
+        2
+        2
+        2
+        2
+        7
+        7
+        2
+        2
+        2
+      out: |
+        ..##...
+        ..##...
+        #######
+        #######
+        ..##...
+        ..##...
+        ..##...
+    - inp: |
+        7 7
+        2
+        2
+        7
+        7
+        2
+        2
+        2
+        4
+        4
+        2
+        2
+        2
+        5
+        5
+      out: |
+        ##.....
+        ##.....
+        #######
+        #######
+        .....##
+        .....##
+        .....##
+    - inp: |
+        7 7
+        7
+        6
+        5
+        4
+        3
+        2
+        1
+        1
+        2
+        3
+        4
+        5
+        6
+        7
+      out: |
+        #######
+        .######
+        ..#####
+        ...####
+        ....###
+        .....##
+        ......#
+    - inp: |
+        7 7
+        7
+        5
+        3
+        1
+        1
+        1
+        1
+        1
+        2
+        3
+        7
+        3
+        2
+        1
+      out: |
+        #######
+        .#####.
+        ..###..
+        ...#...
+        ...#...
+        ...#...
+        ...#...

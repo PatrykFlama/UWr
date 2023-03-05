@@ -225,7 +225,8 @@ int main(int argc, char** argv){
             continue;
         }
 
-        output << "Winning in " << res.first-1 << " moves\n";
+        // output << "Winning in " << res.first-1 << " moves\n";
+        output << res.first-1 << '\n';
 
         if(debug_mode){
             stack<int> indexes;

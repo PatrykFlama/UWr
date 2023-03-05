@@ -1,29 +1,23 @@
 ﻿using System;
 
-namespace MyApp // Note: actual namespace depends on the project name.
-{
-    internal class Program
-    {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Hello World!");
-        }
+class BigNum{
+    int val;
+
+    public BigNum(){
+        this.val = 0;
+    }
+
+    void Print(){
+        Console.WriteLine(this.val);
+    }
+
+    void Add(BigNum a){
+        this.val += a;
     }
 }
 
-namespace Program // Note: actual namespace depends on the project name.
-{
-    internal class BigNum
-    {
-        int num;
-
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Hello World!");
-        }
-
-        void Add(BigNum a, BigNum b){
-            
-        }
+class Program{
+    public static void Main(string[] args){
+        Console.WriteLine("Hello World!");
     }
 }

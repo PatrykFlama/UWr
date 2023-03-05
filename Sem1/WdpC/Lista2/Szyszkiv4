@@ -1,0 +1,88 @@
+#include <stdio.h>
+
+const int L = 105;
+#define height 0
+#define in_shadow 1
+
+
+int main() {
+    long long garden[L][L][2];   //? [col][row][tree/in_shadow/has_not_grown_for_X_phases]
+    long long trees[L*L][2];        //? list of trees [coor_h/coor_w]
+
+    for(int i = 0; i < L; i++) for(int j = 0; j < L; j++) for(int k = 0; k < 2; k++) garden[i][j][k] = 0;
+    for(int i = 0; i < L*L; i++) for(int j = 0; j < 2; j++) trees[i][j] = 0;
+
+    // ----------- READ -----------
+    long long w, h, d; // width, height, days
+    scanf("%lld%lld%lld", &w, &h, &d);
+
+    long long trees_amt = 0;
+    for(int i = 0; i < h; i++){
+        for(int j = 0; j < w; j++){
+            char c; scanf(" %c", &c);
+            if(c == '.'){           // for no trees in place, leave 0
+                garden[i][j][height]=0;
+                continue;
+            }
+            garden[i][j][height] = c-'0';       // if there is a tree, save its value
+            if(garden[i][j][height] < 9){       // and save tree location
+                trees[trees_amt][0] = i; trees[trees_amt][1] = j;
+                trees_amt++;
+            }
+        }
+    }
+
+    // --------------- MAIN ---------------
+    long long cones = 0;
+    for(int day = 0; day < 10; day++){       // simulate up to 10 days
+        for(int phase = 0; phase < 3; phase++){      // simulate day phase: 0<-, 1/\, 2->
+            for(int i = 0; i < trees_amt; i++){      // clear trees in shadow
+                garden[trees[i][0]][trees[i][1]][in_shadow] = 0;
+            }
+            for(int i = 0; i < trees_amt; i++){      // tag all trees in shadow - pick a tree
+                for(int j = 1; j < garden[trees[i][0]][trees[i][1]][height]+1; j++){ // traverse thru tree height
+                    if(phase == 0) if(trees[i][1]-j >= 0) garden[trees[i][0]][trees[i][1]-j][in_shadow] = 1;
+                    if(phase == 1) if(trees[i][0]-j >= 0) garden[trees[i][0]-j][trees[i][1]][in_shadow] = 1;
+                    if(phase == 2) if(trees[i][1]+j < w)  garden[trees[i][0]][trees[i][1]+j][in_shadow] = 1;
+                }
+            }
+
+            for(int i = 0; i < trees_amt; i++){  // for trees not in shadow: grow them or cone them
+                if(garden[trees[i][0]][trees[i][1]][in_shadow] == 0){           // for trees not in shadow
+                    if(garden[trees[i][0]][trees[i][1]][height] < 9)                // if tree is not mature, grow it
+                        garden[trees[i][0]][trees[i][1]][height]++;
+                    else cones++;                                                   // if tree is mature, cone it
+                }
+            }
+        }
+        
+        // print_garden(h, w, day, 0);
+
+        d--; if(d == 0) break;
+    }
+
+    // --- calcualte cones per day per tree ---
+    long long cones_per_day = 0;
+    for(int phase = 0; phase < 3; phase++){
+        for(int i = 0; i < trees_amt; i++){      // clear trees in shadow
+            garden[trees[i][0]][trees[i][1]][in_shadow] = 0;
+        }
+        for(int i = 0; i < trees_amt; i++){      // tag all trees in shadow - pick a tree
+            for(int j = 1; j < garden[trees[i][0]][trees[i][1]][height]+1; j++){ // traverse thru tree height
+                if(phase == 0) if(trees[i][1]-j >= 0) garden[trees[i][0]][trees[i][1]-j][in_shadow] = 1;
+                if(phase == 1) if(trees[i][0]-j >= 0) garden[trees[i][0]-j][trees[i][1]][in_shadow] = 1;
+                if(phase == 2) if(trees[i][1]+j < w)  garden[trees[i][0]][trees[i][1]+j][in_shadow] = 1;
+            }
+        }
+
+        for(int i = 0; i < trees_amt; i++){
+            if(garden[trees[i][0]][trees[i][1]][in_shadow] == 0){
+                cones_per_day++;
+            }
+        }
+    }
+
+    cones += d*cones_per_day;
+
+    printf("%lld\n", cones);
+}

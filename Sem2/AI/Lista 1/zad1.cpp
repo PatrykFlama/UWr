@@ -7,7 +7,6 @@ const int N = 4*(L*L)*(L*L)*(L*L) + 5;
 bool vis[N];
 int father[N];         // table of parents to recreate path
 ofstream output;
-bool debug_mode = false;
 
 class Point{
     public:
@@ -208,13 +207,17 @@ pair<int, int> bfs(int start_idx){      // {number of steps, end node idx}
 
 
 int main(int argc, char** argv){
+    bool debug_mode = false;
     if(argc > 1 && argv[1][0] == 'd') debug_mode = true;
     ifstream input("zad1_input.txt");
     output.open("zad1_output.txt");
 
     while(!input.eof()){
         //! row: a to h; col: 1 to 8; input sequence: white king, white tower, black king
-        string turn, w, W, B; input >> turn >> W >> w >> B;
+        string turn, w, W, B; input >> turn;
+        if(input.eof()) break;
+        
+        input >> W >> w >> B;
         int starting_idx = generate_idx((turn[0] == 'w' ? WHITE : BLACK), {w[1]-'0', w[0]-'a'+1}, {W[1]-'0', W[0]-'a'+1}, {B[1]-'0', B[0]-'a'+1});
 
         fill(vis, vis+N, false);
@@ -225,7 +228,6 @@ int main(int argc, char** argv){
             continue;
         }
 
-        // output << "Winning in " << res.first-1 << " moves\n";
         output << res.first-1 << '\n';
 
         if(debug_mode){

@@ -12,7 +12,7 @@ class BigNum{
     }
 
     void Add(BigNum a){
-        this.val += a;
+        this.val += a.val;
     }
 }
 

@@ -120,6 +120,7 @@
           [else (_split (append left (list (car lst))) (cdr lst) (- len 1))]))
   (_split '() xs (floor (/ (len xs) 2))))
 
+#|
 (define (merge left right)
   (define (_merge left right res)
     (cond [(and (null? left) (null? right)) res]
@@ -128,6 +129,15 @@
           [(< (car left) (car right)) (_merge (cdr left) right (app-elem res (car left)))]
           [else (_merge left (cdr right) (app-elem res (car right)))]))
   (_merge left right '()))
+|#
+(define (merge left right)
+  (cond [(empty? left) right]
+        [(empty? right) left]
+        [(<= (car left) (car right))
+         (append (list (car left)) (merge (cdr left) right))]
+        [else
+         (append (list (car right)) (merge left (cdr right)))]))
+
 
 (define (merge-sort lst)
   (cond [(= (len lst) 1) lst]

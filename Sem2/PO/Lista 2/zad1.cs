@@ -1,4 +1,9 @@
-﻿using System;
+﻿/*
+Patryk Flama - lista 2 zadanie 1
+kompilacja: mcs .\zad1.cs
+*/
+
+using System;
 
 
 class IntStream {
@@ -70,10 +75,39 @@ class RandomStream : IntStream {
     }
 };
 
+class RandomWordStream {
+    RandomStream random;
+    PrimeStream prime;
+
+    public RandomWordStream(){
+        random = new RandomStream();
+        prime = new PrimeStream();
+    }
+
+    public string next(){
+        int len = prime.next();
+        string res = "";
+        while(len > 0){
+            res += (char)(random.next()%26 + 97);
+            len--;
+        }
+
+        return res;
+    }
+
+    public void reset(){
+        prime.reset();
+    }
+
+    public bool eos(){
+        return prime.eos();
+    }
+};
+
 class Program{
     public static void Main(string[] args){
-        PrimeStream ins = new PrimeStream();
-        for(int i = 0; i < 10 && !ins.eos(); i++){
+        RandomWordStream ins = new RandomWordStream();
+        for(int i = 0; i < 10; i++){
              Console.WriteLine(ins.next());
         }
     }

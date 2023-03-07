@@ -130,6 +130,7 @@
           [else (_merge left (cdr right) (app-elem res (car right)))]))
   (_merge left right '()))
 |#
+
 (define (merge left right)
   (cond [(empty? left) right]
         [(empty? right) left]

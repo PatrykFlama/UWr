@@ -57,29 +57,45 @@ class BigNum {
         num = Reverse(res);
     }
 
-    public void Substract(BigNum a){
-        string subs = a.num;
+    public void Subtract(BigNum a){
+        string sub = a.num;
         string res = "";
         int overflow = 0;
 
         int i = 0;
-        for(; i < Math.Min(subs.Length, num.Length); i++){
-            int temp = num[num.Length-i-1] - subs[subs.Length-i-1] + overflow + 10;
-            res += (char)(temp%10 + '0');
-            overflow = -temp/10;
+        for(; i < Math.Min(sub.Length, num.Length); i++){
+            int temp = num[num.Length-i-1] - sub[sub.Length-i-1] + overflow;
+            if(temp < 0){
+                temp += 10;
+                overflow = -1;
+            } else overflow = 0;
+
+            res += (char)(temp + '0');
         }
 
-        if(subs.Length > num.Length){
-            for(; i < subs.Length; i++){
-                int temp = subs[subs.Length-i-1] - '0' + overflow + 10;
-                res += (char)(temp%10 + '0');
-                overflow = -temp/10;
+        if(sub.Length == num.Length && ){
+
+        }
+
+        if(sub.Length > num.Length){
+            for(; i < sub.Length; i++){
+                int temp = num[num.Length-i-1] - sub[sub.Length-i-1] + overflow;
+                if(temp < 0){
+                    temp += 10;
+                    overflow = -1;
+                } else overflow = 0;
+
+                res += (char)(temp + '0');
             }
-        } else{
+        } if(sub.Length <= num.Length){
             for(; i < num.Length; i++){
-                int temp = num[num.Length-i-1] - '0' + overflow + 10;
-                res += (char)(temp%10 + '0');
-                overflow = -temp/10;
+                int temp = num[num.Length-i-1] + overflow;
+                if(temp < 0){
+                    temp += 10;
+                    overflow = -1;
+                } else overflow = 0;
+
+                res += (char)(temp + '0');
             }
         }
 
@@ -93,7 +109,7 @@ class Program {
         BigNum bn = new BigNum(253);
         an.Print();
         bn.Print();
-        an.Substract(bn);
+        an.Subtract(bn);
         an.Print();
     }
 }

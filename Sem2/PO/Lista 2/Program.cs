@@ -32,23 +32,8 @@ class IntStream {
 };
 
 class PrimeStream : IntStream {
-    // const int L = 1e6;  // max prime
-    // bool primeTable[L];
-
-    // public PrimeStream(){
-    //     for(int i = 0; i < L; i++) primeTable[i] = true;
-        
-    //     primeTable[0] = primeTable[1] = false;
-    //     for(int i = 2; i < L; i++){
-    //         if(primeTable[i]){
-    //             for(int j = i*i; j < L; j++) primeTable[j] = false;
-    //         }
-    //     }
-    // }
-
     private bool IsPrime(int n){
-        // return primeTable[n];
-        if(n == 1) return false;
+        if(n < 2) return false;
         for(int i = 2; i*i <= n; i++){
             if(n%i == 0) return false;
         }
@@ -62,10 +47,10 @@ class PrimeStream : IntStream {
     }
 
     public override bool eos(){
-        int actual = base.actual();
+        int actual = base.predict_next(base.actual());
         while(!IsPrime(actual) && actual < Int32.MaxValue) actual = base.predict_next(actual);
-        if(!IsPrime(actual)) return false;
-        return true;
+        if(!IsPrime(actual)) return true;
+        return false;
     }
 };
 
@@ -87,11 +72,9 @@ class RandomStream : IntStream {
 
 class Program{
     public static void Main(string[] args){
-        Console.WriteLine("Hello World!");
         PrimeStream ins = new PrimeStream();
-        for(int i = 0; i < 10; i ++ ){  /   // TODO: check if primes tream eos is working
-             Console.WriteLine(ins.next(), ins.eos());
+        for(int i = 0; i < 10 && !ins.eos(); i++){
+             Console.WriteLine(ins.next());
         }
-        
     }
 }

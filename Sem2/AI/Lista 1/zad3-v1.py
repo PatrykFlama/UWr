@@ -101,4 +101,4 @@ karty_figuranta = generuj_karty_figuranta([9, 10, 11, 12])
 #             exit()
 
 figury = generuj_karty_blotkarza(np.array([0, 1, 2]))
-print(figury, prawdopodobienstwo_wygranej(figury, karty_figuranta))
+print(prawdopodobienstwo_wygranej(figury, karty_figuranta))

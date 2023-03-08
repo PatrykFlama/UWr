@@ -86,7 +86,7 @@ def solve():
     solved = False
     while not solved:
         solved, picture = try_to_solve()
-
+    print(picture)
 
 def read_input():
     with open("zad5_input.txt", "r") as input:

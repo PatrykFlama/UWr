@@ -52,20 +52,39 @@ def sprawdz_kolor(karty):
 def sprawdz_strit(karty):
     return czy_rosnace(karty)
 
-def sprawdz_slaba(karty):
-    max_sum = 0
-    for element in zlicz_te_same(karty):
-        max_sum = max(max_sum, element)
-    return max_sum
+def sprawdz_trojka(karty):
+    maxx = 0
+    for i in zlicz_te_same(karty): maxx = max(maxx, i)
+    return maxx == 3
+
+def sprawdz_dwie_pary(karty):
+    cnt = 0
+    for i in zlicz_te_same(karty): 
+        if i == 2: cnt += 1
+    return cnt == 2
+
+def sprawdz_para(karty):
+    cnt = 0
+    for i in zlicz_te_same(karty): 
+        if i == 2: return True
+    return False
+
+def sprawdz_wysoka(karty):
+    wysoka = 0
+    for karta in karty: wysoka = max(wysoka, karta[0])
+    return wysoka
+
 
 def sila(karty):
-    if sprawdz_poker(karty):    return 9
-    if sprawdz_kareta(karty):   return 8
-    if sprawdz_ful(karty):      return 7
-    if sprawdz_kolor(karty):    return 6
-    if sprawdz_strit(karty):    return 5
-    return sprawdz_slaba(karty)
-
+    if sprawdz_poker(karty):    return 9+16
+    if sprawdz_kareta(karty):   return 8+16
+    if sprawdz_ful(karty):      return 7+16
+    if sprawdz_kolor(karty):    return 6+16
+    if sprawdz_strit(karty):    return 5+16
+    if sprawdz_trojka(karty):  return 4+16
+    if sprawdz_dwie_pary(karty):         return 3+16
+    if sprawdz_para(karty):         return 2+16
+    return sprawdz_wysoka(karty)
 
 def porownaj_karty(karty1, karty2):
     if sila(karty1) > sila(karty2): return 1

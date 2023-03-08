@@ -110,6 +110,11 @@ def graj(blotkarz, figurant):
         wygrane += porownaj_karty(losuj_karty(blotkarz), losuj_karty(figurant))
     return wygrane/liczba_gier
 
+def szukaj_losowo():
+    pass
+
 pula_figur_figuranta = [11, 12, 13, 14]
-pula_figur_blotkarza = oryginalna_pula_figur_blotkarza = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+pula_figur_blotkarza = oryginalna_pula_figur_blotkarza = [2, 3, 4]
 print(graj(pula_figur_blotkarza, pula_figur_figuranta))
+
+#! działa dla 3 kolejnych kart we wszystkich kolorach

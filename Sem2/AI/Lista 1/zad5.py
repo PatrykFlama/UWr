@@ -33,8 +33,23 @@ def check_row(row):     # true if row is correct
     if sum != row_val[row]: return False       # inequality of sum
     return True
 
-def check_col():
-    pass
+def check_col(col):
+    row = 0
+    sum = 0
+    while row < C and not picture[col][row]: row += 1
+    while row < C and picture[col][row]:
+        row += 1
+        sum += 1
+    while row < C and not picture[col][row]: row += 1
+
+    if row < C: return False        # if there are multiple blocks
+    if sum != row_val[col]: return False       # inequality of sum
+    return True
+
+def check_cols():
+    for i in range(C):
+        if not check_col(i): return False
+    return True
 
 def draw_incorrect_row():
     rows = []
@@ -47,18 +62,31 @@ def draw_incorrect_row():
 def main():
     print_picture()
     print(draw_incorrect_row())
+    print(R)
     print(row_val)
+    print(C)
     print(col_val)
 
-def fix_pixel_in_row(row):
+def fix_pixel_in_row(row):  # TODO find good way to determine which cell should be repaired
     pass
 
 
 def try_to_solve():
-    pass
+    picture = random_picture()
+    for t in range(iterations_per_draw):
+        row = draw_incorrect_row
+        if row == -1:
+            if check_cols(): return True, picture
+            fix_pixel_in_row(random()%R)
+        else: fix_pixel_in_row(row)
+    return False, picture
+        
 
 def solve():
-    pass
+    solved = False
+    while not solved:
+        solved, picture = try_to_solve()
+
 
 def read_input():
     with open("zad5_input.txt", "r") as input:
@@ -67,6 +95,7 @@ def read_input():
         C = (int)(s[1])
         for i in range(R): row_val[i] = (int)(input.readline())
         for i in range(C): col_val[i] = (int)(input.readline())
+        return R, C
 
-read_input()
+R, C = read_input()
 main()

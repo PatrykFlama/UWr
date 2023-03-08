@@ -1,4 +1,3 @@
-# losowanie L = 1000 gierek i szacowanie wygranej
 import numpy as np
 import itertools
 import random

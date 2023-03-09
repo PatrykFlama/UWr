@@ -38,7 +38,6 @@ def find_best_partition(line):      # word ranges: [from, to)
     output.write(str.encode("utf-8"))
     output.write('\n'.encode("utf-8"))
 
-
 #? save the dictionary, which is in lex order
 with gzip.open('zad2_words.txt.gz', 'rb') as words_file:
         for line in words_file:

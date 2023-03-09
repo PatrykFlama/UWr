@@ -15,7 +15,7 @@ python .\validator.py zad2 python zad2.py
 ## Zadanie 3
 Uruchamianie:
 ```
-
+python zad3.py
 ```
 
 ## Zadanie 4

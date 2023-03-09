@@ -101,7 +101,7 @@ def generuj_zestaw(figury):
     return res
 
 def graj(blotkarz, figurant):
-    liczba_gier = 1000
+    liczba_gier = 10000
     blotkarz = generuj_zestaw(blotkarz)
     figurant = generuj_zestaw(figurant)
 
@@ -114,7 +114,7 @@ def szukaj_losowo():
     pass
 
 pula_figur_figuranta = [11, 12, 13, 14]
-pula_figur_blotkarza = oryginalna_pula_figur_blotkarza = [2, 3, 4]
+pula_figur_blotkarza = oryginalna_pula_figur_blotkarza = [4, 5, 6]
 print(graj(pula_figur_blotkarza, pula_figur_figuranta))
 
 #! działa dla 3 kolejnych kart we wszystkich kolorach

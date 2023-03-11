@@ -229,11 +229,11 @@ bool perpendicular(Segment s1, Segment s2){
 }
 
 bool intersect(Triangle t1, Triangle t2){
-    
+    // TODO
 }
 
 bool contains(Triangle t1, Triangle t2){
-
+    // TODO
 }
 /* #endregion */
 

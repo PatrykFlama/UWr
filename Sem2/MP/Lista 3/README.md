@@ -44,3 +44,47 @@ jako x otrzymujemy taką samą funkcję\
 w efekcie otrzymujemy funkcję wywołującą siebie samą w nieskończoność
 
 ## Zadanie 4
+```
+(define (my-compose f g)
+    (lambda (x) (f (g x))))
+```
+```
+(( my-compose square inc ) 5)
+```
+zwraca pierwiastek z (5+1) czyli 2.449489742783178
+```
+(( my-compose inc square ) 5)
+```
+zwraca (pierwiastek z 5) + 1 czyli 3.23606797749979
+
+## Zadanie 5
+```
+(define (negatives n)
+    (build-list n (lambda (x) (- (* x -1) 1))))
+```
+```
+(define (reciprocals n)
+    (build-list n (lambda (x) (/ 1 (+ x 1)))))
+```
+```
+(define (evens n)
+    (build-list n (lambda (x) (* x 2))))
+```
+```
+(define (identityM n)
+    (build-list n
+        (lambda (col) (build-list n
+            (lambda (row)
+                (if (= col row) 1 0))))))
+```
+
+## Zadanie 7
+```
+(define ( foldr-reverse xs )
+    (foldr ( lambda (y ys ) ( append ys ( list y))) null xs ))
+
+(length (foldr-reverse (build-list 10000 identity)))
+```
+Dla listy o długości n funkcja ta tworzy _XXX_ consów, z czego _YYY_ jest zbędnych.
+
+## Zadanie 8

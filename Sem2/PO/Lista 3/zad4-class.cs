@@ -79,21 +79,3 @@ class Vector{
         Console.WriteLine();
     }
 };
-
-class Program{
-    public static void Main(string[] args){
-        Vector v1 = new Vector(4);
-        Vector v2 = new Vector(4);
-        
-        v1.set_vector(new float[] {1, 2, 3, 4});
-        v2.set_vector(new float[] {4, 3, 2, 1});
-        v1.print();
-        v2.print();
-        v1 = v1 + v2;
-        v1.print();
-        v1 = v1 * 0.5f;
-        v1.print();
-        Console.WriteLine(v1 * v2);
-        Console.WriteLine(v1.norm());
-    }
-}

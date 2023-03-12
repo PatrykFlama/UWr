@@ -108,7 +108,7 @@ class Program{
     public static void Main(string[] args){
         RandomWordStream ins = new RandomWordStream();
         for(int i = 0; i < 10; i++){
-             Console.WriteLine(ins.next());
+            Console.WriteLine(ins.next());
         }
     }
 }

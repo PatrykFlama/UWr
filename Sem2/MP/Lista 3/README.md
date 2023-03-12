@@ -78,6 +78,8 @@ zwraca (pierwiastek z 5) + 1 czyli 3.23606797749979
                 (if (= col row) 1 0))))))
 ```
 
+## Zadanie 6
+
 ## Zadanie 7
 ```
 (define ( foldr-reverse xs )

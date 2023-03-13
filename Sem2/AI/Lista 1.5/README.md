@@ -1,7 +1,7 @@
 # List 1.5
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
-|---|---|---|---|---|---|---|---|---|---|---|
-| X | X |   |   |   | X |   |   |   |   |   |
+|---|---|---|---|---|---|---|---|---|----|----|
+| X | X |   | X | X | X |   | X | X | X | WIP |
 
 ## Problem 1
 ### a) Exactly 2 solutions
@@ -32,7 +32,19 @@ W pozostałych przypadkach zgadujemy i sprawdzamy czy poprawnie zgadliśmy rozwi
 
 
 ## Problem 4
-To solve that problem explicitly we can directly calculate with how many cofigurations can blotter win.   
+To solve that problem explicitly we can directly calculate with how many cofigurations can blotter win.\
+That is:
+* Straight flush
+* Four of a kind
+* Full house
+* Flush
+* Straight
+* Three of a kind
+* Two pair
+* One pair
+* High card
+
+And we just have to count all card configurations that represent those configurations (both for botter and figurant).
 
 ## Problem 5
 
@@ -42,7 +54,8 @@ To solve that problem explicitly we can directly calculate with how many cofigur
 Graph with one route through infinite number of edges with cost 0 and one route through one edge with cost 1.
 
 ## Problem 8
-
+To optimize suggested _Sokoban_ solution we can change the way, in which we find new states. Instead of going in every possible direction we can **find all the blocks that we can push** and **from which side**, and gerenate new states from that.\
+Precisely - to find new states we run BFS from the player position, and save all blocks that we encounter with side from which we can push them.
 
 ## Problem 9
 ![image](definition.png)
@@ -61,13 +74,32 @@ Starting state: starting city and all the cities to visit\
 Ending state: ending city and no more cities to visit
 
 ## Problem 10
+Amount of states: as every player (_k_) can be in every node (_n_), state-space has size $n^k$.
 
+### a) without stops
+To solve this variant we can use iterative deepening.\
+In main loop we iterate by _depth_ and we run **DLS** for every player and save all last visited nodes (those with depth _depth_). We compare them and determine if there exists any node, which every player has acces to in depth _depth_ <=> in _depth_ moves. If we didn't find any, we continue iteration.\
+To determine that there is no solution we can se _max depth_ to for example &n^2&, to ensure that there is no cycles that could help to solve the problem.
+
+### b) players can wait in a node
+Firstly we look for node, which can be accessed by everyone (it exists, as graph is connected).\
+Then we just have to trace path for everyone. As players can wait in any node, length of path does not matter, as everyone can wait in the final node.
 
 ## Problem 11
+### a)
+Optimal cost of path to target
+
+### b)
+To simulate worst possible case, lets make a graph with edge costs of $\epsilon$. 
+
 ### c)
-DLS sam w sobie nie jest kompletny - nie przechodzi całego grafu, przez co nie daje nam pewności że znajdziemy rozwiązanie. Natomiast iterative deepening przechdodzi koniec końców cały graf.
+DLS is not complete - it does not iterate over whole graph, thus we don't have certainty that it will find a solution.\
+Whereas iterative deepening in the end iterates over whole graph, so it can find the answer, eventually.
+
 ### d)
 
 
-+1,2,4,6,9,11,12
+### e)
+
+
 -10,8,7,5,3

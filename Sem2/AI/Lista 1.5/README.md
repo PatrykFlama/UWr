@@ -1,7 +1,7 @@
 # List 1.5
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| X |   |   |   |   | X |   |   |   |   |   |
+| X | X |   |   |   | X |   |   |   |   |   |
 
 ## Problem 1
 ### a) Exactly 2 solutions
@@ -19,13 +19,20 @@
 3! solutions
 
 ## Problem 2
+Dla 0 oczywiste, dla dużych liczb wiemy że na pewno kwadraty w środku będą zakolorowane.\
+Dla linijki z zakolorowanym kwadratem przy granicy możemy zakolorowoać do minimalnej długości z podpowiedzi.\
+_______
+Po każdym ruchu szukamy trywalnych rozwiązań typu:
+* Cała/prawie cała linijka (z prawie całej możemy wydedukować część linijki)
+* Linijka z oczywistą odopowiedzią - np częściowo już zakolorowana
 
+W pozostałych przypadkach zgadujemy i sprawdzamy czy poprawnie zgadliśmy rozwiązując dalej.
 
 ## Problem 3
 
 
 ## Problem 4
-
+To solve that problem explicitly we can directly calculate with how many cofigurations can blotter win.   
 
 ## Problem 5
 

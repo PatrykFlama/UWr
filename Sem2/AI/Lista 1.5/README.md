@@ -38,17 +38,18 @@ Graph with one route through infinite number of edges with cost 0 and one route 
 
 
 ## Problem 9
+![image](definition.png)
 ### a)
 State: amount of fuel in tank, actual location/city\
 Cost of action: amount of fuel needed to traverse the edge/road\
-Model: change of city\
+Transit model: change of city\
 Starting state: starting city\
 Ending state: ending city
 
 ### b)
 State: location, set of cities to visit\
 Cost of action: cost for traversing the edge/road\
-Model: change of city\
+Transit model: change of city\
 Starting state: starting city and all the cities to visit\
 Ending state: ending city and no more cities to visit
 

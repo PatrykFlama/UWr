@@ -1,7 +1,7 @@
 # Lista 3
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---|---|---|---|---|---|---|
-| X | X | X | X | X | X | ? | X |
+| X | X | X | X | X | X | X | X |
 
 ## Zadanie 1
 ```
@@ -96,7 +96,7 @@ xs [0]->[1]->...->[n]->null
           ...
         [n]->...->[0]->null
 ```
-Dla listy o długości n funkcja ta tworzy $\frac{n(n+1)}{2}$ consów, z czego $\frac{n(n-1)}{2} \approx O(n^2)$ jest zbędnych.
+Dla listy o długości n funkcja ta tworzy $\frac{n(n+1)}{2} \approx O(n^2)$ consów, z czego $\frac{n(n-1)}{2} \approx O(n^2)$ jest zbędnych.
 
 ## Zadanie 8
-Wydajność jest lepsza
+Wydajność jest lepsza, ponieważ w przeciwieństwie do $O(n^2)$ mamy złożoność czasową $O(n)&, ponieważ nasze nowe _llist-append_ działa w czasie stałym.

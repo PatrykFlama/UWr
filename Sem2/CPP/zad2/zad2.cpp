@@ -7,6 +7,18 @@ Line::Line(double _p = 0, double _angle = 0) : p(_p), angle(_angle) {}
 Line::Line(const Line& l){
     p = l.p, angle = l.angle;
 }
+void Line::change_p(double _p){
+    p = _p;
+}
+void Line::change_angle(double _angle){
+    angle = _angle;
+}
+double Line::get_p(){
+    return p;
+}
+double Line::get_angle(){
+    return angle;
+}
 /* #endregion */
 
 /* #region -------Vector------- */
@@ -14,12 +26,36 @@ Vector::Vector(double _x = 0, double _y = 0) : x(_x), y(_y) {}
 Vector::Vector(const Vector& p){
     x = p.x, y = p.y;
 }
+void Vector::change_x(double _x){
+    x = _x;
+}
+void Vector::change_y(double _y){
+    y = _y;
+}
+double Vector::get_x(){
+    return x;
+}
+double Vector::get_y(){
+    return y;
+}
 /* #endregion */
 
 /* #region -------Point------- */
 Point::Point(double _x = 0, double _y = 0) : x(_x), y(_y) {}
 Point::Point(const Point& p){
     x = p.x, y = p.y;
+}
+void Point::change_x(double _x){
+    x = _x;
+}
+void Point::change_y(double _y){
+    y = _y;
+}
+double Point::get_x(){
+    return x;
+}
+double Point::get_y(){
+    return y;
 }
 
 // pair<int, int> Point::get_coords(){
@@ -47,7 +83,7 @@ void Point::translation(Point t){
 }
 
 void Point::translation_by_vector(Vector t){
-    translation(Point(t.x, t.y));
+    translation(Point(t.get_x(), t.get_y()));
 }
 
 void Point::rotate(Point o, double angle){
@@ -65,11 +101,11 @@ void Point::point_reflection(Point o){
 }
 
 void Point::axial_symmetry(Line l){      // any point of axis, angle ccw from ox
-    this->translation(l.p * (-1));
-    this->rotate({0, 0}, -l.angle);
+    this->translation(l.get_p() * (-1));
+    this->rotate({0, 0}, -l.get_angle());
     x = -x;
-    this->rotate({0, 0}, l.angle);
-    this->translation(l.p);
+    this->rotate({0, 0}, l.get_angle());
+    this->translation(l.get_p());
 }
 
 /* #region operator overrides */
@@ -109,12 +145,24 @@ Segment::Segment(const Segment& s){
     throw invalid_argument("Segment with length 0 is illegal\n");
     a = s.a, b = s.b;
 }
+void Segment::change_a(Point _a){
+    a = _a;
+}
+void Segment::change_b(Point _b){
+    b = _b;
+}
+Point Segment::get_a(){
+    return a;
+}
+Point Segment::get_b(){
+    return b;
+}
 
 double Segment::length(){
     // double diff_x = abs(a.get_coords().first - b.get_coords().first);
     // double diff_y = abs(a.get_coords().second - b.get_coords().second);
-    double diff_x = abs(a.x - b.x);
-    double diff_y = abs(a.y - b.y);
+    double diff_x = abs(a.get_x() - b.get_x());
+    double diff_y = abs(a.get_y() - b.get_y());
 
     return sqrt(diff_x*diff_x + diff_y*diff_y);
 }
@@ -205,26 +253,26 @@ bool Triangle::point_in_triangle(Point p){
 
 /* #region -------Fun------- */
 double point_distance(Point a, Point b){
-    double diff_x = abs(a.x - b.x);
-    double diff_y = abs(a.y - b.y);
+    double diff_x = abs(a.get_x() - b.get_x());
+    double diff_y = abs(a.get_y() - b.get_y());
     return sqrt(diff_x*diff_x + diff_y*diff_y);
 }
 
 bool parallel(Segment s1, Segment s2){
-    s1.translation(s1.a);
-    s2.translation(s2.a);
+    s1.translation(s1.get_a());
+    s2.translation(s2.get_a());
 
     // if(s1.b.dot_product(s2.b)/(s1.length()*s2.length()) == 1)
-    if(abs(s1.b.dot_product(s2.b)/(s1.length()*s2.length())) - 1 < double_epsilon) return true;
+    if(abs(s1.get_b().dot_product(s2.get_b())/(s1.length()*s2.length())) - 1 < double_epsilon) return true;
     return false;
 }
 
 bool perpendicular(Segment s1, Segment s2){
-    s1.translation(s1.a);
-    s2.translation(s2.a);
+    s1.translation(s1.get_a());
+    s2.translation(s2.get_a());
 
     // if(s1.b.dot_product(s2.b) == 0)
-    if(abs(s1.b.dot_product(s2.b)) < double_epsilon) return true;
+    if(abs(s1.get_b().dot_product(s2.get_b())) < double_epsilon) return true;
     return false;
 }
 

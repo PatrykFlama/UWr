@@ -3,24 +3,36 @@ const double double_epsilon = 0.000000000005;
 
 
 class Line{
-    public:
     double p, angle;
+    public:
     Line(double _p, double _angle);
     Line(const Line& l);
+    void change_p(double _p);
+    void change_angle(double _angle);
+    double get_p();
+    double get_angle();
 };
 
 class Vector{
-    public:
     double x, y;
+    public:
     Vector(double _x, double _y);
     Vector(const Vector& p);
+    void change_x(double _x);
+    void change_y(double _y);
+    double get_x();
+    double get_y();
 };
 
 class Point{
-    public:
     double x, y;
+    public:
     Point(double _x, double _y);
     Point(const Point& p);
+    void change_x(double _x);
+    void change_y(double _y);
+    double get_x();
+    double get_y();
 
     // pair<int, int> get_coords();
 
@@ -51,10 +63,14 @@ class Point{
 };
 
 class Segment{
-    public:
     Point a, b;
+    public:
     Segment(Point _a, Point _b);
     Segment(const Segment& s);
+    void change_a(Point _a);
+    void change_b(Point _b);
+    Point get_a();
+    Point get_b();
 
     double length();
     bool contains(Point p);

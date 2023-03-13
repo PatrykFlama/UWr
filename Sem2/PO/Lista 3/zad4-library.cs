@@ -1,12 +1,12 @@
 /*
 Patryk Flama - lista 3 zadanie 4
-kompilacja: mcs zad4-class.cs
+mcs -target:library -out:lista.dll zad4-library.cs
 */
 
 using System;
 
 
-class Vector{
+public class Vector{
     public float[] vals;
     public int size;
 

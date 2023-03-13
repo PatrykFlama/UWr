@@ -14,13 +14,6 @@
 (define (mult-list xs)
     (foldl mult 1 xs))
 
-; Zadanie 4
-(define (my-compose f g)
-    (lambda (x) (f (g x))))
-
-(( my-compose square inc ) 5)
-(( my-compose inc square ) 5)
-
 ; Zadanie 5
 (define (negatives n)
     (build-list n (lambda (x) (- (* x -1) 1))))
@@ -39,7 +32,22 @@
 
 
 ; Zadanie 6
-(define empty-set '())
+; czy empty set zawiera element x
+(define empty-set
+  (lambda (x) #f))
+
+; czy lista składająca się z elementu a zawiera element x
+(define (singleton a)
+  (lambda (x) (equal? x a)))
+
+; s jest zbiorem, a elementem
+(define (in a s) (s a))
+
+(define (union s t)
+  (lambda (x) (or (s x) (t x))))
+
+(define (intersect s t)
+  (lambda (x) (and (s x) (t x))))
 
 
 ; Zadanie 7

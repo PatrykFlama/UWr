@@ -61,8 +61,19 @@ public class Vector{
         }
     }
 
+    float sqrt(float x){
+        float l = 0, r = x;
+        for(int i = 0; i < 100; i++){
+            float mid = (l+r)/2;
+            if(mid*mid > x) r = mid;
+            else l = mid;
+        }
+
+        return (l+r)/2;
+    }
+
     public float norm(){
-        return (float)Math.Sqrt(this*this);
+        return sqrt(this*this);
     }
 
     public void set_vector(float[] tab){

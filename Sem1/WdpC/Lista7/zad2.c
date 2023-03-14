@@ -86,7 +86,6 @@ typedef struct TimeRange{
 } TimeRange;
 
 TimeRange get_time_range(bool *line_ended){           // no time range == 1 element time range
-    //TODO: find first non ' ' char and if brackets then calc begin, end; else set 1 element range
     char input = getchar();
     while(input == ' ' || input == ']') input = getchar();
     

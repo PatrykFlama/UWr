@@ -1,19 +1,5 @@
 #lang racket
 
-; Zadanie 1
-'((car (a . b)) (* 2))
-(list `(car (a . b)) `(* 2))
-`(,( car '(a . b)) ,(* 2))
-(list (car '(a . b)) (* 2))
-'((+ 1 2 3) ( cons ) ( cons a b))
-(list '(+ 1 2 3) '(cons) '(cons a b))
-
-; Zadanie 2
-(define (mult x acc) (* x acc))
-
-(define (mult-list xs)
-    (foldl mult 1 xs))
-
 ; Zadanie 5
 (define (negatives n)
     (build-list n (lambda (x) (- (* x -1) 1))))

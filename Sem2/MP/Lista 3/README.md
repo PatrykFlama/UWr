@@ -6,22 +6,21 @@
 ## Zadanie 1
 ```
 '((car (a . b)) (* 2))
-(list `(car (a . b)) `(* 2))
+(list (list 'car (cons 'a 'b)) (list '* 2))
 ```
 ```
 `(,( car '(a . b)) ,(* 2))
-(list (car '(a . b)) (* 2))
+(list (car (cons 'a 'b)) (* 2))
 ```
 ```
 '((+ 1 2 3) ( cons ) ( cons a b))
-(list '(+ 1 2 3) '(cons) '(cons a b))
+(list (list '+ 1 2 3) (list 'cons) (list 'cons 'a 'b))
 ```
 
 ## Zadanie 2
 ```
-(define (mult x acc) (* x acc))
 (define (mult-list xs)
-    (foldl mult 1 xs))
+    (foldl * 1 xs))
 ```
 Dla pustej zwraca 1 - element neutralny mnożenia
 
@@ -83,6 +82,15 @@ zwraca (pierwiastek z 5) + 1 czyli 3.23606797749979
 ```
 
 ## Zadanie 7
+Jak działa append?
+```
+(define (append xs ys)
+    (if (null? xs) ys
+    (cons ((car xs) (append (cdr xs) ys)))))
+```
+Czyli w rezultacie kopiuje on pierwszą listę, aby dokleić do niej drugą (w formie referencji, nie kopiuje jej już).
+
+![image](append.png)
 ```
 (define ( foldr-reverse xs )
     (foldr ( lambda (y ys ) ( append ys ( list y))) null xs ))

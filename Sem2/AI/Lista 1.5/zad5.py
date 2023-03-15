@@ -2,7 +2,7 @@
 Blotter = [20, 288, 1728, 484, 5100, 16128, 36288, 193536, 123420]
 All_Blotter = 376992
 
-Figurant =[0, 48, 288, 0, 0, 768, 1728, 1536, 0]
+Figurant = [0, 48, 288, 0, 0, 768, 1728, 1536, 0]
 All_Figurant = 4368
 
 # amt of conf with higher or same power as blotter

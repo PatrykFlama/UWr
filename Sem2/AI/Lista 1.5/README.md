@@ -1,7 +1,7 @@
 # List 1.5
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|----|----|
-| X | X |   | X | X | X |   | X | X | X  | X  |
+| X | X | X | X | X | X | X | X | X | X  | X  |
 
 ## Problem 1
 ### a) Exactly 2 solutions
@@ -29,7 +29,7 @@ Po każdym ruchu szukamy trywalnych rozwiązań typu:
 W pozostałych przypadkach zgadujemy i sprawdzamy czy poprawnie zgadliśmy rozwiązując dalej.
 
 ## Problem 3
-
+//code//
 
 ## Problem 4
 To solve that problem explicitly we can directly calculate with how many cofigurations can blotter win.\

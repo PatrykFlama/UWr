@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+using namespace std;
 const double double_epsilon = 0.000000000005;
 
 
@@ -34,8 +35,6 @@ class Point{
     double get_x();
     double get_y();
 
-    // pair<int, int> get_coords();
-
     bool check_lnz(Point p1, Point p2);
 
     double distance_from(Point p);
@@ -51,7 +50,7 @@ class Point{
 
     void axial_symmetry(Line l);
 
-    /* #region operator overrides */
+    // operator overrides
     bool operator== (Point p);
     bool operator!= (Point p);
 
@@ -117,7 +116,7 @@ bool parallel(Segment s1, Segment s2);
 
 bool perpendicular(Segment s1, Segment s2);
 
-bool intersect(Segment a, Segment b, Segment c);
+bool intersect_seg(Segment a, Segment b);
 bool intersect(Triangle t1, Triangle t2);
 
 bool contains(Triangle t1, Triangle t2);

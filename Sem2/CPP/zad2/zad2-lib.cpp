@@ -1,5 +1,4 @@
 #include "zad2-headers.h"
-using namespace std;
 
 
 /* #region -------Line------- */
@@ -57,10 +56,6 @@ double Point::get_x(){
 double Point::get_y(){
     return y;
 }
-
-// pair<int, int> Point::get_coords(){
-//     return {x, y};
-// }
 
 bool Point::check_lnz(Point p1, Point p2){
     if(p1.x == x && p2.x == x) return false;
@@ -140,9 +135,10 @@ Point Point::operator*(int a){
 /* #endregion */
 
 /* #region -------Segment------- */
-Segment::Segment(Point _a, Point _b) : a(_a), b(_b) {}
+Segment::Segment(Point _a, Point _b) : a(_a), b(_b) {
+    if(a == b) throw invalid_argument("Segment with length 0 is illegal\n");
+}
 Segment::Segment(const Segment& s){
-    throw invalid_argument("Segment with length 0 is illegal\n");
     a = s.a, b = s.b;
 }
 void Segment::change_a(Point _a){
@@ -291,7 +287,7 @@ bool ccw(Point a, Point b, Point c){
     return (c.get_y() - a.get_y()) * (b.get_x() - a.get_x()) > (b.get_y() - a.get_y()) * (c.get_x() - a.get_x());
 }
 
-bool intersect(Segment a, Segment b, Segment c){
+bool intersect_seg(Segment a, Segment b){
     return (ccw(a.get_a(), b.get_a(), b.get_b()) != ccw(a.get_b(), b.get_a(), b.get_b())) and
            (ccw(a.get_a(), a.get_b(), b.get_a()) != ccw(a.get_a(), a.get_b(), b.get_b()));
 }
@@ -304,9 +300,9 @@ bool intersect(Triangle t1, Triangle t2){
             s2b(t2.get_b(), t2.get_c()),
             s2c(t2.get_c(), t2.get_a());
 
-    return (intersect(s1a, s2a) or intersect(s1a, s2b) or intersect(s1a, s2c) or
-            intersect(s1b, s2a) or intersect(s1b, s2b) or intersect(s1b, s2c) or
-            intersect(s1c, s2a) or intersect(s1c, s2b) or intersect(s1c, s2c));            
+    return (intersect_seg(s1a, s2a) or intersect_seg(s1a, s2b) or intersect_seg(s1a, s2c) or
+            intersect_seg(s1b, s2a) or intersect_seg(s1b, s2b) or intersect_seg(s1b, s2c) or
+            intersect_seg(s1c, s2a) or intersect_seg(s1c, s2b) or intersect_seg(s1c, s2c));            
 }
 
 bool contains(Triangle t1, Triangle t2){

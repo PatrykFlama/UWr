@@ -1,3 +1,5 @@
+# To speed (to linear time) up we could use TRIE structure
+
 import gzip
 
 words = set()

@@ -90,6 +90,10 @@ class Triangle{
     Triangle(Point _a, Point _b, Point _c);
     Triangle(const Triangle& t);
 
+    Point get_a();
+    Point get_b();
+    Point get_c();
+
     bool check_if_correct();
 
     void translation(Point t);
@@ -113,6 +117,7 @@ bool parallel(Segment s1, Segment s2);
 
 bool perpendicular(Segment s1, Segment s2);
 
-bool disjoint(Triangle t1, Triangle t2);
+bool intersect(Segment a, Segment b, Segment c);
+bool intersect(Triangle t1, Triangle t2);
 
 bool contains(Triangle t1, Triangle t2);

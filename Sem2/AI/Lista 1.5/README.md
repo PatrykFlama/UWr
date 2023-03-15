@@ -86,20 +86,19 @@ Firstly we look for node, which can be accessed by everyone (it exists, as graph
 Then we just have to trace path for everyone. As players can wait in any node, length of path does not matter, as everyone can wait in the final node.
 
 ## Problem 11
+![image](table.png)
 ### a)
-Optimal cost of path to target
+Optimal cost of path to target.
 
 ### b)
-To simulate worst possible case, lets make a graph with edge costs of $\epsilon$. 
+In other functions we use _b_ and _d_, which are branching factor and maximal depth, but in UCS we are interested in aggregate cost, so we need function that depends on it. That will be $C^* / \epsilon$
 
 ### c)
 DLS is not complete - it does not iterate over whole graph, thus we don't have certainty that it will find a solution.\
 Whereas iterative deepening in the end iterates over whole graph, so it can find the answer, eventually.
 
 ### d)
-
+Yes, becouse we can use any other complete algorithm instead of BFS.
 
 ### e)
-
-
--10,8,7,5,3
+Yes, becouse we can use instead of BFS any other algorithm, for egzample UCS.

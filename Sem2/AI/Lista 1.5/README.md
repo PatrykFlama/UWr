@@ -1,7 +1,7 @@
 # List 1.5
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|----|----|
-| X | X |   | X | X | X |   | X | X | X | WIP |
+| X | X |   | X | X | X |   | X | X | X  | X  |
 
 ## Problem 1
 ### a) Exactly 2 solutions
@@ -47,11 +47,21 @@ That is:
 And we just have to count all card configurations that represent those configurations (both for botter and figurant).
 
 ## Problem 5
-
+//code//
 
 ## Problem 6
 ![image](table.png)\
 Graph with one route through infinite number of edges with cost 0 and one route through one edge with cost 1.
+
+## Problem 7
+We have to create a labirynth, which
+* contains a lot of enemies who walk in different cycles
+* its size would allow to search thru the phase space using typical computer
+
+The important aspect of such a labirynth is that **L**owest **C**ommon **D**enominator of all enemies paths should be adequately low. Thanks to that, we minimize our phase space, becouse we limit out time-space (lets call it $t$) and with limited labirynth size ($n*m$) we end up with $O(n*m*t)$ states.\
+Thats how we can define our **<ins>state</ins>**:
+* position of the player
+* [_total steps_ == _time_] % LCD(_lenghts of enemies paths_)
 
 ## Problem 8
 To optimize suggested _Sokoban_ solution we can change the way, in which we find new states. Instead of going in every possible direction we can **find all the blocks that we can push** and **from which side**, and gerenate new states from that.\

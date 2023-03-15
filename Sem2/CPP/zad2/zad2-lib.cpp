@@ -188,7 +188,9 @@ void Segment::axial_symmetry(Line l){      // any point of axis, angle ccw from 
 /* #endregion */
 
 /* #region -------Triangle------- */
-Triangle::Triangle(Point _a, Point _b, Point _c) : a(_a), b(_b), c(_c) {}
+Triangle::Triangle(Point _a, Point _b, Point _c) : a(_a), b(_b), c(_c) {
+    if(!check_if_correct()) throw invalid_argument("Such triangle is not correct!\n");
+}
 Triangle::Triangle(const Triangle& t){
     a = t.a, b = t.b, c = t.c;
 }

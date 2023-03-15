@@ -39,18 +39,14 @@ def find_random_partition(line):      # word ranges: [from, to)
 
     for r in range(1, min(max_word_len, len(line)+1)):
         if line[0:r] in words:
-            rnd = randint(0, 1000)
-            if  (dp[r] < rnd):
-                dp[r] = rnd
-                father[r] = 0
+            dp[r] = 1
+            if(father[r] == -1 or randint(0, 4)%2 == 0): father[r] = 0
     for l in range(1, len(line)):
         if(father[l] == -1): continue
         for r in range(l+1, min(l+max_word_len, len(line)+1)):
             if line[l:r] in words:
-                rnd = randint(0, 1000)
-                if (dp[r] < rnd):
-                    dp[r] = rnd
-                    father[r] = l
+                dp[r] = 1
+                if(father[r] == -1 or randint(0, 4)%2 == 0): father[r] = l
 
     ptr = len(line)
     str = ""

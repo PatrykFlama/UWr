@@ -12,6 +12,8 @@ with open("pantadeusz.txt", "rb") as tadeusz:
         line = line.replace('—', '')
         line = line.replace('  ', ' ')
         line = line.replace('…', '')
+        line = line.replace('«', '')
+        line = line.replace('»', '')
 
         line = line.lower()
 
@@ -37,6 +39,8 @@ with open("pantadeusz.txt", "rb") as tadeusz:
         line = line.replace('—', '')
         line = line.replace('  ', ' ')
         line = line.replace('…', '')
+        line = line.replace('«', '')
+        line = line.replace('»', '')
 
         line = line.lower()
 

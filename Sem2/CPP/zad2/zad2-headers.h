@@ -4,6 +4,7 @@ const double double_epsilon = 0.000000000005;
 
 
 class Line{
+    private:
     double p, angle;
     public:
     Line(double _p, double _angle);
@@ -15,6 +16,7 @@ class Line{
 };
 
 class Vector{
+    private:
     double x, y;
     public:
     Vector(double _x, double _y);
@@ -26,6 +28,7 @@ class Vector{
 };
 
 class Point{
+    private:
     double x, y;
     public:
     Point(double _x, double _y);
@@ -34,6 +37,8 @@ class Point{
     void change_y(double _y);
     double get_x();
     double get_y();
+
+    string print();
 
     bool check_lnz(Point p1, Point p2);
 
@@ -62,6 +67,7 @@ class Point{
 };
 
 class Segment{
+    private:
     Point a, b;
     public:
     Segment(Point _a, Point _b);
@@ -70,6 +76,8 @@ class Segment{
     void change_b(Point _b);
     Point get_a();
     Point get_b();
+
+    string print();
 
     double length();
     bool contains(Point p);
@@ -83,6 +91,7 @@ class Segment{
 };
 
 class Triangle{
+    private:
     Point a, b, c;
 
     public:
@@ -92,6 +101,8 @@ class Triangle{
     Point get_a();
     Point get_b();
     Point get_c();
+
+    string print();
 
     bool check_if_correct();
 

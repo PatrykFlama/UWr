@@ -2,6 +2,11 @@
 
 
 int main(){
+    cout << "Enter 1 for short demo and 2 for manual input: ";
+    int choice; cin >> choice;
+    
+    //* --------------------------------------------------------------------
+    if(choice == 1){
     Point p0(0, 0), p1(2, 2), p2(4, 0);
     Segment s1(p0, p1), s2(Point(0, 2), Point(2, 0));
     Triangle t1(p0, p1, p2);
@@ -19,10 +24,14 @@ int main(){
     cout << "does triangle 0,0 2,2 4,0 contain itself: ";
     cout << contains(t1, t1) << '\n';
     cout << "----END OF DEMO----\n";
+    }
+    //* --------------------------------------------------------------------
+    else if(choice == 2){
+    Point p0(0,0), p1(0,0), p2(0,0); 
+    Segment s1(Point(0, 0), Point(1, 0)), s2(Point(0, 0), Point(1, 0));
+    Triangle t1(p0, p1, p2), t2(p0, p1, p2);
 
-    p0 = p1 = p2 = Point(0,0);
-    s1 = s2 = Segment(Point(0, 0), Point(1, 0));
-    Triangle t2 = t1;
+    /* #region INFO */
     cout << "You start with 3 points pi (i from 0 to 2) set to 0\n";
     cout << "2 segments si (1, 2) set to 0,0 1,0\n";
     cout << "and 2 triangles ti (1, 2) set to 0,0 2,2 4,0\n";
@@ -35,6 +44,7 @@ int main(){
     cout << "operations for triangle: {circuit, area, point_in_triangle point, intersect triangle, contains triangle}\n";
     cout << "type 'print' to print and object\n";
     cout << "type 'exit' to exit" << endl;
+    /* #endregion */
 
     string object = "", operation = "";
     int index = 0;
@@ -72,7 +82,17 @@ int main(){
                 cin >> x>>angle;
                 act->axial_symmetry(Line(x, angle));
             } else if(operation == "print"){
-                // TODO print obj
+                cout << act->print() << '\n';
+            } else if(operation == "dot_product point"){
+                float x, y;
+                cout << "Give x y for point: ";
+                cin >> x >> y;
+                cout << act->dot_product(Point(x, y)) << '\n';
+            } else if(operation == "distance_from point"){
+                float x, y;
+                cout << "Give x y for point: ";
+                cin >> x >> y;
+                cout << act->distance_from(Point(x, y)) << '\n';
             }
         } else if(object[0] == 's'){        // segment
             Segment* act;
@@ -101,7 +121,26 @@ int main(){
                 cin >> x>>angle;
                 act->axial_symmetry(Line(x, angle));
             } else if(operation == "print"){
-                // TODO print obj
+                cout << act->print() << '\n';
+            } else if(operation == "length"){
+                cout << act->length() << '\n';
+            } else if(operation == "contains"){
+                float x, y;
+                cout << "Give x y for point: ";
+                cin >> x >> y;
+                cout << act->contains(Point(x, y)) << '\n';
+            } else if(operation == "intersects"){
+                float x1, y1;
+                float x2, y2;
+                cout << "Give x1 y1 x2 y2 for segment points: ";
+                cin >> x1 >> y1 >> x2 >> y2;
+                cout << intersect_seg(*act, Segment(Point(x1, y1), Point(x2, y2))) << '\n';
+            } else if(operation == "perpendicular"){
+                float x1, y1;
+                float x2, y2;
+                cout << "Give x1 y1 x2 y2 for segment points: ";
+                cin >> x1 >> y1 >> x2 >> y2;
+                cout << perpendicular(*act, Segment(Point(x1, y1), Point(x2, y2))) << '\n';
             }
         } else if(object[0] == 't'){       // triangle
             Triangle* act;
@@ -130,8 +169,28 @@ int main(){
                 cin >> x>>angle;
                 act->axial_symmetry(Line(x, angle));
             } else if(operation == "print"){
-                // TODO print obj
+                cout << act->print() << '\n';
+            } else if(operation == "circuit"){
+                cout << act->circuit() << '\n';
+            } else if(operation == "area"){
+                cout << act->area() << '\n';
+            } else if(operation == "point_in_triangle"){
+                float x, y;
+                cout << "Give x y for point: ";
+                cin >> x >> y;
+                cout << act->point_in_triangle(Point(x, y)) << '\n';
+            } else if(operation == "intersect triangle"){
+                float x1, y1, x2, y2, x3, y3;
+                cout << "Give x1 y1 x2 y2 x3 y3 for triangle points: ";
+                cin >> x1 >> y1 >> x2 >> y2 >> x3 >> y3;
+                cout << intersect(*act, Triangle(Point(x1, y1), Point(x2, y2), Point(x3, y3))) << '\n';
+            } else if(operation == "contains triangle"){
+                float x1, y1, x2, y2, x3, y3;
+                cout << "Give x1 y1 x2 y2 x3 y3 for triangle points: ";
+                cin >> x1 >> y1 >> x2 >> y2 >> x3 >> y3;
+                cout << contains(*act, Triangle(Point(x1, y1), Point(x2, y2), Point(x3, y3))) << '\n';
             }
         }
+    }
     }
 }

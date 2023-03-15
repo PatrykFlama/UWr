@@ -57,6 +57,12 @@ double Point::get_y(){
     return y;
 }
 
+string Point::print(){
+    string s = "(";
+    s += x; s += ", "; s += y; s += ")";
+    return s;
+}
+
 bool Point::check_lnz(Point p1, Point p2){
     if(p1.x == x && p2.x == x) return false;
     if(p1.y == y && p2.y == y) return false;
@@ -154,6 +160,15 @@ Point Segment::get_b(){
     return b;
 }
 
+string Segment::print(){
+    string s = "[";
+    s += a.print();
+    s += "; ";
+    s += b.print();
+    s += "]";
+    return s;
+}
+
 double Segment::length(){
     // double diff_x = abs(a.get_coords().first - b.get_coords().first);
     // double diff_y = abs(a.get_coords().second - b.get_coords().second);
@@ -203,6 +218,18 @@ Point Triangle::get_b(){
 }
 Point Triangle::get_c(){
     return c;
+}
+
+
+string Triangle::print(){
+    string s = "[";
+    s += a.print();
+    s += "; ";
+    s += b.print();
+    s += "; ";
+    s += c.print();
+    s += "]";
+    return s;
 }
 
 

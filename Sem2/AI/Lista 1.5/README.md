@@ -53,6 +53,10 @@ And we just have to count all card configurations that represent those configura
 ![image](table.png)\
 Graph with one route through infinite number of edges with cost 0 and one route through one edge with cost 1.
 
+```
+  ->0->0->...->0-> 
+S -->     1    --> F
+```
 ## Problem 7
 We have to create a labirynth, which
 * contains a lot of enemies who walk in different cycles
@@ -77,7 +81,7 @@ Starting state: starting city\
 Ending state: ending city
 
 ### b)
-State: location, set of cities to visit\
+State: location, set of cities to visit (to deliver the package) <=> set of packages to deliver with their destinations \
 Cost of action: cost for traversing the edge/road\
 Transit model: change of city\
 Starting state: starting city and all the cities to visit\

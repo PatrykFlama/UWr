@@ -29,26 +29,26 @@ int main(){
     else if(choice == 2){
     Point p0(0,0), p1(0,0), p2(0,0); 
     Segment s1(Point(0, 0), Point(1, 0)), s2(Point(0, 0), Point(1, 0));
-    Triangle t1(p0, p1, p2), t2(p0, p1, p2);
+    Triangle t1(Point(0, 0), Point(2,2), Point(4, 0)), t2(Point(0, 0), Point(2,2), Point(4, 0));
 
     /* #region INFO */
-    cout << "You start with 3 points pi (i from 0 to 2) set to 0\n";
-    cout << "2 segments si (1, 2) set to 0,0 1,0\n";
-    cout << "and 2 triangles ti (1, 2) set to 0,0 2,2 4,0\n";
+    cout << "You start with 3 points pi (indexes i from 0 to 2)\n";
+    cout << "2 segments si (1, 2)\n";
+    cout << "and 2 triangles ti (1, 2)\n";
     cout << "to execute operation type in:\n";
-    cout << "[object] [operation]\n";
-    cout << "objects: {point, segment, triangle} {index}\n";
-    cout << "operations for all: {translate vector, rotate point angle, point_reflect point, axial_symmetry line_point line_angle}\n";
+    cout << "[object] [index] [operation]\n";
+    cout << "objects: {point, segment, triangle}\n";
+    cout << "operations for all: {print, set, translate vector, rotate point angle, point_reflect point, axial_symmetry line_point line_angle}\n";
     cout << "operations for point: {dot_product point, distance_from point}\n";
     cout << "operations for segment: {length, contains point, intersects segment, perpendicular segment}\n";
     cout << "operations for triangle: {circuit, area, point_in_triangle point, intersect triangle, contains triangle}\n";
-    cout << "type 'print' to print and object\n";
     cout << "type 'exit' to exit" << endl;
     /* #endregion */
 
     string object = "", operation = "";
     int index = 0;
     while(object != "exit"){
+        cout << "-> ";
         cin >> object;
         if(object == "exit") break;
         cin >> index >> operation;
@@ -59,7 +59,12 @@ int main(){
             else if(index == 1) act = &p1;
             else act = &p2;
 
-            if(operation == "translate"){
+            if(operation == "set"){
+                float x, y;
+                cout << "Give x y coords for new point: ";
+                cin >> x >> y;
+                act->change_x(x), act->change_y(y);
+            } else if(operation == "translate"){
                 float x, y;
                 cout << "Give x y coords for vector: ";
                 cin >> x >> y;
@@ -98,7 +103,13 @@ int main(){
             Segment* act;
             if(index == 1) act = &s1;
             else act = &s2;
-            if(operation == "translate"){
+
+            if(operation == "set"){
+                float x1, y1, x2, y2;
+                cout << "Give x1 y1 x2 y2 coords for new points: ";
+                cin >> x1 >> y1 >> x2 >> y2;
+                act->change_a(Point(x1, y1)), act->change_b(Point(x2, y2));
+            } else if(operation == "translate"){
                 float x, y;
                 cout << "Give x y coords for vector: ";
                 cin >> x >> y;
@@ -146,7 +157,13 @@ int main(){
             Triangle* act;
             if(index == 1) act = &t1;
             else act = &t2;
-            if(operation == "translate"){
+            
+            if(operation == "set"){
+                float x1, y1, x2, y2, x3, y3;
+                cout << "Give x1 y1 x2 y2 x3 y3 coords for new points: ";
+                cin >> x1 >> y1 >> x2 >> y2 >> x3 >> y3;
+                act->change_a(Point(x1, y1)), act->change_b(Point(x2, y2)), act->change_c(Point(x3, y3));
+            } else if(operation == "translate"){
                 float x, y;
                 cout << "Give x y coords for vector: ";
                 cin >> x >> y;
@@ -191,6 +208,7 @@ int main(){
                 cout << contains(*act, Triangle(Point(x1, y1), Point(x2, y2), Point(x3, y3))) << '\n';
             }
         }
+        cout << "done\n";
     }
     }
 }

@@ -101,6 +101,9 @@ class Triangle{
     Point get_a();
     Point get_b();
     Point get_c();
+    void change_a(Point _a);
+    void change_b(Point _b);
+    void change_c(Point _c);
 
     string print();
 

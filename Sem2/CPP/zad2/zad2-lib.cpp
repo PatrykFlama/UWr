@@ -59,7 +59,7 @@ double Point::get_y(){
 
 string Point::print(){
     string s = "(";
-    s += x; s += ", "; s += y; s += ")";
+    s += to_string(x); s += ", "; s += to_string(y); s += ")";
     return s;
 }
 
@@ -220,6 +220,16 @@ Point Triangle::get_c(){
     return c;
 }
 
+void Triangle::change_a(Point _a){
+    a = _a;
+}
+void Triangle::change_b(Point _b){
+    b = _b;
+}
+void Triangle::change_c(Point _c){
+    c = _c;
+}
+
 
 string Triangle::print(){
     string s = "[";
@@ -234,16 +244,8 @@ string Triangle::print(){
 
 
 bool Triangle::check_if_correct(){
-    Segment s1(a, b), s2(b, c), s3(c, a);
-    {
-        double s1_l = s1.length(), s2_l = s2.length(), s3_l = s3.length();
-        vector<double> lenghts = {s1_l, s2_l, s3_l};
-        sort(lenghts.begin(), lenghts.end());
-
-        if(lenghts[2] <= lenghts[0]+lenghts[1]) return false;
-    }
-
-    return a.check_lnz(b, c);
+    if(a != b && b != c) return true;
+    return false;
 }
 
 void Triangle::translation(Point t){

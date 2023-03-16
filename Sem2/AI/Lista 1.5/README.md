@@ -32,6 +32,7 @@ W pozostałych przypadkach zgadujemy i sprawdzamy czy poprawnie zgadliśmy rozwi
 //code//
 
 ## Problem 4
+![image](poker.png)
 To solve that problem explicitly we can directly calculate with how many cofigurations can blotter win.\
 That is:
 * Straight flush
@@ -102,7 +103,7 @@ Then we just have to trace path for everyone. As players can wait in any node, l
 ## Problem 11
 ![image](table.png)
 ### a)
-Optimal cost of path to target.
+Optimal cost of path to target, of optimal solution, $\epsilon$ is minimal (worst) cost of every step. So $1 + C^* / \epsilon$ is amount of steps taken, to reach the destination, as we have one additional step while starting from $0$ and ending at $C^*$.
 
 ### b)
 In other functions we use _b_ and _d_, which are branching factor and maximal depth, but in UCS we are interested in aggregate cost, so we need function that depends on it. That will be $C^* / \epsilon$

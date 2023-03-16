@@ -20,8 +20,31 @@ int main(){
     cout << "does 0,0 2,2 intersect 2,0 4,0: " << intersect_seg(*s1, Segment(Point(2, 0), Point(4, 0))) << '\n';
     cout << "does 0,0 2,2 intersect 2,0 4,1: " << intersect_seg(*s1, Segment(Point(2, 0), Point(4, 1))) << '\n';
 
+    s1->rotate(Point(0,0), 3.14);
+    cout << "rotationg segment 1 by point 0,0: " << s1->print() << '\n';
+    s1->rotate(Point(0,0), 3.14);
+    cout << "rotationg segment 1 by point 0,0: " << s1->print() << '\n';
+    s1->rotate(Point(0,0), 3.14/2);
+    cout << "rotationg segment 1 by point 0,0: " << s1->print() << '\n';
+
+    t1->rotate(Point(0,0), 3.14);
+    cout << "rotationg triangle 1 pi by point 0,0: " << t1->print() << '\n';
+    t1->rotate(Point(0,0), 3.14);
+    cout << "rotationg triangle 1 pi by point 0,0: " << t1->print() << '\n';
+    t1->rotate(Point(0,0), 3.14/2);
+    cout << "rotationg triangle 1 pi/2 by point 0,0: " << t1->print() << '\n';
+    
+    t1->axial_symmetry(Line(0, 3.14/4));
+    cout << "axial symetry of triangle 1 pi/4: " << t1->print() << '\n';
+    t1->axial_symmetry(Line(0, 3.14/4));
+    cout << "axial symetry of triangle 1 pi/4: " << t1->print() << '\n';
+    t1->point_reflection(Point(0, 0));
+    cout << "axial point reflection 0,0 of triangle 1: " << t1->print() << '\n';
+
     cout << "does triangle 0,0 2,2 4,0 contain 0.5,0.5 1,1 3,0.5: ";
     cout << contains(*t1, Triangle(Point(0.5,0.5), Point(1,1), Point(3,0.5))) << '\n';
+    cout << "does triangle 0,0 2,2 4,0 intersect with 0.5,0.5 1,1 3,0.5: ";
+    cout << does_not_intersect(*t1, Triangle(Point(0.5,0.5), Point(1,1), Point(3,0.5))) << '\n';
     cout << "does triangle 0,0 2,2 4,0 contain itself: ";
     cout << contains(*t1, *t1) << '\n';
     cout << "----END OF DEMO----\n";
@@ -42,7 +65,7 @@ int main(){
     cout << "operations for all: {print, set, translate vector, rotate point angle, point_reflect point, axial_symmetry line_point line_angle}\n";
     cout << "operations for point: {dot_product point, distance_from point}\n";
     cout << "operations for segment: {length, contains point, intersects segment, perpendicular segment}\n";
-    cout << "operations for triangle: {circuit, area, point_in_triangle point, intersect triangle, contains triangle}\n";
+    cout << "operations for triangle: {circuit, area, point_in_triangle point, intersect triangle, contains triangle, does_not_intersect triangle}\n";
     cout << "type 'exit' to exit" << endl;
     /* #endregion */
 
@@ -207,6 +230,12 @@ int main(){
                 cout << "Give x1 y1 x2 y2 x3 y3 for triangle points: ";
                 cin >> x1 >> y1 >> x2 >> y2 >> x3 >> y3;
                 cout << contains(*act, Triangle(Point(x1, y1), Point(x2, y2), Point(x3, y3))) << '\n';
+            } else if(operation == "does_not_intersect"){
+                float x1, y1, x2, y2, x3, y3;
+                cout << "Give x1 y1 x2 y2 x3 y3 for triangle points: ";
+                cin >> x1 >> y1 >> x2 >> y2 >> x3 >> y3;
+                cout << does_not_intersect(*act, Triangle(Point(x1, y1), Point(x2, y2), Point(x3, y3))) << '\n';
+
             }
         }
         cout << "done\n";

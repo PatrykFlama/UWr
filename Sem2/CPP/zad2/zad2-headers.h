@@ -134,3 +134,5 @@ bool intersect_seg(Segment a, Segment b);
 bool intersect(Triangle t1, Triangle t2);
 
 bool contains(Triangle t1, Triangle t2);
+
+bool does_not_intersect(Triangle t1, Triangle t2);

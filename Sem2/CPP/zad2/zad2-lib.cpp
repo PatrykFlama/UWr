@@ -355,5 +355,9 @@ bool contains(Triangle t1, Triangle t2){
     if(abs(temp) == 9) return true;
     return false;
 }
+
+bool does_not_intersect(Triangle t1, Triangle t2){
+    return !contains(t1, t2) and !intersect(t1, t2);
+}
 /* #endregion */
 

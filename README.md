@@ -7,3 +7,4 @@
 * [Kurs języka **C++**](Sem2/CPP/)
 * [**M**etody **P**rogramowania](Sem2/MP/)
 * [**P**rogramowanie **O**biektowe](Sem2/PO/)
+* [**P**raktyczne **A**spekty **R**ozwoju **O**programowania](Sem2/PARO/)

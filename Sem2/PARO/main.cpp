@@ -5,6 +5,7 @@ Input:
 0 0
 1 1
 */
+// egzample: https://gist.github.com/chommik/10d353822024add7a589d478341093b7
 #include <bits/stdc++.h>
 using namespace std;
 

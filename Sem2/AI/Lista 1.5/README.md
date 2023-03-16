@@ -63,10 +63,10 @@ We have to create a labirynth, which
 * contains a lot of enemies who walk in different cycles
 * its size would allow to search thru the phase space using typical computer
 
-The important aspect of such a labirynth is that **L**owest **C**ommon **D**enominator of all enemies paths should be adequately low. Thanks to that, we minimize our phase space, becouse we limit out time-space (lets call it $t$) and with limited labirynth size ($n*m$) we end up with $O(n*m*t)$ states.\
+The important aspect of such a labirynth is that **L**owest **C**ommon **M**ultiple of all enemies paths should be adequately low. Thanks to that, we minimize our phase space, becouse we limit out time-space (lets call it $t$) and with limited labirynth size ($n*m$) we end up with $O(n*m*t)$ states.\
 Thats how we can define our **<ins>state</ins>**:
 * position of the player
-* [_total steps_ == _time_] % LCD(_lenghts of enemies paths_)
+* [_total steps_ == _time_] % LCM(_lenghts of enemies paths_)
 
 ## Problem 8
 To optimize suggested _Sokoban_ solution we can change the way, in which we find new states. Instead of going in every possible direction we can **find all the blocks that we can push** and **from which side**, and gerenate new states from that.\

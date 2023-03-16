@@ -8,52 +8,81 @@ int main(){
     //* --------------------------------------------------------------------
     if(choice == 1){
     
-    Point *p0 = new Point(0, 0), *p1 = new Point(2, 2), *p2 = new Point(4, 0);
-    Segment *s1 = new Segment(*p0, *p1), *s2 = new Segment(Point(0, 2), Point(2, 0));
-    Triangle *t1 = new Triangle(*p0, *p1, *p2);
+    Point p0(0, 0), p1(2, 2), p2(4, 0);
+    Segment s1(p0, p1), s2(Point(0, 2), Point(2, 0));
+    Triangle t1(p0, p1, p2);
 
-    cout << "length of 0,0 2,2: " << s1->length() << '\n';
-    cout << "distance between 0,0 2,2: " << p0->distance_from(*p1) << '\n';
-    cout << "dot product between 4,0 2,2: " << p2->dot_product(*p1) << '\n';
+    cout << "length of 0,0 2,2: " << s1.length() << '\n';
+    cout << "distance between 0,0 2,2: " << p0.distance_from(p1) << '\n';
+    cout << "dot product between 4,0 2,2: " << p2.dot_product(p1) << '\n';
 
-    cout << "does 0,0 2,2 intersect 2,0 0,2: " << intersect_seg(*s1, *s2) << '\n';
-    cout << "does 0,0 2,2 intersect 2,0 4,0: " << intersect_seg(*s1, Segment(Point(2, 0), Point(4, 0))) << '\n';
-    cout << "does 0,0 2,2 intersect 2,0 4,1: " << intersect_seg(*s1, Segment(Point(2, 0), Point(4, 1))) << '\n';
+    cout << "does 0,0 2,2 intersect 2,0 0,2: " << intersect_seg(s1, s2) << '\n';
+    cout << "does 0,0 2,2 intersect 2,0 4,0: " << intersect_seg(s1, Segment(Point(2, 0), Point(4, 0))) << '\n';
+    cout << "does 0,0 2,2 intersect 2,0 4,1: " << intersect_seg(s1, Segment(Point(2, 0), Point(4, 1))) << '\n';
 
-    s1->rotate(Point(0,0), 3.14);
-    cout << "rotationg segment 1 by point 0,0: " << s1->print() << '\n';
-    s1->rotate(Point(0,0), 3.14);
-    cout << "rotationg segment 1 by point 0,0: " << s1->print() << '\n';
-    s1->rotate(Point(0,0), 3.14/2);
-    cout << "rotationg segment 1 by point 0,0: " << s1->print() << '\n';
+    s1.rotate(Point(0,0), 3.14);
+    cout << "rotationg segment 1 by point 0,0: " << s1.print() << '\n';
+    s1.rotate(Point(0,0), 3.14);
+    cout << "rotationg segment 1 by point 0,0: " << s1.print() << '\n';
+    s1.rotate(Point(0,0), 3.14/2);
+    cout << "rotationg segment 1 by point 0,0: " << s1.print() << '\n';
 
-    t1->rotate(Point(0,0), 3.14);
-    cout << "rotationg triangle 1 pi by point 0,0: " << t1->print() << '\n';
-    t1->rotate(Point(0,0), 3.14);
-    cout << "rotationg triangle 1 pi by point 0,0: " << t1->print() << '\n';
-    t1->rotate(Point(0,0), 3.14/2);
-    cout << "rotationg triangle 1 pi/2 by point 0,0: " << t1->print() << '\n';
+    t1.rotate(Point(0,0), 3.14);
+    cout << "rotationg triangle 1 pi by point 0,0: " << t1.print() << '\n';
+    t1.rotate(Point(0,0), 3.14);
+    cout << "rotationg triangle 1 pi by point 0,0: " << t1.print() << '\n';
+    t1.rotate(Point(0,0), 3.14/2);
+    cout << "rotationg triangle 1 pi/2 by point 0,0: " << t1.print() << '\n';
     
-    t1->axial_symmetry(Line(0, 3.14/4));
-    cout << "axial symetry of triangle 1 pi/4: " << t1->print() << '\n';
-    t1->axial_symmetry(Line(0, 3.14/4));
-    cout << "axial symetry of triangle 1 pi/4: " << t1->print() << '\n';
-    t1->point_reflection(Point(0, 0));
-    cout << "axial point reflection 0,0 of triangle 1: " << t1->print() << '\n';
+    t1.axial_symmetry(Line(0, 3.14/4));
+    cout << "axial symetry of triangle 1 pi/4: " << t1.print() << '\n';
+    t1.axial_symmetry(Line(0, 3.14/4));
+    cout << "axial symetry of triangle 1 pi/4: " << t1.print() << '\n';
+    t1.point_reflection(Point(0, 0));
+    cout << "axial point reflection 0,0 of triangle 1: " << t1.print() << '\n';
 
     cout << "does triangle 0,0 2,2 4,0 contain 0.5,0.5 1,1 3,0.5: ";
-    cout << contains(*t1, Triangle(Point(0.5,0.5), Point(1,1), Point(3,0.5))) << '\n';
+    cout << contains(t1, Triangle(Point(0.5,0.5), Point(1,1), Point(3,0.5))) << '\n';
     cout << "does triangle 0,0 2,2 4,0 intersect with 0.5,0.5 1,1 3,0.5: ";
-    cout << does_not_intersect(*t1, Triangle(Point(0.5,0.5), Point(1,1), Point(3,0.5))) << '\n';
+    cout << does_not_intersect(t1, Triangle(Point(0.5,0.5), Point(1,1), Point(3,0.5))) << '\n';
     cout << "does triangle 0,0 2,2 4,0 contain itself: ";
-    cout << contains(*t1, *t1) << '\n';
+    cout << contains(t1, t1) << '\n';
+
+    cout << "\nOperations on points:\n";
+    cout << p1.print() << '+' << p2.print() << " = " << (p1+p2).print() << '\n';
+    cout << p1.print() << '-' << p2.print() << " = " << (p1-p2).print() << '\n';
+    cout << p1.print() << '*' << 5 << " = " << (p1*5).print() << '\n';
+    cout << p1.print() << "==" << p2.print() << " = " << (p1==p2) << '\n';
+    cout << p1.print() << "!=" << p2.print() << " = " << (p1!=p2) << '\n';
+
+    cout << "\nOperations on segments:\n";
+    cout << s1.print() << " len = " << s1.length() << '\n';
+    s1.rotate(Point(0,0), 3.14/4);
+    cout << "rotate by pi/4 with 0,0 " << s1.print() << '\n';
+    s1.point_reflection(p0);
+    cout << "point reflection with " << p0.print() << ": " << s1.print() << '\n';
+    s1.axial_symmetry(Line(0, 3.14/4));
+    cout << "axial symmetry by axis with angle pi/4 ccw: " << s1.print() << '\n';
+
+    cout << "\nOperations on triangles:\n";
+    cout << "Out triangle: " << t1.print() << '\n';
+    cout << "Is triangle correct? " << t1.check_if_correct() << '\n';
+    t1.rotate(Point(1, 1), 3.14/2);
+    cout << "Rotate by pi/2 with anchor in point 1,1: " << t1.print() << '\n';
+    t1.point_reflection(p0);
+    cout << "point reflection with " << p0.print() << ": " << t1.print() << '\n';
+    t1.axial_symmetry(Line(0, 3.14/4));
+    cout << "axial symmetry by axis with angle pi/4 ccw: " << t1.print() << '\n';
+    cout << "area: " << t1.area();
+    cout << "\ncircuit: " << t1.circuit() << '\n';
+
     cout << "----END OF DEMO----\n";
     }
     //* --------------------------------------------------------------------
     else if(choice == 2){
-    Point *p0 = new Point(0,0), *p1 = new Point(0,0), *p2 = new Point(0,0); 
-    Segment *s1 = new Segment(Point(0, 0), Point(1, 0)), *s2 = new Segment(Point(0, 0), Point(1, 0));
-    Triangle *t1 = new Triangle(Point(0, 0), Point(2,2), Point(4, 0)), *t2 = new Triangle(Point(0, 0), Point(2,2), Point(4, 0));
+    Point p0(0,0), p1(0,0), p2(0,0); 
+    Segment s1(Point(0, 0), Point(1, 0)), s2(Point(0, 0), Point(1, 0));
+    Triangle t1(Point(0, 0), Point(2,2), Point(4, 0)), t2(Point(0, 0), Point(2,2), Point(4, 0));
 
     /* #region INFO */
     cout << "You start with 3 points pi (indexes i from 0 to 2)\n";
@@ -79,9 +108,9 @@ int main(){
 
         if(object[0] == 'p'){       // point
             Point* act;
-            if(index == 0) act = p0;
-            else if(index == 1) act = p1;
-            else act = p2;
+            if(index == 0) act = &p0;
+            else if(index == 1) act = &p1;
+            else act = &p2;
 
             if(operation == "set"){
                 float x, y;
@@ -125,8 +154,8 @@ int main(){
             }
         } else if(object[0] == 's'){        // segment
             Segment* act;
-            if(index == 1) act = s1;
-            else act = s2;
+            if(index == 1) act = &s1;
+            else act = &s2;
 
             if(operation == "set"){
                 float x1, y1, x2, y2;
@@ -179,8 +208,8 @@ int main(){
             }
         } else if(object[0] == 't'){       // triangle
             Triangle* act;
-            if(index == 1) act = t1;
-            else act = t2;
+            if(index == 1) act = &t1;
+            else act = &t2;
             
             if(operation == "set"){
                 float x1, y1, x2, y2, x3, y3;

@@ -86,7 +86,7 @@ State: location, set of cities to visit (to deliver the package) <=> set of pack
 Cost of action: cost for traversing the edge/road\
 Transit model: change of city\
 Starting state: starting city and all the cities to visit\
-Ending state: ending city and no more cities to visit
+Ending state: no more cities to visit
 
 ## Problem 10
 Amount of states: as every player (_k_) can be in every node (_n_), state-space has size $n^k$.
@@ -94,7 +94,8 @@ Amount of states: as every player (_k_) can be in every node (_n_), state-space 
 ### a) without stops
 To solve this variant we can use iterative deepening.\
 In main loop we iterate by _depth_ and we run **DLS** for every player and save all last visited nodes (those with depth _depth_). We compare them and determine if there exists any node, which every player has acces to in depth _depth_ <=> in _depth_ moves. If we didn't find any, we continue iteration.\
-To determine that there is no solution we can se _max depth_ to for example &n^2&, to ensure that there is no cycles that could help to solve the problem.
+To determine that there is no solution we can se _max depth_ to for example &n^2&, to ensure that there is no cycles that could help to solve the problem (that would be kin of a brute force method).\
+Another, a bit less brutal way, would be to find the longest cycle in the graph and determine from it the maximal steps (for egzample $c*[longest cycle]$).
 
 ### b) players can wait in a node
 Firstly we look for node, which can be accessed by everyone (it exists, as graph is connected).\

@@ -1,3 +1,6 @@
+#ifndef Z2H
+#define Z2H
+
 #include <bits/stdc++.h>
 using namespace std;
 const double double_epsilon = 0.000000000005;
@@ -136,3 +139,5 @@ bool intersect(Triangle t1, Triangle t2);
 bool contains(Triangle t1, Triangle t2);
 
 bool does_not_intersect(Triangle t1, Triangle t2);
+
+#endif

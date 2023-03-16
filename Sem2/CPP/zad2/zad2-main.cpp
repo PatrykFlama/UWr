@@ -1,4 +1,4 @@
-#include "zad2-headers.h"
+#include "main.h"
 
 
 int main(){

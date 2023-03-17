@@ -1,77 +1,54 @@
-linux@LAPTOP-GLATSD9:/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO$ clang-tidy --checks='cppcoreguidelines-*' main.cpp 
+$ clang-tidy --checks='cppcoreguidelines-*' main-before.cpp
 Error while trying to load a compilation database:
-Could not auto-detect compilation database for file "main.cpp"
-No compilation database found in /mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO or any parent directory
+Could not auto-detect compilation database for file "main-before.cpp"
+No compilation database found in /mnt/d/patry/Documents/Programming/UWr/Sem2/PARO or any parent directory
 fixed-compilation-database: Error while opening fixed database: No such file or directory
 json-compilation-database: Error while opening JSON database: No such file or directory
 Running without flags.
-4545 warnings generated.
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:3:9: warning: macro 'll' used to declare a constant; consider using a 'constexpr' constant [cppcoreguidelines-macro-usage]
-#define ll long long
-        ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:9:8: warning: variable 'n' is not initialized [cppcoreguidelines-init-variables]
-    ll n, m, x_max, y_max, x_min, y_min;
-       ^
-         = 0
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:9:11: warning: variable 'm' is not initialized [cppcoreguidelines-init-variables]
-    ll n, m, x_max, y_max, x_min, y_min;
-          ^
-            = 0
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:9:14: warning: variable 'x_max' is not initialized [cppcoreguidelines-init-variables]
-    ll n, m, x_max, y_max, x_min, y_min;
-             ^
-                   = 0
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:9:21: warning: variable 'y_max' is not initialized [cppcoreguidelines-init-variables]
-    ll n, m, x_max, y_max, x_min, y_min;
-                    ^
-                          = 0
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:9:28: warning: variable 'x_min' is not initialized [cppcoreguidelines-init-variables]
-    ll n, m, x_max, y_max, x_min, y_min;
-                           ^
-                                 = 0
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:9:35: warning: variable 'y_min' is not initialized [cppcoreguidelines-init-variables]
-    ll n, m, x_max, y_max, x_min, y_min;
-                                  ^
-                                        = 0
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:10:5: warning: do not declare C-style arrays, use std::array<> instead [cppcoreguidelines-avoid-c-arrays]
-    ll x[4], y[4], ans;
+4330 warnings generated.
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:4:1: warning: do not declare C-style arrays, use std::array<> instead [cppcoreguidelines-avoid-c-arrays]
+int tree[2*T+5];
+^
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:4:5: warning: variable 'tree' is non-const and globally accessible, consider making it const [cppcoreguidelines-avoid-non-const-global-variables]
+int tree[2*T+5];
     ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:3:12: note: expanded from macro 'll'
-#define ll long long
-           ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:10:20: warning: variable 'ans' is not initialized [cppcoreguidelines-init-variables]
-    ll x[4], y[4], ans;
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:4:14: warning: 5 is a magic number; consider replacing it with a named constant [cppcoreguidelines-avoid-magic-numbers]
+int tree[2*T+5];
+             ^
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:13:8: warning: do not use array subscript when the index is not an integer constant expression [cppcoreguidelines-pro-bounds-constant-array-index]
+    if(tree[n * 2] >= x)
+       ^
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:16:27: warning: do not use array subscript when the index is not an integer constant expression [cppcoreguidelines-pro-bounds-constant-array-index]
+        find(n*2 + 1, x - tree[n * 2]);
+                          ^
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:22:8: warning: do not use array subscript when the index is not an integer constant expression [cppcoreguidelines-pro-bounds-constant-array-index]
+    if(tree[a] == 1)
+       ^
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:26:9: warning: do not use array subscript when the index is not an integer constant expression [cppcoreguidelines-pro-bounds-constant-array-index]
+        tree[a]++;
+        ^
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:33:8: warning: do not use array subscript when the index is not an integer constant expression [cppcoreguidelines-pro-bounds-constant-array-index]
+    if(tree[a] == 0)
+       ^
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:37:9: warning: do not use array subscript when the index is not an integer constant expression [cppcoreguidelines-pro-bounds-constant-array-index]
+        tree[a]--;
+        ^
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:48:9: warning: variable 't' is not initialized [cppcoreguidelines-init-variables]
+    int t;
+        ^
+          = 0
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:58:17: warning: variable 'x' is not initialized [cppcoreguidelines-init-variables]
+            int x;
+                ^
+                  = 0
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:76:14: warning: do not implicitly decay an array into a pointer; consider using gsl::array_view or an explicit cast instead [cppcoreguidelines-pro-bounds-array-to-pointer-decay]
+        fill(tree, tree+T*2, 0);
+             ^
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:76:20: warning: do not implicitly decay an array into a pointer; consider using gsl::array_view or an explicit cast instead [cppcoreguidelines-pro-bounds-array-to-pointer-decay]
+        fill(tree, tree+T*2, 0);
                    ^
-                       = 0
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:16:16: warning: do not use array subscript when the index is not an integer constant expression; use gsl::at() instead [cppcoreguidelines-pro-bounds-constant-array-index]
-        cin >> x[i] >> y[i];
-               ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:16:24: warning: do not use array subscript when the index is not an integer constant expression; use gsl::at() instead [cppcoreguidelines-pro-bounds-constant-array-index]
-        cin >> x[i] >> y[i];
+/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO/main-before.cpp:76:24: warning: do not use pointer arithmetic [cppcoreguidelines-pro-bounds-pointer-arithmetic]
+        fill(tree, tree+T*2, 0);
                        ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:17:12: warning: do not use array subscript when the index is not an integer constant expression; use gsl::at() instead [cppcoreguidelines-pro-bounds-constant-array-index]
-        if(x[i] > x_max)
-           ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:18:21: warning: do not use array subscript when the index is not an integer constant expression; use gsl::at() instead [cppcoreguidelines-pro-bounds-constant-array-index]
-            x_max = x[i];
-                    ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:19:12: warning: do not use array subscript when the index is not an integer constant expression; use gsl::at() instead [cppcoreguidelines-pro-bounds-constant-array-index]
-        if(x[i] < x_min)
-           ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:20:21: warning: do not use array subscript when the index is not an integer constant expression; use gsl::at() instead [cppcoreguidelines-pro-bounds-constant-array-index]
-            x_min = x[i];
-                    ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:21:12: warning: do not use array subscript when the index is not an integer constant expression; use gsl::at() instead [cppcoreguidelines-pro-bounds-constant-array-index]
-        if(y[i] > y_max)
-           ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:22:21: warning: do not use array subscript when the index is not an integer constant expression; use gsl::at() instead [cppcoreguidelines-pro-bounds-constant-array-index]
-            y_max = y[i];
-                    ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:23:12: warning: do not use array subscript when the index is not an integer constant expression; use gsl::at() instead [cppcoreguidelines-pro-bounds-constant-array-index]
-        if(y[i] < y_min)
-           ^
-/mnt/c/Users/patry/Documents/Programming/UWr/Sem2/PARO/main.cpp:24:21: warning: do not use array subscript when the index is not an integer constant expression; use gsl::at() instead [cppcoreguidelines-pro-bounds-constant-array-index]
-            y_min = y[i];
-                    ^
-Suppressed 4525 warnings (4525 in non-user code).
-Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well.
+Suppressed 4316 warnings (4316 in non-user code).
+Use -header-filter=.* to display errors from all non-system headers. Use -system-headers to display errors from system headers as well. 

@@ -1,0 +1,57 @@
+$ g++ -o main main.cpp -g
+$ valgrind ./main
+patryk@DESKTOP-R6FSK6L:/mnt/d/patry/Documents/Programming/UWr/Sem2/PARO$ valgrind ./main
+==1023== Memcheck, a memory error detector
+==1023== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.==1023== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==1023== Command: ./main
+==1023==
+2
+A 10
+S 4
+A 101
+A 1
+A 13
+A 14
+A 154
+A 2340
+A 13240
+E 222
+K 0
+A 10
+A 101
+A 1
+A 13
+A 14
+A 154
+A 2340
+A 13240
+E 222
+S 1
+S 2
+S 3
+S 4
+S 5
+K 0
+brak
+brak
+brak
+1
+10
+13
+14
+101
+==1023== 
+==1023== HEAP SUMMARY:
+==1023==     in use at exit: 122,880 bytes in 6 blocks
+==1023==   total heap usage: 7 allocs, 1 frees, 195,584 bytes allocated
+==1023==
+==1023== LEAK SUMMARY:
+==1023==    definitely lost: 0 bytes in 0 blocks
+==1023==    indirectly lost: 0 bytes in 0 blocks
+==1023==      possibly lost: 0 bytes in 0 blocks
+==1023==    still reachable: 122,880 bytes in 6 blocks
+==1023==         suppressed: 0 bytes in 0 blocks
+==1023== Rerun with --leak-check=full to see details of leaked memory
+==1023==
+==1023== For lists of detected and suppressed errors, rerun with: -s
+==1023== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

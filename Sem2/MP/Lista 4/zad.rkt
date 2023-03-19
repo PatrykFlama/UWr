@@ -38,8 +38,7 @@
             (fold-tree (lambda (l val r) (max l val r)) -inf.0 t)))
 
 (define (flatten t)
-    (fold-tree (lambda (l val r) (append l (cons val r)))
-     '() t))
+    (fold-tree (lambda (l val r) (append l (cons val r))) '() t))
 
 (check-equal? (tree-sum test-tree) 15)
 (check-equal? (tree-flip test-tree) (node (node (node (leaf) 5 (leaf)) 4 
@@ -83,4 +82,34 @@
 
 
 ; --- zad4 ---
+(define (list->left-tree xs)
+    (foldl (lambda (x t) (node t x ( leaf))) (leaf) xs))
+(define test-left-tree (list->left-tree(build-list 20000 identity)))
 
+(define (flat-append t xs)
+    (cond [(leaf? t) xs]
+          [(node? t)
+            (flat-append (node-l t)
+                (cons (node-elem t)
+                    (flat-append (node-r t) xs)))]))
+
+(define (flatten-quick t)
+    (flat-append t null))
+
+(check-equal? (flat-append test-tree (list 10 11)) '(1 2 3 4 5 10 11))
+(check-equal? (flatten-quick test-tree) '(1 2 3 4 5))
+
+; --- zad5 ---
+(define (insert-bst x t)
+  (cond [(leaf? t) (node (leaf) x (leaf))]
+        [(node? t)
+         (cond  [(<= x (node-elem t))
+                    (node (insert-bst x (node-l t)
+                          (node-elem t)
+                          (node-r t)))]
+                [else
+                    (node (node-l t)
+                          (node-elem t)
+                          (insert-bst x (node-r t)))])]))
+
+(insert-bst 4 test-tree)

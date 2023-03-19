@@ -17,10 +17,14 @@ public:
         elements = 1;
     }
 
-    // TODO konstruktor przenoszacy
-
-    Number(Number& n){
+    Number(Number& n){      // assigment constructor
         insert(n.get_num());
+    }
+
+    Number(Number&& n){     // move constructor
+        elements = n.elements;
+        tab_ptr = n.tab_ptr;
+        nums_tab = n.nums_tab;
     }
 
     ~Number(){
@@ -51,7 +55,17 @@ public:
         insert(nums_tab[tab_ptr-steps_back]);
     }
 
-    // TODO = override
+    Number& operator=(Number n){
+        insert(n.get_num());
+        return *this;
+    }
+
+    Number& operator=(Number&& n){
+        elements = n.elements;
+        tab_ptr = n.tab_ptr;
+        nums_tab = n.nums_tab;
+        return *this;
+    }
 };
 
 

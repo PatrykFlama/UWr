@@ -38,9 +38,21 @@ ANS
 (define (tree-height tree)
     (fold-tree (lambda (l val r) (+ (max l r) 1 )) 0 tree))
 
-(define (tree-span tree)
+(define (tree-span-bst tree)
     (cons   (fold-tree (lambda (l val r) (min l val r)) +inf.0 tree)
             (fold-tree (lambda (l val r) (max l val r)) -inf.0 tree)))
+
+(define (tree-span tree)
+    (cons   (fold-tree (lambda (l val r) (cond
+                                                [(not (leaf? l)) l]
+                                                [(not (leaf? r)) r]
+                                                [else val]))
+                        (leaf) tree)
+            (fold-tree (lambda (l val r) (cond 
+                                                [(not (leaf? r)) r]
+                                                [(not (leaf? l)) l]
+                                                [else val]))
+                        (leaf) tree)))
 
 (define (flatten tree)
     (fold-tree (lambda (l val r) (append l (cons val r))) '() tree))
@@ -49,7 +61,7 @@ ANS
 (check-equal? (tree-flip test-tree) (node (node (node (leaf) 5 (leaf)) 4 
                                     (node (leaf) 3 (leaf))) 2 (node (leaf) 1 (leaf))))
 (check-equal? (tree-height test-tree) 3)
-(check-equal? (tree-span test-tree) '(1.0 . 5.0))
+(check-equal? (tree-span-bst test-tree) '(1.0 . 5.0))
 (check-equal? (flatten test-tree) '(1 2 3 4 5))
 
 

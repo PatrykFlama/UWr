@@ -283,3 +283,17 @@ od momentu w którym się podmienia
                 (ord "a" 1))
 (check-equal? (pq-empty? empty-pq) #t)
 
+(define (pq-sort xs)
+    (define (_drop_in pq elem xs)
+        (cond 
+            [(null? xs) (pq-insert (ord "x" elem) empty-pq)]
+            [else (pq-insert (ord "x" elem) (_drop_in pq (car xs) (cdr xs)))]))
+    (define (_drop_out pq xs)
+        (cond
+            [(pq-empty? pq) xs]
+            [else (append (list (ord-priority (pq-min pq))) (_drop_out (pq-pop pq) xs))]))
+    (if (null? xs) '()
+        (_drop_out (_drop_in empty-pq (car xs) (cdr xs)) '())))
+
+
+

@@ -62,6 +62,7 @@ ANS
                                     (node (leaf) 3 (leaf))) 2 (node (leaf) 1 (leaf))))
 (check-equal? (tree-height test-tree) 3)
 (check-equal? (tree-span-bst test-tree) '(1.0 . 5.0))
+(check-equal? (tree-span test-tree) '(1 . 5))
 (check-equal? (flatten test-tree) '(1 2 3 4 5))
 
 
@@ -143,19 +144,38 @@ ANS
 
 ; --- zad6 ---
 (define (delete x tree)
-  (define (_delete val tree)
-    (cond [(leaf? tree) val]
-          [(node? tree) (node   (_delete val (node-l tree))
-                                (node-elem tree)
-                                (node-r tree))]))
-  (cond [(leaf? tree) (leaf)]
-        [(node? tree)
-         (cond [(= x (node-elem tree))
-                (_delete (node-l tree) (node-r tree))]
-               [(< x (node-elem tree))
-                (node (delete x (node-l tree))
-                      (node-elem tree)
-                      (node-r tree))]
-               [else (node (node-l tree)
-                           (node-elem tree)
-                           (delete x (node-r tree)))])]))
+    (define (_find_left tree)
+        (fold-tree (lambda (l val r) (cond
+                                                [(not (leaf? l)) l]
+                                                [(not (leaf? r)) r]
+                                                [else val]))
+                        (leaf) tree))
+
+    (define (_delete_left left-subtree)    ; get val of left leaf and delete it
+        (if (leaf? left-subtree) (leaf)
+            (let ((left (node-l left-subtree)) (right (node-r left-subtree)))
+            (if (leaf? left)
+                (if (leaf? right) right (leaf))
+                (node (_delete_left left) (node-elem left-subtree) right)))))
+
+    (cond   [(leaf? tree) (leaf)]
+            [(node? tree)
+                (cond [(= x (node-elem tree))
+                        (let ((val (_delete_left (node-r tree))))
+                            (if (leaf? val) 
+                                (leaf)
+                                (node 
+                                    (node-l tree) 
+                                    (_find_left (node-r tree)) 
+                                    val)))]
+                      [(< x (node-elem tree))
+                        (node
+                            (delete x (node-l tree))
+                            (node-elem tree)
+                            (node-r tree))]
+                      [else
+                        (node
+                            (node-l tree)
+                            (node-elem tree)
+                            (delete x (node-r tree)))])]))
+

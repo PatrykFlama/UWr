@@ -208,9 +208,6 @@ od momentu w którym się podmienia
 (define tree-2 (node (node (leaf) 1 (leaf)) 2 (node (node (leaf) 3 (node (leaf) 4 (leaf))) 5 (leaf))))
 (check-equal? (delete 5 tree-2) (node (node (leaf) 1 (leaf)) 2 (node (leaf) 3 (node (leaf) 4 (leaf)))))
 
-; TODO
-(delete 3 tree-2)
-
 ; --- zad7 ---
 (define-struct queue (pref suf) #:transparent)
 (define (no-pref q) (null? (queue-pref q)))
@@ -278,9 +275,9 @@ od momentu w którym się podmienia
                 (heap-make-node e (hnode-l H) (heap-merge (hnode-r H) h)))]))
 
 (check-equal?   (hnode-elem
-                (heap-merge (hnode (ord "c" 3) 1 (hleaf) (hleaf)) 
+                (heap-merge (hnode (ord "c" 3) 1 (hleaf) (hleaf))
                 (heap-merge (hnode (ord "B" 2) 1 (hleaf) (hleaf))
-                (hnode (ord "A" 1) 1 (hleaf) (hleaf)))))                
+                (hnode (ord "A" 1) 1 (hleaf) (hleaf)))))
                 (ord "A" 1))
 
 

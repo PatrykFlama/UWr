@@ -3,7 +3,7 @@
 
 ; --- zad1 ---
 #|
-ANS
+od momentu w którym się podmienia
 |#
 
 ; --- tree ---
@@ -258,9 +258,28 @@ ANS
                 (heap-make-node e (hnode-l H) (heap-merge (hnode-r H) h)))]))
 
 (check-equal?   (hnode-elem
-                (heap-merge (hnode (ord "c" 3) 0 (hleaf) (hleaf)) 
-                (heap-merge (hnode (ord "B" 2) 0 (hleaf) (hleaf))
+                (heap-merge (hnode (ord "c" 3) 1 (hleaf) (hleaf)) 
+                (heap-merge (hnode (ord "B" 2) 1 (hleaf) (hleaf))
                 (hnode (ord "A" 1) 1 (hleaf) (hleaf)))))                
                 (ord "A" 1))
 
+
+; --- zad9 ---
+(define empty-pq (hleaf))
+
+(define (pq-insert elt h)
+    (heap-merge (hnode elt 1 (hleaf) (hleaf)) h))
+
+(define (pq-pop h)
+    (heap-merge (hnode-l h) (hnode-r h)))
+    
+(define (pq-min h)
+    (hnode-elem h))
+
+(define (pq-empty? h)
+    (hleaf? h))
+
+(check-equal? (pq-min (pq-insert (ord "b" 2) (pq-insert (ord "a" 1) (pq-insert (ord "c" 2) empty-pq))))
+                (ord "a" 1))
+(check-equal? (pq-empty? empty-pq) #t)
 

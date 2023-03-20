@@ -267,33 +267,34 @@ od momentu w którym się podmienia
 ; --- zad9 ---
 (define empty-pq (hleaf))
 
-(define (pq-insert elt h)
-    (heap-merge (hnode elt 1 (hleaf) (hleaf)) h))
-
-(define (pq-pop h)
-    (heap-merge (hnode-l h) (hnode-r h)))
-    
-(define (pq-min h)
-    (hnode-elem h))
-
 (define (pq-empty? h)
     (hleaf? h))
 
-(check-equal? (pq-min (pq-insert (ord "b" 2) (pq-insert (ord "a" 1) (pq-insert (ord "c" 2) empty-pq))))
-                (ord "a" 1))
+(define (pq-insert val h)
+    (heap-merge (hnode (ord "x" val) 1 (hleaf) (hleaf)) h))
+
+(define (pq-pop h)
+    (if (pq-empty? h) (empty-pq)
+        (heap-merge (hnode-l h) (hnode-r h))))
+    
+(define (pq-min h)
+    (ord-priority (hnode-elem h)))
+
+(check-equal? (pq-min (pq-insert 2 (pq-insert 1 (pq-insert 2 empty-pq))))
+                1)
 (check-equal? (pq-empty? empty-pq) #t)
 
 (define (pq-sort xs)
     (define (_drop_in pq elem xs)
         (cond 
-            [(null? xs) (pq-insert (ord "x" elem) empty-pq)]
-            [else (pq-insert (ord "x" elem) (_drop_in pq (car xs) (cdr xs)))]))
+            [(null? xs) (pq-insert elem empty-pq)]
+            [else (pq-insert elem (_drop_in pq (car xs) (cdr xs)))]))
     (define (_drop_out pq xs)
         (cond
             [(pq-empty? pq) xs]
-            [else (append (list (ord-priority (pq-min pq))) (_drop_out (pq-pop pq) xs))]))
+            [else (append (list (pq-min pq)) (_drop_out (pq-pop pq) xs))]))
     (if (null? xs) '()
         (_drop_out (_drop_in empty-pq (car xs) (cdr xs)) '())))
 
-
+(check-equal? (pq-sort '(4 2 6 3 8 4 7 8)) '(2 3 4 4 6 7 8 8))
 

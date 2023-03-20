@@ -1,6 +1,11 @@
 #lang racket
 (require rackunit)
 
+; --- zad1 ---
+#|
+ANS
+|#
+
 ; --- tree ---
 (define-struct leaf () #:transparent)
 (define-struct node (l elem r) #:transparent)
@@ -17,28 +22,28 @@
 
 ; --- zad2 ---
 ; (f res-left elem res-right)
-(define (fold-tree f elem t)
-    (cond   [(leaf? t) elem]
-            [(node? t) (f 
-                (fold-tree f elem (node-l t))
-                (node-elem t) 
-                (fold-tree f elem (node-r t)))]))
+(define (fold-tree f elem tree)
+    (cond   [(leaf? tree) elem]
+            [(node? tree) (f 
+                (fold-tree f elem (node-l tree))
+                (node-elem tree) 
+                (fold-tree f elem (node-r tree)))]))
 
-(define (tree-sum t)
-    (fold-tree + 0 t))
+(define (tree-sum tree)
+    (fold-tree + 0 tree))
 
-(define (tree-flip t)
-    (fold-tree (lambda (l val r) (node r val l)) (leaf) t))
+(define (tree-flip tree)
+    (fold-tree (lambda (l val r) (node r val l)) (leaf) tree))
 
-(define (tree-height t)
-    (fold-tree (lambda (l val r) (+ (max l r) 1 )) 0 t))
+(define (tree-height tree)
+    (fold-tree (lambda (l val r) (+ (max l r) 1 )) 0 tree))
 
-(define (tree-span t)
-    (cons   (fold-tree (lambda (l val r) (min l val r)) +inf.0 t)
-            (fold-tree (lambda (l val r) (max l val r)) -inf.0 t)))
+(define (tree-span tree)
+    (cons   (fold-tree (lambda (l val r) (min l val r)) +inf.0 tree)
+            (fold-tree (lambda (l val r) (max l val r)) -inf.0 tree)))
 
-(define (flatten t)
-    (fold-tree (lambda (l val r) (append l (cons val r))) '() t))
+(define (flatten tree)
+    (fold-tree (lambda (l val r) (append l (cons val r))) '() tree))
 
 (check-equal? (tree-sum test-tree) 15)
 (check-equal? (tree-flip test-tree) (node (node (node (leaf) 5 (leaf)) 4 
@@ -49,68 +54,68 @@
 
 
 ; --- zad3 ---
-(define (bst? t)
-    (cond [(leaf? t) #t]
-          [(node? t) (and 
-            [or (leaf? (node-l t)) 
-                (< (node-elem (node-l t)) (node-elem t))]
-            [or (leaf? (node-r t)) 
-                (> (node-elem (node-r t)) (node-elem t))]
-            (bst? (node-l t)) (bst? (node-r t)))]))
+(define (bst? tree)
+    (cond [(leaf? tree) #t]
+          [(node? tree) (and 
+            [or (leaf? (node-l tree)) 
+                (< (node-elem (node-l tree)) (node-elem tree))]
+            [or (leaf? (node-r tree)) 
+                (> (node-elem (node-r tree)) (node-elem tree))]
+            (bst? (node-l tree)) (bst? (node-r tree)))]))
 
 (check-equal? (bst? test-tree) #t)
 
-(define (sum-subtree t)
-    (cond   [(leaf? t) (leaf)]
-            [(node? t) 
-                (let [(l (sum-path (node-l t))) (r (sum-path (node-r t)))]
+(define (sum-subtree tree)
+    (cond   [(leaf? tree) (leaf)]
+            [(node? tree) 
+                (let [(l (sum-path (node-l tree))) (r (sum-path (node-r tree)))]
                     (node l (+
                             (if (leaf? l) 0 (node-elem l))
                             (if (leaf? r) 0 (node-elem r))
-                            (node-elem t))
+                            (node-elem tree))
                         r))]))
 
-(define (sum-path t)
-    (define (_sum-path t acc)
-        (cond   [(leaf? t) (leaf)]
-                [(node? t)
-                    (let ((new-cost (+ acc (node-elem t)))) (node 
-                        (_sum-path (node-l t) new-cost)
+(define (sum-path tree)
+    (define (_sum-path tree acc)
+        (cond   [(leaf? tree) (leaf)]
+                [(node? tree)
+                    (let ((new-cost (+ acc (node-elem tree)))) (node 
+                        (_sum-path (node-l tree) new-cost)
                         new-cost
-                        (_sum-path (node-r t) new-cost)))]))
-    (_sum-path t 0))
+                        (_sum-path (node-r tree) new-cost)))]))
+    (_sum-path tree 0))
 
 
 ; --- zad4 ---
 (define (list->left-tree xs)
-    (foldl (lambda (x t) (node t x ( leaf))) (leaf) xs))
+    (foldl (lambda (x tree) (node tree x ( leaf))) (leaf) xs))
 (define test-left-tree (list->left-tree(build-list 20000 identity)))
 
-(define (flat-append t xs)
-    (cond [(leaf? t) xs]
-          [(node? t)
-            (flat-append (node-l t)
-                (cons (node-elem t)
-                    (flat-append (node-r t) xs)))]))
+(define (flat-append tree xs)
+    (cond [(leaf? tree) xs]
+          [(node? tree)
+            (flat-append (node-l tree)
+                (cons (node-elem tree)
+                    (flat-append (node-r tree) xs)))]))
 
-(define (flatten-quick t)
-    (flat-append t null))
+(define (flatten-quick tree)
+    (flat-append tree null))
 
 (check-equal? (flat-append test-tree (list 10 11)) '(1 2 3 4 5 10 11))
 (check-equal? (flatten-quick test-tree) '(1 2 3 4 5))
 
 ; --- zad5 ---
-(define (insert-bst x t)
-  (cond [(leaf? t) (node (leaf) x (leaf))]
-        [(node? t)
-         (cond  [(<= x (node-elem t))
-                    (node (insert-bst x (node-l t))
-                          (node-elem t)
-                          (node-r t))]
+(define (insert-bst x tree)
+  (cond [(leaf? tree) (node (leaf) x (leaf))]
+        [(node? tree)
+         (cond  [(<= x (node-elem tree))
+                    (node (insert-bst x (node-l tree))
+                          (node-elem tree)
+                          (node-r tree))]
                 [else
-                    (node (node-l t)
-                          (node-elem t)
-                          (insert-bst x (node-r t)))])]))
+                    (node (node-l tree)
+                          (node-elem tree)
+                          (insert-bst x (node-r tree)))])]))
 
 (define (treesort xs)
     (define (_treesort xs bst)
@@ -122,7 +127,23 @@
 (check-equal? (insert-bst 4 test-tree)  (node (node (leaf) 1 (leaf)) 2 (node (node (leaf) 3 
                                         (node (leaf) 4 (leaf))) 4 (node (leaf) 5 (leaf)))))
 
-(treesort '(9 4 8 3 7 5 6 3 1 2 0))
+(check-equal? (treesort '(9 4 8 3 7 5 6 3 1 2 0)) '(0 1 2 3 3 4 5 6 7 8 9))
 
 ; --- zad6 ---
-
+(define (delete x tree)
+  (define (_delete val tree)
+    (cond [(leaf? tree) val]
+          [(node? tree) (node   (_delete val (node-l tree))
+                                (node-elem tree)
+                                (node-r tree))]))
+  (cond [(leaf? tree) (leaf)]
+        [(node? tree)
+         (cond [(= x (node-elem tree))
+                (_delete (node-l tree) (node-r tree))]
+               [(< x (node-elem tree))
+                (node (delete x (node-l tree))
+                      (node-elem tree)
+                      (node-r tree))]
+               [else (node (node-l tree)
+                           (node-elem tree)
+                           (delete x (node-r tree)))])]))

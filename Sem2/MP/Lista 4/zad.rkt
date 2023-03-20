@@ -144,6 +144,25 @@ od momentu w którym się podmienia
 
 ; --- zad6 🤮 ---
 (define (delete x tree)
+  (cond [(leaf? tree) (leaf)]
+        [(= x (node-elem tree)) (cond
+            [(leaf? (node-r tree))(node-l tree)]
+                [(leaf? (node-l tree))(node-r tree)]
+                [else (node
+                    (node-l tree)
+                    (car (tree-span (node-r tree)))
+                    (delete (car (tree-span (node-r tree))) (node-r tree)))])]
+        [(< x (node-elem tree)) (node
+                                    (delete x (node-l tree))
+                                    (node-elem tree)
+                                    (node-r tree))]
+        [else                   (node
+                                    (node-l tree)
+                                    (node-elem tree)
+                                    (delete x (node-r tree)))]))
+
+#|
+(define (delete x tree)
     (define (_find_left tree)
         (fold-tree (lambda (l val r) (cond
                                                 [(not (leaf? l)) l]
@@ -184,6 +203,7 @@ od momentu w którym się podmienia
                             (node-l tree)
                             (node-elem tree)
                             (delete x (node-r tree)))])]))
+|#
 
 (define tree-2 (node (node (leaf) 1 (leaf)) 2 (node (node (leaf) 3 (node (leaf) 4 (leaf))) 5 (leaf))))
 (check-equal? (delete 5 tree-2) (node (node (leaf) 1 (leaf)) 2 (node (leaf) 3 (node (leaf) 4 (leaf)))))

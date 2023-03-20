@@ -142,7 +142,7 @@ ANS
 
 (check-equal? (treesort '(9 4 8 3 7 5 6 3 1 2 0)) '(0 1 2 3 3 4 5 6 7 8 9))
 
-; --- zad6 ---
+; --- zad6 🤮 ---
 (define (delete x tree)
     (define (_find_left tree)
         (fold-tree (lambda (l val r) (cond
@@ -161,13 +161,18 @@ ANS
     (cond   [(leaf? tree) (leaf)]
             [(node? tree)
                 (cond [(= x (node-elem tree))
-                        (let ((val (_delete_left (node-r tree))))
-                            (if (leaf? val) 
-                                (leaf)
-                                (node 
-                                    (node-l tree) 
-                                    (_find_left (node-r tree)) 
-                                    val)))]
+                        (cond 
+                            [(node? (node-r tree))
+                                (let ((val (_delete_left (node-r tree))))
+                                    (if (leaf? val) 
+                                        (leaf)
+                                        (node 
+                                            (node-l tree) 
+                                            (_find_left (node-r tree)) 
+                                            val)))]
+                            [(node? (node-l tree))
+                                (node-l tree)]
+                            [else (leaf)])]
                       [(< x (node-elem tree))
                         (node
                             (delete x (node-l tree))
@@ -179,3 +184,7 @@ ANS
                             (node-elem tree)
                             (delete x (node-r tree)))])]))
 
+(define tree-2 (node (node (leaf) 1 (leaf)) 2 (node (node (leaf) 3 (node (leaf) 4 (leaf))) 5 (leaf))))
+(check-equal? (delete 5 tree-2) (node (node (leaf) 1 (leaf)) 2 (node (leaf) 3 (node (leaf) 4 (leaf)))))
+
+; --- zad7 ---

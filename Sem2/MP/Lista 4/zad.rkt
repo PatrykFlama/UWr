@@ -278,7 +278,8 @@ od momentu w którym się podmienia
         (heap-merge (hnode-l h) (hnode-r h))))
     
 (define (pq-min h)
-    (ord-priority (hnode-elem h)))
+    (if (pq-empty? h) null
+    (ord-priority (hnode-elem h))))
 
 (check-equal? (pq-min (pq-insert 2 (pq-insert 1 (pq-insert 2 empty-pq))))
                 1)

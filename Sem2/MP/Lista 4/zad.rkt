@@ -228,8 +228,7 @@ ANS
         (<= p (ord-priority (hnode-elem h)))))
 
 (define (rank h)
-    (if (hleaf? h)
-        0
+    (if (hleaf? h) 0
         (hnode-rank h)))
 
 (define (heap? h)
@@ -258,12 +257,9 @@ ANS
                     (e (if (<= (heap_min_prior h1) (heap_min_prior h2)) (hnode-elem h1) (hnode-elem h2))))
                 (heap-make-node e (hnode-l H) (heap-merge (hnode-r H) h)))]))
 
-(define ha (hleaf))
-(define hb (hleaf))
-
 (check-equal?   (hnode-elem
-                (heap-merge (hnode (ord "c" 3) 1 (hleaf) (hleaf)) 
-                (heap-merge (hnode (ord "B" 2) 1 (hleaf) (hleaf))
+                (heap-merge (hnode (ord "c" 3) 0 (hleaf) (hleaf)) 
+                (heap-merge (hnode (ord "B" 2) 0 (hleaf) (hleaf))
                 (hnode (ord "A" 1) 1 (hleaf) (hleaf)))))                
                 (ord "A" 1))
 

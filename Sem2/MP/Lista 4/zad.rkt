@@ -293,7 +293,7 @@ od momentu w którym się podmienia
     (define (_drop_out pq xs)
         (cond
             [(pq-empty? pq) xs]
-            [else (append (list (pq-min pq)) (_drop_out (pq-pop pq) xs))]))
+            [else (cons (pq-min pq) (_drop_out (pq-pop pq) xs))]))
     (if (null? xs) '()
         (_drop_out (_drop_in empty-pq (car xs) (cdr xs)) '())))
 

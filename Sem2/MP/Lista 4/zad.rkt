@@ -104,12 +104,25 @@
   (cond [(leaf? t) (node (leaf) x (leaf))]
         [(node? t)
          (cond  [(<= x (node-elem t))
-                    (node (insert-bst x (node-l t)
+                    (node (insert-bst x (node-l t))
                           (node-elem t)
-                          (node-r t)))]
+                          (node-r t))]
                 [else
                     (node (node-l t)
                           (node-elem t)
                           (insert-bst x (node-r t)))])]))
 
-(insert-bst 4 test-tree)
+(define (treesort xs)
+    (define (_treesort xs bst)
+        (cond   [(null? xs) bst]
+                [else 
+                    (_treesort (cdr xs) (insert-bst (car xs) bst))]))
+    (flatten-quick (_treesort xs (leaf))))
+
+(check-equal? (insert-bst 4 test-tree)  (node (node (leaf) 1 (leaf)) 2 (node (node (leaf) 3 
+                                        (node (leaf) 4 (leaf))) 4 (node (leaf) 5 (leaf)))))
+
+(treesort '(9 4 8 3 7 5 6 3 1 2 0))
+
+; --- zad6 ---
+

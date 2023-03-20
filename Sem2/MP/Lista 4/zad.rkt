@@ -213,22 +213,22 @@ ANS
 (check-equal? empty-queue (pop (pop (pop (push-back 3 (push-back 4 (push-back 5 empty-queue)))))))
 
 ; --- zad 8 ---
-(define-struct ord (val priority ) #:transparent )
+(define-struct ord (val priority) #:transparent)    ; element
 
 (define-struct hleaf ())
+(define-struct hnode (elem rank l r) #:transparent)
 
-(define-struct hnode (elem rank l r) #:transparent )
-
-(define (make-node elem heap-a heap-b)
-    ;;; XXX: fill in the implementation
-    ...)
+(define (heap-make-node elem heap-a heap-b)
+    (if (<= (rank heap-a) (rank heap-b))
+        (hnode elem (+ 1 (rank heap-a)) heap-b heap-a)
+        (hnode elem (+ 1 (rank heap-b)) heap-a heap-b)))
 
 (define (hord? p h)
-    (or (hleaf ? h)
-        (<= p ( ord-priority ( hnode-elem h)))))
+    (or (hleaf? h)
+        (<= p (ord-priority (hnode-elem h)))))
 
 (define (rank h)
-    (if ( hleaf ? h)
+    (if (hleaf? h)
         0
         (hnode-rank h)))
 
@@ -240,7 +240,31 @@ ANS
             (<= (rank (hnode-r h))
                 (rank (hnode-l h)))
             (= (hnode-rank h) (+ 1 (hnode-rank (hnode-r h))))
+
             (hord? (ord-priority (hnode-elem h))
                 (hnode-l h))
             (hord? (ord-priority (hnode-elem h))
                 (hnode-r h)))))
+
+(define (heap_min_prior heap) (ord-priority (hnode-elem heap)))
+
+(define (heap-merge h1 h2)
+    (cond
+        [(hleaf? h1) h2]
+        [(hleaf? h2) h1]
+        [else
+            (let   ((h (if (>  (heap_min_prior h1) (heap_min_prior h2)) h1 h2))
+                    (H (if (<= (heap_min_prior h1) (heap_min_prior h2)) h1 h2))
+                    (e (if (<= (heap_min_prior h1) (heap_min_prior h2)) (hnode-elem h1) (hnode-elem h2))))
+                (heap-make-node e (hnode-l H) (heap-merge (hnode-r H) h)))]))
+
+(define ha (hleaf))
+(define hb (hleaf))
+
+(check-equal?   (hnode-elem
+                (heap-merge (hnode (ord "c" 3) 1 (hleaf) (hleaf)) 
+                (heap-merge (hnode (ord "B" 2) 1 (hleaf) (hleaf))
+                (hnode (ord "A" 1) 1 (hleaf) (hleaf)))))                
+                (ord "A" 1))
+
+

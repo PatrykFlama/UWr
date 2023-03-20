@@ -187,6 +187,8 @@ ANS
 
 (define tree-2 (node (node (leaf) 1 (leaf)) 2 (node (node (leaf) 3 (node (leaf) 4 (leaf))) 5 (leaf))))
 (check-equal? (delete 5 tree-2) (node (node (leaf) 1 (leaf)) 2 (node (leaf) 3 (node (leaf) 4 (leaf)))))
+
+; TODO
 (delete 3 tree-2)
 
 ; --- zad7 ---
@@ -208,4 +210,37 @@ ANS
         [(null? new_pref) (queue (reverse (queue-suf q)) '())]
         [else (queue new_pref (queue-suf q))])))
 
-(define myq empty-queue)
+(check-equal? empty-queue (pop (pop (pop (push-back 3 (push-back 4 (push-back 5 empty-queue)))))))
+
+; --- zad 8 ---
+(define-struct ord (val priority ) #:transparent )
+
+(define-struct hleaf ())
+
+(define-struct hnode (elem rank l r) #:transparent )
+
+(define (make-node elem heap-a heap-b)
+    ;;; XXX: fill in the implementation
+    ...)
+
+(define (hord? p h)
+    (or (hleaf ? h)
+        (<= p ( ord-priority ( hnode-elem h)))))
+
+(define (rank h)
+    (if ( hleaf ? h)
+        0
+        (hnode-rank h)))
+
+(define (heap? h)
+    (or (hleaf? h)
+        (and (hnode? h)
+            (heap? (hnode-l h))
+            (heap? (hnode-r h))
+            (<= (rank (hnode-r h))
+                (rank (hnode-l h)))
+            (= (hnode-rank h) (+ 1 (hnode-rank (hnode-r h))))
+            (hord? (ord-priority (hnode-elem h))
+                (hnode-l h))
+            (hord? (ord-priority (hnode-elem h))
+                (hnode-r h)))))

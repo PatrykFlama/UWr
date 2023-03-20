@@ -152,11 +152,12 @@ ANS
                         (leaf) tree))
 
     (define (_delete_left left-subtree)    ; get val of left leaf and delete it
-        (if (leaf? left-subtree) (leaf)
-            (let ((left (node-l left-subtree)) (right (node-r left-subtree)))
-            (if (leaf? left)
-                (if (leaf? right) right (leaf))
-                (node (_delete_left left) (node-elem left-subtree) right)))))
+        (cond   [(leaf? left-subtree) (leaf)]
+                [else
+                (let ((left (node-l left-subtree)) (right (node-r left-subtree)))
+                (if (leaf? left)
+                    (if (leaf? right) right (leaf))
+                    (node (_delete_left left) (node-elem left-subtree) right)))]))
 
     (cond   [(leaf? tree) (leaf)]
             [(node? tree)
@@ -186,5 +187,25 @@ ANS
 
 (define tree-2 (node (node (leaf) 1 (leaf)) 2 (node (node (leaf) 3 (node (leaf) 4 (leaf))) 5 (leaf))))
 (check-equal? (delete 5 tree-2) (node (node (leaf) 1 (leaf)) 2 (node (leaf) 3 (node (leaf) 4 (leaf)))))
+(delete 3 tree-2)
 
 ; --- zad7 ---
+(define-struct queue (pref suf) #:transparent)
+(define (no-pref q) (null? (queue-pref q)))
+(define empty-queue (queue '() '()))
+(define (empty? q) (null? (queue-suf q)))
+
+(define (push-back x q) 
+    (let ((new_suf (cons x (queue-suf q))))
+        (if (no-pref q)
+            (queue (reverse new_suf) '())
+            (queue (queue-pref q) new_suf))))
+
+(define (front q) (car (queue-pref q)))
+
+(define (pop q) 
+    (let ((new_pref (cdr (queue-pref q)))) (cond
+        [(null? new_pref) (queue (reverse (queue-suf q)) '())]
+        [else (queue new_pref (queue-suf q))])))
+
+(define myq empty-queue)

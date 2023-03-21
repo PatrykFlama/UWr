@@ -164,16 +164,16 @@ zamienia całą ścieżkę prowadzącą do wierzchołka w którym będzie wstawi
 
 (check-equal? (treesort '(9 4 8 3 7 5 6 3 1 2 0)) '(0 1 2 3 3 4 5 6 7 8 9))
 
-; --- zad6 🤮 ---
+; --- zad6 ---
 (define (delete x tree)
   (cond [(leaf? tree) (leaf)]
         [(= x (node-elem tree)) (cond
             [(leaf? (node-r tree))(node-l tree)]
-                [(leaf? (node-l tree))(node-r tree)]
-                [else (node
-                    (node-l tree)
-                    (car (tree-span (node-r tree)))
-                    (delete (car (tree-span (node-r tree))) (node-r tree)))])]
+            [(leaf? (node-l tree))(node-r tree)]
+            [else (node
+                (node-l tree)
+                (car (tree-span (node-r tree)))
+                (delete (car (tree-span (node-r tree))) (node-r tree)))])]
         [(< x (node-elem tree)) (node
                                     (delete x (node-l tree))
                                     (node-elem tree)
@@ -182,50 +182,6 @@ zamienia całą ścieżkę prowadzącą do wierzchołka w którym będzie wstawi
                                     (node-l tree)
                                     (node-elem tree)
                                     (delete x (node-r tree)))]))
-
-#|
-(define (delete x tree)
-    (define (_find_left tree)
-        (fold-tree (lambda (l val r) (cond
-                                                [(not (leaf? l)) l]
-                                                [(not (leaf? r)) r]
-                                                [else val]))
-                        (leaf) tree))
-
-    (define (_delete_left left-subtree)    ; get val of left leaf and delete it
-        (cond   [(leaf? left-subtree) (leaf)]
-                [else
-                (let ((left (node-l left-subtree)) (right (node-r left-subtree)))
-                (if (leaf? left)
-                    (if (leaf? right) right (leaf))
-                    (node (_delete_left left) (node-elem left-subtree) right)))]))
-
-    (cond   [(leaf? tree) (leaf)]
-            [(node? tree)
-                (cond [(= x (node-elem tree))
-                        (cond 
-                            [(node? (node-r tree))
-                                (let ((val (_delete_left (node-r tree))))
-                                    (if (leaf? val) 
-                                        (leaf)
-                                        (node 
-                                            (node-l tree) 
-                                            (_find_left (node-r tree)) 
-                                            val)))]
-                            [(node? (node-l tree))
-                                (node-l tree)]
-                            [else (leaf)])]
-                      [(< x (node-elem tree))
-                        (node
-                            (delete x (node-l tree))
-                            (node-elem tree)
-                            (node-r tree))]
-                      [else
-                        (node
-                            (node-l tree)
-                            (node-elem tree)
-                            (delete x (node-r tree)))])]))
-|#
 
 (define tree-2 (node (node (leaf) 1 (leaf)) 2 (node (node (leaf) 3 (node (leaf) 4 (leaf))) 5 (leaf))))
 (check-equal? (delete 5 tree-2) (node (node (leaf) 1 (leaf)) 2 (node (leaf) 3 (node (leaf) 4 (leaf)))))

@@ -9,14 +9,14 @@ Number::Number(double n){
     elements = 1;
 }
 
-Number::Number(Number& n){      // assigment constructor
-    insert(n.get_num());
+Number::Number(Number& other){      // assigment constructor
+    insert(other.get_num());
 }
 
-Number::Number(Number&& n){     // move constructor
-    elements = n.elements;
-    tab_ptr = n.tab_ptr;
-    nums_tab = n.nums_tab;
+Number::Number(Number&& other){     // move constructor
+    elements = other.elements;
+    tab_ptr = other.tab_ptr;
+    nums_tab = other.nums_tab;
 }
 
 Number::~Number(){

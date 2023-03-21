@@ -10,8 +10,8 @@ private:
 public:
     Number();
     Number(double n);
-    Number(Number& n);
-    Number(Number&& n);
+    Number(Number& other);
+    Number(Number&& other);
     ~Number();
     
     void insert(double n);

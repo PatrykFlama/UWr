@@ -19,8 +19,8 @@ class Element{
         act = _act;
     }
 
-    public Element next(){
-        return new Element(n, act+1);
+    public void next(){
+        act += 1;       // or return new Element(n, act+1);
     }
 
     public bool eos(){
@@ -56,7 +56,7 @@ class FWEnum : IEnumerator{
     }
 
     public bool MoveNext(){
-        this.el = this.el.next();
+        this.el.next();     // or this.el = this.el.next();  
         return !this.el.eos();
     }
 

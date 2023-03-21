@@ -32,14 +32,14 @@ class GraphList : IGraph{
         get {return _edges;}
     }
 
-    public void append(string from, string to){     // TODO - chech if vortex name already exists!
+    public void append(string from, string to){
         if(!graph.ContainsKey(from))
             graph.Add(from, new List<string>());
         if(!graph.ContainsKey(to)) 
             graph.Add(to, new List<string>());
 
-        graph[from].Add(to);
-        graph[to].Add(from);
+        if(!graph[from].Contains(to)) graph[from].Add(to);
+        if(!graph[to].Contains(from)) graph[to].Add(from);
         _edges++;
     }
 

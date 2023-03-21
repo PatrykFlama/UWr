@@ -82,24 +82,20 @@ class GraphList : IGraph{
 };
 
 class GraphMatrix : IGraph{
-    int _verticies;
-    int _edges;
+    int _verticies;     // max v
+    int _edges;         // actual e
     bool[,] matrix;
 
-    Dictionary<string, int> v_ptr;      // for finding verticies
-    Dictionary<int, string> v_name;     // for finding names
+    Dictionary<string, int> name_to_ptr;      // for finding verticies
+    Dictionary<int, string> ptr_to_name;     // for finding names
 
-
-    int get_ptr(string a){
-        return v_ptr.ContainsKey(a) ? v_ptr[a] : v_ptr.Count;
-    }
 
     public GraphMatrix(int n){
         _verticies = n;
         _edges = 0;
         matrix = new bool[n, n];
-        v_ptr = new Dictionary<string, int>();
-        v_name = new Dictionary<int, string>();
+        name_to_ptr = new Dictionary<string, int>();
+        ptr_to_name = new Dictionary<int, string>();
     }
 
     public int verticies{
@@ -109,24 +105,28 @@ class GraphMatrix : IGraph{
         get {return _edges;}
     }
 
+    int get_ptr(string a){
+        return name_to_ptr.ContainsKey(a) ? name_to_ptr[a] : name_to_ptr.Count;
+    }
+
     public void reset(){
         _edges = 0;
         matrix = new bool[_verticies, _verticies];
-        v_ptr = new Dictionary<string, int>();
-        v_name = new Dictionary<int, string>();
+        name_to_ptr = new Dictionary<string, int>();
+        ptr_to_name = new Dictionary<int, string>();
     }
 
     public void append(string from, string to){
         int ptr_from = get_ptr(from);
-        if(ptr_from == v_ptr.Count){
-            v_ptr.Add(from, ptr_from);
-            v_name.Add(ptr_from, from);
+        if(ptr_from == name_to_ptr.Count){
+            name_to_ptr.Add(from, ptr_from);
+            ptr_to_name.Add(ptr_from, from);
         }
 
         int ptr_to = get_ptr(to);
-        if(ptr_to == v_ptr.Count){
-            v_ptr.Add(to, ptr_to);
-            v_name.Add(ptr_to, to);
+        if(ptr_to == name_to_ptr.Count){
+            name_to_ptr.Add(to, ptr_to);
+            ptr_to_name.Add(ptr_to, to);
         }
 
         matrix[ptr_from, ptr_to] = matrix[ptr_to, ptr_from] = true;
@@ -137,7 +137,7 @@ class GraphMatrix : IGraph{
         int ptr_from = get_ptr(from);
         int ptr_to = get_ptr(to);
 
-        if(ptr_from == v_ptr.Count || ptr_to == v_ptr.Count) return;        // vortex doesnt exist!
+        if(ptr_from == name_to_ptr.Count || ptr_to == name_to_ptr.Count) return;        // vortex doesnt exist!
 
         matrix[ptr_from, ptr_to] = matrix[ptr_to, ptr_from] = false;
         _edges--;
@@ -145,27 +145,27 @@ class GraphMatrix : IGraph{
 
     public void add_node(string node){
         int ptr = get_ptr(node);
-        if(ptr == v_ptr.Count){
-            v_ptr.Add(node, ptr);
-            v_name.Add(ptr, node);
+        if(ptr == name_to_ptr.Count){
+            name_to_ptr.Add(node, ptr);
+            ptr_to_name.Add(ptr, node);
         }
     }
 
     public List<string> neighbours(string node_name){
         int ptr_v = get_ptr(node_name);
-        if(ptr_v == v_ptr.Count) return new List<string>();                 // vortex doesnt exist!
+        if(ptr_v == name_to_ptr.Count) return new List<string>();                 // vortex doesnt exist!
 
         List<string> res = new List<string>();
         for(int i = 0; i < _verticies; i++)
             if(matrix[ptr_v, i]) 
-                res.Add(v_name[i]);
+                res.Add(ptr_to_name[i]);
 
         return res;
     }
     
     public string print(){
         string res = "";
-        foreach(KeyValuePair<int, string> name in v_name){
+        foreach(KeyValuePair<int, string> name in ptr_to_name){
             res += name.Value + " -> ";
             res += string.Join(", ", neighbours(name.Value));
             res += "\n";

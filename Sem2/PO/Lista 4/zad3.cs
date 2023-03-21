@@ -10,6 +10,7 @@ interface IGraph{
     int edges {get;}
     void append(string from, string to);
     void remove(string from, string to);
+    void reset();
 };
 
 class GraphList : IGraph{
@@ -30,6 +31,11 @@ class GraphList : IGraph{
     }
     public int edges{
         get {return _edges;}
+    }
+
+    public void reset(){
+        _edges = 0;
+        graph = new Dictionary<string, List<string>>();
     }
 
     public void append(string from, string to){
@@ -94,6 +100,13 @@ class GraphMatrix : IGraph{
     }
     public int edges{
         get {return _edges;}
+    }
+
+    public void reset(){
+        _edges = 0;
+        matrix = new bool[_verticies, _verticies];
+        v_ptr = new Dictionary<string, int>();
+        v_name = new Dictionary<int, string>();
     }
 
     public void append(string from, string to){
@@ -166,6 +179,10 @@ class Randomness : Random{
 };
 
 class GraphOperations{
+    private IGraph clear_out(IGraph g){
+        g.reset();
+    }
+
     public static IGraph create_random(IGraph g, int amt_v, int amt_e){
         Randomness rnd = new Randomness();
         List<string> verticies = new List<string>();
@@ -216,26 +233,39 @@ class GraphOperations{
 
 class Program{
     public static void Main(){
-        // TODO: powinienem zamiast stringów jako identyfikatory używać typowania ogólnego Vertex?
+        // TODO: should i use general type Vertex instead of string, for vortex name?
         GraphList graph_l = new GraphList(10);
         GraphMatrix graph_m = new GraphMatrix(10);
 
-        graph_m.append("a","b");
-        graph_m.append("b","a");
-        graph_m.append("c","a");
-        graph_m.append("a","w");
-        Console.WriteLine(graph_m.edges);
-        Console.WriteLine(graph_m.print());
-        
-        Console.WriteLine("---------------\n");
+        Console.WriteLine("--------Manual graph operations-------\n");
         graph_l.append("a","b");
         graph_l.append("b","a");
         graph_l.append("c","a");
         graph_l.append("a","w");
         Console.WriteLine(graph_l.edges);
         Console.WriteLine(graph_l.print());
+        
+        Console.WriteLine("---------------\n");
+        graph_m.append("a","b");
+        graph_m.append("b","a");
+        graph_m.append("c","a");
+        graph_m.append("a","w");
+        Console.WriteLine(graph_m.edges);
+        Console.WriteLine(graph_m.print());
 
         Randomness rnd = new Randomness();
         Console.WriteLine(rnd.very_rand_string(64));
+
+        Console.WriteLine("--------Shortest paths-------\n");
+        create_random(IGraph graph_l, int amt_v, int amt_e);
+        Console.WriteLine(graph_l.edges);
+        Console.WriteLine(graph_l.print());
+        // foreach(string v in shortest_path(graph_l))
+
+
+        create_random(IGraph graph_m, int amt_v, int amt_e);
+        Console.WriteLine(graph_m.edges);
+        Console.WriteLine(graph_m.print());
+
     }
 }

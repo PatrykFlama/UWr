@@ -28,18 +28,18 @@ zamienia całą ścieżkę prowadzącą do wierzchołka w którym będzie wstawi
                [else
                 (find-bst x (node-r t))])]))
 
-(define (insert-bst x t)
+(define (insert-bst(car xs) (helper _tree (cdr xs)) x t)
   (cond [(leaf? t) (node (leaf) x (leaf))]
         [(node? t)
          (cond [(= x (node-elem t)) t]
                 [(< x (node-elem t))
-                 (node (insert-bst x (node-l t))
+                 (node (insert-bst(car xs) (helper _tree (cdr xs)) x (node-l t))
                        (node-elem t)
                        (node-r t))]
                 [else
                  (node (node-l t)
                        (node-elem t)
-                       (insert-bst x (node-r t)))])]))
+                       (insert-bst(car xs) (helper _tree (cdr xs)) x (node-r t)))])]))
 |#
 
 ; --- zad2 ---
@@ -60,10 +60,6 @@ zamienia całą ścieżkę prowadzącą do wierzchołka w którym będzie wstawi
 (define (tree-height tree)
     (fold-tree (lambda (l val r) (+ (max l r) 1 )) 0 tree))
 
-(define (tree-span-bst tree)
-    (cons   (fold-tree (lambda (l val r) (min l val r)) +inf.0 tree)
-            (fold-tree (lambda (l val r) (max l val r)) -inf.0 tree)))
-
 (define (tree-span tree)
     (cons   (fold-tree (lambda (l val r) (cond
                                                 [(not (leaf? l)) l]
@@ -75,6 +71,10 @@ zamienia całą ścieżkę prowadzącą do wierzchołka w którym będzie wstawi
                                                 [(not (leaf? l)) l]
                                                 [else val]))
                         (leaf) tree)))
+
+(define (tree-span-bst tree)
+    (cons   (fold-tree (lambda (l val r) (min l val r)) +inf.0 tree)
+            (fold-tree (lambda (l val r) (max l val r)) -inf.0 tree)))
 
 (define (flatten tree)
     (fold-tree (lambda (l val r) (append l (cons val r))) '() tree))
@@ -140,26 +140,26 @@ zamienia całą ścieżkę prowadzącą do wierzchołka w którym będzie wstawi
 (check-equal? (flatten-quick test-tree) '(1 2 3 4 5))
 
 ; --- zad5 ---
-(define (insert-bst x tree)
+(define (insert-bst(car xs) (helper _tree (cdr xs)) x tree)
   (cond [(leaf? tree) (node (leaf) x (leaf))]
         [(node? tree)
          (cond  [(<= x (node-elem tree))
-                    (node (insert-bst x (node-l tree))
+                    (node (insert-bst(car xs) (helper _tree (cdr xs)) x (node-l tree))
                           (node-elem tree)
                           (node-r tree))]
                 [else
                     (node (node-l tree)
                           (node-elem tree)
-                          (insert-bst x (node-r tree)))])]))
+                          (insert-bst(car xs) (helper _tree (cdr xs)) x (node-r tree)))])]))
 
 (define (treesort xs)
     (define (_treesort xs bst)
         (cond   [(null? xs) bst]
                 [else 
-                    (_treesort (cdr xs) (insert-bst (car xs) bst))]))
+                    (_treesort (cdr xs) (insert-bst(car xs) (helper _tree (cdr xs)) (car xs) bst))]))
     (flatten-quick (_treesort xs (leaf))))
 
-(check-equal? (insert-bst 4 test-tree)  (node (node (leaf) 1 (leaf)) 2 (node (node (leaf) 3 
+(check-equal? (insert-bst(car xs) (helper _tree (cdr xs)) 4 test-tree)  (node (node (leaf) 1 (leaf)) 2 (node (node (leaf) 3 
                                         (node (leaf) 4 (leaf))) 4 (node (leaf) 5 (leaf)))))
 
 (check-equal? (treesort '(9 4 8 3 7 5 6 3 1 2 0)) '(0 1 2 3 3 4 5 6 7 8 9))
@@ -182,6 +182,17 @@ zamienia całą ścieżkę prowadzącą do wierzchołka w którym będzie wstawi
                                     (node-l tree)
                                     (node-elem tree)
                                     (delete x (node-r tree)))]))
+
+#|
+(define (delete_brute_force x tree)
+    (define (helper _tree xs)
+        (cond   [(null? xs) _tree]
+                [(= x (car xs)) (helper _tree (cdr xs))]
+                [else (insert-bst (car xs) (helper _tree (cdr xs)))]))
+    (helper (leaf) (flatten-quick tree)))
+
+(check-equal? (delete_brute_force 5 tree-2) (node (node (leaf) 1 (leaf)) 2 (node (leaf) 3 (node (leaf) 4 (leaf)))))
+|#
 
 (define tree-2 (node (node (leaf) 1 (leaf)) 2 (node (node (leaf) 3 (node (leaf) 4 (leaf))) 5 (leaf))))
 (check-equal? (delete 5 tree-2) (node (node (leaf) 1 (leaf)) 2 (node (leaf) 3 (node (leaf) 4 (leaf)))))
@@ -257,7 +268,6 @@ zamienia całą ścieżkę prowadzącą do wierzchołka w którym będzie wstawi
                 (heap-merge (hnode (ord "B" 2) 1 (hleaf) (hleaf))
                 (hnode (ord "A" 1) 1 (hleaf) (hleaf)))))
                 (ord "A" 1))
-
 
 ; --- zad9 ---
 (define empty-pq (hleaf))

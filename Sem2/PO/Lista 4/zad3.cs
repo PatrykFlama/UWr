@@ -10,6 +10,8 @@ interface IGraph{
     int edges {get;}
     void append(string from, string to);
     void remove(string from, string to);
+    void add_node(string node);
+    List<string> neighbours(string node_name);
     void reset();
 };
 
@@ -55,6 +57,11 @@ class GraphList : IGraph{
         graph[from].Remove(to);
         graph[to].Remove(from);
         _edges--;
+    }
+
+    public void add_node(string node){
+        if(!graph.ContainsKey(node))
+            graph.Add(node, new List<string>());
     }
 
     public List<string> neighbours(string node_name){
@@ -136,8 +143,16 @@ class GraphMatrix : IGraph{
         _edges--;
     }
 
-    public List<string> neighbours(string name_v){
-        int ptr_v = get_ptr(name_v);
+    public void add_node(string node){
+        int ptr = get_ptr(node);
+        if(ptr == v_ptr.Count){
+            v_ptr.Add(node, ptr);
+            v_name.Add(ptr, node);
+        }
+    }
+
+    public List<string> neighbours(string node_name){
+        int ptr_v = get_ptr(node_name);
         if(ptr_v == v_ptr.Count) return new List<string>();                 // vortex doesnt exist!
 
         List<string> res = new List<string>();
@@ -179,19 +194,22 @@ class Randomness : Random{
 };
 
 class GraphOperations{
-    private IGraph clear_out(IGraph g){
+    private void clear_out(IGraph g){
         g.reset();
     }
 
-    public static IGraph create_random(IGraph g, int amt_v, int amt_e){
+    public IGraph create_random(IGraph g, int amt_v, int amt_e){
         Randomness rnd = new Randomness();
         List<string> verticies = new List<string>();
         
         if(g is GraphList) g = new GraphList(amt_v);
         else if(g is GraphMatrix) g = new GraphMatrix(amt_v);
 
-        for(int i = 0; i < amt_v; i++)
+        for(int i = 0; i < amt_v; i++){
             verticies.Add(rnd.very_rand_string());
+            g.add_node(verticies[i]);
+        }
+        
         for(int i = 0; i < amt_e; i++){
             g.append(verticies[rnd.rand_int(0, amt_v)], verticies[rnd.rand_int(0, amt_v)]);     // TODO: probably should check if edge already exists
         }
@@ -199,22 +217,28 @@ class GraphOperations{
         return g;
     }
 
-    public static List<string> shortest_path(IGraph g, string from, string to){
-        Queue<string> q = new Queue<string>();
+    public List<string> shortest_path(IGraph g, string from, string to){
+        // Queue<string> q = new Queue<string>(); //! problem with including queue, probably becouse its been moved to mscorlib
+        List<string> q = new List<string>();
         HashSet<string> vis = new HashSet<string>();
         Dictionary<string, string> father = new Dictionary<string, string>();
 
-        q.Enqueue(from);
+        q.Add(from);
 
         while(q.Count != 0){
-            string now = q.Dequeue();
+            // string now = q.Dequeue();
+            string now = q[0];
+            q.RemoveAt(0);
+
             vis.Add(now);
             if(now == to) break;
             
             foreach(string v in g.neighbours(now)){
                 if(!vis.Contains(v)){
-                    father.Add(v, now);
-                    q.Enqueue(v);
+                    try{father.Add(v, now);}    // we dont want to add same edge twice
+                    catch(Exception e) {}
+                    // q.Enqueue(v);
+                    q.Add(v);
                 }
             }
         }
@@ -233,9 +257,9 @@ class GraphOperations{
 
 class Program{
     public static void Main(){
-        // we could also keeep general type Vertex instead of string, for type of vortex labeling
-        GraphList graph_l = new GraphList(10);
-        GraphMatrix graph_m = new GraphMatrix(10);
+        // we could also keeep general type 'Vertex' instead of string, for type of vortex labeling
+        GraphList graph_l = new GraphList(5);
+        GraphMatrix graph_m = new GraphMatrix(5);
 
         Console.WriteLine("--------Manual graph operations-------\n");
         graph_l.append("a","b");
@@ -245,7 +269,6 @@ class Program{
         Console.WriteLine(graph_l.edges);
         Console.WriteLine(graph_l.print());
         
-        Console.WriteLine("---------------\n");
         graph_m.append("a","b");
         graph_m.append("b","a");
         graph_m.append("c","a");
@@ -254,17 +277,35 @@ class Program{
         Console.WriteLine(graph_m.print());
 
         Randomness rnd = new Randomness();
-        Console.WriteLine(rnd.very_rand_string(64));
+        Console.Write("Random string: ");
+        Console.WriteLine(rnd.very_rand_string());
 
-        Console.WriteLine("--------Shortest paths-------\n");
-        create_random(graph_l, 5, 7);
+        Console.WriteLine("--------Random graphs-------\n");
+        GraphOperations GO = new GraphOperations();
+        graph_l = (GraphList)(GO.create_random(graph_l, 5, 7));
         Console.WriteLine(graph_l.edges);
         Console.WriteLine(graph_l.print());
 
-
-        create_random(graph_m, 10, 5);
+        graph_m = (GraphMatrix)(GO.create_random(graph_m, 10, 5));
         Console.WriteLine(graph_m.edges);
         Console.WriteLine(graph_m.print());
 
+        Console.WriteLine("------Shortest Path------");
+        graph_l = new GraphList(10);
+        graph_m = new GraphMatrix(10);
+
+        graph_l.append("a","b");
+        graph_l.append("b","c");
+        graph_l.append("c","d");
+        graph_l.append("b","d");
+        Console.Write("Shortest path: ");
+        Console.WriteLine(string.Join(", ", GO.shortest_path(graph_l, "a", "d")));
+        
+        graph_m.append("a","b");
+        graph_m.append("b","c");
+        graph_m.append("c","d");
+        graph_m.append("b","d");
+        Console.Write("Shortest path: ");
+        Console.WriteLine(string.Join(", ", GO.shortest_path(graph_m, "a", "d")));
     }
 }

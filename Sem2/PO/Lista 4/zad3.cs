@@ -211,7 +211,7 @@ class GraphOperations{
         }
         
         for(int i = 0; i < amt_e; i++){
-            g.append(verticies[rnd.rand_int(0, amt_v)], verticies[rnd.rand_int(0, amt_v)]);     // TODO: probably should check if edge already exists
+            g.append(verticies[rnd.rand_int(0, amt_v)], verticies[rnd.rand_int(0, amt_v)]);
         }
 
         return g;

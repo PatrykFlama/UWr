@@ -15,5 +15,4 @@ int main(){
 
     cout << a.get_num() << ' ' << c.get_num() << ' ' << b.get_num() << '\n';
     cout << a.get_history(1) << ' ' << ' ' << b.get_history(1) << '\n';
-
 }

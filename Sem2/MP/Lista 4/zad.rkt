@@ -1,11 +1,6 @@
 #lang racket
 (require rackunit)
 
-; --- zad1 ---
-#|
-od momentu w którym się podmienia
-|#
-
 ; --- tree ---
 (define-struct leaf () #:transparent)
 (define-struct node (l elem r) #:transparent)
@@ -19,6 +14,33 @@ od momentu w którym się podmienia
             4
             (node (leaf) 5 (leaf)))))
 
+
+; --- zad1 ---
+#|
+zamienia całą ścieżkę prowadzącą do wierzchołka w którym będzie wstawiać cyfrę
+
+(define (find-bst x t)
+  (cond [(leaf? t) #f]
+        [(node? t)
+         (cond [(= x (node-elem t)) #t]
+               [(< x (node-elem t))
+                (find-bst x (node-l t))]
+               [else
+                (find-bst x (node-r t))])]))
+
+(define (insert-bst x t)
+  (cond [(leaf? t) (node (leaf) x (leaf))]
+        [(node? t)
+         (cond [(= x (node-elem t)) t]
+                [(< x (node-elem t))
+                 (node (insert-bst x (node-l t))
+                       (node-elem t)
+                       (node-r t))]
+                [else
+                 (node (node-l t)
+                       (node-elem t)
+                       (insert-bst x (node-r t)))])]))
+|#
 
 ; --- zad2 ---
 ; (f res-left elem res-right)

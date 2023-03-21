@@ -233,7 +233,7 @@ class GraphOperations{
 
 class Program{
     public static void Main(){
-        // TODO: should i use general type Vertex instead of string, for vortex name?
+        // we could also keeep general type Vertex instead of string, for type of vortex labeling
         GraphList graph_l = new GraphList(10);
         GraphMatrix graph_m = new GraphMatrix(10);
 
@@ -257,13 +257,12 @@ class Program{
         Console.WriteLine(rnd.very_rand_string(64));
 
         Console.WriteLine("--------Shortest paths-------\n");
-        create_random(IGraph graph_l, int amt_v, int amt_e);
+        create_random(graph_l, 5, 7);
         Console.WriteLine(graph_l.edges);
         Console.WriteLine(graph_l.print());
-        // foreach(string v in shortest_path(graph_l))
 
 
-        create_random(IGraph graph_m, int amt_v, int amt_e);
+        create_random(graph_m, 10, 5);
         Console.WriteLine(graph_m.edges);
         Console.WriteLine(graph_m.print());
 

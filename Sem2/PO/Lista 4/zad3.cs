@@ -160,58 +160,63 @@ class Randomness : Random{
         return res;
     }
 
-    public string very_rand_string(int max_len){
-        return rand_string(rand_int(0, max_len));
+    public string very_rand_string(){
+        return rand_string(rand_int(0, 32));
     }
 };
-/*
-class GraphOperations{
-    public static IGraph RandomGraph(IGraph g, int n, int e){
-        Randomness r = new Randomness();      
-        List<string> vertex = new List<string>();
-        
-        if(g is GraphList) g = new GraphList(n);
-        else if(g is GraphMatrix) g = new GraphMatrix(n);
 
-        for(int i = 0; i < n; i++) 
-            vertex.Add(r.RandomString());
-        while(e --> 0) 
-            g.append(vertex[r.RandomInt()%n], vertex[r.RandomInt()%n]);
+class GraphOperations{
+    public static IGraph create_random(IGraph g, int amt_v, int amt_e){
+        Randomness rnd = new Randomness();
+        List<string> verticies = new List<string>();
+        
+        if(g is GraphList) g = new GraphList(amt_v);
+        else if(g is GraphMatrix) g = new GraphMatrix(amt_v);
+
+        for(int i = 0; i < amt_v; i++)
+            verticies.Add(rnd.very_rand_string());
+        for(int i = 0; i < amt_e; i++){
+            g.append(verticies[rnd.rand_int(0, amt_v)], verticies[rnd.rand_int(0, amt_v)]);     // TODO: probably should check if edge already exists
+        }
 
         return g;
     }
-    public static List<string> ShortestPath(IGraph g, string a, string b){ //BFS
-        List<string> res = new List<string>();
-        HashSet<string> visited = new HashSet<string>();
-        Dictionary<string,string> prev = new Dictionary<string,string>();
+
+    public static List<string> shortest_path(IGraph g, string from, string to){
         Queue<string> q = new Queue<string>();
+        HashSet<string> vis = new HashSet<string>();
+        Dictionary<string, string> father = new Dictionary<string, string>();
 
-        q.Enqueue(a);
-        visited.Add(a);
+        q.Enqueue(from);
 
-        while(q.Count > 0){
-            string s = q.Dequeue();
-            if(s == b) break;
-            List<string> neighbours = g.neighbours(s);
+        while(q.Count != 0){
+            string now = q.Dequeue();
+            vis.Add(now);
+            if(now == to) break;
             
-            foreach(string x in neighbours)
-                if(!visited.Contains(x)){
-                    prev.Add(x,s);
-                    visited.Add(x);
-                    q.Enqueue(x);
+            foreach(string v in g.neighbours(now)){
+                if(!vis.Contains(v)){
+                    father.Add(v, now);
+                    q.Enqueue(v);
                 }
+            }
         }
-        for(string i = b; prev.ContainsKey(i); i = prev[i]) res.Add(i);
 
-        if(res.Count > 0 || a == b) res.Add(a);
+        List<string> res = new List<string>();
+        for(string i = to; father.ContainsKey(i); i = father[i]) 
+            res.Add(i);
+
+        if(res.Count > 0 || from == to) res.Add(from);
+
         res.Reverse();
         return res;
     }
-}*/
+}
 
 
 class Program{
     public static void Main(){
+        // TODO: powinienem zamiast stringów jako identyfikatory używać typowania ogólnego Vertex?
         GraphList graph_l = new GraphList(10);
         GraphMatrix graph_m = new GraphMatrix(10);
 
@@ -232,34 +237,5 @@ class Program{
 
         Randomness rnd = new Randomness();
         Console.WriteLine(rnd.very_rand_string(64));
-
-        // G.print();
-
-        // Console.WriteLine(string.Join(", ", G.neighbours("babcia")));
-        // Console.WriteLine(string.Join(", ", G.neighbours("jadzia")));
-        // Console.WriteLine(string.Join(", ", GraphOperations.ShortestPath(G,"babcia","stasia")));
-        // Console.WriteLine(string.Join(", ", GraphOperations.ShortestPath(G,"basia","babcia")));
-
-        // G.RemoveEdge("jadzia","stasia");
-        // Console.WriteLine(string.Join(", ", GraphOperations.ShortestPath(G,"babcia","stasia")));
-        // G.RemoveEdge("jadzia","basia");
-        // Console.WriteLine(string.Join(", ", GraphOperations.ShortestPath(G,"basia","babcia")));
-        // Console.WriteLine(string.Join(", ", GraphOperations.ShortestPath(G,"basia","basia")));
-        // Console.WriteLine(G.edges);
-
-        // try{
-        //     G.RemoveEdge("kasia","babcia");
-        // } catch(Exception e){
-        //     Console.WriteLine(e);
-        // }
-        // try{
-        //     G.neighbours("dziadek");
-        // } catch(Exception e){
-        //     Console.WriteLine(e);
-        // }
-
-        // G = (GraphList)GraphOperations.RandomGraph(G,8,12);
-        // // G = (GraphMatrix)GraphOperations.RandomGraph(G,8,12);
-        // G.print();
     }
 }

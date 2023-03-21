@@ -145,22 +145,29 @@ class GraphMatrix : IGraph{
         return res;
     }
 };
-/*
-class MyRandom : Random{
-    public int RandomInt(){
-        return Next();
+
+class Randomness : Random{
+    public int rand_int(int from, int to){     //? [from, to)
+        return Next(from, to);
     }
-    public string RandomString(){
-        int l = (Next()%8)+1;
+
+    public string rand_string(int len){
         string res = "";
-        while(l --> 0) res += (char)((Next()%0x3d)+0x40);
+        while(len != 0) {
+            res += (char)(rand_int('a', 'z'+1)); 
+            --len;
+        }
         return res;
     }
-};
 
+    public string very_rand_string(int max_len){
+        return rand_string(rand_int(0, max_len));
+    }
+};
+/*
 class GraphOperations{
     public static IGraph RandomGraph(IGraph g, int n, int e){
-        MyRandom r = new MyRandom();      
+        Randomness r = new Randomness();      
         List<string> vertex = new List<string>();
         
         if(g is GraphList) g = new GraphList(n);
@@ -222,6 +229,9 @@ class Program{
         graph_l.append("a","w");
         Console.WriteLine(graph_l.edges);
         Console.WriteLine(graph_l.print());
+
+        Randomness rnd = new Randomness();
+        Console.WriteLine(rnd.very_rand_string(64));
 
         // G.print();
 

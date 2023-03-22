@@ -9,15 +9,32 @@ Number::Number(double n){
     elements = 1;
 }
 
+
 Number::Number(Number& other){      // assigment constructor
     insert(other.get_num());
 }
 
-Number::Number(Number&& other){     // move constructor
+Number& Number::operator=(Number& other){
+    insert(other.get_num());
+    return *this;
+}
+
+
+Number::Number(Number&& other){      // move constructor
     elements = other.elements;
     tab_ptr = other.tab_ptr;
     nums_tab = other.nums_tab;
+    other.nums_tab = 0x0;
 }
+
+Number& Number::operator=(Number&& other){
+    elements = other.elements;
+    tab_ptr = other.tab_ptr;
+    nums_tab = other.nums_tab;
+    other.nums_tab = 0x0;
+    return *this;
+}
+
 
 Number::~Number(){
     delete[] nums_tab;
@@ -33,28 +50,21 @@ void Number::insert(double n){
 }
 
 const double Number::get_num(){
-    if(tab_ptr < 0) return 0;
-    return nums_tab[tab_ptr%max_len];
+    int pos = abs(tab_ptr % max_len);
+    return nums_tab[pos];
 }
 
 const double Number::get_history(int steps_back){
-    if(steps_back == 0 || steps_back >= max_len || tab_ptr - steps_back < 0) return 0;
-    return nums_tab[tab_ptr-steps_back];
+    // if(steps_back >= max_len) return 0;             // returns 0 if history is out of range
+    if(steps_back >= max_len) throw invalid_argument( "history out of range!" );
+    int pos = abs((tab_ptr - steps_back) % max_len);
+    return nums_tab[pos];
 }
 
 void Number::revert(int steps_back){
-    if(steps_back == 0 || steps_back >= max_len || tab_ptr - steps_back < 0) return;
-    insert(nums_tab[tab_ptr-steps_back]);
-}
-
-Number& Number::operator=(Number n){
-    insert(n.get_num());
-    return *this;
-}
-
-Number& Number::operator=(Number&& n){
-    elements = n.elements;
-    tab_ptr = n.tab_ptr;
-    nums_tab = n.nums_tab;
-    return *this;
+    // if(steps_back == 0 || steps_back >= max_len) return;
+    if(steps_back == 0) return;
+    if(steps_back >= max_len) throw invalid_argument( "history out of range!" );
+    int pos = abs((tab_ptr - steps_back) % max_len);
+    insert(nums_tab[pos]);
 }

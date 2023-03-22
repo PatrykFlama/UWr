@@ -11,13 +11,13 @@ public:
     Number();
     Number(double n);
     Number(Number& other);
+    Number& operator=(Number& other);
     Number(Number&& other);
+    Number& operator=(Number&& other);
     ~Number();
     
     void insert(double n);
     const double get_num();
     const double get_history(int steps_back);
     void revert(int steps_back);
-    Number& operator=(Number n);
-    Number& operator=(Number&& n);
 };

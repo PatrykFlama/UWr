@@ -11,8 +11,27 @@ int main(){
     b.insert(9);
     b.insert(10);
 
-    Number c = a;
+    Number c;
+    c = a;
+    a.insert(4);
 
-    cout << a.get_num() << ' ' << c.get_num() << ' ' << b.get_num() << '\n';
-    cout << a.get_history(1) << ' ' << ' ' << b.get_history(1) << '\n';
+    printf("-------------------\n");
+    printf("%lf %lf %lf\n", b.get_num(), c.get_num(), a.get_num());
+    for(int i = 1; i < 4; i++){
+        printf("%lf %lf %lf\n", b.get_history(i), c.get_history(i), a.get_history(i));
+    }
+
+    printf("----------move a to d---------\n");
+    Number d;
+    d = move(a);            //  a no longer exists
+    printf("%lf %lf %lf\n", b.get_num(), c.get_num(), d.get_num());
+    for(int i = 1; i < 4; i++){
+        printf("%lf %lf %lf\n", b.get_history(i), c.get_history(i), d.get_history(i));
+    }
+
+    printf("----------d revert 2---------\n");
+    d.revert(2);
+    for(int i = 0; i < 4; i++){
+        printf("%lf %lf %lf\n", b.get_history(i), c.get_history(i), d.get_history(i));
+    }
 }

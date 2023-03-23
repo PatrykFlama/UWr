@@ -17,7 +17,7 @@ int main(){
 
     printf("-------------------\n");
     printf("%lf %lf %lf\n", b.get_num(), c.get_num(), a.get_num());
-    for(int i = 1; i < 4; i++){
+    for(int i = 1; i < 3; i++){
         printf("%lf %lf %lf\n", b.get_history(i), c.get_history(i), a.get_history(i));
     }
 
@@ -25,13 +25,13 @@ int main(){
     Number d;
     d = move(a);            //  a no longer exists
     printf("%lf %lf %lf\n", b.get_num(), c.get_num(), d.get_num());
-    for(int i = 1; i < 4; i++){
+    for(int i = 1; i < 3; i++){
         printf("%lf %lf %lf\n", b.get_history(i), c.get_history(i), d.get_history(i));
     }
 
     printf("----------d revert 2---------\n");
     d.revert(2);
-    for(int i = 0; i < 4; i++){
-        printf("%lf %lf %lf\n", b.get_history(i), c.get_history(i), d.get_history(i));
+    for(int i = 0; i < 3; i++){
+        cout << b << ' ' << c << ' ' << d << '\n';
     }
 }

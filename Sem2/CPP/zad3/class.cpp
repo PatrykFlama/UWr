@@ -11,7 +11,10 @@ Number::Number(double n){
 
 
 Number::Number(Number& other){      // assigment constructor
-    insert(other.get_num());
+    nums_tab = new double[max_len];
+    nums_tab[0] = other.get_num();
+    tab_ptr = 0;
+    elements = 1;
 }
 
 Number& Number::operator=(Number& other){
@@ -37,7 +40,7 @@ Number& Number::operator=(Number&& other){
 
 
 Number::~Number(){
-    delete[] nums_tab;
+    if(nums_tab != 0x0) delete[] nums_tab;
 }
 
 void Number::insert(double n){
@@ -67,4 +70,8 @@ void Number::revert(int steps_back){
     if(steps_back >= max_len) throw invalid_argument( "history out of range!" );
     int pos = abs((tab_ptr - steps_back) % max_len);
     insert(nums_tab[pos]);
+}
+
+ostream& operator<<(ostream& str, Number& number){
+    return str << number.get_num();
 }

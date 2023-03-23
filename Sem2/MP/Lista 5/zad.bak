@@ -1,0 +1,4 @@
+#lang plait
+
+(define (func1 a b) a)
+(define (func2 a b c) (c a b))

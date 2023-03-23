@@ -1,3 +1,4 @@
+#pragma once
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -20,4 +21,5 @@ public:
     const double get_num();
     const double get_history(int steps_back);
     void revert(int steps_back);
+    friend ostream& operator<<(ostream& str, Number& number);
 };

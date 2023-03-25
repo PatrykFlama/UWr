@@ -31,7 +31,8 @@ def sum(a, b):
     return (a[0]+b[0], a[1]+b[1])
 
 def move_safe(move):
-    return not board_walls[move[0]][move[1]]
+    return (not board_walls[move[0]][move[1]]) and  (move[0] < len(board_walls) and move[0] >= 0) and \
+                                                    (move[1] < len(board_walls[0]) and move[0] >= 0)
 
 def make_move(state, dir):
     new_state = set()
@@ -44,9 +45,11 @@ def make_move(state, dir):
 
 dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
-def make_random_moves(start_state, count = 50, commandos_alive = 5):
+def make_random_moves(start_state, count = 50, commandos_alive = 2):
     last_random_move = -1
+    moves_made = 0
     for i in range(0, count):
+        moves_made += 1
         random_move = random.randint(0, 3)
         while((last_random_move == 0 and random_move == 1) or (last_random_move == 2 and random_move == 3)):
             random_move = random.randint(0, 3)
@@ -54,8 +57,9 @@ def make_random_moves(start_state, count = 50, commandos_alive = 5):
         start_state = make_move(start_state, dirs[random_move])
         last_random_move = random_move
 
-        # if len(start_state) <= commandos_alive: return start_state
-    return start_state
+        if len(start_state) <= commandos_alive: break
+
+    return (start_state, moves_made)
 
 
 def goal_reached(state):
@@ -63,28 +67,32 @@ def goal_reached(state):
         if commando not in board_goal: return False
     return True
 
-def bfs(start_state, max_depth = 15):
+def hash_state(state):      # we assume that there are max 2 commandos in state
+    if(len(state) > 2): raise Exception("Too long state to hash!")
+    hash = 0
+    mult = 1
+    for i in state:
+        hash += mult * ((i[0] * len(board_walls)) + i[1])
+        mult = len(board_walls) * len(board_walls[0])
+
+    return hash
+
+def bfs(start_state, max_depth = 70):
     q = []
-    vis = []
+    vis = [False] * (pow((len(board_walls)*len(board_walls[0])), 2) + 1000)
     q.append((start_state, 0))
-    max_len = len(start_state)
 
     while len(q) != 0:
-        current_state = q.pop(0)
-        depth = current_state[1]
-        current_state = current_state[0]
-
-        vis.append(current_state)
+        current_state, depth = q.pop(0)
+        vis[hash_state(current_state)] = True
         if goal_reached(current_state): return current_state
-        if len(current_state) > max_len: continue
         if depth > max_depth: continue
 
         # print("\n", current_state, "from", q)
         for d in dirs:
             new_state = make_move(current_state, d)
             # print(new_state, "in?", vis, new_state in vis)
-            if new_state not in vis:
-                max_len = max(max_len, len(new_state))
+            if not vis[hash_state(new_state)]:
                 q.append((new_state, depth+1))
 
         # print_board(current_state)
@@ -107,10 +115,23 @@ def print_board(state):
 # --------- MAIN ---------
 read_board()
 print(board_goal)
-board_start = make_random_moves(board_start, 150)
-print_board(board_start)
 
-print(bfs(board_start))
+res = False
+while res == False:
+    state = board_start
+    moves_left = 150
+    while len(state) > 2:
+        state, moves_left = make_random_moves(board_start, 80)
+
+    moves_left = 150 - moves_left
+    state = state
+
+    print(len(state), moves_left)
+    # print_board(state)
+
+    res = bfs(state, moves_left)
+
+print(res)
 
 # for t in range(50, 131, 5):
 #     avg = 0

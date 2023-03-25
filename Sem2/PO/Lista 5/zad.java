@@ -160,7 +160,7 @@ public class zad {
         e.updateVariable("y", 100);         // TODO that has no effect
         System.out.println(e.niceEvaluate());
         
-        e = new Mult(new Const(5), new Add(new Const(11), e));
+        e = new Add(new Variable("x"), new Mult(new Const(5), new Add(new Const(11), e)));
         System.out.println(e.niceEvaluate());
     }
 }

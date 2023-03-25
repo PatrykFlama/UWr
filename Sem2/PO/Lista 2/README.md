@@ -1,4 +1,4 @@
-# Lista 2
+# Lista 2 - C#
 ## Kompilacja C#
 Do kompilacji plików c# można użyć .NET (duże narzędzie, które tworzy dużo plików - dobrze się sprawdza przy projekatch, gorzej przy pojedynczych plikach) lub kompilatora _mcs mono_.
 

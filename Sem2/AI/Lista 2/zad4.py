@@ -69,8 +69,8 @@ def make_random_moves(start_state, count = 50, commandos_alive = 2):
     return (start_state, path)
 
 
-def hash_state(state):      # we assume that there are max 2 commandos in state
-    if(len(state) > 3): raise Exception("Too long state to hash!")
+def hash_state(state):      # we assume that there are max 3 commandos in state
+    state = sorted(state)
     hash = 0
     mult = 1
     for i in state:
@@ -81,10 +81,10 @@ def hash_state(state):      # we assume that there are max 2 commandos in state
 
 def bfs(start_state):
     q = []
-    vis = [False] * (pow((len(board_walls)*len(board_walls[0])), 3) + 1000)
+    vis = [False] * (pow((len(board_walls)*len(board_walls[0])), 3) + 1000)      #diff
     q.append((start_state, ""))
-    vis[hash_state(start_state)] = True
-
+    vis[hash_state(start_state)] = True      #diff
+    
     while len(q) != 0:
         current_state, path = q.pop(0)
         if goal_reached(current_state): return (current_state, path)
@@ -125,10 +125,11 @@ while res == False:
         iter += 1
         if iter > 100: max_comm = 3
 
-    # print(len(state), moves_left)
     # print_board(state)
 
     res, path2 = bfs(state)
+
+    # print(res, path1 + path2)
 
 output = open("zad_output.txt", "w")
 output.write(path1 + path2)

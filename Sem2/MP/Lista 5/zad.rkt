@@ -1,13 +1,13 @@
 #lang plait
 
 ; --- zad1 ---
-; ( ' a 'b - > 'a)
+; (' a 'b - > 'a)
 (define (f1 a b) a)
-; (( ' a 'b - > 'c) ( ' a -> 'b) 'a -> 'c)
+; ((' a 'b - > 'c) (' a -> 'b) 'a -> 'c)
 (define (f2 c b a) (c a (b a)))
-; ((( ' a - > 'a) -> 'a) -> 'a)
+; (((' a - > 'a) -> 'a) -> 'a)
 (define (f3 [a : (('a -> 'a) -> 'a)]) (a identity))
-; (( ' a - > 'b) (' a -> 'c) -> ( 'a -> ( ' b * 'c)))
+; ((' a - > 'b) (' a -> 'c) -> ('a -> (' b * 'c)))
 (define (f4 [b : ('a -> 'b)] [c : ('a -> 'c)])
   (lambda (a) (pair (b a) (c a))))
 
@@ -24,11 +24,11 @@
 (define (curry f) (lambda (x) (lambda (y) (f x y))))
 
 ; --- zad3 ---
-; ( curry compose )
-; (( curry compose ) ( curry compose ))
-; (( curry compose ) ( curry apply ))
-; (( curry apply ) ( curry compose ))
-; ( compose curry flip )
+; (curry compose)
+; ((curry compose) (curry compose))
+; ((curry compose) (curry apply))
+; ((curry apply) (curry compose))
+; (compose curry flip)
 
 ; --- zad4 ---
 (define (remove x list)
@@ -175,9 +175,20 @@
                     (free-vars (disj-r f)))]
             [(neg? f) (free-vars (neg-f f))])))
 
+#|
+hash : ((Listof (' a * 'b)) -> (Hashof 'a 'b))
+hash-ref : ((Hashof 'a 'b) 'a -> (Optionof 'b))
+hash-set : ((Hashof 'a 'b) 'a 'b -> (Hashof 'a 'b))
 
+eval : ((Hashof String Boolean) Prop -> Boolean)
+|#
 
-
+(define (eval [h : (Hashof String Boolean)] p)
+    (case
+        [(var? p) XXX]
+        [(conj? p) XXX]
+        [(disj? p) XXX]
+        [(neg? p) XXX]))
 
 
 

@@ -136,6 +136,44 @@
         (list (rose-leaf-elem tree))
         (_dfs (rose-node-sub tree)))))
 
+; --- zad7 ---
+(define-type Prop
+    (var [v : String])
+    (conj [l : Prop] [r : Prop])
+    (disj [l : Prop] [r : Prop])
+    (neg [f : Prop]))
+
+(define example-prop
+    (conj 
+        (disj
+            (neg (var "a"))
+            (var "b"))
+        (conj
+            (var "b")
+            (neg (var "c")))))
+
+(define (free-vars [f : Prop])
+    (local
+        [(define (add-unique x xs)
+            (cond
+                [(empty? xs) (list x)]
+                [(equal? x (first xs)) xs]
+                [else (cons
+                    (first xs)
+                    (add-unique x (rest xs)))]))
+         (define (merge-unique xs ys)
+            (if (empty? (rest xs)) 
+                (add-unique (first xs) ys)
+                (add-unique (first xs) (merge-unique (rest xs) ys))))]
+        (cond 
+            [(var? f) (list (var-v f))]
+            [(conj? f) (merge-unique 
+                    (free-vars (conj-l f))
+                    (free-vars (conj-r f)))]
+            [(disj? f) (merge-unique 
+                    (free-vars (disj-l f))
+                    (free-vars (disj-r f)))]
+            [(neg? f) (free-vars (neg-f f))])))
 
 
 

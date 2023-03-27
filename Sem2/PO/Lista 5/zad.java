@@ -1,3 +1,8 @@
+/*
+Patryk Flama
+Lista 5 zadanie 2 oraz 4
+kompilacja: java zad lub javac zad.java; java zad
+ */
 import java.util.HashMap;
 
 class Expression {
@@ -12,7 +17,7 @@ class Expression {
         variable_names = new HashMap<String, Integer>();
     }
 
-    public int evaluate(){
+    public int evaluate() {
         return 0;
     }
 
@@ -64,9 +69,12 @@ class Variable extends Expression{
         updateVariable(name, val);
     }
 
-    public int evaluate(String name) throws Exception {
+    public int evaluate() {
         Integer temp = variable_names.get(name);
-        if(temp == null) throw new Exception("Variable " + name + " without value, cant evaluate!");
+        if(temp == null) {
+            System.out.println("Variable " + name + " without value, assigning 0!");
+            temp = 0;
+        }
         return temp;
     }
 
@@ -154,13 +162,18 @@ public class zad {
         e = new Mult(e, new Variable("y"));
         System.out.println(e.niceEvaluate());
         
-        e.updateVariable("y", 10);          // TODO that has no effect
+        e.updateVariable("y", 10);
         System.out.println(e.niceEvaluate());
         
-        e.updateVariable("y", 100);         // TODO that has no effect
+        e.updateVariable("y", 100);
         System.out.println(e.niceEvaluate());
         
         e = new Add(new Variable("x"), new Mult(new Const(5), new Add(new Const(11), e)));
+        e.updateVariable("x", 2);
         System.out.println(e.niceEvaluate());
+
+        e = (new Mult(new Variable("x"), new Variable("x"))).derivative();
+        e.updateVariable("x", 3);
+        System.out.println("f(x)' = " + e.niceEvaluate());
     }
 }

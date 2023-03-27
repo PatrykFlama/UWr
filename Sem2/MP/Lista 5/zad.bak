@@ -197,52 +197,19 @@ eval : ((Hashof String Boolean) Prop -> Boolean)
                 (eval h (conj-l p))
                 (eval h (conj-r p)))]
         [(disj? p)
-            (or
+            (and
                 (eval h (disj-l p))
                 (eval h (disj-r p)))]
         [(neg? p) 
             (not (eval h (neg-f p)))]))
 
 (define example-hash (hash (list
-    (pair "a" #f)
-    (pair "b" #t)
-    (pair "c" #f))))
+    ("a" * #t)
+    ("b" * #f)
+    ("c" * #t))))
 
-; --- zad9 ---
-(define (tautology [p : Prop])
-    (local[
-        (define (_taut h fv)
-            (if (empty? fv)
-                (eval h p)
-                (and 
-                    (_taut 
-                        (hash-set h (first fv) #t)
-                        (rest fv))
-                    (_taut 
-                        (hash-set h (first fv) #f)
-                        (rest fv)))))]
-    (_taut (hash '()) (free-vars p))))
 
-(define example-tautology-easy
-  (disj
-   (neg (var "p"))
-   (var "p")))
 
-(define example-tautology-hard
-    (disj
-        (neg
-            (conj
-            (conj
-                (disj
-                    (neg (var "p"))
-                    (var "q"))
-                (disj
-                    (neg (var "q"))
-                    (var "r")))
-                (disj
-                    (var "p")
-                    (var "q"))))
-        (var "r")))
 
 
 

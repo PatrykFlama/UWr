@@ -108,9 +108,33 @@
             (+ acc elem))
         0 tree))
 
+; --- zad6 ---
+(define-type (RoseTree 'a)
+    (rose-leaf [elem : 'a])
+    (rose-node [sub : (Listof (RoseTree 'a))]))
 
+(define example-rose-tree
+    (rose-node (list
+        (rose-node (list 
+            (rose-leaf 1)
+            (rose-leaf 2)))
+        (rose-node (list
+            (rose-leaf 3)
+            (rose-node (list
+                (rose-leaf 4)))))
+        (rose-leaf 5)
+    (rose-leaf 6))))
 
-
+(define (dfs tree)
+    (local[
+        (define (_dfs queue)
+            (if (empty? queue)
+                '()
+                (append (dfs (first queue)) (_dfs (rest queue)))))] 
+                ; TODO: there might be some garbage
+    (if (rose-leaf? tree) 
+        (list (rose-leaf-elem tree))
+        (_dfs (rose-node-sub tree)))))
 
 
 

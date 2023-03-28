@@ -10,7 +10,7 @@ class tab_bit {
 
     };
 
-/* #region //* ----- VARS ------ */
+/* #region //* VARS */
 protected:
     int dl;     // amount of bits
     slowo *tab; // bits array
@@ -31,26 +31,39 @@ public:
     }
     tab_bit (tab_bit &&tb) {
         dl = tb.dl;
+        tab = tb.tab;
+        tb.tab = nullptr;
     }
     tab_bit &operator=(const tab_bit &tb) {
-        
+        // TODO but i think its the same as operator one
     }
     tab_bit &operator=(tab_bit &&tb) {
-
+        // TODO but i think its the same as operator one
     }
     ~tab_bit (){
         if(tab != nullptr) delete[] tab;
     }
 /* #endregion */
 
-/* #region //* user functions */
+/* #region //* helper functions */
 private:
+    int cells() const {        // how many cells are needed/used per amount of bits
+        return 0;
+    }
+    int get_cell(int bit) const {  // get in which cell is given bit
+
+    }
     bool czytaj (int i) const; // metoda pomocnicza do odczytu bitu
     bool pisz (int i, bool b); // metoda pomocnicza do zapisu bitu
-    public:
+/* #endregion */
+
+/* #region //* user functions */
+public:
     bool operator[] (int i) const; // indeksowanie dla stałych tablic bitowych
     ref operator[] (int i); // indeksowanie dla zwykłych tablic bitowych
-    inline int rozmiar () const; // rozmiar tablicy w bitach
+    inline int rozmiar () const{ // rozmiar tablicy w bitach
+        return sizeof(slowo) * (cells());
+    }
 /* #endregion */
 
 /* #region //* operator overloads */

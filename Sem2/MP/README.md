@@ -1,4 +1,4 @@
-[(wróć)](../../../../)
+[(wróć)](../)
 # **M**etody **P**rogramowania
 ### [Lista 1](./Lista%201/)
 ### [Lista 2](./Lista%202/)

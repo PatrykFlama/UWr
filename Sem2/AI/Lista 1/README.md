@@ -1,3 +1,4 @@
+[(wróć)](../../../../../)
 # Lista 1
 ## Zadanie 1
 Uruchamianie (plik musi być już skompilowany):

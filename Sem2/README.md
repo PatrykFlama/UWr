@@ -1,3 +1,4 @@
+[(wróć)](../../../)
 ## [**A**rtificial **I**ntelligence](AI/)
 ## [**M**etody **P**rogramowania](MP/)
 ## [**P**rogramowanie **O**biektowe](PO/)

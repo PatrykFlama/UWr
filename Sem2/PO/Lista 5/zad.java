@@ -11,13 +11,13 @@ class Expression {
     and contains variables, constatns at leafs - saved in pertinent classes
     evaluation of variables to values is saved on the expression hash map
      */
-    HashMap<String, Integer> variable_names;
+    HashMap<String, Float> variable_names;
 
     public Expression(){
-        variable_names = new HashMap<String, Integer>();
+        variable_names = new HashMap<String, Float>();
     }
 
-    public int evaluate() {
+    public float evaluate() {
         return 0;
     }
 
@@ -25,7 +25,7 @@ class Expression {
         return "";
     }
 
-    public void updateVariable(String name, int val){
+    public void updateVariable(String name, float val){
         variable_names.put(name, val);
     }
 
@@ -39,13 +39,13 @@ class Expression {
 }
 
 class Const extends Expression{
-    int val;
+    float val;
 
-    public Const(int _val){ 
+    public Const(float _val){ 
         val = _val; 
     }
 
-    public int evaluate(){
+    public float evaluate(){
         return val;
     }
 
@@ -64,16 +64,16 @@ class Variable extends Expression{
     public Variable(String _name){
         name = _name;
     }
-    public Variable(String _name, int val){
+    public Variable(String _name, float val){
         name = _name;
         updateVariable(name, val);
     }
 
-    public int evaluate() {
-        Integer temp = variable_names.get(name);
+    public float evaluate() {
+        Float temp = variable_names.get(name);
         if(temp == null) {
             System.out.println("Variable " + name + " without value, assigning 0!");
-            temp = 0;
+            temp = 0f;
         }
         return temp;
     }
@@ -95,7 +95,7 @@ class Add extends Expression{
         R = _R;
     }
 
-    public int evaluate(){
+    public float evaluate(){
         return L.evaluate() + R.evaluate();
     }
 
@@ -103,7 +103,7 @@ class Add extends Expression{
         return L.toString() + " + " + R.toString();
     }
 
-    public void updateVariable(String name, int val){
+    public void updateVariable(String name, float val){
         variable_names.put(name, val);
         L.updateVariable(name, val);
         R.updateVariable(name, val);
@@ -122,7 +122,7 @@ class Mult extends Expression{
         R = _R;
     }
 
-    public int evaluate(){
+    public float evaluate(){
         return L.evaluate() * R.evaluate();
     }
 
@@ -136,7 +136,7 @@ class Mult extends Expression{
         return tempL + " * " + tempR;
     }
 
-    public void updateVariable(String name, int val){
+    public void updateVariable(String name, float val){
         variable_names.put(name, val);
         L.updateVariable(name, val);
         R.updateVariable(name, val);
@@ -151,29 +151,29 @@ class Mult extends Expression{
 
 public class zad {
     public static void main(String[] args) {
-        Expression e = new Add(new Const(4), new Variable("x", 2));
+        Expression e = new Add(new Const(4f), new Variable("x", 2f));
         System.out.println(e.niceEvaluate());
         System.out.println("f(x)' = " + e.derivative() + " = " + e.derivative().evaluate());
         
-        e = new Add(new Const(4), new Mult(new Const(3), new Variable("x", 2)));
+        e = new Add(new Const(4f), new Mult(new Const(3f), new Variable("x", 2f)));
         System.out.println(e.niceEvaluate());
         System.out.println("f(x)' = " + e.derivative() + " = " + e.derivative().evaluate());
 
         e = new Mult(e, new Variable("y"));
         System.out.println(e.niceEvaluate());
         
-        e.updateVariable("y", 10);
+        e.updateVariable("y", 10f);
         System.out.println(e.niceEvaluate());
         
-        e.updateVariable("y", 100);
+        e.updateVariable("y", 100f);
         System.out.println(e.niceEvaluate());
         
-        e = new Add(new Variable("x"), new Mult(new Const(5), new Add(new Const(11), e)));
-        e.updateVariable("x", 2);
+        e = new Add(new Variable("x"), new Mult(new Const(5f), new Add(new Const(11f), e)));
+        e.updateVariable("x", 2f);
         System.out.println(e.niceEvaluate());
 
         e = (new Mult(new Variable("x"), new Variable("x"))).derivative();
-        e.updateVariable("x", 3);
+        e.updateVariable("x", 3f);
         System.out.println("f(x)' = " + e.niceEvaluate());
     }
 }

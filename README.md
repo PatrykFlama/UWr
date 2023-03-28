@@ -1,10 +1,10 @@
 # UWr
 ## [Semestr 1](Sem1/)
-* [**M**etody **I**mplementacji **A**lgorytmów](Sem1/MIA/)
 * [**W**stęp **d**o **p**rogramowania w **C**](Sem1/WdpC/)
+* [**M**etody **I**mplementacji **A**lgorytmów](Sem1/MIA/)
 ## [Semestr 2](Sem2/)
 * [**A**rtificial **I**ntelligence](Sem2/AI)
-* [Kurs języka **C++**](Sem2/CPP/)
 * [**M**etody **P**rogramowania](Sem2/MP/)
 * [**P**rogramowanie **O**biektowe](Sem2/PO/)
+* [Kurs języka **C++**](Sem2/CPP/)
 * [**P**raktyczne **A**spekty **R**ozwoju **O**programowania](Sem2/PARO/)

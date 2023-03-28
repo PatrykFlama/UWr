@@ -1,4 +1,4 @@
-[(wróć)](../../../../../)
+[(wróć)](../)
 # Statystyki pozycyjne
 ###### Problem code: SELECT \| Time: 3 s \| Memory: 16 MB \| Solved: yes \| print
 

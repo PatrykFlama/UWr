@@ -1,4 +1,4 @@
-// ADD pragma once later to class
+// TODO ADD pragma once later to class
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -6,21 +6,44 @@ using namespace std;
 class tab_bit {
     typedef uint64_t slowo; // komorka w tablicy
     static const int rozmiarSlowa; // rozmiar slowa w bitach
-    friend istream &operator>> (istream &we, tab_bit &tb);
-    friend ostream &operator<< (ostream &wy, const tab_bit &tb);
-    class ref; // klasa pomocnicza do adresowania bitów
+    class ref { // klasa pomocnicza do adresowania bitów
+
+    };
+
+/* #region //* ----- VARS ------ */
 protected:
-    int dl; // liczba bitów
-    slowo *tab; // tablica bitów
+    int dl;     // amount of bits
+    slowo *tab; // bits array
+/* #endregion */
+
+/* #region //* constructors, assignment */
 public:
-    explicit tab_bit (int rozm);    // wyzerowana tablica bitow [0...rozm]
-    explicit tab_bit (slowo tb);    // tablica bitów [0...rozmiarSlowa]
-                                    // zainicjalizowana wzorcem
-    tab_bit (const tab_bit &tb);    // konstruktor kopiujący
-    tab_bit (tab_bit &&tb);     // konstruktor przenoszący
-    tab_bit & operator = (const tab_bit &tb); // przypisanie kopiujące
-    tab_bit & operator = (tab_bit &&tb); // przypisanie przenoszące
-    ~tab_bit (); // destruktor
+    explicit tab_bit (int rozm) {    // zeroed bits arry [0...size]
+        // TODO
+    }
+    explicit tab_bit (slowo tb) {    // bits array [0...wordSize] initiated with pattern
+        // TODO
+    }
+    
+    tab_bit (const tab_bit &tb) {
+        dl = tb.dl;
+        copy(tb.tab, tb.tab+dl, tab);   // TODO is tab+dl correct or should it be smth like tab+(dl/[bits(char)=8])
+    }
+    tab_bit (tab_bit &&tb) {
+        dl = tb.dl;
+    }
+    tab_bit &operator=(const tab_bit &tb) {
+        
+    }
+    tab_bit &operator=(tab_bit &&tb) {
+
+    }
+    ~tab_bit (){
+        if(tab != nullptr) delete[] tab;
+    }
+/* #endregion */
+
+/* #region //* user functions */
 private:
     bool czytaj (int i) const; // metoda pomocnicza do odczytu bitu
     bool pisz (int i, bool b); // metoda pomocnicza do zapisu bitu
@@ -28,10 +51,52 @@ private:
     bool operator[] (int i) const; // indeksowanie dla stałych tablic bitowych
     ref operator[] (int i); // indeksowanie dla zwykłych tablic bitowych
     inline int rozmiar () const; // rozmiar tablicy w bitach
+/* #endregion */
+
+/* #region //* operator overloads */
 public:
-    // operatory bitowe: | i |=, & i &=, ^ i ^= oraz !
+    tab_bit& operator|=(const tab_bit& a){
+        // TODO operation
+        return *this;
+    }
+
+    friend tab_bit operator|(tab_bit a, const tab_bit& b){
+        a |= b;
+        return a;
+    }
+    
+    tab_bit& operator&=(const tab_bit& a){
+        // TODO operation
+        return *this;
+    }
+
+    friend tab_bit operator&(tab_bit a, const tab_bit& b){
+        a &= b;
+        return a;
+    }
+
+    tab_bit& operator^=(const tab_bit& a){
+        // TODO operation
+        return *this;
+    }
+
+    friend tab_bit operator^(tab_bit a, const tab_bit& b){
+        a ^= b;
+        return a;
+    }
+
+    friend tab_bit operator!(const tab_bit& a){
+        // TODO operation
+        return a;
+    }
+    /* #endregion */
+
+/* #region //* stream operators */
 public:
     // zaprzyjaźnione operatory strumieniowe: << i >>
+    friend istream &operator>> (istream &we, tab_bit &tb);
+    friend ostream &operator<< (ostream &wy, const tab_bit &tb);
+    /* #endregion */
 };
 
 int main(){

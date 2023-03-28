@@ -7,14 +7,10 @@
 (define (f2 c b a) (c a (b a)))
 ; (((' a - > 'a) -> 'a) -> 'a)
 (define (f3 [a : (('a -> 'a) -> 'a)]) (a identity))
+(define (f3v2 a) (a (lambda (x) (a (lambda (x) x)))))
 ; ((' a - > 'b) (' a -> 'c) -> ('a -> (' b * 'c)))
 (define (f4 [b : ('a -> 'b)] [c : ('a -> 'c)])
   (lambda (a) (pair (b a) (c a))))
-
-#|
-(define (f5v1 o a)
-    (cons (snd (some-v (o a))) (f5v1 o (fst (some-v (o a))))))
-|#
 
 (define (f5 a_ab a)
   (if (some? (a_ab a))

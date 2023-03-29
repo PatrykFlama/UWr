@@ -78,7 +78,7 @@ lines_correct_longest = 0
 lines_correct_random = 0
 
 
-with open("zad3_input.txt", "rb") as tadeusz, open("PT_stripped.txt", "rb") as oryginal:
+with open("zad3-tad.txt", "rb") as tadeusz, open("PT_stripped.txt", "rb") as oryginal:
     for line, line_oryg in zip(tadeusz, oryginal):
         lines += 1
         # if(lines == 171): break        #! max line limiter

@@ -1,6 +1,6 @@
 import string
 
-output = open("zad3_input.txt", "wb")
+output = open("zad3-tad.txt", "wb")
 
 with open("pantadeusz.txt", "rb") as tadeusz:
     for line in tadeusz:

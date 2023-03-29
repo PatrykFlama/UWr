@@ -18,11 +18,12 @@ def reset():
     return row_correct, col_correct, picture
 
 def print_picture(picture = picture):
-    for i in range(R):
-        for j in range(C):
-            if picture[i][j]: print('#', end='')
-            else: print('.', end='')
-        print()
+    with open("zad_output.txt", "w") as output:
+        for i in range(R):
+            for j in range(C):
+                if picture[i][j]: output.write('#')
+                else: output.write('.')
+            output.write("\n")
 
 def random_picture():
     return np.random.choice([True, False], size = (R, C))
@@ -33,13 +34,12 @@ def get_picture_col(col):
         res.append(picture[row][col])
     return res
 
-def is_correct(domain_col, domain_row):   # if picture is correct <=> its rows and cols are in domain
+def is_correct(domain_row, domain_col):   # if picture is correct <=> its rows and cols are in domain
     i = 0
     for row in picture:
         if tuple(row) not in domain_row[i]:
             return False
         i += 1
-    
     for col in range(0, C):
         if tuple(get_picture_col(col)) not in domain_col[col]:
             return False
@@ -84,7 +84,7 @@ def get_possible_domains():    # generate all possibilities/domains for each row
                     break;
 
             if blocks_dont_overlap: # color blocks in col
-                new = [0] * R
+                new = [0] * C
                 col_ptr = 0
                 for cell in combination:
                     for j in range(cell, cell + col[col_ptr]):
@@ -109,37 +109,29 @@ def domain_intersection(domain):    # calculate intersection of given domain for
     return (intersetion1, intersetion0)
 
 def clear_domain(cells, domain, color, is_row):   # remove not fitting possibilities from domain
-    new_domain = []     # TODO fix that sucker
     if is_row:
-        to_add = []
-        for row, col in cells:
-            to_add_to_add = []
-            for poss in domain[row]:
-                if poss[col] == color:
-                    to_add_to_add.append(poss)
-            to_add.append(to_add_to_add)
-        new_domain.append({tuple(i) for i in to_add})
+        for r, c in cells:
+            to_clear = []
+            for poss in domain[c]:
+                if poss[r] != color:
+                    to_clear.append(poss)
+            for rm in to_clear:
+                domain[c] -= {rm}
     else:
-        to_add = []
-        for row, col in cells:
-            to_add_to_add = []
-            for poss in domain[col]:
-                if poss[row] == color:
-                    to_add_to_add.append(poss)
-            to_add.append(to_add_to_add)
-        new_domain.append({tuple(i) for i in to_add})
-    
-    return new_domain
+        for r, c in cells:
+            to_clear = []
+            for poss in domain[r]:
+                if poss[c] != color:
+                    to_clear.append(poss)
+            for rm in to_clear:
+                domain[r] -= {rm}
+    return domain
 
 
 def solve_ac3():
     domain_row, domain_col = get_possible_domains()
 
     while not is_correct(domain_row, domain_col):
-        print(domain_row)
-        print(domain_col)
-        print("-------------------")
-
         # --- row ---
         colored_cells = set()
         blank_cells = set()
@@ -147,12 +139,14 @@ def solve_ac3():
         r = 0
         for row in domain_row:  # select row
             c = 0
-
+            
             intersection = domain_intersection(row)
+            if(len(intersection[0]) > 10): print(intersection)
             for cell in range(0, len(intersection[0])):   # intersection of all possibilities in that row
                 if intersection[0][cell] == 1:
                     picture[r][c] = True
                     colored_cells.add((r, c))
+            for cell in range(0, len(intersection[1])):
                 if intersection[1][cell] == 0:
                     picture[r][c] = False
                     blank_cells.add((r, c))
@@ -161,10 +155,6 @@ def solve_ac3():
 
         domain_col = clear_domain(colored_cells, domain_col, 1, True)
         domain_col = clear_domain(blank_cells, domain_col, 0, True)
-
-        print(domain_row)
-        print(domain_col)
-        print("-------------------")
 
         # --- col ---
         colored_cells = set()
@@ -188,6 +178,7 @@ def solve_ac3():
         domain_row = clear_domain(colored_cells, domain_row, 1, False)
         domain_row = clear_domain(blank_cells, domain_row, 0, False)
 
+
 def read_input():
     with open("zad_input.txt", "r") as input:
         s = input.readline().split()
@@ -201,6 +192,9 @@ def read_input():
         return R, C, row_val, col_val
 
 R, C, row_val, col_val = read_input()
+row_correct = [False]*R
+col_correct = [False]*C
+picture = np.array([[False]*R]*C)
 
 solve_ac3()
 

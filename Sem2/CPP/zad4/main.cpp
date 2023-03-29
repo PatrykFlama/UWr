@@ -33,7 +33,8 @@ public:
     
     tab_bit (const tab_bit &tb) {
         bits_amt = tb.bits_amt;
-        copy(tb.tab, tb.tab+bits_amt, tab);   // TODO is tab+bits_amt correct or should it be smth like tab+(bits_amt/[bits(char)=8])
+        for(int i = 0; i < cells(); i++) 
+            tab[i] = tb.tab[i];
     }
     tab_bit (tab_bit &&tb) {
         bits_amt = tb.bits_amt;
@@ -41,11 +42,17 @@ public:
         tb.tab = nullptr;
     }
     tab_bit &operator=(const tab_bit &tb) {
-        // TODO but i think its the same as operator one
+        bits_amt = tb.bits_amt;
+        tab = new word[cells()];
+        for(int i = 0; i < cells(); i++) 
+            tab[i] = tb.tab[i];
     }
     tab_bit &operator=(tab_bit &&tb) {
-        // TODO but i think its the same as operator one
+        bits_amt = tb.bits_amt;
+        tab = tb.tab;
+        tb.tab = nullptr;
     }
+
     ~tab_bit (){
         if(tab != nullptr) delete[] tab;
     }
@@ -163,10 +170,16 @@ public:
 
 /* #region //* stream operators */
 public:
-    // TODO     cout << bitset<4>(liczbaGreya).to_string() << '\n';
     // zaprzyjaźnione operatory strumieniowe: << i >>
-    friend istream &operator>> (istream &we, tab_bit &tb);
-    friend ostream &operator<< (ostream &wy, const tab_bit &tb);
+    // friend istream &operator>> (istream &in, tab_bit &tb){
+    //     return in >> tb.read_bit(0);
+    // }
+    friend ostream &operator<< (ostream &out, const tab_bit &tb){
+        string res = "";
+        for(int i = 0; i < tb.cells(); i++)
+            res = bitset<tb.bitsInWord>(tb.tab[i]).to_string() + res;
+        return out << res;
+    }
     /* #endregion */
 };
 

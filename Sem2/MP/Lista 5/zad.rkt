@@ -132,7 +132,6 @@
             (if (empty? queue)
                 '()
                 (append (dfs (first queue)) (_dfs (rest queue)))))] 
-                ; TODO: there might be some garbage
     (if (rose-leaf? tree) 
         (list (rose-leaf-elem tree))
         (_dfs (rose-node-sub tree)))))

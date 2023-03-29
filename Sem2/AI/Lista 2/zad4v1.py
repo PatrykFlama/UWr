@@ -31,10 +31,10 @@ def read_board():
 dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 dirs_names = "DURL"
 
-def sum(a, b):
+def sum(a, b):  # sum function for tuples
     return (a[0]+b[0], a[1]+b[1])
 
-def move_safe(move):
+def move_safe(move):    # ensure that move is safe - not into the wall, not outside the map
     return (not board_walls[move[0]][move[1]]) and  (move[0] < len(board_walls) and move[0] >= 0) and \
                                                     (move[1] < len(board_walls[0]) and move[0] >= 0)
 
@@ -47,7 +47,7 @@ def make_move(state, dir):
         else: new_state.add(commando)
     return new_state
 
-def goal_reached(state):
+def goal_reached(state):    # are all poss positions on goal?
     for commando in state:
         if commando not in board_goal: return False
     return True
@@ -79,23 +79,23 @@ def hash_state(state):      # we assume that there are max 3 commandos in state
 
     return hash
 
-def bfs(state):
+def bfs(start_state):
     q = []
     vis = [False] * (pow((len(board_walls)*len(board_walls[0])), 3) + 1000)      #diff
-    q.append((state, ""))
-    vis[hash_state(state)] = True      #diff
-    path = ""
+    q.append((start_state, ""))
+    vis[hash_state(start_state)] = True      #diff
     
-    while len(q) != 0 and not goal_reached(state):
-        state, path = q.pop(0)
+    while len(q) != 0:
+        current_state, path = q.pop(0)
+        if goal_reached(current_state): return (current_state, path)
 
         for d in range(0, 4):
-            new_state = make_move(state, dirs[d])
+            new_state = make_move(current_state, dirs[d])
             if not vis[hash_state(new_state)]:
                 q.append((new_state, path+dirs_names[d]))
                 vis[hash_state(new_state)] = True
 
-    return (state, path)
+    return (False, "")
 
 def print_board(state):
     for row in range(0, len(board_walls)):

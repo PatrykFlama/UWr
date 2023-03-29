@@ -1,4 +1,5 @@
 import random
+import queue
 
 board_walls = list()
 board_start = set()
@@ -84,10 +85,10 @@ def bfs(state):
     vis = [False] * (pow((len(board_walls)*len(board_walls[0])), 3) + 1000)      #diff
     q.append((state, ""))
     vis[hash_state(state)] = True      #diff
-    path = ""
     
-    while len(q) != 0 and not goal_reached(state):
+    while len(q) != 0:
         state, path = q.pop(0)
+        if goal_reached(state): return (state, path)
 
         for d in range(0, 4):
             new_state = make_move(state, dirs[d])
@@ -95,7 +96,11 @@ def bfs(state):
                 q.append((new_state, path+dirs_names[d]))
                 vis[hash_state(new_state)] = True
 
-    return (state, path)
+    return (False, "")
+
+def bfs_astar(state):
+    pass
+
 
 def print_board(state):
     for row in range(0, len(board_walls)):

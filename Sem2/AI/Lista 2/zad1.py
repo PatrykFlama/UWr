@@ -9,7 +9,7 @@ col_val = [[]]    # how many how long blocks per col
 row_correct = [False]*R
 col_correct = [False]*C
 iterations_per_draw = 5000
-picture = np.array([[False]*R]*C)
+picture = np.array([[False]*C]*R)
 
 def reset():
     row_correct = [False]*R
@@ -51,7 +51,7 @@ def get_possible_domains():    # generate all possibilities/domains for each row
     res = [[],[]]
     for row in row_val:
         act_res = []
-        maxx = R - row[-1]
+        maxx = C - row[-1]
         for combination in combinations(range(maxx+1), len(row)):   # combination of block starts
             blocks_dont_overlap = True
             for cell in range(1, len(combination)):
@@ -62,7 +62,7 @@ def get_possible_domains():    # generate all possibilities/domains for each row
                     break;
 
             if blocks_dont_overlap: # color blocks in row
-                new = [0] * R
+                new = [0] * C
                 row_ptr = 0
                 for cell in combination:
                     for j in range(cell, cell + row[row_ptr]):
@@ -73,7 +73,7 @@ def get_possible_domains():    # generate all possibilities/domains for each row
 
     for col in col_val:
         act_res = []
-        maxx = C - col[-1]
+        maxx = R - col[-1]
         for combination in combinations(range(maxx+1), len(col)):
             blocks_dont_overlap = True
             for cell in range(1, len(combination)):
@@ -84,7 +84,7 @@ def get_possible_domains():    # generate all possibilities/domains for each row
                     break;
 
             if blocks_dont_overlap: # color blocks in col
-                new = [0] * C
+                new = [0] * R
                 col_ptr = 0
                 for cell in combination:
                     for j in range(cell, cell + col[col_ptr]):
@@ -141,16 +141,16 @@ def solve_ac3():
             c = 0
             
             intersection = domain_intersection(row)
-            if(len(intersection[0]) > 10): print(intersection)
             for cell in range(0, len(intersection[0])):   # intersection of all possibilities in that row
                 if intersection[0][cell] == 1:
                     picture[r][c] = True
                     colored_cells.add((r, c))
-            for cell in range(0, len(intersection[1])):
+                    
                 if intersection[1][cell] == 0:
                     picture[r][c] = False
                     blank_cells.add((r, c))
                 c += 1
+
             r += 1
 
         domain_col = clear_domain(colored_cells, domain_col, 1, True)
@@ -169,10 +169,12 @@ def solve_ac3():
                 if intersection[0][cell] == 1:
                     picture[r][c] = True
                     colored_cells.add((r, c))
+
                 if intersection[1][cell] == 0:
                     picture[r][c] = False
                     blank_cells.add((r, c))
                 r += 1
+
             c += 1
 
         domain_row = clear_domain(colored_cells, domain_row, 1, False)
@@ -194,7 +196,7 @@ def read_input():
 R, C, row_val, col_val = read_input()
 row_correct = [False]*R
 col_correct = [False]*C
-picture = np.array([[False]*R]*C)
+picture = np.array([[False]*C]*R)
 
 solve_ac3()
 

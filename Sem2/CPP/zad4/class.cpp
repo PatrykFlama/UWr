@@ -94,7 +94,9 @@ tab_bit::~tab_bit (){
     if(tab != nullptr) delete[] tab;
 }
 
-void tab_bit::resize(){
+void tab_bit::resize(int s = -1){
+    if (s > 0) bits_amt = s;
+
     int new_size = cells();
     word *new_tab = new word[new_size];
     for(int i = 0; i < cells(); i++){

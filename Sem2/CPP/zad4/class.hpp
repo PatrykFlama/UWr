@@ -30,7 +30,7 @@ public:
 
     ~tab_bit ();
 
-    void resize();
+    void resize(int s);
 /* #endregion */
 
 /* #region //* helper functions */

@@ -12,11 +12,18 @@ int main(){
     cout << "T\n";
 
     u |= t;
-    cout << "u or t" << u << '\n';
+    cout << "u or t\n" << u << '\n';
     u &= w;
-    cout << "u and w" << w << '\n';
+    cout << "u and w\n" << w << '\n';
     w ^= t;
-    cout << "w xor t" << w << '\n';
+    cout << "w xor t\n" << w << '\n';
+
+    tab_bit h(2);
+    cout << h.rozmiar() << '\n' << h << '\n';
+    h = w;
+    cout << h.rozmiar() << '\n' << h << '\n';
+    h.resize(100);
+    cout << h.rozmiar() << '\n';
 
     cout << "rozmiary\n" << w.rozmiar() << ' ' <<  t.rozmiar() << ' ' << u.rozmiar() << '\n';
     

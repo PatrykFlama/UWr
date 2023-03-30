@@ -146,7 +146,7 @@ while res == False:
         #     res, path2 = long_bfs(state)
         #     break
 
-        print_board(state)
+    # print_board(state)
 
     res, path2 = bfs(state)
 

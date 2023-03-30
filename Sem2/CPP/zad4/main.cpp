@@ -3,11 +3,45 @@
 using namespace std;
 
 
+
+
 class tab_bit {
     typedef uint64_t word; // komorka w tablicy
     static const int bitsInWord = (sizeof(word)*8); // rozmiar slowa w bitach
-    class ref { // klasa pomocnicza do adresowania bitów
 
+    class ref { // klasa pomocnicza do adresowania bitów
+        word *rtab;
+        int rptr;
+
+    public:
+        ref(word *_tab, int _ptr){
+            rtab = _tab;
+            rptr = _ptr;
+        }
+
+        int get_bit_state() const {
+            word bit = (1 << rptr);
+            return (*rtab)&bit;
+        }
+
+        ref &operator=(const int b){
+            word bit = (1 << rptr);
+            if(b) (*rtab) |= bit;     // turn bit on
+            else  (*rtab) &= ~bit;
+        }
+
+        ref &operator=(const ref &r){
+            word bit = (1 << rptr);
+
+            int b = r.get_bit_state();
+
+            if(b) (*rtab) |= bit;     // turn bit on
+            else  (*rtab) &= ~bit;
+        }
+
+        bool &operator=(const ref &r){
+            return (bool)(r.get_bit_state());
+        }
     };
 
 /* #region //* VARS */
@@ -98,7 +132,7 @@ public:
         return read_bit(i);
     }
     ref operator[] (int i){ // indeksowanie dla zwykłych tablic bitowych
-        //TODO
+        return ref(tab, i);
     }
     inline int rozmiar () const{ // rozmiar tablicy w bitach
         return bitsInWord * cells();

@@ -266,15 +266,15 @@ bool win(set<pii> positions){   // check if game is won
 int main(){
     State initial_state = get_input();
 
-    priority_queue<pair<int, State>> q;
-    q.push({0, initial_state});
+    priority_queue<pair<int, State>> pq;
+    pq.push({0, initial_state});
     vis.insert({{initial_state.y, initial_state.x}, initial_state.positions});
     create_distance_array();
 
 
-    while(q.size()){        //* BFS with heuristics
-        State top_state = q.top().second;
-        q.pop();
+    while(pq.size()){        //* BFS with heuristics
+        State top_state = pq.top().second;
+        pq.pop();
 
         int x = top_state.x; int y = top_state.y;
         set<pii> positions =  top_state.positions;
@@ -296,7 +296,7 @@ int main(){
                 state.moves = new_moves;
 
                 int heur = -(new_moves.size() + dist(state.positions));
-                q.push({heur, state});
+                pq.push({heur, state});
                 vis.insert({{state.y, state.x}, state.positions});
             }
         }

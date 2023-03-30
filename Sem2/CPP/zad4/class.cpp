@@ -129,12 +129,12 @@ bool tab_bit::write_bit (int i, bool b){ // metoda pomocnicza do zapisu bitu
 /* #endregion */
 
 /* #region //* user functions */
-bool tab_bit::operator[] (int i) const{ // indeksowanie dla stałych tablic bitowych
-    return read_bit(i);
-}
-// tab_bit::ref tab_bit::operator[] (word i){ // indeksowanie dla zwykłych tablic bitowych
-//     return ref(tab, (int)i);
+// bool tab_bit::operator[] (int i) const{ // indeksowanie dla stałych tablic bitowych
+//     return read_bit(i);
 // }
+tab_bit::ref tab_bit::operator[] (word i){ // indeksowanie dla zwykłych tablic bitowych
+    return ref(tab, (int)i);
+}
 int tab_bit::rozmiar () const{ // rozmiar tablicy w bitach
     return bitsInWord * cells();
 }

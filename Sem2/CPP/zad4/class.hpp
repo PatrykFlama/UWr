@@ -43,8 +43,8 @@ private:
 
 /* #region //* user functions */
 public:
-    bool operator[] (int i) const;
-    // ref operator[] (word i);
+    // bool operator[] (int i) const;
+    ref operator[] (word i);
     int rozmiar () const;
 /* #endregion */
 

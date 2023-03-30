@@ -11,10 +11,6 @@ int main(){
     cout << w << '\n';
     cout << "T\n";
 
-    for(int i = 0; i < 30; i++){
-        cout << "bit " << i << " from w: " << w[i] << '\n';
-    }
-
     u |= t;
     cout << "u or t" << u << '\n';
     u &= w;

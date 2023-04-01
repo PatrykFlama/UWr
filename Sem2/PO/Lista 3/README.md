@@ -1,3 +1,4 @@
+[(wróć)](../)
 # Lista 3
 ## Podział programu na biblioteki oraz kod/program głowny
 Aby zwiększyć czytelność, wspomóc ogranizację kodu oraz przyspieszyć czas kompilacji (szczególnie dużych projektów) możemy wydzielić z naszego programu konkretne klasy oraz funkcje i zamknąć je w osobnym pliku-biblioteki, który możemy od razu skompilować.

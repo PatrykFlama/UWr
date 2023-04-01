@@ -1,3 +1,4 @@
+[(wróć)](../)
 # Lista 6 - wielowątkowość
 Aby klasa mogła obsługiwać wielowątkowość, powinna ona dziedziczyć _Thread_ oraz implementować funkcję _public void run()_:
 ```java

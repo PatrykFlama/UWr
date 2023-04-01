@@ -1,3 +1,4 @@
+[(wróć)](../)
 # Lista 4
 ## Implementowanie Enumeratorów w klasie
 Aby dodać do naszej klasy możliwoś iterowania się po niej możemy zintegrować ją z interfejsem enumeratora. Polega to na:

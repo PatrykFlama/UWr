@@ -1,3 +1,4 @@
+[(wróć)](../)
 # Lista 5 - Java
 ## Główna funkcja programu w Javie
 ```java

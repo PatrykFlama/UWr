@@ -5,3 +5,7 @@
 ### [Lista 3](./Lista%203/)
 ### [Lista 4](./Lista%204/)
 ### [Lista 5](./Lista%205/)
+### [Lista 6](./Lista%206/)
+### [Lista 7](./Lista%207/)
+### [Lista 8](./Lista%208/)
+### [Lista 9](./Lista%209/)

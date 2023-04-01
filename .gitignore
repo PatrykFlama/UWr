@@ -48,3 +48,6 @@ build/
 # AI
 *input.txt
 *output.txt
+
+# Java
+*.class

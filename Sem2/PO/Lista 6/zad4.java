@@ -21,6 +21,8 @@ class MergeSort<T extends Comparable<T>> extends Thread {
         l.join();
         r.join();
 
+        // in this case arraylist is not dangerous with multithretning,
+        // as it is not beeing run with multiple threads
         ArrayList<T> res = new ArrayList<T>();
         int ptr_l = 0, ptr_r = 0;
         

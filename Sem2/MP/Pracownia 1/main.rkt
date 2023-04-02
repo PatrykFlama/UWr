@@ -1,20 +1,21 @@
 #lang racket
 
-(provide (struct-out column-info)
-         (struct-out table)
-         (struct-out and-f)
-         (struct-out or-f)
-         (struct-out not-f)
-         (struct-out eq-f)
-         (struct-out eq2-f)
-         (struct-out lt-f)
-         table-insert
-         table-project
-         table-sort
-         table-select
-         table-rename
-         table-cross-join
-         table-natural-join)
+; TODO uncomment
+; (provide (struct-out column-info)
+;          (struct-out table)
+;          (struct-out and-f)
+;          (struct-out or-f)
+;          (struct-out not-f)
+;          (struct-out eq-f)
+;          (struct-out eq2-f)
+;          (struct-out lt-f)
+;          table-insert
+;          table-project
+;          table-sort
+;          table-select
+;          table-rename
+;          table-cross-join
+;          table-natural-join)
 
 #|
 column-info:
@@ -70,16 +71,32 @@ table:
                 (_table-insert-check (cdr row) (cdr types))]
             [else #f]))
     (if (_table-insert-check row (table-schema tab))
-        (tab 
+        (table
             (table-schema tab) 
             (cons row (table-rows tab)))
-        (error "table-insert: incorrect row!")))
+        (error "table-insert: incorrect row type or length!")))
 
-; Projection from table
+; Projection of table
 (define (table-project cols tab)
-  ;; TODO uzupełnij
-  )
+    (define (_get_column_number column columns) ; returns table with found column
+        (cond
+            [(null? (table-schema tab)) 
+                (error "table-project: column does not exist!")]
+            [(equal? column (column-info-name (car (table-schema tab))))
+                (table (car (table-schema tab)) (table-rows tab))]
+            [else (_get_by_column column (table
+                                    (cdr (table-schema tab))
+                                    (cdr (table-rows tab))))]))
+    ; (if (null? cols)
+    ;     (table '() '())
+    ;     (let ((table_found (_get_by_column (car cols) tab))
+    ;           (table_rest  (table-project (cdr cols) tab)))
+    ;         (table
+    ;             (cons (table-schema table_found) (table-schema table_rest))
+    ;             (cons (table-rows table_found) (table-rows table_rest))))))
 
+
+#|
 ; Sorting the table
 (define (table-sort cols tab)
   ;; TODO uzupełnij
@@ -111,3 +128,5 @@ table:
 (define (table-natural-join tab1 tab2)
   ;; TODO uzupełnij
   )
+
+|#

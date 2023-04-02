@@ -189,7 +189,7 @@ pii move_down(pii position){
 }
 /* #endregion */
 
-void change_nearest_goals(pii init){    // TODO
+void change_nearest_goals(pii init){
     bool vis[30][30];
     queue<pair<pii, int>> q;
     q.push({init, 0});

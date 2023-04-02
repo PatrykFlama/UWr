@@ -16,8 +16,18 @@
          table-cross-join
          table-natural-join)
 
+#|
+column-info:
+    name: symbol
+    type: 'number/'string/'symbol/'boolean
+|#
 (define-struct column-info (name type) #:transparent)
 
+#|
+table:
+    schema: list of column-info
+    rows: list of list of data with according types and length
+|#
 (define-struct table (schema rows) #:transparent)
 
 (define cities
@@ -45,26 +55,37 @@
 
 (define (empty-table columns) (table columns '()))
 
-; Wstawianie
-
+; Insertion to table
 (define (table-insert row tab)
-  ;; uzupełnij
-  )
+    (define (_table-insert-check row types)
+        (cond
+            [(and (null? row) (null? types)) #t]
+            [(and (number? (car row)) (equal? 'number (column-info-type (car types))))
+                (_table-insert-check (cdr row) (cdr types))]
+            [(and (string? (car row)) (equal? 'string (column-info-type (car types))))
+                (_table-insert-check (cdr row) (cdr types))]
+            [(and (symbol? (car row)) (equal? 'symbol (column-info-type (car types))))
+                (_table-insert-check (cdr row) (cdr types))]
+            [(and (boolean? (car row)) (equal? 'boolean (column-info-type (car types))))
+                (_table-insert-check (cdr row) (cdr types))]
+            [else #f]))
+    (if (_table-insert-check row (table-schema tab))
+        (tab 
+            (table-schema tab) 
+            (cons row (table-rows tab)))
+        (error "table-insert: incorrect row!")))
 
-; Projekcja
-
+; Projection from table
 (define (table-project cols tab)
-  ;; uzupełnij
+  ;; TODO uzupełnij
   )
 
-; Sortowanie
-
+; Sorting the table
 (define (table-sort cols tab)
-  ;; uzupełnij
+  ;; TODO uzupełnij
   )
 
-; Selekcja
-
+; Selection of the table
 (define-struct and-f (l r))
 (define-struct or-f (l r))
 (define-struct not-f (e))
@@ -73,23 +94,20 @@
 (define-struct lt-f (name val))
 
 (define (table-select form tab)
-  ;; uzupełnij
+  ;; TODO uzupełnij
   )
 
-; Zmiana nazwy
-
+; Changing name in the table
 (define (table-rename col ncol tab)
-  ;; uzupełnij
+  ;; TODO uzupełnij
   )
 
-; Złączenie kartezjańskie
-
+; Tables cross join
 (define (table-cross-join tab1 tab2)
-  ;; uzupełnij
+  ;; TODO uzupełnij
   )
 
-; Złączenie
-
+; Tables join
 (define (table-natural-join tab1 tab2)
-  ;; uzupełnij
+  ;; TODO uzupełnij
   )

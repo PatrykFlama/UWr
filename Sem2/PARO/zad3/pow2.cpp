@@ -2,12 +2,17 @@
 
 #include <algorithm>
 #include <vector>
+#include<cmath>
 
 template <typename T>
 std::vector<T> pow2(const std::vector<T>& input)
 {
     // Funkcja zwraca wektor elementów podniesionych do potęgi 2.
-    return {};
+    std::vector<T> res = input;
+    for(auto &i : res){
+        i = pow(i, 2);
+    }
+    return res;
 }
 
 TEST(Pow2Test, Test)

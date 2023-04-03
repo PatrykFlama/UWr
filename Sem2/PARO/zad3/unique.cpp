@@ -9,9 +9,12 @@
 template <typename T>
 std::vector<T> unique(const std::vector<T>& first, const std::vector<T>& second)
 {
-    // TODO:      This function should join input vectors and return only unique elements.
+    // This function should join input vectors and return only unique elements.
     // Important: Use only containers! No algorithms allowed.
-    return {};
+    std::set<T> sres(first.begin(), first.end());
+    std::copy(second.begin(), second.end(), inserter(sres, sres.end()));
+    std::vector<T> vres(sres.begin(), sres.end());
+    return vres;
 }
 
 TEST(DuplicatesTest, Test)

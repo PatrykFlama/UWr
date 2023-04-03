@@ -37,12 +37,12 @@
                 (not (nnf-lit-var f)))]
         [(nnf-conj? f) 
             (and
-                (eval-nnf (nnf-conj-l f))
-                (eval-nnf (nnf-conj-r f)))]
+                (eval-nnf sigma (nnf-conj-l f))
+                (eval-nnf sigma (nnf-conj-r f)))]
         [(nnf-disj? f) 
             (or
-                (eval-nnf (nnf-disj-l f))
-                (eval-nnf (nnf-disj-r f)))]))
+                (eval-nnf sigma (nnf-disj-l f))
+                (eval-nnf sigma (nnf-disj-r f)))]))
 
 (define (example-sigma f)
     (cond
@@ -74,48 +74,35 @@
     (neg (disj
         (neg (conj
             (neg (var 'p))
-            (var ('q))))
+            (var 'q)))
         (neg (var 'p)))))
 
 ; zad7
+(define (eval-formula-easy sigma f)
+    (eval-nnf sigma (to-nnf f)))
+
 (define (eval-formula sigma f)
     (cond
         [(var? f) (sigma (var-var f))]
-        [(neg? f) (not (eval-formula (neg-f f)))]
+        [(neg? f) (not (eval-formula sigma (neg-f f)))]
         [(conj? f) 
             (and
-                (eval-formula (conj-l f))
-                (eval-formula (conj-r f)))]
+                (eval-formula sigma (conj-l f))
+                (eval-formula sigma (conj-r f)))]
         [(disj? f) 
             (or
-                (eval-formula (disj-l f))
-                (eval-formula (disj-r f)))]))
+                (eval-formula sigma (disj-l f))
+                (eval-formula sigma (disj-r f)))]))
 
 ; zad8
 (define (sorted? xs)
-    (local[
-        (define (_sorted_asc? elem xs)
-            (cond 
-                [(empty? xs) #t]
-                [(<= elem (first xs))
-                    (sorted? (first xs) (rest xs))]
-                [else #f]))
-        (define (_sorted_desc? elem xs)
-            (cond 
-                [(empty? xs) #t]
-                [(>= elem (first xs))
-                    (sorted? (first xs) (rest xs))]
-                [else #f]))]
-        (cond
-            [(empty? xs) #t]
-            [(empty? (rest xs)) #t]
-            [(or 
-                (_sorted_asc?
-                    (first xs)
-                    (rest xs)) 
-                (_sorted_desc?
-                    (first xs)
-                    (rest xs)))])))
+    (cond
+        [(empty? xs) #t]
+        [(empty? (rest xs)) #t]
+        [else
+            (and 
+                (<= (first xs) (first (rest xs)))
+                (sorted? (rest xs)))]))        
 
 (define (insert x xs)
     (cond

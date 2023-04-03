@@ -3,15 +3,17 @@
 #include <algorithm>
 #include <vector>
 #include<cmath>
+#include<bits/stdc++.h>
 
 template <typename T>
 std::vector<T> pow2(const std::vector<T>& input)
 {
     // Funkcja zwraca wektor elementów podniesionych do potęgi 2.
-    std::vector<T> res = input;
-    for(auto &i : res){
-        i = pow(i, 2);
-    }
+    std::vector<T> res;
+    std::transform(input.begin(),
+                   input.end(),
+                   std::back_inserter(res),
+                   [](auto i){return i*i;});
     return res;
 }
 
@@ -28,4 +30,10 @@ int main(int ac, char ** av)
 {
     ::testing::InitGoogleTest(&ac, av);
     return RUN_ALL_TESTS();
+    // std::vector<int> test = {1, 2, 3, 4};
+    // auto res = pow2(test);
+    // for(auto i : res){
+        // std::cout << i << ' ';
+    // }
+    // std::cout << '\n';
 }

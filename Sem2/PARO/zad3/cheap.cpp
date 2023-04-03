@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iterator>
 #include <vector>
+#include <bits/stdc++.h>
 
 struct Product final
 {
@@ -16,7 +17,11 @@ struct Product final
 std::vector<Product> find_cheapest(const std::vector<Product>& v, size_t num)
 {
     // Funkcja ma zwrócić wektor zawierający [num] najtańszych produktów
-    return {};
+    std::vector<Product> res1 = v;
+    sort(res1.begin(), res1.end());
+    std::vector<Product> res2(num);
+    std::copy(res1.begin(), res1.begin()+num, res2.begin());
+    return res2;
 }
 
 TEST(Cheap, Test)
@@ -55,5 +60,9 @@ int main(int ac, char ** av)
 {
     ::testing::InitGoogleTest(&ac, av);
     return RUN_ALL_TESTS();
+    // std::vector<Product> test = {6, 23, 7, 2, 32,7, 1,464};
+    // std::vector<Product> res = find_cheapest(test, 4);
+    // for(auto i : res) std::cout << i << ' ';
+    // std::cout << '\n';
 }
 

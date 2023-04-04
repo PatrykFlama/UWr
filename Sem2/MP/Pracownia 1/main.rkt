@@ -78,47 +78,7 @@ table:
 
 ; Projection of table
 (define (table-project cols tab)
-    (define (_get_column_number column columns cnt) ; returns table with found column
-        (cond
-            [(null? columns) 
-                (error "table-project: column does not exist!")]
-            [(equal? column (column-info-name (car columns)))
-                cnt]
-            [else (_get_column_number column (cdr columns (+ cnt 1)))]))
-    (define (_get_cell n row)
-        (cond
-            [(null? row) (error "table-project: _get_cell: column number exceeds row size!")] ;shouldn't happen
-            [(= n 0) (car row)]
-            [else (_get_cell (- n 1) (cdr row))]))
-    (define (_get_column n rows)
-        (if (null? rows)
-            '()
-            (cons 
-                (_get_cell n (car rows))
-                (_get_column n (cdr rows)))))
-    (define (_combine_columns col1 col2)
-        (if (or (null? col1) (null? col2))
-            '()
-            (cons
-                (cons (car col1) (car col2))
-                (_combine_columns (cdr col1) (cdr col2)))))
-    (define (_get_column_schem n tab-schem)
-        (cond
-            [(null? tab-schem) (error "table-project: _get_col_schem n > len(tab-schem)!")]
-            [(= n 0) (car tab-schem)]
-            [else (_get_column_schem (- n 1) (cdr tab-schem))]))
-                
-    (if (null? cols)
-        (table '() '())
-        (let ((table_n_found (_get_column_number (car cols) tab 0))
-              (table_rest    (table-project (cdr cols) tab)))
-             (table
-                (cons (_get_column_schem table_n_found) (table-schema table_rest))
-                (_combine_columns 
-                    (_get_column 
-                        table_n_found
-                        (table-rows tab))
-                    (table-rows table_rest))))))
+    )
 
 
 #|

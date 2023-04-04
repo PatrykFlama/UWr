@@ -34,3 +34,4 @@ class Smth{
 }
 ```
 dzięki czemu dany wątek może założyć 'blokadę' na wątek, aby mieć go na wyłączność i upewnić się, że wielowątkowość nie zepsuje działania kodu. Jeżeli inny wątek będzie chciał skorzystać z obiektu, albo też założyć na niego blokadę, będzie musiał poczekać.
+<> TODO serializable

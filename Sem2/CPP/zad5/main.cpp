@@ -46,9 +46,9 @@ public:
     }
 
     void darken(color_value diff){
-        _r = max(color_value(0), _r-diff);
-        _g = max(color_value(0), _g-diff);
-        _b = max(color_value(0), _b-diff);
+        _r = max(color_value(0),   _r-diff);
+        _g = max(color_value(0),   _g-diff);
+        _b = max(color_value(0),   _b-diff);
     }
 
     static color_value combine(color_value a, color_value b) {
@@ -112,8 +112,9 @@ public:
 class TransNamColor : public TransparentColor, public NamedColor{
 public:
     TransNamColor(color_value r = 0, color_value g = 0, color_value b = 0,
-                  color_value alpha = 255, string name = "")
-                  : TransparentColor(r, g, b, alpha){
+                  color_value alpha = 255, string name = "") : Color(r, g, b){
+        if(out_of_range(alpha)) throw invalid_argument("Alpha channel value out of range");
+        _alpha = alpha;
         if(check_name(name)) throw invalid_argument("Invalid name (should consist only of small letters)");
         _name = name;
     }
@@ -159,7 +160,10 @@ public:
 class ColorPixel : public Pixel, public TransparentColor{
 public:
     ColorPixel(int x, int y, color_value r = 0, color_value g = 0, color_value b = 0, color_value alpha = 255)
-        : Pixel(x, y), TransparentColor(r, g, b, alpha){}
+        : Pixel(x, y), Color(r, g, b){
+        if(out_of_range(alpha)) throw invalid_argument("Alpha channel value out of range");
+        _alpha = alpha;
+    }
     
     void transform(int dx, int dy){
         _x += dx;

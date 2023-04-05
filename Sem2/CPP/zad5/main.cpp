@@ -54,6 +54,10 @@ public:
     static color_value combine(color_value a, color_value b) {
         return (a+b)/2;
     }
+
+    friend ostream &operator<< (ostream &out, const Color &c){
+        return out << c.get_r() << ' ' << c.get_g() << ' ' << c.get_b();
+    }
 };
 
 class TransparentColor : public virtual Color{
@@ -71,6 +75,10 @@ public:
         if(out_of_range(alpha)) throw invalid_argument("Alpha channel value out of range");
         _alpha = alpha;
     }
+
+    friend ostream &operator<< (ostream &out, const TransparentColor &c){
+        return out << c.get_r() << ' ' << c.get_g() << ' ' << c.get_b() << ' ' << c.get_transparency();
+    }
 };
 
 class NamedColor : public virtual Color{
@@ -79,8 +87,8 @@ protected:
 
     bool check_name(string &name) const {
         for(auto i : name)
-            if(i > 'z' || i < 'a') return false;
-        return true;
+            if(i > 'z' || i < 'a') return true;
+        return false;
     }
 
 public:
@@ -94,6 +102,10 @@ public:
         if(check_name(name)) throw invalid_argument("Invalid name (should consist only of small letters)");
         _name = name;
     }
+
+    friend ostream &operator<< (ostream &out, const NamedColor &c){
+        return out << c.get_r() << ' ' << c.get_g() << ' ' << c.get_b() << ' ' << c.get_name();
+    }
 };
 
 //* https://isocpp.org/wiki/faq/multiple-inheritance#mi-diamond
@@ -105,6 +117,10 @@ public:
         if(check_name(name)) throw invalid_argument("Invalid name (should consist only of small letters)");
         _name = name;
     }
+
+    friend ostream &operator<< (ostream &out, const TransNamColor &c){
+        return out << c.get_r() << ' ' << c.get_g() << ' ' << c.get_b() << ' ' << c.get_transparency() << ' ' << c.get_name();
+    }
 };
 
 class Pixel{
@@ -113,7 +129,7 @@ protected:
     int _x, _y;
 
     inline bool check_pixels(int x, int y) const {
-        return (x < 0 || size_x <= x || y < 0 || y <= size_y);
+        return (x < 0 || size_x <= x || y < 0 || size_y <= y);
     }
 
 public:
@@ -134,6 +150,10 @@ public:
     inline float calc_dist_right_up()   const { return calc_dist(size_x, 0); }
     inline float calc_dist_left_down()  const { return calc_dist(0, size_y); }
     inline float calc_dist_right_down() const { return calc_dist(size_x, size_y); }
+
+    friend ostream &operator<< (ostream &out, const Pixel &c){
+        return out << c.get_x() << ' ' << c.get_y();
+    }
 };
 
 class ColorPixel : public Pixel, public TransparentColor{
@@ -146,6 +166,10 @@ public:
         _y += dy;
         if(check_pixels(_x, _y)) throw invalid_argument("Pixels are out of the screen borders");
     }
+
+    friend ostream &operator<< (ostream &out, const ColorPixel &c){
+        return out << c.get_x() << ' ' << c.get_y() << ' ' << c.get_r() << ' ' << c.get_g() << ' ' << c.get_b() << ' ' << c.get_transparency();
+    }
 };
 
 int pixel_distance(const Pixel &p, const Pixel &q){
@@ -157,5 +181,30 @@ int pixel_distance(const Pixel *p, const Pixel *q){
 
 
 int main(){
+    Color c(1, 2, 3);
+    TransparentColor tc(4, 5, 6, 50);
+    NamedColor nc(7, 8, 9, "name");
+    TransNamColor tnc(1, 3, 6, 100, "coloredname");
 
+    cout << c << '\n' << tc << '\n' << nc << '\n' << tnc << '\n';
+
+    tnc.lighten(5);
+    cout << tnc << '\n';
+    tnc.darken(3);
+    cout << tnc << '\n';
+
+    Pixel p(1, 2);
+    ColorPixel cp(3, 4, 5, 6, 7, 8);
+
+    cout << p << '\n' << cp << '\n';
+
+    cout << cp.calc_dist_left_up()    << '\n';
+    cout << cp.calc_dist_right_up()   << '\n';
+    cout << cp.calc_dist_left_down()  << '\n';
+    cout << cp.calc_dist_right_down() << '\n';
+
+    cp.transform(11, 22);
+    cout << cp << '\n';
+
+    cout << pixel_distance(p, cp) << ' ' << pixel_distance(&p, &cp) << '\n';
 }

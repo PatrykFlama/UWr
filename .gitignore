@@ -51,3 +51,7 @@ build/
 
 # Java
 *.class
+
+#Other
+main.zip
+

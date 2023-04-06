@@ -23,13 +23,18 @@ std::vector<int*> create_numbers() noexcept
     return numbers;
 }
 
-void destroy_numbers(std::vector<int*> const& numbers) noexcept;
+void destroy_numbers(std::vector<int*> const& numbers) noexcept
+{
+    for(auto i : numbers) delete i;
+}
 
 int main(int argc, char* argv[])
 {
     std::vector<int*> nums = create_numbers();
 
     print_numbers(nums);
+
+    destroy_numbers(nums);
 
     return 0;
 }

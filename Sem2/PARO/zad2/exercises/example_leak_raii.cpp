@@ -1,3 +1,4 @@
+// TODO 3.
 #include <resources/kernel_resource.h>
 
 #include <iostream>
@@ -7,7 +8,9 @@
 
 using Event = int;
 
-Event* create_event(int event_id) noexcept { return new Event(event_id); }
+std::unique_ptr<Event, decltype(&free_resource)> create_event(int event_id) noexcept { 
+    return std::unique_ptr<Event, decltype(&free_resource)>(new Event(event_id), &free_resource);
+}
 
 void process_init(RESOURCE* resource) noexcept
 try {
@@ -19,7 +22,7 @@ try {
     std::cout << ex.what() << std::endl;
 }
 
-void process_event(const Event* event,
+void process_event(std::unique_ptr<Event, decltype(&free_resource)> event,
                    RESOURCE* temp_resource,
                    RESOURCE* proc_resource) noexcept
 try {
@@ -34,7 +37,7 @@ try {
         use_resource(proc_resource);
     }
 
-    delete event;
+    event.reset();
 } catch (std::runtime_error const& ex) {
     std::cout << ex.what() << std::endl;
 }
@@ -51,7 +54,7 @@ int main(int ac, char* av[])
     for (auto id : simulation) {
         auto event = create_event(id);
         auto temp_resource = allocate_resource();
-        process_event(event, temp_resource, proc_resource);
+        process_event(move(event), temp_resource, proc_resource);
     }
 
     if (proc_resource) {

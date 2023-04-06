@@ -10,6 +10,9 @@ struct Logger
     }
     Logger(const Logger& other) = delete;
     Logger& operator=(const Logger& other) = delete;
+    ~Logger(){
+        std::fclose(logfile);
+    }
 
     void log(std::string text) { std::fputs(text.c_str(), logfile); }
 

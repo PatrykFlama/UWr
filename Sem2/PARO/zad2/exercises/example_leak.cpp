@@ -6,5 +6,7 @@ int main(int ac, char* argv[])
 
     std::cout << "[" << leak << "] => " << *leak << std::endl;
 
+    delete leak;
+
     return 0;
 }

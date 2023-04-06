@@ -141,7 +141,7 @@ table:
     (table (get_cols (table-schema tab)) (table-rows tab)))
 
 ; Sorting the table in ascending order by rows with cols cell priority
-(define (table-sort cols tab)
+(define (table-sort cols tab)   ;TODO fix
     (define (get_column_number column)      ; number of column in the table schema
         (define (_gcn columns cnt)
             (cond
@@ -174,13 +174,13 @@ table:
         (define (_compare cell1 cell2)  ; compares 2 cells
             (cond
                 [(equal? cell1 cell2) 0]
-                [(equal? 'number (column-info-type cell1))
+                [(number? cell1)
                     (if (< cell1 cell2) 1 -1)]
-                [(equal? 'string (column-info-type cell1))
+                [(string? cell1)
                     (if (string<? cell1 cell2) 1 -1)]
-                [(equal? 'symbol (column-info-type cell1))
+                [(symbol? cell1)
                     (if (symbol<? cell1 cell2) 1 -1)]
-                [(equal? 'boolean (column-info-type cell1))
+                [(boolean? cell1)
                     (if cell1 1 -1)]))
 
         (if (empty? row1) 0

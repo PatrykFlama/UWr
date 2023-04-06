@@ -140,11 +140,62 @@ table:
                 (get_cols (rest cols)))]))
     (table (get_cols (table-schema tab)) (table-rows tab)))
 
-#|
-; Sorting the table
+; Sorting the table in ascending order by rows with cols cell priority
 (define (table-sort cols tab)
-    )
+    (define (get_column_number column)      ; number of column in the table schema
+        (define (_gcn columns cnt)
+            (cond
+                [(empty? columns)
+                    (error 'table-project "column does not exist!")]
+                [(equal? column (column-info-name (first columns)))
+                    cnt]
+                [else 
+                    (_gcn (rest columns) (+ cnt 1))]))
+        (_gcn (table-schema tab) 0))
+    (define (get_cols_nums columns)
+        (if (empty? columns)
+            '()
+            (cons 
+                (get_column_number (first columns))
+                (get_cols_nums (rest columns)))))
+    (define cols_nums (get_cols_nums cols)) ;* cols table represented with ordering numbers by tab
 
+    (define (isolate row)      ; return only cells used for sorting, with priority in order
+        (define (_isolate row col_nums)
+            (if (empty? col_nums)
+                '()
+                (cons
+                    (list-ref row (first col_nums))
+                    (_isolate row (rest col_nums)))))
+        (_isolate row cols_nums))
+
+    (define (compare r1 r2) ; compare 2 rows
+        (let ((row1 (isolate r1)) (row2 (isolate r2)))
+        (define (_compare cell1 cell2)  ; compares 2 cells
+            (cond
+                [(equal? cell1 cell2) 0]
+                [(equal? 'number (column-info-type cell1))
+                    (if (< cell1 cell2) 1 -1)]
+                [(equal? 'string (column-info-type cell1))
+                    (if (string<? cell1 cell2) 1 -1)]
+                [(equal? 'symbol (column-info-type cell1))
+                    (if (symbol<? cell1 cell2) 1 -1)]
+                [(equal? 'boolean (column-info-type cell1))
+                    (if cell1 1 -1)]))
+
+        (if (empty? row1) 0
+            (let ((res (_compare (first row1) (first row2))))
+            (if (= res 0)
+                (compare (rest row1) (rest row2))
+                res)))))
+
+    (table
+        (table-schema tab)
+        (sort 
+            (table-rows tab)
+            (lambda (a b) (compare a b)))))
+
+#|
 ; Selection of the table
 (define-struct and-f (l r))
 (define-struct or-f (l r))

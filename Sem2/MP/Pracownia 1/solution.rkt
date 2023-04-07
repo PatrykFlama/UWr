@@ -18,7 +18,7 @@
 ;          table-cross-join
 ;          table-natural-join)
 
-;! Setup
+;! ----- Setup -----
 #|
 column-info:
     name: symbol
@@ -58,7 +58,7 @@ table:
 
 (define (empty-table columns) (table columns '()))
 
-;! Insertion to table
+;! ----- Insertion to table -----
 (define (table-insert row tab)
     (define (_table-insert-check row types)
         (cond
@@ -78,7 +78,7 @@ table:
             (cons row (table-rows tab)))
         (error 'table-insert "incorrect row type or length!")))
 
-;? Aux function
+;* ----- Aux function -----
 (define (get_column_number column tab)      ; number of column in the table schema
     (define (_gcn columns cnt)
         (cond
@@ -97,7 +97,7 @@ table:
             (get_column_number (first columns) tab)
             (get_cols_nums (rest columns) tab))))
 
-;! Projection of table
+;! ----- Projection of table -----
 (define (table-project cols tab)
     (define (get_row row col_nums)      ; creates row from given list of columns (in order)
         (if (empty? col_nums)
@@ -127,7 +127,7 @@ table:
                 (get_column_info column_numbers)
                 (get_rows (table-rows tab) column_numbers)))))
 
-;! Changing name of column in the table
+;! ----- Changing name of column in the table -----
 (define (table-rename col ncol tab)
     (define (get_cols cols)
         (cond 
@@ -143,7 +143,7 @@ table:
                 (get_cols (rest cols)))]))
     (table (get_cols (table-schema tab)) (table-rows tab)))
 
-;! Sorting the table in ascending order by rows with cols cell priority
+;! ----- Sorting the table in ascending order by rows with cols cell priority -----
 (define (table-sort cols tab)
     (define cols_nums (get_cols_nums cols tab)) ;* cols table represented with ordering numbers by tab
 
@@ -184,7 +184,7 @@ table:
             (table-rows tab)
             less_than?)))
 
-;! Formulas
+;! ----- Formulas -----
 (define-struct and-f (l r))
 (define-struct or-f (l r))
 (define-struct not-f (e))
@@ -192,7 +192,7 @@ table:
 (define-struct eq2-f (name name2))  ; values of cells from columns name name2 equal?
 (define-struct lt-f (name val))     ; 
 
-;! Selection of rows from the table, that fulfill given formula
+;! ----- Selection of rows from the table, that fulfill given formula -----
 (define (table-select form tab)
     (define (less_than? v1 v2 type)
         (cond
@@ -249,7 +249,7 @@ table:
         (table-schema tab)
         (get_rows (table-rows tab))))
 
-;! Tables cross join
+;! ----- Tables cross join -----
 (define (table-cross-join tab1 tab2)
     (define (get_rows rows1 rows2)
         (cond
@@ -271,11 +271,11 @@ table:
             (table-rows tab1)
             (table-rows tab2))))
 
-;! Tables join
+;! ----- Tables join -----
 (define (table-natural-join tab1 tab2)
     )
 
-;* tests
+;* ----- tests -----
 (check-equal?
     (table-rows (table-project '(size city) (table-rename 'area 'size 
         (table-sort '(capital area) (table-insert (list "Rzeszow" "Poland" 129 #f) cities)))))

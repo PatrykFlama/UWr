@@ -329,9 +329,10 @@ table:
             (get_tab1 (table-schema tab1)) 
             (get_tab2 (table-schema tab2))))
 
-    (table-project (gen_projection) 
-        (table-select (gen_formula same_names)
-            (table-cross-join tab1 (same_rename same_names)))))
+    (if (empty? same_names) (empty-table)
+        (table-project (gen_projection) 
+            (table-select (gen_formula same_names)
+                (table-cross-join tab1 (same_rename same_names))))))
 
 
 ;* ----- tests -----

@@ -82,8 +82,7 @@ table:
 (define (get_column_number column tab)      ; number of column in the table schema
     (define (_gcn columns cnt)
         (cond
-            [(empty? columns)
-                (error 'table-project "column does not exist!")]
+            [(empty? columns) #f]   ; column not found
             [(equal? column (column-info-name (first columns)))
                 cnt]
             [else 
@@ -273,6 +272,19 @@ table:
 
 ;! ----- Tables join -----
 (define (table-natural-join tab1 tab2)
+    (define (get_same_names names1)
+        (if (empty? names1) '()
+            (if (get_column_number (first names1) tab2)
+                (cons                               ; found that name in second table
+                    (first names1)
+                    (get_same_names (rest names1)))
+                (get_same_names (rest names1)))))  ; this name doesnt exist in snd tab
+
+    (define same_names
+        (get_same_names (column-info-name (table-schema tab))))
+
+    ; TODO generate col1 col2 by same names in same order
+
     (define sorted1 (table-sort
         (map (lambda (x) (column-info-name x)) (table-schema tab1))
         tab1))
@@ -282,6 +294,8 @@ table:
 
     ;TODO: finish it!
     )
+
+
 
 ;* ----- tests -----
 (check-equal?

@@ -254,12 +254,29 @@ table:
     (table-rows (table-select (and-f (eq-f 'capital #t) (not-f (lt-f 'area 300))) cities))
     '(("Warsaw" "Poland" 517 #t) ("Berlin" "Germany" 892 #t)))
 
-#|
 ;! Tables cross join
 (define (table-cross-join tab1 tab2)
-  ;; TODO uzupełnij
-  )
+    (define (get_rows rows1 rows2)
+        (cond
+            [(empty? rows1) '()]
+            [(empty? rows2)
+                (get_rows 
+                    (rest rows1)
+                    (table-rows tab2))]
+            [else (cons
+                (append     ; that will be sufficiently quick
+                    (first rows1)
+                    (first rows2))
+                (get_rows rows1 (rest rows2)))]))
+    (table
+        (append 
+            (table-schema tab1)
+            (table-schema tab2))
+        (get_rows
+            (table-rows tab1)
+            (table-rows tab2))))
 
+#|
 ;! Tables join
 (define (table-natural-join tab1 tab2)
   ;; TODO uzupełnij

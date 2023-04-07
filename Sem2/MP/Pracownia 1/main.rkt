@@ -1,4 +1,5 @@
 #lang racket
+(require rackunit)
 
 ; TODO uncomment
 ; (provide (struct-out column-info)
@@ -17,6 +18,7 @@
 ;          table-cross-join
 ;          table-natural-join)
 
+;! Setup
 #|
 column-info:
     name: symbol
@@ -56,7 +58,7 @@ table:
 
 (define (empty-table columns) (table columns '()))
 
-; Insertion to table
+;! Insertion to table
 (define (table-insert row tab)
     (define (_table-insert-check row types)
         (cond
@@ -76,26 +78,27 @@ table:
             (cons row (table-rows tab)))
         (error 'table-insert "incorrect row type or length!")))
 
-; Projection of table
+;? Aux function
+(define (get_column_number column tab)      ; number of column in the table schema
+    (define (_gcn columns cnt)
+        (cond
+            [(empty? columns)
+                (error 'table-project "column does not exist!")]
+            [(equal? column (column-info-name (first columns)))
+                cnt]
+            [else 
+                (_gcn (rest columns) (+ cnt 1))]))
+    (_gcn (table-schema tab) 0))
+
+(define (get_cols_nums columns tab)
+    (if (empty? columns)
+        '()
+        (cons 
+            (get_column_number (first columns) tab)
+            (get_cols_nums (rest columns) tab))))
+
+;! Projection of table
 (define (table-project cols tab)
-    (define (get_column_number column)      ; number of column in the table schema
-        (define (_gcn columns cnt)
-            (cond
-                [(empty? columns)
-                    (error 'table-project "column does not exist!")]
-                [(equal? column (column-info-name (first columns)))
-                    cnt]
-                [else 
-                    (_gcn (rest columns) (+ cnt 1))]))
-        (_gcn (table-schema tab) 0))
-
-    (define (get_cols_nums columns)
-        (if (empty? columns)
-            '()
-            (cons 
-                (get_column_number (first columns))
-                (get_cols_nums (rest columns)))))
-
     (define (get_row row col_nums)      ; creates row from given list of columns (in order)
         (if (empty? col_nums)
             '()
@@ -119,12 +122,12 @@ table:
 
     (if (empty? cols)
         (empty-table)
-        (let ((column_numbers (get_cols_nums cols)))
+        (let ((column_numbers (get_cols_nums cols tab)))
             (table
                 (get_column_info column_numbers)
                 (get_rows (table-rows tab) column_numbers)))))
 
-; Changing name of column in the table
+;! Changing name of column in the table
 (define (table-rename col ncol tab)
     (define (get_cols cols)
         (cond 
@@ -140,25 +143,9 @@ table:
                 (get_cols (rest cols)))]))
     (table (get_cols (table-schema tab)) (table-rows tab)))
 
-; Sorting the table in ascending order by rows with cols cell priority
-(define (table-sort cols tab)   ;TODO fix
-    (define (get_column_number column)      ; number of column in the table schema
-        (define (_gcn columns cnt)
-            (cond
-                [(empty? columns)
-                    (error 'table-project "column does not exist!")]
-                [(equal? column (column-info-name (first columns)))
-                    cnt]
-                [else 
-                    (_gcn (rest columns) (+ cnt 1))]))
-        (_gcn (table-schema tab) 0))
-    (define (get_cols_nums columns)
-        (if (empty? columns)
-            '()
-            (cons 
-                (get_column_number (first columns))
-                (get_cols_nums (rest columns)))))
-    (define cols_nums (get_cols_nums cols)) ;* cols table represented with ordering numbers by tab
+;! Sorting the table in ascending order by rows with cols cell priority
+(define (table-sort cols tab)
+    (define cols_nums (get_cols_nums cols tab)) ;* cols table represented with ordering numbers by tab
 
     (define (isolate row)      ; return only cells used for sorting, with priority in order
         (define (_isolate row col_nums)
@@ -181,7 +168,7 @@ table:
                     [(symbol? cell1)
                         (if (symbol<? cell1 cell2) 1 -1)]
                     [(boolean? cell1)
-                        (if cell1 -1 1)]))
+                        (if cell1 1 -1)]))
 
             (if (empty? row1) #f
                 (let ((res (_cell_compare (first row1) (first row2))))
@@ -197,25 +184,83 @@ table:
             (table-rows tab)
             less_than?)))
 
-#|
-; Selection of the table
+;! Formulas
 (define-struct and-f (l r))
 (define-struct or-f (l r))
 (define-struct not-f (e))
-(define-struct eq-f (name val))
-(define-struct eq2-f (name name2))
-(define-struct lt-f (name val))
+(define-struct eq-f (name val))     ; value of cell from column name equal? val
+(define-struct eq2-f (name name2))  ; values of cells from columns name name2 equal?
+(define-struct lt-f (name val))     ; 
 
+;! Selection of rows from the table, that fulfill given formula
 (define (table-select form tab)
-  ;; TODO uzupełnij
-  )
+    (define (less_than? v1 v2 type)
+        (cond
+            [(equal? 'number type)
+                (< v1 v2)]
+            [(equal? 'string type)
+                (string<? v1 v2)]
+            [(equal? 'symbol type)
+                (symbol<? v1 v2)]
+            [(equal? 'boolean type)
+                (if v1 #f v2)]))
+    
+    (define (evaluate f row)
+        (cond
+            [(and-f? f) (and
+                (evaluate (and-f-l f) row)
+                (evaluate (and-f-r f) row))]
+            [(or-f? f) (or
+                (evaluate (or-f-l f) row)
+                (evaluate (or-f-r f) row))]
+            [(not-f? f) (not
+                (evaluate (not-f-e f) row))]
+            [(eq-f? f) 
+                (let ((column (get_column_number
+                    (eq-f-name f)
+                    tab)))
+                (equal?
+                    (list-ref row column)
+                    (eq-f-val f)))]
+            [(eq2-f? f) (let (
+                (col1 (get_column_number (eq2-f-name  f) tab))
+                (col2 (get_column_number (eq2-f-name2 f) tab)))
+                (equal?
+                    (list-ref row col1)
+                    (list-ref row col2)))]
+            [(lt-f? f)
+                (let ((col (get_column_number (lt-f-name f) tab)))
+                (less_than?
+                    (list-ref row col)
+                    (lt-f-val f)
+                    (column-info-type
+                        (list-ref (table-schema tab) col))))]))
+    
+    (define (get_rows rows)
+        (cond  
+            [(empty? rows) '()]
+            [(evaluate form (first rows))
+                (cons
+                    (first rows)
+                    (get_rows (rest rows)))]
+            [else (get_rows (rest rows))]))
+            
+    (table 
+        (table-schema tab)
+        (get_rows (table-rows tab))))
 
-; Tables cross join
+;* tests
+(check-equal?
+    (table-rows (table-select (and-f (eq-f 'capital #t) (not-f (lt-f 'area 300))) cities))
+    '(("Warsaw" "Poland" 517 #t) ("Berlin" "Germany" 892 #t)))
+
+#|
+;! Tables cross join
 (define (table-cross-join tab1 tab2)
   ;; TODO uzupełnij
   )
 
-; Tables join
+;! Tables join
 (define (table-natural-join tab1 tab2)
   ;; TODO uzupełnij
   )

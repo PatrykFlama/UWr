@@ -273,6 +273,14 @@ table:
 
 ;! ----- Tables join -----
 (define (table-natural-join tab1 tab2)
+    (define sorted1 (table-sort
+        (map (lambda (x) (column-info-name x)) (table-schema tab1))
+        tab1))
+    (define sorted2 (table-sort
+        (map (lambda (x) (column-info-name x)) (table-schema tab2))
+        tab2))
+
+    ;TODO: finish it!
     )
 
 ;* ----- tests -----

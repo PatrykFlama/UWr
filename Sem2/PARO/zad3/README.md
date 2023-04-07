@@ -11,3 +11,5 @@ Po skompilowaniu powstają 3 pliki binarne odpalające testy GTest: pow2, cheap,
 
 Odpowiedzi można zebrać np tak:
 head -n -0 *.cpp | gzip > /tmp/output.gz
+
+[Link do prezentacji](https://nokia.v92.pl/stl/)

@@ -1,4 +1,3 @@
-// TODO 3.
 #include <resources/kernel_resource.h>
 
 #include <iostream>

@@ -1,7 +1,6 @@
 #lang racket
 (require rackunit)
 
-; TODO uncomment
 (provide (struct-out column-info)
          (struct-out table)
          (struct-out and-f)

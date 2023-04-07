@@ -128,7 +128,7 @@ table:
 (define (table-rename col ncol tab)
     (define (get_cols cols)
         (cond 
-            [(empty? cols) (error 'table-rename:get_cols "column not found")]
+            [(empty? cols) (error 'table-rename "column not found")]
             [(equal? (column-info-name (first cols)) col)
                 (cons
                     (column-info
@@ -169,31 +169,33 @@ table:
                     (_isolate row (rest col_nums)))))
         (_isolate row cols_nums))
 
-    (define (compare r1 r2) ; compare 2 rows
-        (let ((row1 (isolate r1)) (row2 (isolate r2)))
-        (define (_compare cell1 cell2)  ; compares 2 cells
-            (cond
-                [(equal? cell1 cell2) 0]
-                [(number? cell1)
-                    (if (< cell1 cell2) 1 -1)]
-                [(string? cell1)
-                    (if (string<? cell1 cell2) 1 -1)]
-                [(symbol? cell1)
-                    (if (symbol<? cell1 cell2) 1 -1)]
-                [(boolean? cell1)
-                    (if cell1 1 -1)]))
+    (define (less_than? r1 r2) ; compares 2 rows from table
+        (define (_compare row1 row2) ; compare 2 rows, with only cells to compare in order 
+            (define (_cell_compare cell1 cell2)  ; compares 2 cells
+                (cond
+                    [(equal? cell1 cell2) 0]
+                    [(number? cell1)
+                        (if (< cell1 cell2) 1 -1)]
+                    [(string? cell1)
+                        (if (string<? cell1 cell2) 1 -1)]
+                    [(symbol? cell1)
+                        (if (symbol<? cell1 cell2) 1 -1)]
+                    [(boolean? cell1)
+                        (if cell1 -1 1)]))
 
-        (if (empty? row1) 0
-            (let ((res (_compare (first row1) (first row2))))
-            (if (= res 0)
-                (compare (rest row1) (rest row2))
-                res)))))
+            (if (empty? row1) #f
+                (let ((res (_cell_compare (first row1) (first row2))))
+                (cond
+                    [(= res 0) (_compare (rest row1) (rest row2))]
+                    [(= res 1) #t]
+                    [else #f]))))
+        (_compare (isolate r1) (isolate r2)))
 
     (table
         (table-schema tab)
         (sort 
             (table-rows tab)
-            (lambda (a b) (compare a b)))))
+            less_than?)))
 
 #|
 ; Selection of the table

@@ -2,21 +2,21 @@
 (require rackunit)
 
 ; TODO uncomment
-; (provide (struct-out column-info)
-;          (struct-out table)
-;          (struct-out and-f)
-;          (struct-out or-f)
-;          (struct-out not-f)
-;          (struct-out eq-f)
-;          (struct-out eq2-f)
-;          (struct-out lt-f)
-;          table-insert
-;          table-project
-;          table-sort
-;          table-select
-;          table-rename
-;          table-cross-join
-;          table-natural-join)
+(provide (struct-out column-info)
+         (struct-out table)
+         (struct-out and-f)
+         (struct-out or-f)
+         (struct-out not-f)
+         (struct-out eq-f)
+         (struct-out eq2-f)
+         (struct-out lt-f)
+         table-insert
+         table-project
+         table-sort
+         table-select
+         table-rename
+         table-cross-join
+         table-natural-join)
 
 ;! ----- Setup -----
 #|

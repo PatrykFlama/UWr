@@ -333,13 +333,6 @@ table:
         (table-select (gen_formula same_names)
             (table-cross-join tab1 (same_rename same_names)))))
 
-    ; (define sorted1 (table-sort
-    ;     (map (lambda (x) (column-info-name x)) (table-schema tab1))
-    ;     tab1))
-    ; (define sorted2 (table-sort
-    ;     (map (lambda (x) (column-info-name x)) (table-schema tab2))
-    ;     tab2))
-
 
 ;* ----- tests -----
 (check-equal?

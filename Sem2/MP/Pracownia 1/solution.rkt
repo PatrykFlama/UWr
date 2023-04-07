@@ -189,7 +189,7 @@ table:
 (define-struct not-f (e))
 (define-struct eq-f (name val))     ; value of cell from column name equal? val
 (define-struct eq2-f (name name2))  ; values of cells from columns name name2 equal?
-(define-struct lt-f (name val))     ; 
+(define-struct lt-f (name val))     ; literal
 
 ;! ----- Selection of rows from the table, that fulfill given formula -----
 (define (table-select form tab)
@@ -272,29 +272,74 @@ table:
 
 ;! ----- Tables join -----
 (define (table-natural-join tab1 tab2)
-    (define (get_same_names names1)
-        (if (empty? names1) '()
-            (if (get_column_number (first names1) tab2)
+    (define (get_same_names names1-schema)
+        (if (empty? names1-schema) '()
+            (if (get_column_number (column-info-name (first names1-schema)) tab2)
                 (cons                               ; found that name in second table
-                    (first names1)
-                    (get_same_names (rest names1)))
-                (get_same_names (rest names1)))))  ; this name doesnt exist in snd tab
+                    (column-info-name (first names1-schema))
+                    (get_same_names (rest names1-schema)))
+                (get_same_names (rest names1-schema)))))  ; this name doesnt exist in snd tab
 
     (define same_names
-        (get_same_names (column-info-name (table-schema tab))))
+        (get_same_names (table-schema tab1)))
 
-    ; TODO generate col1 col2 by same names in same order
+    (define (change_name name)
+        (string->symbol 
+        (string-append 
+            "_tab2_"
+            (symbol->string name))))
 
-    (define sorted1 (table-sort
-        (map (lambda (x) (column-info-name x)) (table-schema tab1))
-        tab1))
-    (define sorted2 (table-sort
-        (map (lambda (x) (column-info-name x)) (table-schema tab2))
-        tab2))
+    (define (same_rename names)
+        (if (empty? names) tab2
+            (table-rename
+                (first names)
+                (change_name (first names))
+                (same_rename (rest names)))))
 
-    ;TODO: finish it!
-    )
+    (define (gen_formula names)
+        (cond 
+            [(empty? names) (error 'tab-nat-join "tables dont contains common columns")]
+            [(empty? (rest names))
+                (eq2-f
+                    (first names)
+                    (change_name (first names)))]
+            [else (and-f
+                    (eq2-f
+                        (first names)
+                        (change_name (first names)))
+                    (gen_formula (rest names)))]))
 
+    (define (gen_projection)
+        (define (get_tab1 schemes)
+            (if (empty? schemes) '()
+                (cons   
+                    (column-info-name (first schemes))
+                    (get_tab1 (rest schemes)))))
+        (define (not_in a t)
+            (cond 
+                [(empty? t) #t]
+                [(equal? a (first t)) #f]
+                [else (not_in a (rest t))]))
+        (define (get_tab2 nam)
+            (cond
+                [(empty? nam) '()]
+                [(not_in (column-info-name (first nam)) same_names)
+                    (cons (column-info-name (first nam)) (get_tab2 (rest nam)))]
+                [else (get_tab2 (rest nam))]))
+        (append 
+            (get_tab1 (table-schema tab1)) 
+            (get_tab2 (table-schema tab2))))
+
+    (table-project (gen_projection) 
+        (table-select (gen_formula same_names)
+            (table-cross-join tab1 (same_rename same_names)))))
+
+    ; (define sorted1 (table-sort
+    ;     (map (lambda (x) (column-info-name x)) (table-schema tab1))
+    ;     tab1))
+    ; (define sorted2 (table-sort
+    ;     (map (lambda (x) (column-info-name x)) (table-schema tab2))
+    ;     tab2))
 
 
 ;* ----- tests -----

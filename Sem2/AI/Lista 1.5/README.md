@@ -1,6 +1,6 @@
 [(back)](../)
 # List 1.5
-| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+| 1 | 2 | 3*| 4 | 5*| 6 | 7 | 8 | 9 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|----|----|
 | X | X | X | X | X | X | X | X | X | X  | X  |
 
@@ -29,7 +29,7 @@ Po każdym ruchu szukamy trywalnych rozwiązań typu:
 
 W pozostałych przypadkach zgadujemy i sprawdzamy czy poprawnie zgadliśmy rozwiązując dalej.
 
-## Problem 3
+## Problem 3*
 //code//
 
 ## Problem 4
@@ -48,7 +48,7 @@ That is:
 
 And we just have to count all card configurations that represent those configurations (both for botter and figurant).
 
-## Problem 5
+## Problem 5*
 //code//
 
 ## Problem 6

@@ -188,7 +188,7 @@ table:
 (define-struct not-f (e))
 (define-struct eq-f (name val))     ; value of cell from column name equal? val
 (define-struct eq2-f (name name2))  ; values of cells from columns name name2 equal?
-(define-struct lt-f (name val))     ; literal
+(define-struct lt-f (name val))     ; compare col name to val
 
 ;! ----- Selection of rows from the table, that fulfill given formula -----
 (define (table-select form tab)

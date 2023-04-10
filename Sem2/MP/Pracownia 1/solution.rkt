@@ -61,7 +61,8 @@ table:
 (define (table-insert row tab)
     (define (_table-insert-check row types)
         (cond
-            [(and (null? row) (null? types)) #t]
+            [(null? types) (null? row)]
+            [(null? row) (null? types)]
             [(and (number? (car row)) (equal? 'number (column-info-type (car types))))
                 (_table-insert-check (cdr row) (cdr types))]
             [(and (string? (car row)) (equal? 'string (column-info-type (car types))))
@@ -81,16 +82,13 @@ table:
 (define (get_column_number column tab)      ; number of column in the table schema
     (define (_gcn columns cnt)
         (cond
-            [(empty? columns) #f]   ; column not found
-            [(equal? column (column-info-name (first columns)))
-                cnt]
-            [else 
-                (_gcn (rest columns) (+ cnt 1))]))
+            [(empty? columns) (error 'get_column_number "column not found")]   ; column not found
+            [(equal? column (column-info-name (first columns))) cnt]
+            [else (_gcn (rest columns) (+ cnt 1))]))
     (_gcn (table-schema tab) 0))
 
 (define (get_cols_nums columns tab)
-    (if (empty? columns)
-        '()
+    (if (empty? columns) '()
         (cons 
             (get_column_number (first columns) tab)
             (get_cols_nums (rest columns) tab))))
@@ -98,22 +96,19 @@ table:
 ;! ----- Projection of table -----
 (define (table-project cols tab)
     (define (get_row row col_nums)      ; creates row from given list of columns (in order)
-        (if (empty? col_nums)
-            '()
+        (if (empty? col_nums) '()
             (cons
                 (list-ref row (first col_nums))
                 (get_row row (rest col_nums)))))
     
     (define (get_rows rows col_nums)
-        (if (empty? rows)
-            '()
+        (if (empty? rows) '()
             (cons
                 (get_row (first rows) col_nums)
                 (get_rows (rest rows) col_nums))))
 
     (define (get_column_info col_nums)
-        (if (empty? col_nums)
-            '()
+        (if (empty? col_nums) '()
             (cons
                 (list-ref (table-schema tab) (first col_nums))
                 (get_column_info (rest col_nums)))))
@@ -127,7 +122,7 @@ table:
 
 ;! ----- Changing name of column in the table -----
 (define (table-rename col ncol tab)
-    (define (get_cols cols)
+    (define (_rename cols)
         (cond 
             [(empty? cols) '()]
             [(equal? (column-info-name (first cols)) col)
@@ -138,8 +133,8 @@ table:
                     (rest cols))]
             [else (cons
                 (first cols)
-                (get_cols (rest cols)))]))
-    (table (get_cols (table-schema tab)) (table-rows tab)))
+                (_rename (rest cols)))]))
+    (table (_rename (table-schema tab)) (table-rows tab)))
 
 ;! ----- Sorting the table in ascending order by rows with cols cell priority -----
 (define (table-sort cols tab)
@@ -147,8 +142,7 @@ table:
 
     (define (isolate row)      ; return only cells used for sorting, with priority in order
         (define (_isolate row col_nums)
-            (if (empty? col_nums)
-                '()
+            (if (empty? col_nums) '()
                 (cons
                     (list-ref row (first col_nums))
                     (_isolate row (rest col_nums)))))
@@ -333,49 +327,18 @@ table:
             (table-select (gen_formula same_names)
                 (table-cross-join tab1 (same_rename same_names))))))
 
-
-#; (define (table-natrual-join tab1 tab2) ;TODO maybe
-    (define (get_same_names names1-schema)
-        (if (empty? names1-schema) '()
-            (if (get_column_number (column-info-name (first names1-schema)) tab2)
-                (cons                               ; found that name in second table
-                    (column-info-name (first names1-schema))
-                    (get_same_names (rest names1-schema)))
-                (get_same_names (rest names1-schema)))))  ; this name doesnt exist in snd tab
-
-    (define same_names
-        (get_same_names (table-schema tab1)))
-
-    (define (gen_formula names)
-        (cond 
-            [(empty? (rest names))
-                (eq2-f
-                    (first names)
-                    (change_name (first names)))]
-            [else (and-f
-                    (eq2-f
-                        (first names)
-                        (change_name (first names)))
-                    (gen_formula (rest names)))]))
-
-    (define formula (gen_formula same_names))
-
-    (define sorted1 (table-sort same_names tab1))
-    (define sorted2 (table-sort same_names tab2))
-    #f)
-
 ;* ----- tests -----
-; (check-equal?
-;     (table-rows (table-project '(size city) (table-rename 'area 'size 
-;         (table-sort '(capital area) (table-insert (list "Rzeszow" "Poland" 129 #f) cities)))))
-;     '((105 "Paris")
-;       (517 "Warsaw")
-;       (892 "Berlin")
-;       (50 "Rennes")
-;       (129 "Rzeszow")
-;       (262 "Poznań")
-;       (293 "Wrocław")
-;       (310 "Munich")))
-; (check-equal?
-;     (table-rows (table-select (and-f (eq-f 'capital #t) (not-f (lt-f 'area 300))) cities))
-;     '(("Warsaw" "Poland" 517 #t) ("Berlin" "Germany" 892 #t)))
+(check-equal?
+    (table-rows (table-project '(size city) (table-rename 'area 'size 
+        (table-sort '(capital area) (table-insert (list "Rzeszow" "Poland" 129 #f) cities)))))
+    '((105 "Paris")
+      (517 "Warsaw")
+      (892 "Berlin")
+      (50 "Rennes")
+      (129 "Rzeszow")
+      (262 "Poznań")
+      (293 "Wrocław")
+      (310 "Munich")))
+(check-equal?
+    (table-rows (table-select (and-f (eq-f 'capital #t) (not-f (lt-f 'area 300))) cities))
+    '(("Warsaw" "Poland" 517 #t) ("Berlin" "Germany" 892 #t)))

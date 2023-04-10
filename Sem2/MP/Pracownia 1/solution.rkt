@@ -138,37 +138,36 @@ table:
 
 ;! ----- Sorting the table in ascending order by rows with cols cell priority -----
 (define (table-sort cols tab)
-    (define cols_nums (get_cols_nums cols tab)) ;* cols table represented with ordering numbers by tab
-
-    (define (isolate row)      ; return only cells used for sorting, with priority in order
-        (define (_isolate row col_nums)
-            (if (empty? col_nums) '()
-                (cons
-                    (list-ref row (first col_nums))
-                    (_isolate row (rest col_nums)))))
-        (_isolate row cols_nums))
-
     (define (less_than? r1 r2) ; compares 2 rows from table
-        (define (_compare row1 row2) ; compare 2 rows, with only cells to compare in order 
-            (define (_cell_compare cell1 cell2)  ; compares 2 cells
-                (cond
-                    [(equal? cell1 cell2) 0]
-                    [(number? cell1)
-                        (if (< cell1 cell2) 1 -1)]
-                    [(string? cell1)
-                        (if (string<? cell1 cell2) 1 -1)]
-                    [(symbol? cell1)
-                        (if (symbol<? cell1 cell2) 1 -1)]
-                    [(boolean? cell1)
-                        (if cell1 1 -1)]))
+        (define (_compare row1 row2 columns) ; compare 2 rows, by columns (in order)
+            (define (_cell_compare ROW1 ROW2 name names)  ; compares 2 cells tagged by name
+                (cond 
+                    [(empty? names) (error 'table-sort "column with given name doesnt exist")]
+                    [(equal? name (column-info-name (first names)))
+                        (let ((val1 (first ROW1)) (val2 (first ROW2)) (type (column-info-type (first names))))
+                        (cond
+                            [(equal? val1 val2) 0]
+                            [(equal? 'number type)
+                                (if (< val1 val2) 1 -1)]
+                            [(equal? 'string type)
+                                (if (string<? val1 val2) 1 -1)]
+                            [(equal? 'symbol type)
+                                (if (symbol<? val1 val2) 1 -1)]
+                            [(equal? 'boolean type)
+                                (if val1 1 -1)]))]
+                    [else (_cell_compare
+                        (rest ROW1)
+                        (rest ROW2)
+                        name
+                        (rest names))]))
 
-            (if (empty? row1) #f
-                (let ((res (_cell_compare (first row1) (first row2))))
+            (if (empty? columns) #f
+                (let ((res (_cell_compare row1 row2 (first columns) (table-schema tab))))
                 (cond
-                    [(= res 0) (_compare (rest row1) (rest row2))]
+                    [(= res 0) (_compare row1 row2 (rest columns))]
                     [(= res 1) #t]
                     [else #f]))))
-        (_compare (isolate r1) (isolate r2)))
+        (_compare r1 r2 cols))
 
     (table
         (table-schema tab)

@@ -82,7 +82,8 @@ table:
 (define (get_column_number column tab)      ; number of column in the table schema
     (define (_gcn columns cnt)
         (cond
-            [(empty? columns) (error 'get_column_number "column not found")]   ; column not found
+            ; [(empty? columns) (error 'get_column_number "column not found")]   ; column not found
+            [(empty? columns) #f]   ; column not found
             [(equal? column (column-info-name (first columns))) cnt]
             [else (_gcn (rest columns) (+ cnt 1))]))
     (_gcn (table-schema tab) 0))
@@ -265,12 +266,13 @@ table:
 ;! ----- Tables join -----
 (define (table-natural-join tab1 tab2)
     (define (get_same_names names1-schema)
-        (if (empty? names1-schema) '()
-            (if (get_column_number (column-info-name (first names1-schema)) tab2)
+        (cond 
+            [(empty? names1-schema) '()]
+            [(get_column_number (column-info-name (first names1-schema)) tab2)
                 (cons                               ; found that name in second table
                     (column-info-name (first names1-schema))
-                    (get_same_names (rest names1-schema)))
-                (get_same_names (rest names1-schema)))))  ; this name doesnt exist in snd tab
+                    (get_same_names (rest names1-schema)))]
+            [else (get_same_names (rest names1-schema))]))  ; this name doesnt exist in snd tab
 
     (define same_names
         (get_same_names (table-schema tab1)))
@@ -280,7 +282,7 @@ table:
         (string-append 
             "_tab2_"
             (symbol->string name))))
-
+   
     (define (same_rename names)
         (if (empty? names) tab2
             (table-rename
@@ -288,44 +290,28 @@ table:
                 (change_name (first names))
                 (same_rename (rest names)))))
 
-    (define (gen_formula names)
-        (cond 
-            [(empty? (rest names))
-                (eq2-f
-                    (first names)
-                    (change_name (first names)))]
-            [else (and-f
-                    (eq2-f
-                        (first names)
-                        (change_name (first names)))
-                    (gen_formula (rest names)))]))
+    (define not_same_names_tab2
+        (filter 
+            (lambda (x) (not (get_column_number (column-info-name x) tab1)))
+            (table-schema tab2)))
 
-    (define (gen_projection)
-        (define (get_tab1 schemes)
-            (if (empty? schemes) '()
-                (cons   
-                    (column-info-name (first schemes))
-                    (get_tab1 (rest schemes)))))
-        (define (not_in a t)
-            (cond 
-                [(empty? t) #t]
-                [(equal? a (first t)) #f]
-                [else (not_in a (rest t))]))
-        (define (get_tab2 nam)
-            (cond
-                [(empty? nam) '()]
-                [(not_in (column-info-name (first nam)) same_names)
-                    (cons (column-info-name (first nam)) (get_tab2 (rest nam)))]
-                [else (get_tab2 (rest nam))]))
-        (append 
-            (get_tab1 (table-schema tab1)) 
-            (get_tab2 (table-schema tab2))))
-
-    (if (empty? same_names) (empty-table)
-        (table-project (gen_projection) 
-            (table-select (gen_formula same_names)
-                (table-cross-join tab1 (same_rename same_names))))))
-
+    (define (_select names tab)
+        (if (empty? names) tab
+            (table-select
+                (eq2-f (first names) (change_name (first names)))
+                (_select (rest names) tab))))
+                
+    (table-project 
+        (map column-info-name 
+            (append
+                (table-schema tab1)
+                not_same_names_tab2))
+        (_select
+            same_names
+            (table-cross-join
+                tab1
+                (same_rename same_names)))))
+                
 ;* ----- tests -----
 ; (check-equal?
 ;     (table-rows (table-project '(size city) (table-rename 'area 'size 

@@ -1,4 +1,5 @@
-#include "class.hpp"
+#include "color.hpp"
+#include "pixel.hpp"
 
 int main(){
     Color c(1, 2, 3);
@@ -18,10 +19,10 @@ int main(){
 
     cout << p << '\n' << cp << '\n';
 
-    cout << cp.calc_dist_left_up()    << '\n';
-    cout << cp.calc_dist_right_up()   << '\n';
-    cout << cp.calc_dist_left_down()  << '\n';
-    cout << cp.calc_dist_right_down() << '\n';
+    cout << cp.calc_dist_left()    << '\n';
+    cout << cp.calc_dist_right()   << '\n';
+    cout << cp.calc_dist_up()  << '\n';
+    cout << cp.calc_dist_down() << '\n';
 
     cp.transform(11, 22);
     cout << cp << '\n';

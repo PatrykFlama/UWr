@@ -54,6 +54,7 @@ We can reduce operation simply by calculating all of its possible results and ad
 
 ## Problem 9
 [Helpful video](https://youtu.be/4cCS8rrYT14)\
+AC3 ensures that we have arc consistency in our constraints.\
 This algorithm has time complexity of $O(cd^3)$ and space complexity of $O(c)$, where _c_ is number of constraints, and _d_ size of domain.\
 We know that our constraints look like this [operation on domains] $\circ$ [domain]\
 To speed it up (space complexity doesn't change) we can alter a bit propagation of constraints - we modify all of them i such a way, that we use only $<=$ and $>=$. Now for every constraint we can binsearch the solution - calculate marginal case for left side and binsearch thru values of domain on the right side.\

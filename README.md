@@ -3,8 +3,13 @@
 
 # UWr
 ## [Term 1](Sem1/)
+* Mathematical analysis I
+* Linear algebra 1R
+* Logic for computer scientists
 * [Introduction to programming in C](Sem1/WdpC/)
 * [Algorithm Implementation Methods](Sem1/MIA/)
+* Basic computer science workshop
+* English language B2 level
 
 ## [Term 2](Sem2/)
 * [**A**rtificial **I**ntelligence](Sem2/AI)
@@ -20,8 +25,13 @@
 
 # UWr
 ## [Semestr 1](Sem1/)
+* Analiza matematyczna I
+* Algebra liniowa 1R
+* Logika dla informatyków
 * [**W**stęp **d**o **p**rogramowania w **C**](Sem1/WdpC/)
 * [**M**etody **I**mplementacji **A**lgorytmów](Sem1/MIA/)
+* Podstawowy warsztat informatyka
+* Język angielski poziom B2
 
 ## [Semestr 2](Sem2/)
 * [**A**rtificial **I**ntelligence](Sem2/AI)

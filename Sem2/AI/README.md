@@ -1,3 +1,28 @@
+<details>
+    <summary>English</summary>
+
+[(back)](../)
+# **A**rtificial **I**ntelligence
+### [Lab 1](./Lista%201/)
+### [Exercises 1](./Lista%201.5/)
+___
+### [Lab 2](./Lista%202/)
+### [Exercises 2](./Lista%202.5/)
+___
+### [Lab 3](./Lista%203/)
+### [Exercises 3](./Lista%203.5/)
+___
+### [Lab 4](./Lista%204/)
+### [Exercises 4](./Lista%204.5/)
+___
+### [Lab 5](./Lista%205/)
+### [Exercises 5](./Lista%205.5/)
+
+</details>
+
+<details open>
+    <summary>Polish</summary>
+
 [(wróć)](../)
 # **A**rtificial **I**ntelligence
 ### [Pracownia 1](./Lista%201/)
@@ -14,3 +39,8 @@ ___
 ___
 ### [Pracownia 5](./Lista%205/)
 ### [Ćwiczenia 5](./Lista%205.5/)
+
+</details>
+
+
+

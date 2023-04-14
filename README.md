@@ -1,7 +1,8 @@
+# UWr
+
 <details>
     <summary>English</summary>
 
-# UWr
 ## [Term 1](Sem1/)
 * Mathematical analysis I
 * Linear algebra 1R
@@ -12,6 +13,8 @@
 * English language B2 level
 
 ## [Term 2](Sem2/)
+* Mathematical analysis II
+* Linear Algebra 2
 * [**A**rtificial **I**ntelligence](Sem2/AI)
 * [Programming Methods](Sem2/MP/)
 * [Object Oriented Programming](Sem2/PO/)
@@ -20,10 +23,10 @@
 
 </details>
 
+
 <details open>
     <summary>Polish</summary>
 
-# UWr
 ## [Semestr 1](Sem1/)
 * Analiza matematyczna I
 * Algebra liniowa 1R
@@ -34,6 +37,8 @@
 * Język angielski poziom B2
 
 ## [Semestr 2](Sem2/)
+* Analiza matematyczna II
+* Algebra liniowa 2
 * [**A**rtificial **I**ntelligence](Sem2/AI)
 * [**M**etody **P**rogramowania](Sem2/MP/)
 * [**P**rogramowanie **O**biektowe](Sem2/PO/)

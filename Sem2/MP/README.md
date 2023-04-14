@@ -6,12 +6,14 @@
 ### [Lista 4](./Lista%204/)
 ### [Lista 5](./Lista%205/)
 ### [Pracownia 1](./Pracownia%201/)
+___
 ### [Lista 6](./Lista%206/)
 ### [Lista 7](./Lista%207/)
 ### [Lista 8](./Lista%208/)
 ### [Lista 9](./Lista%209/)
 ### [Lista 10](./Lista%2010/)
 ### [Pracownia 2](./Pracownia%202/)
+___
 ### [Lista 11](./Lista%2011/)
 ### [Lista 12](./Lista%2012/)
 ### [Lista 13](./Lista%2013/)

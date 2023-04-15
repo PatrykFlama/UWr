@@ -1,5 +1,7 @@
 package Figure.Edit;
+import Figure.*;
 
 public class EditFigure {
-    // TODO
+    Figure obj;
+    // TODO: implement swing edit interface
 }

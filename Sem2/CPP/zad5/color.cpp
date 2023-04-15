@@ -1,7 +1,8 @@
 #include "color.hpp"
 
+Color::Color() : Color(0, 0, 0){}
 
-Color::Color(color_value r = 0, color_value g = 0, color_value b = 0){
+Color::Color(color_value r, color_value g, color_value b){
     if(out_of_range(r) || out_of_range(g) || out_of_range(b))
         throw invalid_argument("Color value out of range");
     
@@ -47,7 +48,10 @@ ostream &operator<< (ostream &out, const Color &c){
     return out << c.get_r() << ' ' << c.get_g() << ' ' << c.get_b();
 }
 
-TransparentColor::TransparentColor(color_value r = 0, color_value g = 0, color_value b = 0, color_value alpha = 255) : Color(r, g, b){
+
+TransparentColor::TransparentColor() : TransparentColor(0, 0, 0, 255){}
+
+TransparentColor::TransparentColor(color_value r, color_value g, color_value b, color_value alpha) : Color(r, g, b){
     if(out_of_range(alpha)) throw invalid_argument("Alpha channel value out of range");
     _alpha = alpha;
 }
@@ -67,6 +71,7 @@ bool NamedColor::check_name(string &name) const {
         if(i > 'z' || i < 'a') return true;
     return false;
 }
+
 
 NamedColor::NamedColor(color_value r = 0, color_value g = 0, color_value b = 0, string name = "") : Color(r, g, b){
     if(check_name(name)) throw invalid_argument("Invalid name (should consist only of small letters)");

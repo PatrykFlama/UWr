@@ -16,6 +16,7 @@ protected:
     }
 
 public:
+    Color();
     Color(color_value r, color_value g, color_value b);
 
     color_value get_r() const;
@@ -40,6 +41,7 @@ protected:
     color_value _alpha;
 
 public:
+    TransparentColor();
     TransparentColor(color_value r, color_value g, color_value b, color_value alpha);
 
     color_value get_transparency() const;

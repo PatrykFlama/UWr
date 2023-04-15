@@ -1,5 +1,6 @@
 #include "pixel.hpp"
 
+Pixel::Pixel() : Pixel(0, 0){}
 
 Pixel::Pixel(int x, int y){
     if(check_pixels(x, y)) throw invalid_argument("Pixels are out of the screen borders");
@@ -18,7 +19,10 @@ ostream &operator<< (ostream &out, const Pixel &c){
     return out << c.get_x() << ' ' << c.get_y();
 }
 
-ColorPixel::ColorPixel(int x, int y, color_value r = 0, color_value g = 0, color_value b = 0, color_value alpha = 255){
+
+ColorPixel::ColorPixel() : ColorPixel(0, 0, 0, 0, 0, 0){}
+
+ColorPixel::ColorPixel(int x = 0, int y = 0, color_value r = 0, color_value g = 0, color_value b = 0, color_value alpha = 255){
     if(check_pixels(x, y)) throw invalid_argument("Pixels are out of the screen borders");
     _x = x;
     _y = y;

@@ -12,6 +12,7 @@ protected:
     }
 
 public:
+    Pixel();
     Pixel(int x, int y);
 
     int get_x() const;
@@ -29,6 +30,7 @@ public:
 
 class ColorPixel : public Pixel, public TransparentColor{
 public:
+    ColorPixel();
     ColorPixel(int x, int y, color_value r, color_value g, color_value b, color_value alpha);
     
     void transform(int dx, int dy);

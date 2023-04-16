@@ -7,13 +7,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import Vehicle.Editor.VehicleEditor;
+
 public class Vehicle implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    int capacity;       // people
-    float energy_usage;       // kWh/km
-    String energy_source;
-    float efficiency;
+    public int capacity;       // people
+    public float energy_usage;       // kWh/km
+    public String energy_source;
+    public float efficiency;
 
     public Vehicle(){ this(0, 0f, "", 1f); }
     public Vehicle(int capacity, float energy_usage, 
@@ -55,15 +57,19 @@ public class Vehicle implements Serializable {
             fileInput.close();
             return obj;
         } catch (FileNotFoundException e) {
-            System.out.println("Could not open " + file);
+            System.out.println("File does not exist, created new object");
+            return new Vehicle();
         } catch (IOException e) {
             System.out.println("Error while reading data!");
         } catch (ClassNotFoundException e) {
             System.out.println("Vehicle not found!");
         }
 
-        return new Vehicle();
+        return null;
     }
 
-    // TODO: add object edition
+    public void Editor(String file_name){
+        VehicleEditor editor = new VehicleEditor(this, file_name);
+        editor.run();
+    }
 }

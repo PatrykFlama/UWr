@@ -5,8 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
+import Vehicle.Editor.BikeEditor;
+
 public class Bike extends Vehicle{
-    String bike_type;
+    public String bike_type;
 
     public Bike(){ this(1, 0.5f, "electric", 0.9f, "city"); }
     public Bike(int capacity, float energy_usage, String energy_source, float efficiency, String type) {
@@ -33,15 +35,19 @@ public class Bike extends Vehicle{
             fileInput.close();
             return obj;
         } catch (FileNotFoundException e) {
-            System.out.println("Could not open " + file);
+            System.out.println("File does not exist, created new object");
+            return new Bike();
         } catch (IOException e) {
             System.out.println("Error while reading data!");
         } catch (ClassNotFoundException e) {
             System.out.println("Bike not found!");
         }
 
-        return new Bike();
+        return null;
     }
 
-    // TODO: add object edition
+    public void Editor(String file_name){
+        BikeEditor editor = new BikeEditor(this, file_name);
+        editor.run();
+    }
 }

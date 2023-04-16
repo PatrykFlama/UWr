@@ -1,3 +1,9 @@
+/*
+Patryk Flama
+Lista 7
+Kompilacja: javac *.java; java zad
+*/
+
 // import Figure.*;
 import Vehicle.*;
 
@@ -32,7 +38,7 @@ public class zad{
                 return;
         }
 
-        // TODO obj.Edit(file_name);
+        obj.Editor(file_name);
     }
 
     // static void testFigure(){

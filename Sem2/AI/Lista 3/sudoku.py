@@ -11,11 +11,11 @@ def all_different(Qs):
     return 'all_distinct([' + ', '.join(Qs) + '])'
     
 def get_column(j):
-    return [V(i,j) for i in range(9)] 
-            
+    return [V(i,j) for i in range(9)]
+
 def get_raw(i):
-    return [V(i,j) for j in range(9)] 
-                        
+    return [V(i,j) for j in range(9)]     
+
 def horizontal():   
     return [ all_different(get_raw(i)) for i in range(9)]
 

@@ -1,4 +1,4 @@
-# (that code is quite ugly and could be easily simplified by folding the code into functions, probably even with picture transposition)
+# (that code is quite ugly since it could be easily simplified by folding the code into functions, probably even with picture transposition)
 import numpy as np
 from itertools import combinations
 

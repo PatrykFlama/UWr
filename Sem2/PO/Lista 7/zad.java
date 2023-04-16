@@ -1,7 +1,7 @@
 /*
 Patryk Flama
 Lista 7
-Kompilacja: javac *.java; java zad
+Kompilacja: javac *.java; java zad 
 */
 
 // import Figure.*;
@@ -32,7 +32,7 @@ public class zad{
             case "Bike":
                 obj = Bike.readObj(file_name);
                 break;
-        
+
             default:
                 System.out.println("Given class doesn't exist!");
                 return;

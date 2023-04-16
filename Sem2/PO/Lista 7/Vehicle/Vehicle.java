@@ -12,7 +12,7 @@ import Vehicle.Editor.VehicleEditor;
 public class Vehicle implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public int capacity;       // people
+    public int capacity;             // people
     public float energy_usage;       // kWh/km
     public String energy_source;
     public float efficiency;

@@ -23,23 +23,26 @@
 
 ; zad4
 (define/contract (f1 a b)
+;                             n n p
     (parametric->/c [a b] (-> a b a))
     a)
 (f1 1 "b")
 
 (define/contract (f2 fabc fab a)
+;                                   p p n      p n  n p
     (parametric->/c [a b c] (-> (-> a b c) (-> a b) a c))
     (fabc a (fab a)))
 (f2 + identity 2)
 
 (define/contract (f3 fbc fab)
+;                                   p n      p n      p n
     (parametric->/c [a b c] (-> (-> b c) (-> a b) (-> a c)))
     (lambda (a) ((fab a) fbc)))
 
-
-(define/contract (f4 ffaa->a)
+(define/contract (f4 ffaaa)
+;                                   n p  n  p
     (parametric->/c [a] (-> (-> (-> a a) a) a))
-    (ffaa->a identity))
+    (ffaaa (lambda (a) (ffaaa lambda (b) a))))
 
 ; zad5
 (define/contract (foldl-map f a xs)

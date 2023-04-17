@@ -50,6 +50,7 @@ negatywne a1 a3
 ((' a 'a -> 'a) 'a (Listof 'a) -> 'a)
 ```
 Nie, w najlepszym wypadku daje mu większe możliwości na wyjściu; posiadanie typów a' i 'b jest bardziej ograniczjające ponieważ na wyjściu musimy zwrócić typ b - akumulator, i nie możemy zwrócić elementu listy. Innymi słowami - nie rozbijając naszych typów wejściowych na 2 różne pudełka, możemy w wyniku wziąć dowolny typ z wejściowych, co daje nam większe możliwości niż gdybyśmy mogli wziąć dowolny typ z ograniczonego zbioru z wejściowych.\
+Zarazem w tym konkretnym przypadku nie ma to znaczenia, z racji iż nasza wartość wynikowa jest wartością wynikową podanej do folda funkcji, czyli ma to ten sam efekt.\
 Natomiast gdybyśmy mieli zmienioną wersję typu to mniej ograniczeni jesteśmy dając sobie więcej różnych typów, czyli używając zarówno a jak i b. Dzięki temu nie musimy robić wszystkich typów takich samych (jak by było dla samych a), tylko możemy dać różne typy dla a i b.
 
 ## Zadanie 7

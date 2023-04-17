@@ -5,26 +5,36 @@
     (leaf)
     (2-node (l : (2-3-tree 'a)) (elem : 'a) (r : (2-3-tree 'a)))
     (3-node (l : (2-3-tree 'a)) (elem-l : 'a) (mid : (2-3-tree 'a)) (elem-r : 'a) (r : (2-3-tree 'a))))
-    ; TODO e-r < e-l
+    ; TODO e-r < e-l the heck?
 
-; TODO example tree (so learn about 2-3 trees)
+(define example-tree
+    (3-node
+        (3-node (leaf) 2 (leaf) 3 (leaf))
+        5
+        (2-node (leaf) 6 (leaf))
+        9
+        (2-node (leaf) 10 (leaf))))
 
-(define (2-3-tree? t)
+(define (3= a b c) (and (= a b) (= b c)))
+(define (3< a b c) (and (< a b) (< b c)))
+(define (4< a b c d) (and (< a b) (< b c) (< c d)))
+
+(define (2-3-tree?? t)
     (local(
         (define (check_order minn maxx t)
             (type-case (2-3-tree 'a) t
                 [(leaf) #t]
                 [(2-node l elem r) 
                     (and
-                        (< minn elem maxx)
+                        (3< minn elem maxx)
                         (check_order minn elem l)
                         (check_order elem maxx r))]
                 [(3-node l e-l mid e-r r)
                     (and
-                        (< minn e-r e-l maxx)
-                        (check_order minn e-r l)
-                        (check_order e-r e-l mid)
-                        (check_order e-l maxx r))]))
+                        (4< minn e-l e-r maxx)
+                        (check_order minn e-l l)
+                        (check_order e-l e-r mid)
+                        (check_order e-r maxx r))]))
 
         (define false -inf.0)
         (define (t? n) (not (= n false)))
@@ -35,9 +45,14 @@
                     (let [(h_l (check_height l)) (h_r (check_height r))]
                     (if (and (t? h_l) (t? h_r) (= h_l h_r)) (+ h_l 1) false))]
                 [(3-node l e-l mid e-r r)
-                    (let [(h_l (check_height l) (h_m (check_height mid)) (h_r (check_height r)))]
-                    (if (and (t? h_l) (t? h_m) (t? h_r) (= h_l h_m h_r)) (+ h_l 1) false))])))
+                    (let [(h_l (check_height l)) (h_m (check_height mid)) (h_r (check_height r))]
+                    (if (and (t? h_l) (t? h_m) (t? h_r) (3= h_l h_m h_r)) (+ h_l 1) false))])))
     (and 
         (check_order -inf.0 +inf.0 t)
-        (check_height t))))
+        (t? (check_height t)))))
+    ; (pair 
+    ;     (check_order -inf.0 +inf.0 t)
+    ;     (t? (check_height t)))))
 
+; zad2
+; TODO

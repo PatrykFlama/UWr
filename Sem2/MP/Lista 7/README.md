@@ -3,7 +3,7 @@
 # Lista 7
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---|---|---|---|---|---|---|
-|   |   |   |   |   |   |   |   |
+| X |   | X | X | X | X |   |   |
 
 <details>
 <summary> Info o pozytywnych i negatywnych wystąpieniach w kontraktach </summary>
@@ -17,23 +17,40 @@ Jest to jednak pojęcie, które przewija się przez wiele innych zagadnień z po
 
 </details>
 
-## Zadanie 1
-
-
-## Zadanie 2
-
-
-## Zadanie 3
-
-
 ## Zadanie 4
-
-
-## Zadanie 5
-
+**Pozytywne** (_parzyste_) dostarczone przez **funkcję**\
+**Negatywne** (_nieparzyste_) dostarczone przez **użytkownika**
+```
+(parametric->/c [a b] (-> a b a))
+```
+pozytywne a2\
+negatywne a1 b1
+```
+(parametric->/c [a b c] (-> (-> a b c) (-> a b) a c))
+```
+pozytywne a1 b1 a2 c2\
+negatywne c1 b2 a3
+```
+(parametric->/c [a b c] (-> (-> b c) (-> a b) (-> a c)))
+```
+pozytywne b1 a1 a2\
+negatywne c1 b2 c2
+```
+(parametric->/c [a] (-> (-> (-> a a) a) a))
+```
+pozytywne a2 a4\
+negatywne a1 a3
 
 ## Zadanie 6
+```
+(parametric->/ c [a b] (-> (-> a b b) b (listof a) b))
+((' a 'b -> 'b) 'b (Listof 'a) -> 'b)
 
+(parametric->/ c [a a] (-> (-> a a a) a (listof a) a))
+((' a 'a -> 'a) 'a (Listof 'a) -> 'a)
+```
+Nie, w najlepszym wypadku daje mu większe możliwości na wyjściu; posiadanie typów a' i 'b jest bardziej ograniczjające ponieważ na wyjściu musimy zwrócić typ b - akumulator, i nie możemy zwrócić elementu listy. Innymi słowami - nie rozbijając naszych typów wejściowych na 2 różne pudełka, możemy w wyniku wziąć dowolny typ z wejściowych, co daje nam większe możliwości niż gdybyśmy mogli wziąć dowolny typ z ograniczonego zbioru z wejściowych.\
+Natomiast gdybyśmy mieli zmienioną wersję typu to mniej ograniczeni jesteśmy dając sobie więcej różnych typów, czyli używając zarówno a jak i b. Dzięki temu nie musimy robić wszystkich typów takich samych (jak by było dla samych a), tylko możemy dać różne typy dla a i b.
 
 ## Zadanie 7
 

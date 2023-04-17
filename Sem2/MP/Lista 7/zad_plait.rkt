@@ -4,8 +4,9 @@
 (define-type (2-3-tree 'a)
     (leaf)
     (2-node (l : (2-3-tree 'a)) (elem : 'a) (r : (2-3-tree 'a)))
-    (3-node (l : (2-3-tree 'a)) (elem-l : 'a) (mid : (2-3-tree 'a)) (elem-r : 'a) (r : (2-3-tree 'a))))
-    ; TODO e-r < e-l the heck?
+    (3-node (l : (2-3-tree 'a)) (elem-l : 'a) (mid : (2-3-tree 'a)) (elem-r : 'a) (r : (2-3-tree 'a)))
+    (4-node (l : (2-3-tree 'a)) (elem-l : 'a) (mid : (2-3-tree 'a)) (elem-r : 'a) (r : (2-3-tree 'a)))
+        (to-evaluate : 'a)) ; helper type for 2nd exercise
 
 (define example-tree
     (3-node
@@ -55,4 +56,25 @@
     ;     (t? (check_height t)))))
 
 ; zad2
-; TODO
+(define BUILDRES #f)
+(define (insert el t)
+    (define (_insert el t res)
+        (cond 
+            [(leaf? t) (2-node (leaf) el (leaf))]   ; if tree is empty
+            [(2-node? t) (cond
+                [(leaf? (2-node-l t))
+                    t]   ;TODO insert here
+                [(< el (2-node-elem t))
+                    (_insert el (2-node-l t) BUILDRES)]
+                [(< (2-node-elem t) el)
+                    (_insert el (2-node-r t) BUILDRES)])]
+            [(3-node? t) (cond
+                [(leaf? (3-node-l t))
+                    ] ;TODO insert here
+                [(< el (3-node-elem-l t))
+                    (_insert el (3-node-l t) BUILDRES)]
+                [(< (3-node-elem-r t) el)
+                    (_insert el (3-node-r t) BUILDRES)]
+                [else
+                    (_insert el (3-node-mid t) BUILDRES)])]
+            )))

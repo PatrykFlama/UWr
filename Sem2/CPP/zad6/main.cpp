@@ -122,6 +122,12 @@ public:
     type evaluate(){ return cos(e->evaluate()); }
     string toString(){ return "cos(" + e->toString() + ")"; }
 };
+class Tan final : public Operator1arg {
+public:
+    using Operator1arg::Operator1arg;
+    type evaluate(){ return tan(e->evaluate()); }
+    string toString(){ return "tan(" + e->toString() + ")"; }
+};
 class Exp final : public Operator1arg {
 public:
     using Operator1arg::Operator1arg;

@@ -56,25 +56,37 @@
     ;     (t? (check_height t)))))
 
 ; zad2
-(define BUILDRES #f)
-(define (insert el t)
-    (define (_insert el t res)
-        (cond 
-            [(leaf? t) (2-node (leaf) el (leaf))]   ; if tree is empty
-            [(2-node? t) (cond
-                [(leaf? (2-node-l t))
-                    t]   ; insert here
-                [(< el (2-node-elem t))
-                    (_insert el (2-node-l t) BUILDRES)]
-                [(< (2-node-elem t) el)
-                    (_insert el (2-node-r t) BUILDRES)])]
-            [(3-node? t) (cond
-                [(leaf? (3-node-l t))
-                    ] ; insert here
-                [(< el (3-node-elem-l t))
-                    (_insert el (3-node-l t) BUILDRES)]
-                [(< (3-node-elem-r t) el)
-                    (_insert el (3-node-r t) BUILDRES)]
-                [else
-                    (_insert el (3-node-mid t) BUILDRES)])]
-            )))
+#|
+(define-type (4-Tree 'a)
+  (2-3-node [node : (2-3-Tree 'a)])
+  (4node [l : (2-3-Tree 'a)] [elem1 : 'a] 
+         [m1 : (2-3-Tree 'a)] [elem2 : 'a] 
+         [m2 : (2-3-Tree 'a)] [elem3 : 'a]
+         [r : (2-3-Tree 'a)]))
+
+; typ funkcji pomocniczej helper-insert: 2-3-Tree -> 4-Tree
+
+(define (insert x t)
+  (let ([new-tree (helper-insert x t)])
+    (type-case (4-Tree 'a) t
+      [(4node l v1 s1 v2 s3 v3 r) (2node (2-node l v1 s1) v2 (2-node s2 v3 r))]
+      [(2-3-node tree) tree])))
+
+(define-type Tree-addit
+  (addit3 [l : Tree23] [v1 : Number] [c : Tree23] [v2 : Number] [r : Tree23])
+  (addit2 [l : Tree23] [v : Number] [r : Tree23])
+  (addit2-bigger [l : Tree23] [v : Number] [r : Tree23]))
+
+; (define (insert-addit [t : Tree23] [v : Number]) : Tree-addit
+
+(define (insert [t : Tree23] [v : Number]) : Tree23
+  (if (leaf? t) 
+      (node2 (leaf) v (leaf))
+      (type-case Tree-addit (insert-addit t v)
+        [(addit3 l w1 c w2 r)
+         (node3 l w1 c w2 r)]
+        [(addit2 l w r)
+         (node2 l w r)]
+        [(addit2-bigger l w r)
+         (node2 l w r)])))
+|#

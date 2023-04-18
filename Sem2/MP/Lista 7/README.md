@@ -53,10 +53,6 @@ Nie, w najlepszym wypadku daje mu większe możliwości na wyjściu; posiadanie 
 Zarazem w tym konkretnym przypadku nie ma to znaczenia, z racji iż nasza wartość wynikowa jest wartością wynikową podanej do folda funkcji, czyli ma to ten sam efekt.\
 Natomiast gdybyśmy mieli zmienioną wersję typu to mniej ograniczeni jesteśmy dając sobie więcej różnych typów, czyli używając zarówno a jak i b. Dzięki temu nie musimy robić wszystkich typów takich samych (jak by było dla samych a), tylko możemy dać różne typy dla a i b.
 
-## Zadanie 7
-
-
-## Zadanie 8
 
 
 

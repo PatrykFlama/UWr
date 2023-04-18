@@ -149,7 +149,7 @@ class Mult extends Expression{
     }
 }
 
-public class zad {
+public class zad5 {
     public static void main(String[] args) {
         Expression e = new Add(new Const(4f), new Variable("x", 2f));
         System.out.println(e.niceEvaluate());

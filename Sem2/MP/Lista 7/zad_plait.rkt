@@ -63,14 +63,14 @@
             [(leaf? t) (2-node (leaf) el (leaf))]   ; if tree is empty
             [(2-node? t) (cond
                 [(leaf? (2-node-l t))
-                    t]   ;TODO insert here
+                    t]   ; insert here
                 [(< el (2-node-elem t))
                     (_insert el (2-node-l t) BUILDRES)]
                 [(< (2-node-elem t) el)
                     (_insert el (2-node-r t) BUILDRES)])]
             [(3-node? t) (cond
                 [(leaf? (3-node-l t))
-                    ] ;TODO insert here
+                    ] ; insert here
                 [(< el (3-node-elem-l t))
                     (_insert el (3-node-l t) BUILDRES)]
                 [(< (3-node-elem-r t) el)

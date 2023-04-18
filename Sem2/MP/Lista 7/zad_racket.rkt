@@ -76,7 +76,7 @@
             (first xs))))
 
 
-(fold-right-mod     ; here proabably its smth like optionof number and bool
+(fold-right-mod
     (lambda (el acc)
         (if (equal? el 2) acc #f))
     #t '(2 2 2 2))

@@ -2,15 +2,26 @@
 # List 2.5
 | 1 | 2*| 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10|
 |---|---|---|---|---|---|---|---|---|---|
-| X |   | X | X | X | X | X | X | X | X |
+| X | X | X | X | X | X | X | X | X | X |
 
 ## Problem 1
-For every edge of the board and take maximum from (distance of balck king from it) and (distance of white king to it - 2 cells), and take minimum from this maximum. That will give us minimal amount of steps that we have to take, to get kings to desired positions. \
+For every edge of the board and take maximum from `[distance of balck king from it]` and `[distance of white king to it - 2 cells]`, and take minimum from this maximum. That will give us minimal amount of steps that we have to take, to get kings to desired positions.\
 Now for every cell by that edge (so for 8 cells) i calculate moves needed to get checkmate, and take min from that.\
-If we introduce black tower to the game, we just have to calculate the same heuristics for black and white, and then take minimum from that (as tower of opponent wont disturb us in cooperative checkmate).
+If we introduce black tower to the game, we just have to calculate the same heuristics for black and white, and then take minimum from that (as tower of opponent wont disturb us in cooperative checkmate).\
+So our heuristics is $min_{\textrm{cells by border}}(max(dist(\textrm{black king to cell}), dist(white king to black king)-1))$
 
 ## Problem 2*
-
+For this one we take again only black king and from white figures king with 2 knights. We can notice that with such configuration we again can hava a checkmate only by the board border. \
+So we can check all possible checkmate configurations, generally there is just one, thus we see that:
+* black king has to be by the wall
+* white king has to be 2 steps away from the wall, so 1 step apart from black king
+* knights have to be 3 steps away from black king, but they can also move 3 steps at a time
+  
+So our heuristics function can be maximum from:
+* $h_{\textrm{black king}} = dist(\textrm{closest wall})$
+* $h_{\textrm{white king}} = dist(\textrm{black king}) - 1$
+* $h_{\textrm{knight 1}} = (dist(\textrm{black king})-3)/3$
+* $h_{\textrm{knight 2}} = (dist(\textrm{black king})-3)/3$
 
 ## Problem 3
 Assuming that our heuristics is also reasonable (h(goal) = 0), as otherwise consistent wouldn't imply optimistic, so we know from definition that:

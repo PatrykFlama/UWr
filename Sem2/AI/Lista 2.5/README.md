@@ -11,17 +11,19 @@ If we introduce black tower to the game, we just have to calculate the same heur
 So our heuristics is $min_{\textrm{cells by border}}(max(dist(\textrm{black king to cell}), dist(white king to black king)-1))$
 
 ## Problem 2*
-For this one we take again only black king and from white figures king with 2 knights. We can notice that with such configuration we again can hava a checkmate only by the board border. \
+For this one we take again only black king and from white figures king with 2 knights. We can notice that with such configuration we again can have a checkmate only by the board border. \
 So we can check all possible checkmate configurations, generally there is just one, thus we see that:
 * black king has to be by the wall
 * white king has to be 2 steps away from the wall, so 1 step apart from black king
 * knights have to be 3 steps away from black king, but they can also move 3 steps at a time
   
-So our heuristics function can be maximum from:
+So our heuristics function will be maximum*4 from:
 * $h_{\textrm{black king}} = dist(\textrm{closest wall})$
 * $h_{\textrm{white king}} = dist(\textrm{black king}) - 1$
 * $h_{\textrm{knight 1}} = (dist(\textrm{black king})-3)/3$
 * $h_{\textrm{knight 2}} = (dist(\textrm{black king})-3)/3$
+
+(and we take minimum from every possible cell by board border)
 
 ## Problem 3
 Assuming that our heuristics is also reasonable (h(goal) = 0), as otherwise consistent wouldn't imply optimistic, so we know from definition that:
@@ -70,6 +72,8 @@ This algorithm has time complexity of $O(cd^3)$ and space complexity of $O(c)$, 
 We know that our constraints look like this [operation on domains] $\circ$ [domain]\
 To speed it up (space complexity doesn't change) we can alter a bit propagation of constraints - we modify all of them i such a way, that we use only $<=$ and $>=$. Now for every constraint we can binsearch the solution - calculate marginal case for left side and binsearch thru values of domain on the right side.\
 Our new time complexity is $O(cd\log{d})$ becouse for every constraint we execute our algorithm, and we will add it to the queue max _d_ times, as thats how many elements it contains, $\log{d}$ is time for computing one case from queue.
+![](ac31.png)
+![](ac32.png)
 
 ## Problem 10
 Differential heuristic: $h(n) = \max_{L \in Landmarks}(C^*(n, L) - C^*(L, goal))$ if negative retrurns _0_\

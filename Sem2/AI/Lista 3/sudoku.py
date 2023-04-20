@@ -5,7 +5,7 @@ def V(i,j):
     return 'V%d_%d' % (i,j)
     
 def domains(Vs):
-    return [ q + ' in 1..9' for q in Vs ]
+    return [q + ' in 1..9' for q in Vs ]
     
 def all_different(Qs):
     return 'all_distinct([' + ', '.join(Qs) + '])'
@@ -17,14 +17,14 @@ def get_raw(i):
     return [V(i,j) for j in range(9)]     
 
 def horizontal():   
-    return [ all_different(get_raw(i)) for i in range(9)]
+    return [all_different(get_raw(i)) for i in range(9)]
 
 def vertical():
     return [all_different(get_column(j)) for j in range(9)]
 
 def print_constraints(Cs, indent, d):
     position = indent
-    print (indent * ' ', end='')
+    print(indent * ' ', end='')
     for c in Cs:
         print (c + ',', end=' ')
         position += len(c)
@@ -35,7 +35,7 @@ def print_constraints(Cs, indent, d):
 
       
 def sudoku(assigments):
-    variables = [ V(i,j) for i in range(9) for j in range(9)]
+    variables = [V(i,j) for i in range(9) for j in range(9)]
     
     print (':- use_module(library(clpfd)).')
     print ('solve([' + ', '.join(variables) + ']) :- ')
@@ -43,11 +43,11 @@ def sudoku(assigments):
     
     cs = domains(variables) + vertical() + horizontal() #TODO: too weak contraints, add something!
     for i,j,val in assigments:
-        cs.append( '%s #= %d' % (V(i,j), val) )
+        cs.append( '%s #= %d' % (V(i,j), val))
     
     print_constraints(cs, 4, 70),
     print ()
-    print ('    labeling([ff], [' +  ', '.join(variables) + ']).' )
+    print ('    labeling([ff], [' +  ', '.join(variables) + ']).')
     print ()
     print (':- solve(X), write(X), nl.')       
 
@@ -60,8 +60,9 @@ if __name__ == "__main__":
         if len(x) == 9:
             for i in range(9):
                 if x[i] != '.':
-                    triples.append( (raw,i,int(x[i])) ) 
-            raw += 1          
+                    triples.append( (raw,i,int(x[i]))) 
+            raw += 1
+        else: break
     sudoku(triples)
     
 """

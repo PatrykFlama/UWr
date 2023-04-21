@@ -52,8 +52,7 @@ class MergeSort<T extends Comparable<T>> extends Thread {
     public static <T extends Comparable<T>> T[] execute(T[] _tab) throws InterruptedException {
         MergeSort<T> aux = new MergeSort<T>(_tab);
         // execute sort
-        aux.start();
-        aux.join();
+        aux.run();
 
         return aux.tab;
     }

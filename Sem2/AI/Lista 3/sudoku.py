@@ -22,6 +22,15 @@ def horizontal():
 def vertical():
     return [all_different(get_column(j)) for j in range(9)]
 
+def get_square(i, j):
+    inside = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+    return [V(i + k[0], j + k[1]) for k in inside]
+
+def in_square():
+    squares = [(0, 0), (0, 3), (0, 6), (3, 3), (3, 6), (6, 6), (3, 0), (6, 0)]
+    return [all_different(get_square(s[0], s[1])) for s in squares]
+
+
 def print_constraints(Cs, indent, d):
     position = indent
     print(indent * ' ', end='')
@@ -41,7 +50,7 @@ def sudoku(assigments):
     print ('solve([' + ', '.join(variables) + ']) :- ')
     
     
-    cs = domains(variables) + vertical() + horizontal() #TODO: too weak contraints, add something!
+    cs = domains(variables) + vertical() + horizontal() + in_square()
     for i,j,val in assigments:
         cs.append( '%s #= %d' % (V(i,j), val))
     

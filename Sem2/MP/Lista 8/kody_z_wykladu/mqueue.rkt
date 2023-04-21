@@ -1,4 +1,5 @@
 #lang racket
+
 (provide
  mqueue?
  nonempty-mqueue?
@@ -7,7 +8,7 @@
    [make-mqueue   (-> mqueue?)]
    [mqueue-push   (-> mqueue? any/c void?)]
    [mqueue-pop    (-> mqueue? any/c)]
-   [mqueue-join   (-> nonempty-mqueue? nonempty-mqueue? void?)])
+   [mqueue-join   (-> nonempty-mqueue? nonempty-mqueue? void?)]))
 
 (struct mqueue
   ([front #:mutable]

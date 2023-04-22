@@ -1,16 +1,20 @@
 #lang racket
 
-;TODO provide
+(provide 
+    mdeque?
+    nonempty-mdeque?
+    (contract-out
+        [mdeque-empty? (-> mdeque? boolean?)]
+        [empty-mdeque  (-> mdeque?)]
+        [mdeque-push-front (-> mdeque? any/c void?)]
+        [mdeque-push-back  (-> mdeque? any/c void?)]
+        [mdeque-pop-front  (-> mdeque? any/c)]  
+        [mdeque-pop-back   (-> mdeque? any/c)]
+        [mdeque-join (-> nonempty-mdeque? nonempty-mdeque? void?)]))
 
 ; ========Double Ended List========
-(struct del     ;TODO is that proper name?
+(struct del
     (prev val next) #:mutable #:transparent)
-
-(define (del-empty? xs) (and    ; TODO probably useless 
-    (null? (del-prev xs))
-    (null? (del-next xs))))
-
-(define (del-last? xs) (null? (del-next xs)))   ;; TODO probably useless
 
 ; =======DEQUE========
 (struct mdeque
@@ -69,16 +73,23 @@
             (set-del-next! (mdeque-back dq) null)
             (del-val p))))
 
-(define example-mdeque (empty-mdeque))
-(mdeque-push-front example-mdeque 3)
-(mdeque-push-front example-mdeque 2)
-(mdeque-push-front example-mdeque 1)
-(mdeque-push-back  example-mdeque 4)
-(mdeque-push-back  example-mdeque 5)
+(define/contract (mdeque-join dq1 dq2)
+    (set-del-next! (mdeque-back dq1) (mdeque-front dq2))
+    (set-del-prev! (mdeque-front dq2) (mdeque-back dq1))
+    (set-mdeque-back!  dq1 (mdeque-back dq2))
+    (set-mdeque-front! dq2 null)
+    (set-mdeque-back!  dq2 null))
 
-(mdeque-front example-mdeque)
-(mdeque-back example-mdeque)
-(mdeque-pop-front example-mdeque)
-(mdeque-pop-back example-mdeque)
-(mdeque-front example-mdeque)
-(mdeque-back example-mdeque)
+; (define example-mdeque (empty-mdeque))
+; (mdeque-push-front example-mdeque 3)
+; (mdeque-push-front example-mdeque 2)
+; (mdeque-push-front example-mdeque 1)
+; (mdeque-push-back  example-mdeque 4)
+; (mdeque-push-back  example-mdeque 5)
+
+; (mdeque-front example-mdeque)
+; (mdeque-back example-mdeque)
+; (mdeque-pop-front example-mdeque)
+; (mdeque-pop-back example-mdeque)
+; (mdeque-front example-mdeque)
+; (mdeque-back example-mdeque)

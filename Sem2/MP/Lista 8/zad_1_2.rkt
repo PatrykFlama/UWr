@@ -20,9 +20,14 @@
 (define (mreverse! xs)
     (define (_mreverse! xs prev)
         (if (null? xs) prev
-            (begin
-                (_mreverse! (mcdr xs) xs)
+            (begin (let
+                [(tcdr (mcdr xs))]
                 (set-mcdr! xs prev)
-                )))
-    (_mreverse! xs '())
-    xs)
+                (_mreverse! tcdr xs)))))
+    (_mreverse! xs '()))
+
+
+; ----TESTS-----
+(cycle! (mlist '(1 2 3 4)))
+(mreverse! (mlist '(1 2 3 4)))
+

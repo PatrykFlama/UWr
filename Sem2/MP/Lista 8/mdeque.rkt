@@ -32,7 +32,7 @@
 
 (define (display-mdeque dq) 
     (displayln (mdeque-front example-mdeque))
-    (displayln (mdeque-back example-mdeque)))
+    (displayln (mdeque-back  example-mdeque)))
 
 
 (define (mdeque-push-front dq x)

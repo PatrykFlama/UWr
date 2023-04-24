@@ -3,7 +3,7 @@
 # Lista 8
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
 |---|---|---|---|---|---|---|
-| X | X | X | X | X |   |   |
+| X | X | X | X | X | X | X |
 
 
 ## Zadanie 1
@@ -28,5 +28,4 @@ Implementujemy typ reprezentujący podane wyrażenia. \
 _Var_ jest symbolem, _number_ to liczba, _lambda_ przyjmuje listę parametrów (zmiennych czyli symboli) i wyrażenie, _app_ przyjmuje wyrażenie i listę parametrów, _if_ przyjmuje warunek, wyrażenie dla prawdy i wyrażenie dla fałszu, _cond_ przyjmuje listę par (warunek, wyrażenie), _let_ przyjmuje listę par (nazwa, wyrażenie) i wyrażenie.
 
 # Zadanie 7
-
-
+Do każdego bardziej skomplikowanego (do parsowania) wyrażenia piszemy dedykowaną funkcję parsującą. Następnie sklejamy wszystkie funkcje w jedną, która parsuje całe wyrażenie.\

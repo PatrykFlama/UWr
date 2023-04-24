@@ -46,11 +46,12 @@ class Zaszyfrowana
 end
 
 
-przykladowe_slowo = Jawna.new("slowo");
-prz_klucz = {'s' => 'a',
-             'l' => 'b',
-             'o' => 'c',
-             'w' => 'd'}
+prz_klucz = {'a' => 'b',
+             'b' => 'r',
+             'r' => 'y',
+             'y' => 'u',
+             'u' => 'a'}
+przykladowe_slowo = Jawna.new("ruby");
 zaszyfrowane = przykladowe_slowo.zaszyfruj(prz_klucz)
 
 print przykladowe_slowo, " => "

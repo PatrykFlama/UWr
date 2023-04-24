@@ -3,7 +3,7 @@
 # Lista 8
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
 |---|---|---|---|---|---|---|
-| X | X | X | X |   |   |   |
+| X | X | X | X | X |   |   |
 
 
 ## Zadanie 1
@@ -17,5 +17,9 @@ Aby stworzyć kolejkę dwustronną potrzebujemy listy dwustronnej, aby przy wyrz
 Przy dodawaniu elementu wystarczy stworzyć nowy element listy dwukierunkowej, z zadaną wartością, jednym wskaźnikiem ustawionym na skrajny element listy oraz druim wskaźnikiem pustym. Musimy też połączyć pusty wskaźnik skrajnego elementu listy z naszym nowym elementem. Jeżeli nasza kolejka była pusta to musimy też ustawić drugi skrajny wskaźnik naszej kolejki. \
 Przy wyrzucaniu elementu musimy zapisać wartość elementu do wypisania oraz ustawić wskaźnik do skrajnego elementu kolejki w następnym elemencie na _null_. Jeżeli kolejka po wyrzuceniu elementu jest pusta musimy ustawić drugi skrajny wskaźnik na _null_.
 
+# Zadanie 4
+Zamiast tworzenia drzewa i obliacznia go w osobnej funkcji możemy od razu obliczać wartość wyrażenia. W tym celu musimy zaimplementować funkcję obliczającą wartość wyrażenia. Następnie musimy zmodyfikować funkcję parsującą wyrażenie, aby zamiast tworzyć drzewo zwracała wartość wyrażenia.
 
+# Zadanie 5
+W zadaniu 5 musimy do implementacji z wykładu dodąć obsługę operatorów unarnych (oddzielając binarne), oraz zaimplementować ich obliczanie. Następnie wystarczy zmodyfikować odpowiednio parsowanie oraz obliczanie wyrażeń.
 

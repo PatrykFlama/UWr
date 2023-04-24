@@ -23,3 +23,10 @@ Zamiast tworzenia drzewa i obliacznia go w osobnej funkcji możemy od razu oblic
 # Zadanie 5
 W zadaniu 5 musimy do implementacji z wykładu dodąć obsługę operatorów unarnych (oddzielając binarne), oraz zaimplementować ich obliczanie. Następnie wystarczy zmodyfikować odpowiednio parsowanie oraz obliczanie wyrażeń.
 
+# Zadanie 6
+Implementujemy typ reprezentujący podane wyrażenia. \
+_Var_ jest symbolem, _number_ to liczba, _lambda_ przyjmuje listę parametrów (zmiennych czyli symboli) i wyrażenie, _app_ przyjmuje wyrażenie i listę parametrów, _if_ przyjmuje warunek, wyrażenie dla prawdy i wyrażenie dla fałszu, _cond_ przyjmuje listę par (warunek, wyrażenie), _let_ przyjmuje listę par (nazwa, wyrażenie) i wyrażenie.
+
+# Zadanie 7
+
+

@@ -1,6 +1,3 @@
-import sys
-
-
 def V(i, j):
     return 'V%d_%d' % (i, j)
 
@@ -22,12 +19,13 @@ def horizontal():
 def vertical():
     return [all_different(get_column(j)) for j in range(9)]
 
+
 def get_square(i, j):
-    inside = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+    inside = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)]   # cell offset
     return [V(i + k[0], j + k[1]) for k in inside]
 
 def in_cell():
-    squares = [(0, 0), (0, 3), (0, 6), (3, 3), (3, 6), (6, 6), (3, 0), (6, 0)]
+    squares = [(0, 0), (0, 3), (0, 6), (3, 3), (3, 6), (6, 6), (3, 0), (6, 0)]  # square offset
     return [all_different(get_square(s[0], s[1])) for s in squares]
 
 

@@ -1,4 +1,3 @@
-
 def B(i,j):
     return 'B_%d_%d' % (i,j)
     

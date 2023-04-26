@@ -13,11 +13,11 @@ def all_different(Qs):
 def get_column(j):
     return [V(i, j) for i in range(9)]
 
-def get_raw(i):
+def get_row(i):
     return [V(i, j) for j in range(9)]
 
 def horizontal():
-    return [all_different(get_raw(i)) for i in range(9)]
+    return [all_different(get_row(i)) for i in range(9)]
 
 def vertical():
     return [all_different(get_column(j)) for j in range(9)]
@@ -64,16 +64,16 @@ if __name__ == "__main__":
     out_file = open("zad_output.txt", "w", encoding='utf8')
     input_file = open("zad_input.txt", encoding='utf8').readlines()
 
-    raw = 0
+    row = 0
     triples = []
 
     for x in input_file:
         x = x.strip()
         if len(x) == 9:
-            for i in range(9):
-                if x[i] != '.':
-                    triples.append((raw, i, int(x[i])))
-            raw += 1
+            for col in range(9):
+                if x[col] != '.':
+                    triples.append((row, col, int(x[col])))
+            row += 1
     sudoku(triples)
 
     out_file.close()

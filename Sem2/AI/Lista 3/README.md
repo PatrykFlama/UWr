@@ -2,7 +2,7 @@
 # List 3
 | 1 | 2 | 3 | 4 |
 |---|---|---|---|
-| X |   | X | X |
+| X | X | X | X |
 
 # Exercise 4
 (lecture 6)\

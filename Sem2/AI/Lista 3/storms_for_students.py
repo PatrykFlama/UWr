@@ -4,8 +4,8 @@ def B(i,j):
 def storms(rows, cols, triples):
     writeln(':- use_module(library(clpfd)).')
     
-    R = len(rows)
-    C = len(cols)
+    R = len(list(rows))
+    C = len(list(cols))
     
     bs = [ B(i,j) for i in range(R) for j in range(C)]
     

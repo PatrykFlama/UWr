@@ -59,8 +59,7 @@ def get_possible_domains():    # generate all possibilities/domains for each row
                 # and choose only those, which are correct
                 if combination[cell-1] + row[cell-1] >= combination[cell]:
                     blocks_dont_overlap = False
-                    break;
-
+                    break
             if blocks_dont_overlap: # color blocks in row
                 new = [0] * C
                 row_ptr = 0

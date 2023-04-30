@@ -2,7 +2,7 @@
 # List 3.5
 | 1 | 2 | 3*| 4 | 5 | 6 | 7 | 8*| 9 | 10|11*|
 |---|---|---|---|---|---|---|---|---|---|---|
-| X | X |   |   |   |   |   |   |   |   |   |
+| X | X |   | ~ |   |   |   |   |   |   |   |
 
 ## Exercise 1
 <details>
@@ -58,10 +58,12 @@ We can increase our search space, using _taboo search_ to save places that we al
 
 
 ## Exercise 4
-
+Our variables are given blocks - *B_idx_len*\
+Our domains are all possible blocks positions\
+Our constraints are: for block - for _len_ steps ahead from its position there can't be any wall or block = for every block (in that row/col) its starting position is different
 
 ## Exercise 5
-<!-- TODO lecture 5, ~15 -->
+<!-- lecture 5, ~15 -->
 
 ## Exercise 6
 

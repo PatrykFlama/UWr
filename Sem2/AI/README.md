@@ -3,6 +3,8 @@
 
 [(back)](../)
 # **A**rtificial **I**ntelligence
+### [Lectures](./Lectures/)
+___
 ### [Lab 1](./Lista%201/)
 ### [Exercises 1](./Lista%201.5/)
 ___
@@ -25,6 +27,8 @@ ___
 
 [(wróć)](../)
 # **A**rtificial **I**ntelligence
+### [Wykłady](./Lectures/)
+___
 ### [Pracownia 1](./Lista%201/)
 ### [Ćwiczenia 1](./Lista%201.5/)
 ___

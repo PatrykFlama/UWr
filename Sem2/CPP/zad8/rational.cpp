@@ -81,8 +81,17 @@ namespace calculations {
         Rational operator-(){
             return Rational(-numerator, denominator);
         }
+        Rational operator!(){
+            if(numerator < 0) throw exception();
+            return Rational(denominator, numerator);
+        }
 
-        
+        operator double() {
+            return (double)numerator/(double)denominator;
+        }
+        explicit operator int() {
+            return numerator/denominator;
+        }
         /* #endregion */
     };
 }

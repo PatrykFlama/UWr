@@ -13,3 +13,6 @@ Odpowiedzi można zebrać np tak:
 head -n -0 *.cpp | gzip > /tmp/output.gz
 
 [Link do prezentacji](https://nokia.v92.pl/stl/)
+
+___
+Od C++20 można używać _spaceship operator_ `<=>` do porównywania obiektów. 

@@ -20,4 +20,6 @@
 
 </details>
 
+___
 
+https://nokia.v92.pl/2023/

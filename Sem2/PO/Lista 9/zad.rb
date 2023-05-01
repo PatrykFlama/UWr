@@ -44,12 +44,19 @@ class Function
     end
 
     # ------ plotting ------
-    
+    def pixels(x_from = 0, x_to = 20, res = 1)
+        pixels = []
+        
+        (x_from..x_to).step(res) do |x|
+            pixels.push([x, value(x)])
+        end
+    end
 end
 
 sq = Function.new proc {|x| x*x}
 
 puts sq.value(2)
-puts sq.zero(0, 2, 0.0001)
+print sq.zero(0, 2, 0.0001), "\n"
 puts sq.field(0, 2)
 puts sq.deriv(2)
+print sq.pixels(0, 0, 10, 10, 1), "\n"

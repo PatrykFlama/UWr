@@ -2,7 +2,7 @@
 # List 3.5
 | 1 | 2 | 3*| 4 | 5 | 6 | 7 | 8*| 9 | 10|11*|
 |---|---|---|---|---|---|---|---|---|---|---|
-| X | X | X | ~ |   |   | X |   |   |   |   |
+| X | X | X | X |   |   | X | X |   |   |   |
 
 ## Exercise 1
 <details>
@@ -64,8 +64,7 @@ Travelling salesman problem:
 
 Solution:
 We spawn an ant in random city and let it travel randomly (each city only once), with probability to travel to city _n_ dependant on its weights.   
-Weights of path to each city is based on distance and pheromones intensity.  
-Ant leaves pheromone trail inversly proportional to distance travelled.  
+After travel we judge the score (total distance) and based on it and ants path we update pheromones on our graph.  
 After _k_ iterations we end up with most probably shortest path.
 
 ## Exercise 4
@@ -84,19 +83,16 @@ Our constraints are:
 ## Exercise 6
 
 
-## Exercise 7
-Pentago\
-Goal: get 5 in a row (horizontally, vertically or diagonally)\
-Heuristics: weighted sum of number of 4 in a row, number of 3 in a row, number of 2 in a row, number of 1 in a row - sums of opponent
-
-Jumpers\
-Goal: get all jumpers to the other side of the board, we can only walk on generated roads (ours and opponents)\
+## Exercise 7, 8*
+Jumpers  
+Goal: get all jumpers to the other side of the board, we can only walk on generated roads (ours and opponents)  
 Heuristics:  
 * sum of distances of our pieces from the other side of the board (minimalize)  
 * sum of distances of opponents pieces from the other side of the board (maximize)  
 
-## Exercise 8*
-
+Pentago  
+Goal: get 5 in a row (horizontally, vertically or diagonally)  
+Heuristics: weighted sum of number of 4 in a row, number of 3 in a row, number of 2 in a row, number of 1 in a row - sums of opponent
 
 ## Exercise 9
 

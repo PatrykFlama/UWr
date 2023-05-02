@@ -2,7 +2,7 @@
 # List 3.5
 | 1 | 2 | 3*| 4 | 5 | 6 | 7 | 8*| 9 | 10|11*|
 |---|---|---|---|---|---|---|---|---|---|---|
-| X | X | X | X |   |   | X | X |   |   |   |
+| X | X | X | X |   |   | X | X | X | X |   |
 
 ## Exercise 1
 <details>
@@ -95,10 +95,28 @@ Goal: get 5 in a row (horizontally, vertically or diagonally)
 Heuristics: weighted sum of number of 4 in a row, number of 3 in a row, number of 2 in a row, number of 1 in a row - sums of opponent
 
 ## Exercise 9
+Why first player has major advantage? Becouse he can choose hist first move, so can place 3 marks before second player, also he can choose best move, since all moves are available at the begining.  
+If we start first it is better to start in the middle, becouse it is best position with highest chance of winning. The we can pick any of the 4 corners. If corner is occupied we know that enemy probably took same strategy so we can suppose which cells he took.  
+Next we try to finish our 3 in a row, if enemy blocked us we choose another corner (one should be free).  
+Then we again try to finish 3 in a row, if both solutions are blocked we won't win, so we try to block enemy.  
+To block enemy, knowing his position we follow best strategy in tic tac toe to predict which cells he also took, and block him.  
 
+If we start second we still try to take the middle. If we couldn't do that we go for random corner. If we find enemys cell we have more information, so we can try to block him (following the best strategy).
 
 ## Exercise 10
+#### a) How can the time spent calculating the best previous move be used to calculate the best current move (we assume that only one game is played).
+* Alpha-Beta-Search
+In previous move we have already calculated branches to depth _d_, so now our depth increased to _d + 1_. So we simply have to calculate one next move for every branch, instead of _d_ moves for every branch.
 
+* MCTS
+If we have already calculated some moves, we have some information about the game, and we can use it in our next move - few paths are already explored, so we can use them to explore further or treat them as result for given choice and have more simulations for more precision.
+
+#### b) How to use the possibility of parallel code execution to improve the quality of the game?
+* Alpha-Beta-Search
+We can calculate result of each branch in parallel, and then choose the best one. Thanks to that we can go deeper in our search tree, having more precise results.
+
+* MCTS
+We can run multiple simulations in parallel, and then choose the best move. Thanks to that we can run more simulations, having more precise results.
 
 ## Exercise 11*
 

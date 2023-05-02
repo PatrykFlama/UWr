@@ -2,7 +2,7 @@
 # List 3.5
 | 1 | 2 | 3*| 4 | 5 | 6 | 7 | 8*| 9 | 10|11*|
 |---|---|---|---|---|---|---|---|---|---|---|
-| X | X |   | ~ |   |   |   |   |   |   |   |
+| X | X | X | ~ |   |   | X |   |   |   |   |
 
 ## Exercise 1
 <details>
@@ -55,7 +55,18 @@ Simply we can decrease probability of mutation with time, which in some situatio
 We can increase our search space, using _taboo search_ to save places that we already visited and generate new individuals further from them. Thus we will have quite broad exploration, thanks to whick better chance to get closer to global maxima - using evolution algorithm.
 
 ## Exercise 3*
+Ant colony algorithm is probablistic method inspired by ants behaviour, that looks for 'better' paths to find the solution.\
+Ants travel randomly, but when food is found they take it back to the nest, leaving pheromones on their way. Thanks to that it is more probable that other ants will follow the same path. Pheromones intensity matters, and it decreases with time. Thus shorter paths are more probable to be chosen.  
+Travelling salesman problem:
+* we have n cities
+* we want to visit each city only once
+* we want to minimize total distance travelled
 
+Solution:
+We spawn an ant in random city and let it travel randomly (each city only once), with probability to travel to city _n_ dependant on its weights.   
+Weights of path to each city is based on distance and pheromones intensity.  
+Ant leaves pheromone trail inversly proportional to distance travelled.  
+After _k_ iterations we end up with most probably shortest path.
 
 ## Exercise 4
 Our variables are given blocks - *B_idx_len*\
@@ -63,13 +74,26 @@ Our domains are all possible blocks positions\
 Our constraints are: for block - for _len_ steps ahead from its position there can't be any wall or block = for every block (in that row/col) its starting position is different
 
 ## Exercise 5
-<!-- lecture 5, ~15 -->
+Our lessons have assigned classes and teachers, we have to assign them appropriate date (1-50)\
+Our variables are lessons - *L_class_time*\
+Our domains are all possible teachers\
+Our constraints are:
+* for every lesson in given class its starting time is different <=> L_C1_T != L_C2_T
+* c
 
 ## Exercise 6
 
 
 ## Exercise 7
+Pentago\
+Goal: get 5 in a row (horizontally, vertically or diagonally)\
+Heuristics: weighted sum of number of 4 in a row, number of 3 in a row, number of 2 in a row, number of 1 in a row - sums of opponent
 
+Jumpers\
+Goal: get all jumpers to the other side of the board, we can only walk on generated roads (ours and opponents)\
+Heuristics:  
+* sum of distances of our pieces from the other side of the board (minimalize)  
+* sum of distances of opponents pieces from the other side of the board (maximize)  
 
 ## Exercise 8*
 

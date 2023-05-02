@@ -42,15 +42,6 @@ class Function
     def deriv(x, h = 0.0001)
         return (value(x + h) - value(x)) / h
     end
-
-    # ------ plotting ------
-    def pixels(x_from = 0, x_to = 20, res = 1)
-        pixels = []
-        
-        (x_from..x_to).step(res) do |x|
-            pixels.push([x, value(x)])
-        end
-    end
 end
 
 sq = Function.new proc {|x| x*x}

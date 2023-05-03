@@ -73,12 +73,8 @@ Our domains are all possible blocks positions\
 Our constraints are: for block - for _len_ steps ahead from its position there can't be any wall or block = for every block (in that row/col) its starting position is different
 
 ## Exercise 5
-Our lessons have assigned classes and teachers, we have to assign them appropriate date (1-50)\
-Our variables are lessons - *L_class_time*\
-Our domains are all possible teachers\
-Our constraints are:
-* for every lesson in given class its starting time is different <=> L_C1_T != L_C2_T
-* c
+We generate variables from all possible classes and dates combination: V_C_D  
+All possible teachers are represented by numbers  
 
 ## Exercise 6
 

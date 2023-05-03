@@ -98,37 +98,37 @@ calculations::Rational calculations::Rational::operator+(Rational other) {
     int n = numerator * other.denominator + other.numerator * denominator;
     int d = denominator * other.denominator;
     if(((long long)numerator * (long long)other.denominator + 
-        (long long)other.numerator * (long long)denominator) != n) throw exceptions::out_of_range();
-    if((long long)denominator * (long long)other.denominator != d) throw exceptions::out_of_range();
+        (long long)other.numerator * (long long)denominator) != n) throw exceptions::out_of_range("out of range");
+    if((long long)denominator * (long long)other.denominator != d) throw exceptions::out_of_range("out of range");
     return Rational(n, d);
 }
 calculations::Rational calculations::Rational::operator-(Rational other) {
     int n = numerator * other.denominator - other.numerator * denominator;
     int d = denominator * other.denominator;
     if(((long long)numerator * (long long)other.denominator - 
-        (long long)other.numerator * (long long)denominator) != n) throw exceptions::out_of_range();
-    if((long long)denominator * (long long)other.denominator != d) throw exceptions::out_of_range();
+        (long long)other.numerator * (long long)denominator) != n) throw exceptions::out_of_range("out of range");
+    if((long long)denominator * (long long)other.denominator != d) throw exceptions::out_of_range("out of range");
     return Rational(n, d);
 }
 calculations::Rational calculations::Rational::operator*(Rational other) {
     int n = numerator * other.numerator;
     int d = denominator * other.denominator;
-    if((long long)numerator * (long long)other.numerator != n) throw exceptions::out_of_range();
-    if((long long)denominator * (long long)other.denominator != d) throw exceptions::out_of_range();
+    if((long long)numerator * (long long)other.numerator != n) throw exceptions::out_of_range("out of range");
+    if((long long)denominator * (long long)other.denominator != d) throw exceptions::out_of_range("out of range");
     return Rational(n, d);
 }
 calculations::Rational calculations::Rational::operator/(Rational other) {
     int n = numerator * other.denominator;
     int d = denominator * other.numerator;
-    if((long long)numerator * (long long)other.denominator != n) throw exceptions::out_of_range();
-    if((long long)denominator * (long long)other.numerator != d) throw exceptions::out_of_range();
+    if((long long)numerator * (long long)other.denominator != n) throw exceptions::out_of_range("out of range");
+    if((long long)denominator * (long long)other.numerator != d) throw exceptions::out_of_range("out of range");
     return Rational(n, d);
 }
 calculations::Rational calculations::Rational::operator-() {
     return Rational(-numerator, denominator);
 }
 calculations::Rational calculations::Rational::operator!() {
-    if(numerator < 0) throw exceptions::division_by_zero();
+    if(numerator < 0) throw exceptions::division_by_zero("div by zero");
     return Rational(denominator, numerator);
 }
 

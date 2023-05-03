@@ -119,5 +119,40 @@ We can calculate result of each branch in parallel, and then choose the best one
 We can run multiple simulations in parallel, and then choose the best move. Thanks to that we can run more simulations, having more precise results.
 
 ## Exercise 11*
+#### a) What is the $\textrm{max}^n$ algorithm?
+The $\textrm{max}^n$ can be used for game with any number of players.   
+At leaf nodes tuple with _n_ values is returned, where each value is the score of _i-th_ player. At internal nodes player chooses the child with the highest score.   
+In case of tie we can choose randomly or prefer nodes with lower score for the root player.
 
+#### b) What is _paranoid assumption_?
+The paranoid algorithm assumes that all the players have formed coalition, thus reducing the multi-player game to a two-player game. Thanks to that regular αβ pruning can be used.  
+In this algorithm whole game is played from the perspective of the root player, who tries to maximize his score, while other players try to minimize it (their scores are simply substracted from the main score).
 
+#### c) What are the problems associated with these two algorithms?
+* $\textrm{max}^n$
+Compared to αβ search less pruning is possible, since we can prune only if there is a lower bound on each player's score and upper bound on the sum of scores.  
+Furthermore, $\textrm{max}^n$ assumes that there is no coalition between players, which is not true in many games. The result is that the algorithm may be too optimistic.
+
+* Paranoid
+Becouse of the paranoid assumption, result may be suboptimal. Furthermore if an infinite amount of time would be available, the root player might assume that all moves are loosing, leading to poor play.
+
+#### d) How does the Best Reply Search algorithm work, what are its strengths and weaknesses?
+The idea is pretty simple - instead of calculating all possible moves, we calculate only the best reply to the opponents move. That means that in the MIN node we search thru all opponents moves and choose one that minimizes score most. In the MAX node we have typical root node situation.  
+
+* strengths
+More MAX nodes are visited along the search path, so the algorithm achieves long-term planning.  
+It softens the unrealistic $\textrm{max}^n$ and paranoid assumptions making it more balanced.
+
+* weaknesses
+Not all players are allowed to make a move, leading to illegal positions.  
+Opponent moves which are beneficial for the root player might not be considered.
+
+#### e) What is the Rolit game?
+In _Othello_ The board is a 8x8 grid, where each cell can be empty or occupied by a piece of one of the players. We have black and white players and their objective is to maximize their number of pieces on the board. Player can only place his piece if it results in flipping at least one of the opponent's pieces. To flip opponents piece we have to place our piece on the other side of the line of opponent's pieces, such that on both ends of the line there will be our piece (those opponent's pieces will be flipped).   
+_Rolit_ is a multiplayer (2-4 players) version of _Othello_, with 4 colors of pieces: Red Green Blue Yellow. There is possibility of immidiate eliminating player from the game, if he has no pieces on the board, so in order to prevent that when no flipping move is available player can place his piece on any empty cell. This empty cell has to be adjecent to one of pieces on board. If there is no such cell, player is eliminated from the game.
+
+#### f) Present in more detail the selected experiment from the paper and describe its results.
+BRS against $\textrm{max}^n$ experiment:  
+We simply benchmark those 2 strategies against each other. For draws (if possible) we simply equally split the points between players (not necessairly all players, only the 'more' winning ones).   
+<img src="p5.png" width="35%" height="35%">  
+We can see that BRS outperformes $\textrm{max}^n$ in all cases.

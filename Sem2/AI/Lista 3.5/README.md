@@ -13,7 +13,7 @@
 </details>
 
 #### a) Local beam search _for k = 1_ (lect 6)
-Since _local beam search_ is search algorithm that keeps _k_ best nodes and recursively looks for next _k_ best nodes from them, then for _k = 1_ it will keep only one best node.\ 
+Since _local beam search_ is search algorithm that keeps _k_ best nodes and recursively looks for next _k_ best nodes from them, then for _k = 1_ it will keep only one best node.   
 So _local beam search_ for _k = 1_ is the same as _hill climbing_.
 
 #### b) Local beam search _with one state and no limit for saved states_

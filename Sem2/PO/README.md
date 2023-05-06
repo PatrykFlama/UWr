@@ -16,6 +16,8 @@ ___
 ### [List 8](./Lista%208/)
 ### [List 9](./Lista%209/)
 ### [List 10](./Lista%2010/)
+___
+### [Project](./Projekt/)
 
 </details>
 
@@ -37,6 +39,8 @@ ___
 ### [Lista 8](./Lista%208/)
 ### [Lista 9](./Lista%209/)
 ### [Lista 10](./Lista%2010/)
+___
+### [Projekt](./Projekt/)
 
 </details>
 

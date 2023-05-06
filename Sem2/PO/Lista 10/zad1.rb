@@ -1,3 +1,6 @@
+# Patryk Flama
+# kompilacja: ruby zad1.rb
+
 class Collection
     def initialize(tab)
         unless tab.kind_of?(Array)

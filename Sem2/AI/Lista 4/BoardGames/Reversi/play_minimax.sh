@@ -1,2 +1,3 @@
 #!/bin/sh
-python3 ./Reversi/minimax.py
+# python3 ./Reversi/minimax.py
+./Reversi/minimax.exe

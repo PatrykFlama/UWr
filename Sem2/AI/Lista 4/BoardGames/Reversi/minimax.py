@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-'''
-Minimax Reversi aMinimaxt
-'''
 
 
 import copy
@@ -60,8 +57,8 @@ class Reversi:
                 res.append((x, y))
         return res
 
-    def can_beat(self, x, y, d, player):
-        dx, dy = d
+    def can_beat(self, x, y, dir, player):
+        dx, dy = dir
         x += dx
         y += dy
         cnt = 0

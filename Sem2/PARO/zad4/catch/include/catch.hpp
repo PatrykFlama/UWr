@@ -4100,15 +4100,15 @@ namespace Generators {
 #define GENERATE( ... ) \
     Catch::Generators::generate( INTERNAL_CATCH_STRINGIZE(INTERNAL_CATCH_UNIQUE_NAME(generator)), \
                                  CATCH_INTERNAL_LINEINFO, \
-                                 [ ]{ using namespace Catch::Generators; return makeGenerators( __VA_ARGS__ ); } ) //NOLINT(google-build-using-namespace)
+                                 []{ using namespace Catch::Generators; return makeGenerators( __VA_ARGS__ ); } )
 #define GENERATE_COPY( ... ) \
     Catch::Generators::generate( INTERNAL_CATCH_STRINGIZE(INTERNAL_CATCH_UNIQUE_NAME(generator)), \
                                  CATCH_INTERNAL_LINEINFO, \
-                                 [=]{ using namespace Catch::Generators; return makeGenerators( __VA_ARGS__ ); } ) //NOLINT(google-build-using-namespace)
+                                 [=]{ using namespace Catch::Generators; return makeGenerators( __VA_ARGS__ ); } )
 #define GENERATE_REF( ... ) \
     Catch::Generators::generate( INTERNAL_CATCH_STRINGIZE(INTERNAL_CATCH_UNIQUE_NAME(generator)), \
                                  CATCH_INTERNAL_LINEINFO, \
-                                 [&]{ using namespace Catch::Generators; return makeGenerators( __VA_ARGS__ ); } ) //NOLINT(google-build-using-namespace)
+                                 [&]{ using namespace Catch::Generators; return makeGenerators( __VA_ARGS__ ); } )
 
 // end catch_generators.hpp
 // start catch_generators_generic.hpp
@@ -4643,7 +4643,7 @@ public:
     }
 };
 
-// TODO: Ideally this would be also constrained against the various char types,
+//! Ideally this would be also constrained against the various char types,
 //       but I don't expect users to run into that in practice.
 template <typename T>
 typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value,
@@ -6508,7 +6508,7 @@ namespace Catch {
             // thanks @milleniumbug
             *reinterpret_cast<char volatile*>(p) = *reinterpret_cast<char const volatile*>(p);
         }
-        // TODO equivalent keep_memory()
+        //! equivalent keep_memory()
 #pragma optimize("", on)
 
         namespace Detail {
@@ -17431,7 +17431,7 @@ namespace Catch {
 
     void XmlReporter::testGroupEnded( TestGroupStats const& testGroupStats ) {
         StreamingReporterBase::testGroupEnded( testGroupStats );
-        // TODO: Check testGroupStats.aborting and act accordingly.
+        //! Check testGroupStats.aborting and act accordingly.
         m_xml.scopedElement( "OverallResults" )
             .writeAttribute( "successes", testGroupStats.totals.assertions.passed )
             .writeAttribute( "failures", testGroupStats.totals.assertions.failed )

@@ -19,7 +19,6 @@ class Reversi:
         self.board = self.initial_board()
         self.fields = set()
         self.move_list = []
-        self.history = []
         for i in range(self.M):
             for j in range(self.M):
                 if self.board[i][j] is None:
@@ -76,7 +75,6 @@ class Reversi:
 
     def do_move(self, move, player):
         assert player == len(self.move_list) % 2
-        self.history.append([x[:] for x in self.board])
         self.move_list.append(move)
 
         if move is None:
@@ -117,11 +115,6 @@ class Reversi:
         return self.move_list[-1] is None and self.move_list[-2] is None
 
     def next_state(self, move):
-        # res = Reversi()
-        # res.board = [x[:] for x in self.board]
-        # res.fields = set(self.fields)
-        # res.move_list = self.move_list[:]
-        # res.history = self.history[:]
         res = copy.deepcopy(self)
         res.do_move(move, len(res.move_list) % 2)
         return res
@@ -150,15 +143,15 @@ class Gen(object):
             return minn
         
     def get_move(self, state, player):       # TODO implement minimax
-        self.minimax(copy.deepcopy(state), player, player, 3)
+        # self.minimax(copy.deepcopy(state), player, player, 3)
 
-        maxx = -100000
-        res = None
-        for move in state.moves(player):
-            if self.hashmap[state.next_state(move)] > maxx:
-                maxx = self.hashmap[state.next_state(move)]
-                res = move
-        return res
+        # maxx = -100000
+        # res = None
+        # for move in state.moves(player):
+        #     if self.hashmap[state.next_state(move)] > maxx:
+        #         maxx = self.hashmap[state.next_state(move)]
+        #         res = move
+        return random.choice(state.moves(player))
 
 
 class Player(object):

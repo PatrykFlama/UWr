@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 '''
-Gen Reversi agent
+Minimax Reversi aMinimaxt
 '''
 
 
 import copy
 import random
 import sys
+
+INT_MAX = sys.maxsize
+INT_MIN = -sys.maxsize - 1
 
 
 class Reversi:
@@ -114,44 +117,98 @@ class Reversi:
             return False
         return self.move_list[-1] is None and self.move_list[-2] is None
 
-    def next_state(self, move):
+    def next_state(self, move, player):
         res = copy.deepcopy(self)
-        res.do_move(move, len(res.move_list) % 2)
+        res.do_move(move, player)
         return res
 
 
-class Gen(object):
+class Minimax(object):
     def __init__(self):
         self.hashmap = dict()
 
-    def minimax(self, state, player, main_player, depth=3):
+    def cutoff_test(self, state, depth):
+        return depth > 2
+
+    def rollout(self, state, player):
+        while not state.terminal():
+            moves = state.moves(player)
+            if len(moves) == 0:
+                state = state.next_state(None, player)
+            else:
+                state = state.next_state(random.choice(moves), player)
+            player = 1 - player
+        return state.result()
+
+    def heuristic(self, state, player, samples=1):
+        res = 0
+        for _ in range(samples):
+            res += self.rollout(state, player)
+        return res / samples
+
+    def min_move(self, state, depth, player, alpha):
         if state.terminal():
             return state.result()
-        if depth == 0:
-            return state.result()
-
-        values = [self.minimax(state.next_state(move), 1-player, main_player, depth-1) for move in state.moves(player)]
-
-        if not values: return state.result()
-        if player == main_player:
-            maxx = max(values)
-            self.hashmap[state] = maxx
-            return maxx
-        else:
-            minn = min(values)
-            self.hashmap[state] = minn
-            return minn
+        if self.cutoff_test(state, depth):
+            return self.heuristic(state, player)
         
-    def get_move(self, state, player):       # TODO implement minimax
-        # self.minimax(copy.deepcopy(state), player, player, 3)
+        moves = state.moves(player)
+        if len(moves) == 0:
+            next_move = state.next_state(None, player)
+            return self.max_move(next_move, depth+1, 1-player, INT_MAX)
 
-        # maxx = -100000
-        # res = None
-        # for move in state.moves(player):
-        #     if self.hashmap[state.next_state(move)] > maxx:
-        #         maxx = self.hashmap[state.next_state(move)]
-        #         res = move
-        return random.choice(state.moves(player))
+        min_score = INT_MAX
+        for move in moves:
+            next_move = state.next_state(move, player)
+
+            score = self.max_move(next_move, depth+1, 1-player, min_score)
+            if score < alpha:
+                min_score = alpha
+                break
+            min_score = min(min_score, score)
+                
+        return min_score
+
+    def max_move(self, state, depth, player, beta):
+        if state.terminal():
+            return state.result()
+        if self.cutoff_test(state, depth):
+            return self.heuristic(state, player)
+        
+        moves = state.moves(player)
+        if len(moves) == 0:
+            next_move = state.next_state(None, player)
+            return self.min_move(next_move, depth+1, 1-player, INT_MIN)
+        
+        max_score = INT_MIN
+        for move in moves:
+            next_move = state.next_state(move, player)
+
+            score = self.min_move(next_move, depth+1, 1-player, max_score)
+            if score > beta:
+                max_score = beta
+                break
+            max_score = max(max_score, score)
+
+        return max_score
+
+    def minimax(self, state, player):
+        moves = state.moves(player)
+
+        if len(moves) == 0:
+            return None
+        
+        max_score = INT_MIN
+        best_move = None
+        for move in moves:
+            next_move = state.next_state(move, player)
+
+            score = self.min_move(next_move, 0, 1-player, max_score)
+            if score > max_score:
+                max_score = score
+                best_move = move
+
+        return best_move
 
 
 class Player(object):
@@ -174,7 +231,7 @@ class Player(object):
 
     def loop(self):
         CORNERS = { (0,0), (0,7), (7,0), (7,7) }
-        gen = Gen()
+        minimax = Minimax()
 
         while True:
             cmd, args = self.hear()
@@ -201,7 +258,7 @@ class Player(object):
                 move = random.choice(better_moves)
                 self.game.do_move(move, self.my_player)
             elif moves:
-                move = gen.get_move(self.game, self.my_player)
+                move = minimax.minimax(self.game, self.my_player)
                 self.game.do_move(move, self.my_player)
             else:
                 self.game.do_move(None, self.my_player)

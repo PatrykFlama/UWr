@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 '''
-Minimax Reversi agent
+Gen Reversi agent
 '''
 
 
+import copy
 import random
 import sys
 
 
 class Reversi:
     M = 8
-    DIRS = [(0, 1), (1, 0), (-1, 0), (0, -1),
+    DIRS = [(0, 1), (1, 0),   (-1, 0), (0, -1),
             (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
     def __init__(self):
@@ -23,6 +24,9 @@ class Reversi:
             for j in range(self.M):
                 if self.board[i][j] is None:
                     self.fields.add((j, i))
+
+    def __hash__(self):
+        return hash(tuple([tuple(x) for x in self.board]))
 
     def initial_board(self):
         B = [[None] * self.M for _ in range(self.M)]
@@ -112,6 +116,50 @@ class Reversi:
             return False
         return self.move_list[-1] is None and self.move_list[-2] is None
 
+    def next_state(self, move):
+        # res = Reversi()
+        # res.board = [x[:] for x in self.board]
+        # res.fields = set(self.fields)
+        # res.move_list = self.move_list[:]
+        # res.history = self.history[:]
+        res = copy.deepcopy(self)
+        res.do_move(move, len(res.move_list) % 2)
+        return res
+
+
+class Gen(object):
+    def __init__(self):
+        self.hashmap = dict()
+
+    def minimax(self, state, player, main_player, depth=3):
+        if state.terminal():
+            return state.result()
+        if depth == 0:
+            return state.result()
+
+        values = [self.minimax(state.next_state(move), 1-player, main_player, depth-1) for move in state.moves(player)]
+
+        if not values: return state.result()
+        if player == main_player:
+            maxx = max(values)
+            self.hashmap[state] = maxx
+            return maxx
+        else:
+            minn = min(values)
+            self.hashmap[state] = minn
+            return minn
+        
+    def get_move(self, state, player):       # TODO implement minimax
+        self.minimax(copy.deepcopy(state), player, player, 3)
+
+        maxx = -100000
+        res = None
+        for move in state.moves(player):
+            if self.hashmap[state.next_state(move)] > maxx:
+                maxx = self.hashmap[state.next_state(move)]
+                res = move
+        return res
+
 
 class Player(object):
     def __init__(self):
@@ -132,7 +180,9 @@ class Player(object):
         return line[0], line[1:]
 
     def loop(self):
-        CORNERS = { (0,0), (0,7), (7,0), (7,7)}
+        CORNERS = { (0,0), (0,7), (7,0), (7,7) }
+        gen = Gen()
+
         while True:
             cmd, args = self.hear()
             if cmd == 'HEDID':
@@ -153,12 +203,12 @@ class Player(object):
 
             moves = self.game.moves(self.my_player)
             better_moves = list(set(moves) & CORNERS)
-            
+
             if better_moves:
                 move = random.choice(better_moves)
                 self.game.do_move(move, self.my_player)
             elif moves:
-                move = random.choice(moves)     # TODO generate move here
+                move = gen.get_move(self.game, self.my_player)
                 self.game.do_move(move, self.my_player)
             else:
                 self.game.do_move(None, self.my_player)

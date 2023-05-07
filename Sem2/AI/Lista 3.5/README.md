@@ -24,7 +24,7 @@ Lets take _T = ε_, now $p=e^{\frac{ΔF}{T}}=e^{\frac{ΔF}{ε}} \xrightarrow ε 
 So we have no chance of accepting worse solutions, which means that _simulated annealing_ will behave exactly like _hill climbing_.
 
 #### d) Simulated annealing with T = ∞ for the entire running time of the algorithm
-$p=e^{\frac{ΔF}{T}} \xrightarrow {T \xRightarrow{} \infty} \infty$\
+$p=e^{\frac{ΔF}{T}} \xrightarrow {T \xRightarrow{} \infty} 1$\
 Thus we will always accept worse solutions, which means that _simulated annealing_ will behave exactly like _random walk_.
 
 #### e) Genetic algorithm with a population of size 1

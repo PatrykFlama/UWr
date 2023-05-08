@@ -6,7 +6,7 @@
 | X | X | X | X | X |   |   |
 
 # Zadanie 1
-
+![](p1.png)
 
 # Zadanie 2
-
+![](p2.png)

@@ -4,7 +4,7 @@
 (require "syntax.rkt")
 (require (only-in plait s-exp-content))
 
-(provide parse-Exp)
+(provide parse-Exp parse-exp)
 
 (define op-parser
   `((+ ,op-add)

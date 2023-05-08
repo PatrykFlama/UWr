@@ -2,19 +2,20 @@
 (require (only-in plait s-exp-match?))
 
 (provide (contract-out
-    [run-parser (-> (listof (cons/c check-pattern (procedure? any/c)))
-                    check-sexp
+    [run-parser (-> (listof (cons/c check-pattern (listof procedure?)))
+                    any/c       ; s-expression
                     any/c)]))
 
 (define (check-pattern p)
-  (match p
-    ['ANY #t]
-    ['SYMBOL #t]
-    ['NUMBER #t]
-    ['() #t]
-    [(cons p1 p2)
-     (and (check-pattern p1) (check-pattern p2))]
-    [_ #f]))
+    (if (symbol? p) #t
+    (match p
+        ['ANY #t]
+        ['SYMBOL #t]
+        ['NUMBER #t]
+        ['() #t]
+        [(cons p1 p2)
+        (and (check-pattern p1) (check-pattern p2))]
+        [_ #f])))
 
 (define (check-sexp s)
     (s-exp-match? `(ANY) s))

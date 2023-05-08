@@ -1,12 +1,23 @@
 #lang racket
+(require (only-in plait s-exp-match?))
 
 (provide (contract-out
-    [run-parser (-> (listof (cons (or 'ANY 'SYMBOL 'NUMBER '()) (procedure? any/c)))
-                    (s-exp?)
+    [run-parser (-> (listof (cons/c check-pattern (procedure? any/c)))
+                    check-sexp
                     any/c)]))
 
-; TODO s-exp? and function for (or 'ANY 'SYMBOL 'NUMBER '())
+(define (check-pattern p)
+  (match p
+    ['ANY #t]
+    ['SYMBOL #t]
+    ['NUMBER #t]
+    ['() #t]
+    [(cons p1 p2)
+     (and (check-pattern p1) (check-pattern p2))]
+    [_ #f]))
 
+(define (check-sexp s)
+    (s-exp-match? `(ANY) s))
 
 ; te funkcje dotyczą tylko parsowania, nie wyrażeń arytmentycznych
 (define (match-sexp pat s)

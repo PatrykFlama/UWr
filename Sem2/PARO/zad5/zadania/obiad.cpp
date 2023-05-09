@@ -17,10 +17,15 @@ Obiad ugotuj()
   SurowyKurczak   surowyKurczak;
   TorebkaHerbaty  torebkaHerbaty;
 
-  // TODO: tutaj
   // HINT: std::async(std::launch::async, ...)
+  auto herbata = std::async(std::launch::async, zrob_herbate, woda, torebkaHerbaty);
+  auto pokrojony_surowy_kurczak = std::async(std::launch::async, pokroj_kurczaka, surowyKurczak);
+  auto usmazony_kurczak = std::async(std::launch::async, usmaz_kurczaka, pokrojony_surowy_kurczak.get());
+  auto ugotowane_ziemniaki = std::async(std::launch::async, ugotuj_ziemniaki, woda, suroweZiemniaki);
+  auto zrobiony_obiad = std::async(std::launch::async, zrob_obiad, ugotowane_ziemniaki.get(),
+                                                                   usmazony_kurczak.get(),
+                                                                   herbata.get());
 }
-
 
 
 int main()

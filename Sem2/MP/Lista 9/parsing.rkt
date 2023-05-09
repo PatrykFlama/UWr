@@ -3,7 +3,7 @@
 
 (provide (contract-out
     [run-parser (-> (listof (cons/c check-pattern (listof procedure?)))
-                    any/c       ; s-expression
+                    (lambda (x) (s-exp-match? `(ANY ...) x))       ; s-expression
                     any/c)]))
 
 (define (check-pattern p)
@@ -18,7 +18,7 @@
         [_ #f])))
 
 (define (check-sexp s)
-    (s-exp-match? `(ANY) s))
+    (s-exp-match? `(ANY ...) s))
 
 ; te funkcje dotyczą tylko parsowania, nie wyrażeń arytmentycznych
 (define (match-sexp pat s)

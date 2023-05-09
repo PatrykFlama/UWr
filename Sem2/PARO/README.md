@@ -3,10 +3,11 @@
 
 [(back)](../)
 # Practical Aspects of Software Development
-### [Exercise 1](./zad1/)
-### [Exercise 2](./zad2/)
-### [Exercise 3](./zad3/)
-
+### [Static and dynamic code analysis](./zad1/)
+### [Memory management](./zad2/)
+### [Standard Template Library](./zad3/)
+### [Test Driven Developement](./zad4/)
+### [Multithreading](./zad5/)
 </details>
 
 <details open>
@@ -14,11 +15,13 @@
 
 [(wróć)](../)
 # **P**raktyczne **A**spekty **R**ozwoju **O**programowania
-### [Zadanie 1](./zad1/)
-### [Zadanie 2](./zad2/)
-### [Zadanie 3](./zad3/)
-
+### [Analiza statyczna i dynamiczna kodu](./zad1/)
+### [Zarządzanie pamięcią](./zad2/)
+### [Standard Template Library](./zad3/)
+### [Test Driven Developement](./zad4/)
+### [Wielowątkowość](./zad5/)
 </details>
+
 
 ___
 

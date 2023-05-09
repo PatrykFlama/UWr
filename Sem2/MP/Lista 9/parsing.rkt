@@ -6,30 +6,15 @@
                     s-exp/c
                     any/c)]))
 
-(define (check-pattern p)
-    (if (symbol? p) #t
-    (match p
-        ['ANY #t]
-        ['SYMBOL #t]
-        ['NUMBER #t]
-        ['() #t]
-        [(cons p1 p2)
-        (and (check-pattern p1) (check-pattern p2))]
-        [_ #f])))
-
 (define s-exp/c
   (flat-rec-contract 
-    s-exp
+    s-exp/c
     number?
     symbol?
     '()
-    (listof s-exp)))
+    (listof s-exp/c)))
 
-
-(define (check-sexp s)
-    (s-exp-match? `(ANY ...) s))
-
-; te funkcje dotyczą tylko parsowania, nie wyrażeń arytmentycznych
+; -------------------------------
 (define (match-sexp pat s)
   (match pat
     ['ANY    (list s)]

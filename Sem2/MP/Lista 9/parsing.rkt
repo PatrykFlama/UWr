@@ -2,8 +2,8 @@
 (require (only-in plait s-exp-match?))
 
 (provide (contract-out
-    [run-parser (-> (listof (cons/c check-pattern (listof procedure?)))
-                    (lambda (x) (s-exp-match? `(ANY ...) x))       ; s-expression
+    [run-parser (-> (listof cons?)
+                    s-exp/c
                     any/c)]))
 
 (define (check-pattern p)
@@ -16,6 +16,15 @@
         [(cons p1 p2)
         (and (check-pattern p1) (check-pattern p2))]
         [_ #f])))
+
+(define s-exp/c
+  (flat-rec-contract 
+    s-exp
+    number?
+    symbol?
+    '()
+    (listof s-exp)))
+
 
 (define (check-sexp s)
     (s-exp-match? `(ANY ...) s))

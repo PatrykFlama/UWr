@@ -10,3 +10,4 @@
 
 # Zadanie 2
 ![](p2.png)
+![](p3.jpg)

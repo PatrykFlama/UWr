@@ -13,7 +13,7 @@
 
 (define-type Exp
   (numE [n : Number])
-  (opE [op : Op] [l : Exp] [r : Exp]))
+  (opE  [op : Op] [e : (Listof Exp)]))
 
 ;; parse ----------------------------------------
 
@@ -21,10 +21,9 @@
   (cond
     [(s-exp-match? `NUMBER s)
      (numE (s-exp->number s))]
-    [(s-exp-match? `{SYMBOL ANY ANY} s)
+    [(s-exp-match? `{SYMBOL ANY ...} s)
      (opE (parse-op (s-exp->symbol (first (s-exp->list s))))
-          (parse (second (s-exp->list s)))
-          (parse (third (s-exp->list s))))]
+          (map parse (rest (s-exp->list s))))]
     [else (error 'parse "invalid input")]))
 
 (define (parse-op [op : Symbol]) : Op
@@ -39,20 +38,20 @@
   (test (parse `2)
         (numE 2))
   (test (parse `{+ 2 1})
-        (opE (add) (numE 2) (numE 1)))
+        (opE (add) (list (numE 2) (numE 1))))
   (test (parse `{* 3 4})
-        (opE (mul) (numE 3) (numE 4)))
+        (opE (mul) (list (numE 3) (numE 4))))
   (test (parse `{+ {* 3 4} 8})
-        (opE (add)
-             (opE (mul) (numE 3) (numE 4))
-             (numE 8)))
+        (opE (add) (list
+             (opE (mul) (list (numE 3) (numE 4)))
+             (numE 8))))
   (test/exn (parse `{{+ 1 2}})
             "invalid input")
-  (test/exn (parse `{+ 1})
+  (test/exn (parse `{+ 1 -})
             "invalid input")
   (test/exn (parse `{^ 1 2})
             "unknown operator"))
-  
+
 ;; eval --------------------------------------
 
 (define-type-alias Value Number)
@@ -64,10 +63,20 @@
     [(mul) *]
     [(div) /]))
 
+(define (op->neutral [op : Op]) : Value
+    (type-case Op op
+      [(add) 0]
+      [(sub) 0]
+      [(mul) 1]
+      [(div) 1]))
+
 (define (eval [e : Exp]) : Value
   (type-case Exp e
     [(numE n) n]
-    [(opE o l r) ((op->proc o) (eval l) (eval r))]))
+    [(opE o xs)
+     (if (empty? xs) (op->neutral o)
+         (foldr (lambda (y x) ((op->proc o) x (eval y)))
+               (eval (first xs)) (rest xs)))]))
 
 (define (run [e : S-Exp]) : Value
   (eval (parse e)))
@@ -80,7 +89,9 @@
   (test (run `{* 2 1})
         2)
   (test (run `{+ {* 2 3} {+ 5 8}})
-        19))
+        19)
+  (test (run `{- 1 2 3 4 5})
+        -13))
 
 ;; printer ———————————————————————————————————-
 

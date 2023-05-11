@@ -193,6 +193,45 @@
   (test (compile (parse `{+ {* 2 3} {+ 5 8}}))
         (list (pushI 2) (pushI 3) (opI (mul)) (pushI 5) (pushI 8) (opI (add)) (opI (add)))))
 
+;; stack decompile
+(define-type-alias StackDecompile (Listof Exp))
+(define mtSD : StackDecompile empty)
+(define (pushSD [e : Exp] [s : StackDecompile]) : StackDecompile
+  (cons e s))
+(define (popSD [s : StackDecompile]) : (Exp * StackDecompile)
+  (type-case StackDecompile s
+    [empty
+     (error 'popSD "empty stack")]
+    [(cons e s)
+     (pair e s)]))
+
+(define (_decompile [c : Code] [s : StackDecompile]) : Exp
+  (type-case Code c
+    [empty
+     (fst (popSD s))]
+    [(cons i c)
+     (type-case Instr i
+       [(pushI n)
+        (_decompile c (pushSD (numE n) s))]
+       [(opI op)
+        (let* ([e2-s2 (popSD s)]
+               [e2 (fst e2-s2)]
+               [s2 (snd e2-s2)]
+               [e1-s1 (popSD s2)]
+               [e1 (fst e1-s1)]
+               [s1 (snd e1-s1)]
+               [s0 (pushSD (opE op e1 e2) s1)])
+          (_decompile c s0))])]))
+
+(define (decompile [c : Code]) (_decompile c mtSD))
+
+(module+ test
+  (test (decompile (compile (opE (add) (numE 2) (numE 1))))
+        (opE (add) (numE 2) (numE 1)))
+  (test (decompile (compile (parse `{+ 1 {* 2 3}})))
+        (decompile (compile (parse `{+ 1 {* 2 3}})))))
+
+;; VM
 (define (runVM [e : S-Exp]) : Value
   (evalVM (compile (parse e)) mtS))
 

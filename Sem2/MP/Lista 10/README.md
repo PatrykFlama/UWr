@@ -6,8 +6,15 @@
 | X | X |   |   |   |   |   |
 
 
-## Info
+## Info (wykład 11)
 Metajęzyk - język interpretera / programu który rozumie semantykę naszego języka.  
 
-
+* Interpretery i kompilatory
+* Składnia konkretna i abstrakcyjna, parsowanie (przypomnienie)
+* Plait jako metajęzyk, S-wyrażenia jako składnia konkretna, algebraiczne typy danych jako składnia abstrakcyjna
+* Strukturalny, metacykliczny interpreter wyrażeń arytmetycznych i logicznych
+* Maszyna abstrakcyjna dla wyrażeń arytmetycznych
+* Maszyna wirtualna i kompilator dla wyrażeń arytmetycznych
+* Read-Eval-Print-Loop (REPL)
+* Wyjątki/błędy (efekty obliczeniowe, interpretacja metacykliczna, monada błędów, notacja do jako makro, maszyna abstrakcyjna)
 

@@ -5,9 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <mutex>
-
 #include <chrono>
-#define measure_time true
 
 std::string output;
 std::mutex outputMutex;
@@ -18,15 +16,15 @@ void addLines(unsigned count)
   ss << std::this_thread::get_id();
 
   // manual lock and unlock
-  for(unsigned i=0; i<count; ++i)
-  {
-    outputMutex.lock();
-    output += ss.str();
-    output += ": #";
-    output += std::to_string(i);
-    output += "\n";
-    outputMutex.unlock();
-  }
+  // for(unsigned i=0; i<count; ++i)
+  // {
+  //   outputMutex.lock();
+  //   output += ss.str();
+  //   output += ": #";
+  //   output += std::to_string(i);
+  //   output += "\n";
+  //   outputMutex.unlock();
+  // }
   // lock guard verison
   for(unsigned i=0; i<count; ++i)
   {
@@ -46,17 +44,17 @@ int main()
   try
   {
     constexpr auto threadsCount = 3;
-    constexpr auto iterations   = 40;
+    constexpr auto opertaions   = 10000000;
 
     std::vector<std::thread> threads;
     threads.reserve(threadsCount);
     for(auto i=0; i<threadsCount; ++i)
-      threads.emplace_back(addLines, iterations);
+      threads.emplace_back(addLines, opertaions/threadsCount);
 
     for(auto& th: threads)
       th.join();
 
-    std::cout << output << std::endl;
+    // std::cout << output << std::endl;
   }
   catch(std::exception const &ex)
   {

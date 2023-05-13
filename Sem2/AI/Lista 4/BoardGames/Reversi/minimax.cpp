@@ -1,40 +1,128 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+/*
+black player starts
+starting sheme:
+...WB...
+...BW...
+*/
 
-class Reversi{
+class ReversiBoard{
+    const int DIRS[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, 1},
+                            {1, 1},   {1, 0},  {1, -1}, {0, -1}};
+
 public:
-    long long player;       // active player's pieces
-    long long opponent;     // opponent's pieces
-    bool move;
+    long long black;       // black player's pieces
+    long long white;       // opponent's pieces
+    bool move;              // is it black player's move?
 
-    Reversi() : Reversi(true) {}
-    Reversi(bool move){
-        player = 0x0000000810000000;
-        opponent = 0x0000001008000000;
+    ReversiBoard() : ReversiBoard(true) {}
+    ReversiBoard(bool move){
+        black = 0x0000000810000000;
+        white = 0x0000001008000000;
         move = true;
     }
 
-    void set_cell(int x, int y, bool player){
-        long long mask = 1LL << (x + 8*y);
-        if(player) this->player |= mask;
-        else this->opponent |= mask;
-    }
-
     void make_move(int x, int y){
-        set_cell(x, y, move);
-        
+        if(move){
+            black |= 1LL << (x + 8*y);
+            for(auto [dx, dy] : DIRS){
+                if(can_beat(x, y, {dx, dy})){
+                    long long mask = (1LL << (x + 8*y));
+                    while(white & mask){
+                        white ^ mask;
+                        black ^ mask;
+                        x += dx;
+                        y += dy;
+                    }
+                }
+            }
+        } else {
+            white |= 1LL << (x + 8*y);
+            for(auto [dx, dy] : DIRS){
+                if(can_beat(x, y, {dx, dy})){
+                    long long mask = (1LL << (x + 8*y));
+                    while(black & mask){
+                        black ^ mask;
+                        white ^ mask;
+                        x += dx;
+                        y += dy;
+                    }
+                }
+            }
+        }
     }
 
-    long long free_cells(){
-        return player | opponent;
+    inline bool safe(int x, int y){
+        return x >= 0 && x < 8 && y >= 0 && y < 8;
+    } 
+
+    bool can_beat(int x, int y, pair<int, int> dir){
+        int dx = dir.first, dy = dir.second;
+        x += dx, y += dy;
+
+        if(move){
+            while(safe(x, y) && (white & (1LL << (x + 8*y)))){
+                x += dx;
+                y += dy;
+            }
+            if(safe(x, y) && (black & (1LL << (x + 8*y)))) return true;
+        } else {
+            while(safe(x, y) && (black & (1LL << (x + 8*y)))){
+                x += dx;
+                y += dy;
+            }
+            if(safe(x, y) && (white & (1LL << (x + 8*y)))) return true;
+        }
+        return false;
     }
 
-    Reversi next_state(int x, int y){
-        Reversi res = *this;
-        res.set_cell(x, y, move);
-        res.move = !move;
+    vector<pair<int, int>> free_cells(){
+        long long occupied_cells = (black | white);
+        vector<pair<int, int>> res;
+
+        for(int x = 0; x < 8; x++){
+            for(int y = 0; y < 8; y++){
+                if(occupied_cells & (1LL << (x+8*y))) continue;
+                for(auto [dx, dy] : DIRS){
+                    if(can_beat(x, y, {dx, dy})){
+                        res.push_back({x, y});
+                        break;
+                    }
+                }
+            }
+        }
+
         return res;
+    }
+
+    ReversiBoard next_state(int x, int y){
+        ReversiBoard res(!move);
+        res.black = black;
+        res.white = white;
+
+        if(move) res.black |= 1LL << (x + 8*y);
+        else res.white |= 1LL << (x + 8*y);
+        return res;
+    }
+
+    friend ostream &operator<<(ostream &out, const ReversiBoard &board){
+        if(!board.move){
+            out << "Black's move:\n";
+            string player = bitset<64>(board.black).to_string();
+                for(int i = 0; i < 8; i++){
+                out << player.substr(i*8, 8) << '\n';
+            }
+        } else{
+            out << "White's move:\n";
+            string opponent = bitset<64>(board.black).to_string();
+            for(int i = 0; i < 8; i++){
+                out << opponent.substr(i*8, 8) << '\n';
+            }
+        }
+
+        return out;
     }
 };
 
@@ -46,6 +134,7 @@ class MiniMax{
 
 };
 
+/*
 
 class Reversi{
 public:
@@ -258,11 +347,26 @@ public:
     #undef int
 };
 
-
+*/
 
 
 int main(){
-    Player player;
-    player.loop();
+    ReversiBoard rb;
+
+    cout << "MV: " << rb.move << '\n';
+    cout << rb << '\n';
+    rb.move = not rb.move;
+    cout << "MV: " << rb.move << '\n';
+    cout << rb << endl;
+    rb.move = not rb.move;
+    vector<pair<int, int>> trash = {{1, 2}};
+
+
+    for(pair<int, int> p : rb.free_cells()){
+        ReversiBoard newrb = rb.next_state(p.first, p.second);
+        cout << p.first << ' ' << p.second << ":\n";
+        cout << newrb;
+        cout << '\n';
+    }
 }
 

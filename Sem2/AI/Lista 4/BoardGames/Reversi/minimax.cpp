@@ -143,11 +143,15 @@ public:
     }
 };
 
-class MiniMax{
+class AI{
     const int max_depth = 4;
     const int MAX = 1, MIN = 0;
 public:
+    pair<int, int> get_best_move(Reversi state){
+        return decision(state);
+    }
 
+    // minimax
     pair<int, int> decision(Reversi state){        // returns best move
         int best_score = INT_MIN;
         pair<int, int> best_move = {-1, -1};
@@ -179,22 +183,25 @@ public:
             return max_score;
         }
     }
+
+    // alpha-beta
+    //TODO
 };
 
 
 void say(string what){
-    printf("%s\n", what.c_str());
+    printf("%s\n", what);
     fflush(stdout);
 }
 
 void say(string what, int x, int y){
-    printf("%s %d %d\n", what.c_str(), x, y);
+    printf("%s %d %d\n", what, x, y);
     fflush(stdout);
 }
 
 int main(){
     Reversi game(false);
-    MiniMax ai;
+    AI ai;
     string cmd = "";
     say("RDY");
     
@@ -206,7 +213,7 @@ int main(){
             cin >> time_for_move >> time_for_game;
             game.reset(true);
 
-            auto p = ai.decision(game);
+            auto p = ai.get_best_move(game);
             say("IDO", p.first, p.second);
             game.make_move(p.first, p.second);
             // cerr << game << '\n';
@@ -220,7 +227,7 @@ int main(){
             game.make_move(x, y);
             game.swap_players();
             
-            auto p = ai.decision(game);
+            auto p = ai.get_best_move(game);
             say("IDO", p.first, p.second);
             game.make_move(p.first, p.second);
             // cerr << game << '\n';

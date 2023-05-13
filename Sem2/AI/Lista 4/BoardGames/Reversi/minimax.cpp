@@ -4,6 +4,51 @@ using namespace std;
 
 class Reversi{
 public:
+    long long player;       // active player's pieces
+    long long opponent;     // opponent's pieces
+    bool move;
+
+    Reversi() : Reversi(true) {}
+    Reversi(bool move){
+        player = 0x0000000810000000;
+        opponent = 0x0000001008000000;
+        move = true;
+    }
+
+    void set_cell(int x, int y, bool player){
+        long long mask = 1LL << (x + 8*y);
+        if(player) this->player |= mask;
+        else this->opponent |= mask;
+    }
+
+    void make_move(int x, int y){
+        set_cell(x, y, move);
+        
+    }
+
+    long long free_cells(){
+        return player | opponent;
+    }
+
+    Reversi next_state(int x, int y){
+        Reversi res = *this;
+        res.set_cell(x, y, move);
+        res.move = !move;
+        return res;
+    }
+};
+
+class Game{
+
+};
+
+class MiniMax{
+
+};
+
+
+class Reversi{
+public:
     #define int short int
     const int SIZE = 8;
     const int DIRS[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, 1},

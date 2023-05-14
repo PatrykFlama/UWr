@@ -26,7 +26,6 @@ class Reversi{
 public:
     bool player[8][8];          // active player player's pieces
     bool opponent[8][8];        // opponent's pieces
-    bool main_player;           // true if player is main player (else opponent is main player)
 
     Reversi(){}
     Reversi(bool black_starts){
@@ -34,16 +33,11 @@ public:
     }
 
     void reset(bool black_starts){
-        main_player = true;
         memset(player, 0, sizeof(player));
         memset(opponent, 0, sizeof(opponent));
-        if(black_starts){
-            opponent[3][3] = opponent[4][4] = true;
-            player[3][4] = player[4][3] = true;   
-        } else{
-            player[3][3] = player[4][4] = true;
-            opponent[3][4] = opponent[4][3] = true;   
-        }
+        opponent[3][3] = opponent[4][4] = true;
+        player[3][4] = player[4][3] = true;   
+        if(!black_starts) swap_players();
     }
 
     /* #region //* setters getters */
@@ -65,7 +59,6 @@ public:
 
     void swap_players(){
         swap(player, opponent);
-        main_player = !main_player;
     }
 
     void make_move(int x, int y){
@@ -127,7 +120,7 @@ public:
             else if(get_opponent_cell(i, j)) res--;
         }
 
-        return res * (main_player ? 1 : -1);
+        return res;
     }
 
     inline int calc_ratio(int player, int opponent) const {
@@ -181,7 +174,7 @@ public:
 
         int close_corner_value = -12.5 * (player_close_corners - opponent_close_corners);
         
-        return ((10*ratio) + (801.724*corner_ratio) + (382.026*close_corner_value) + (78.922*weighted_sum)) * (main_player ? 1 : -1);
+        return ((10*ratio) + (801.724*corner_ratio) + (382.026*close_corner_value) + (78.922*weighted_sum));
     }
 
     bool terminal() const {
@@ -217,19 +210,19 @@ public:
 };
 
 class AI{
-    const int max_depth = 4;
-    const int MAX = 1, MIN = 0;
+    const int MAX_DEPTH = 4;
+    const int MAX_PLAYER = 1, MIN_PLAYER = 0;
 public:
     pair<int, int> get_best_move(Reversi state){
-        return decision(state);
+        return alphabeta_root(state);
     }
 
-    // minimax
-    pair<int, int> decision(Reversi state){        // returns best move
+    /* #region //* ----minimax---- */
+    pair<int, int> minimax_root(Reversi state){        // returns best move
         int best_score = INT_MIN;
         pair<int, int> best_move = {-1, -1};
         for(auto [x, y] : state.free_cells()){
-            int score = minimax(state.gen_next_state(x, y), max_depth, MIN);
+            int score = minimax(state.gen_next_state(x, y), MAX_DEPTH, MIN_PLAYER);
             if(score > best_score){
                 best_score = score;
                 best_move = {x, y};
@@ -244,11 +237,11 @@ public:
 
         if(state.terminal(free_cells)){
             Reversi next = state.gen_next_state(-1, -1);
-            if(next.terminal()) return state.result();
+            if(next.terminal()) return state.result() * (player == MAX_PLAYER ? 1 : -1);
             else return minimax(next, depth - 1, 1 - player);
         }
 
-        if(depth == 0) return state.heuristic_result();
+        if(depth <= 0) return state.heuristic_result() * (player == MAX_PLAYER ? 1 : -1);
 
 
         int min_score = INT_MAX, max_score = INT_MIN;
@@ -258,15 +251,60 @@ public:
             max_score = max(max_score, score);
         }
 
-        if(player == MIN){
+        if(player == MIN_PLAYER){
             return min_score;
         } else{
             return max_score;
         }
     }
+    /* #endregion */
 
-    // alpha-beta
-    //TODO
+    /* #region //* ----alphabeta---- */
+    pair<int, int> alphabeta_root(Reversi state){        // returns best move
+        int best_score = INT_MIN;
+        pair<int, int> best_move = {-1, -1};
+        for(auto [x, y] : state.free_cells()){
+            int score = alphabeta(state.gen_next_state(x, y), MAX_DEPTH, MIN_PLAYER, INT_MIN, INT_MAX);
+            if(score > best_score){
+                best_score = score;
+                best_move = {x, y};
+            }
+        }
+
+        return best_move;
+    }
+
+    int alphabeta(Reversi state, int depth, int player, int alpha, int beta){
+        vector<pair<int, int>> free_cells = state.free_cells();
+
+        if(state.terminal(free_cells)){
+            Reversi next = state.gen_next_state(-1, -1);
+            if(next.terminal()) return state.result() * (player == MAX_PLAYER ? 1 : -1);
+            else return alphabeta(next, depth - 1, 1 - player, alpha, beta);
+        }
+
+        if(depth <= 0) return state.heuristic_result() * (player == MAX_PLAYER ? 1 : -1);
+
+
+        int best_score = (player == MAX_PLAYER ? INT_MIN : INT_MAX);
+        for(auto [x, y] : free_cells){
+            int score = alphabeta(state.gen_next_state(x, y), depth - 1, 1 - player, alpha, beta);
+
+            if(player == MIN_PLAYER){
+                best_score = min(best_score, score);
+                beta = min(beta, score);
+            }
+            else{
+                best_score = max(best_score, score);
+                alpha = max(alpha, score);
+            }
+
+            if(alpha >= beta) break;
+        }
+
+        return best_score;
+    }
+    /* #endregion */
 };
 
 
@@ -282,7 +320,7 @@ void say(string what, int x, int y){
 
 int main(){
     srand (time(NULL));
-    Reversi game(false);
+    Reversi game(true);
     AI ai;
     string cmd = "";
     say("RDY");
@@ -293,10 +331,10 @@ int main(){
         if(cmd == "UGO"){
             double time_for_move, time_for_game; 
             cin >> time_for_move >> time_for_game;
-            game.reset(true);
+            // game.reset(true);
 
             auto p = ai.get_best_move(game);
-            say("IDO", p.first, p.second);
+            say("IDO", p.second, p.first);
             game.make_move(p.first, p.second);
             // cerr << game << '\n';
             game.swap_players();
@@ -304,17 +342,17 @@ int main(){
             double time_for_move, time_for_game; 
             cin >> time_for_move >> time_for_game;
 
-            int x, y; cin >> x >> y;
+            int x, y; cin >> y >> x;
             if(x != -1) game.make_move(x, y);
             game.swap_players();
             
             auto p = ai.get_best_move(game);
-            say("IDO", p.first, p.second);
+            say("IDO", p.second, p.first);
             game.make_move(p.first, p.second);
             // cerr << game << '\n';
             game.swap_players();
         } else if(cmd == "ONEMORE"){
-            game.reset(false);
+            game.reset(true);
             say("RDY");
         }
     }

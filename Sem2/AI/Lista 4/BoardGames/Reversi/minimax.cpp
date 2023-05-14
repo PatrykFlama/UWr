@@ -207,7 +207,7 @@ public:
             for(int j = 0; j < 8; j++){
                 out << (board.get_player_cell(i, j) ? 'P' : board.get_opponent_cell(i, j) ? 'O' : '.');
             }
-            cout << '\n';
+            out << '\n';
         }
         return out;
     }

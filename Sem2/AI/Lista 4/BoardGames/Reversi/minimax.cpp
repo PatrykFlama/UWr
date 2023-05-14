@@ -1,8 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#define DEPTH 0
-#define measure_time true
+#define DEPTH 2
+// #define measure_time
 
 #define timestamp chrono::_V2::system_clock::time_point
 
@@ -325,36 +325,44 @@ void say(string what, int x, int y){
 int main(){
     Reversi game(true);
     AI ai;
-    string cmd = "";
-    say("RDY");
-
     #ifdef measure_time
-    vector<pair<timestamp, timestamp>> opponent_times;
-    vector<pair<timestamp, timestamp>> player_times;
-    timestamp start, mid, end;
+    chrono::milliseconds::rep avg_player_time = 0;
+    chrono::milliseconds::rep avg_opponent_time = 0;
+    timestamp start, end;
+    cerr << "MEASURE TIME\n";
     #endif
-    
-    while(cmd != "BYE"){
-        cin >> cmd;
 
-        #ifdef measure_time
-        start = chrono::_V2::system_clock::now();
-        #endif
+    say("RDY");
+    
+    while(true){
+        string cmd;
+        cin >> cmd;
 
         if(cmd == "UGO"){
             double time_for_move, time_for_game; 
             cin >> time_for_move >> time_for_game;
-            // game.reset(true);
 
+            #ifdef measure_time
+            start = chrono::_V2::system_clock::now();
+            #endif
             auto p = ai.get_best_move(game);
+            #ifdef measure_time
+            end = chrono::_V2::system_clock::now();
+            avg_player_time += chrono::duration_cast<chrono::milliseconds>(end - start).count();
+            avg_player_time /= 2;
+            #endif
+
             say("IDO", p.second, p.first);
             game.make_move(p.first, p.second);
             game.swap_players();
-            
-            #ifdef measure_time
-            end = chrono::_V2::system_clock::now();
-            #endif
         } else if(cmd == "HEDID"){
+            // ---opponent move---
+            #ifdef measure_time
+            start = chrono::_V2::system_clock::now();
+            avg_opponent_time += chrono::duration_cast<chrono::milliseconds>(start - end).count();
+            avg_opponent_time /= 2;
+            #endif
+
             double time_for_move, time_for_game; 
             cin >> time_for_move >> time_for_game;
 
@@ -362,15 +370,40 @@ int main(){
             if(x != -1) game.make_move(x, y);
             game.swap_players();
             
+            // ---my move---
+            #ifdef measure_time
+            start = chrono::_V2::system_clock::now();
+            #endif
             auto p = ai.get_best_move(game);
+            #ifdef measure_time
+            end = chrono::_V2::system_clock::now();
+            avg_player_time += chrono::duration_cast<chrono::milliseconds>(end - start).count();
+            avg_player_time /= 2;
+            #endif
+
             say("IDO", p.second, p.first);
             game.make_move(p.first, p.second);
             // cerr << game << '\n';
             game.swap_players();
         } else if(cmd == "ONEMORE"){
+            #ifdef measure_time
+            cerr << "avg player time: " << avg_player_time << '\n';
+            cerr << "avg opponent time: " << avg_opponent_time << endl;
+            avg_player_time = 0;
+            avg_opponent_time = 0;
+            #endif
+
             game.reset(true);
             say("RDY");
+        } else if(cmd == "BYE"){
+            break;
         }
+
+        #ifdef measure_time
+        end = chrono::_V2::system_clock::now();
+        #endif
     }
+
+
 }
 

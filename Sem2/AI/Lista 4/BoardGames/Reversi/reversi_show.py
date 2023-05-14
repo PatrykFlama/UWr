@@ -71,7 +71,7 @@ class Board:
                     res.append('#')
                 else:
                     res.append('o')
-            print ''.join(res) 
+            print (''.join(res))
         print            
         
     
@@ -175,7 +175,7 @@ while True:
     
 B.draw()
 B.show()
-print 'Result', B.result()
+print ('Result', B.result())
 raw_input('Game over!')
   
        

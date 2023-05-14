@@ -1,6 +1,11 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+#define DEPTH 0
+#define measure_time true
+
+#define timestamp chrono::_V2::system_clock::time_point
+
 /*
 black player starts
 starting sheme:
@@ -12,14 +17,14 @@ class Reversi{
     const int DIRS[8][2] = {{-1, -1}, {-1, 0}, {-1, 1}, {0, 1},
                             {1, 1},   {1, 0},  {1, -1}, {0, -1}};
 
-    const vector<vector<int>> CELL_WEIGHTS = {{20, -3, 11, 8, 8, 11, -3, 20},
-                                              {-3, -7, -4, 1, 1, -4, -7, -3},
-                                              {11, -4, 2, 2, 2, 2, -4, 11},
-                                              {8, 1, 2, -3, -3, 2, 1, 8},
-                                              {8, 1, 2, -3, -3, 2, 1, 8},
-                                              {11, -4, 2, 2, 2, 2, -4, 11},
-                                              {-3, -7, -4, 1, 1, -4, -7, -3},
-                                              {20, -3, 11, 8, 8, 11, -3, 20}};
+    const vector<vector<int>> CELL_WEIGHTS = {{20, -3, 11,  8,  8,  11, -3,  20},
+                                              {-3, -7, -4,  1,  1, -4,  -7, -3},
+                                              {11, -4,  2,  2,  2,  2,  -4 , 11},
+                                              {8,   1,  2, -3, -3,  2,   1,  8},
+                                              {8,   1,  2, -3, -3,  2,   1,  8},
+                                              {11, -4,  2,  2,  2,  2,  -4,  11},
+                                              {-3, -7, -4,  1,  1, -4,  -7, -3},
+                                              {20, -3, 11,  8,  8,  11, -3,  20}};
 
     const int CORNERS[4][2] = {{0, 0}, {0, 7}, {7, 0}, {7, 7}};
 
@@ -143,7 +148,6 @@ public:
         }
 
         int ratio = calc_ratio(player_cells, opponent_cells);
-        // if(free_move != 0) weighted_sum *= (1/free_move);
 
 
         int player_corners = 0;
@@ -174,7 +178,7 @@ public:
 
         int close_corner_value = -12.5 * (player_close_corners - opponent_close_corners);
         
-        return ((10*ratio) + (801.724*corner_ratio) + (382.026*close_corner_value) + (78.922*weighted_sum));
+        return ((10*ratio) + (801*corner_ratio) + (382*close_corner_value) + (78*weighted_sum));
     }
 
     bool terminal() const {
@@ -210,7 +214,7 @@ public:
 };
 
 class AI{
-    const int MAX_DEPTH = 4;
+    const int MAX_DEPTH = DEPTH;
     const int MAX_PLAYER = 1, MIN_PLAYER = 0;
 public:
     pair<int, int> get_best_move(Reversi state){
@@ -319,14 +323,23 @@ void say(string what, int x, int y){
 }
 
 int main(){
-    srand (time(NULL));
     Reversi game(true);
     AI ai;
     string cmd = "";
     say("RDY");
+
+    #ifdef measure_time
+    vector<pair<timestamp, timestamp>> opponent_times;
+    vector<pair<timestamp, timestamp>> player_times;
+    timestamp start, mid, end;
+    #endif
     
     while(cmd != "BYE"){
         cin >> cmd;
+
+        #ifdef measure_time
+        start = chrono::_V2::system_clock::now();
+        #endif
 
         if(cmd == "UGO"){
             double time_for_move, time_for_game; 
@@ -336,8 +349,11 @@ int main(){
             auto p = ai.get_best_move(game);
             say("IDO", p.second, p.first);
             game.make_move(p.first, p.second);
-            // cerr << game << '\n';
             game.swap_players();
+            
+            #ifdef measure_time
+            end = chrono::_V2::system_clock::now();
+            #endif
         } else if(cmd == "HEDID"){
             double time_for_move, time_for_game; 
             cin >> time_for_move >> time_for_game;

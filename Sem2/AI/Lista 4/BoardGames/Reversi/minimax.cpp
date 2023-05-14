@@ -1,8 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int DEPTH = 6;
+int DEPTH = 5;
 #define measure_time
+#define use_sorting false
 using Clock = std::chrono::high_resolution_clock;
 
 /*
@@ -213,10 +214,12 @@ public:
 };
 
 class AI{
-    const int MAX_DEPTH = DEPTH;
-    const int MAX_PLAYER = 1, MIN_PLAYER = 0;
+    bool SORTING = false;
+    const int  MAX_DEPTH = DEPTH;
+    const int  MAX_PLAYER = 1, MIN_PLAYER = 0;
 public:
-    pair<int, int> get_best_move(Reversi state){
+    pair<int, int> get_best_move(Reversi state, bool sorting = false){
+        SORTING = sorting;
         return alphabeta_root(state);
     }
 
@@ -264,9 +267,18 @@ public:
 
     /* #region //* ----alphabeta---- */
     pair<int, int> alphabeta_root(Reversi state){        // returns best move
+        
         int best_score = INT_MIN;
         pair<int, int> best_move = {-1, -1};
-        for(auto [x, y] : state.free_cells()){
+        vector<pair<int, int>> free_cells = state.free_cells();
+
+        if(SORTING) sort(free_cells.begin(), free_cells.end(), 
+            [&](pair<int, int> a, pair<int, int> b){
+            return (state.gen_next_state(a.first, a.second)).heuristic_result() >
+                   (state.gen_next_state(b.first, b.second)).heuristic_result();
+        });
+        
+        for(auto [x, y] : free_cells){
             int score = alphabeta(state.gen_next_state(x, y), MAX_DEPTH, MIN_PLAYER, INT_MIN, INT_MAX);
             if(score > best_score){
                 best_score = score;
@@ -288,6 +300,11 @@ public:
 
         if(depth <= 0) return state.heuristic_result() * (player == MAX_PLAYER ? 1 : -1);
 
+        if(SORTING) sort(free_cells.begin(), free_cells.end(), 
+            [&](pair<int, int> a, pair<int, int> b){
+            return (state.gen_next_state(a.first, a.second)).heuristic_result() >
+                   (state.gen_next_state(b.first, b.second)).heuristic_result();
+        });
 
         int best_score = (player == MAX_PLAYER ? INT_MIN : INT_MAX);
         for(auto [x, y] : free_cells){
@@ -326,6 +343,7 @@ int main(int argc, char *argv[]){
 
     Reversi game(true);
     AI ai;
+    bool sorting = use_sorting;
     #ifdef measure_time
     chrono::milliseconds::rep avg_player_time = 0;
     int moves = 0;
@@ -344,7 +362,7 @@ int main(int argc, char *argv[]){
             #ifdef measure_time
             auto  start  = Clock::now();
             #endif
-            auto p = ai.get_best_move(game);
+            auto p = ai.get_best_move(game, sorting);
             #ifdef measure_time
             auto  stop  = Clock::now();
             avg_player_time += chrono::duration_cast<chrono::milliseconds>(stop - start).count();
@@ -367,7 +385,7 @@ int main(int argc, char *argv[]){
             #ifdef measure_time
             auto  start  = Clock::now();
             #endif
-            auto p = ai.get_best_move(game);
+            auto p = ai.get_best_move(game, sorting);
             #ifdef measure_time
             auto  stop  = Clock::now();
             avg_player_time += chrono::duration_cast<chrono::milliseconds>(stop - start).count();
@@ -379,17 +397,20 @@ int main(int argc, char *argv[]){
             // cerr << game << '\n';
             game.swap_players();
         } else if(cmd == "ONEMORE"){
+            game.reset(true);
+            sorting = use_sorting;
+            say("RDY");
+        } else if(cmd == "BYE"){
             #ifdef measure_time
-            cerr << "Avg move time: " << avg_player_time/moves << "ms\n";
+            cerr << "Avg move time: " << avg_player_time/moves << "ms, " << moves << " moves\n";
             avg_player_time = 0;
             moves = 0;
             #endif
 
-            game.reset(true);
-            say("RDY");
-        } else if(cmd == "BYE"){
             break;
         }
+
+        if(moves > 10) sorting = false;
     }
 
 

@@ -119,31 +119,31 @@
 
 ;; primitive operations
 
-(define (op-num-num->proc [f : (Number Number -> Number)]) : (Value Value -> Value)
+(define (op-num-num->proc [f : (Number Number -> Number)]) : (Value Value -> Answer)
   (λ (v1 v2)
     (type-case Value v1
       [(numV n1)
        (type-case Value v2
          [(numV n2)
-          (numV (f n1 n2))]
+          (return (numV (f n1 n2)))]
          [else
-          (error 'eval "type error")])]
+          (err 'eval "type error")])]
       [else
-       (error 'eval "type error")])))
+       (err 'eval "type error")])))
 
-(define (op-num-bool->proc [f : (Number Number -> Boolean)]) : (Value Value -> Value)
+(define (op-num-bool->proc [f : (Number Number -> Boolean)]) : (Value Value -> Answer)
   (λ (v1 v2)
     (type-case Value v1
       [(numV n1)
        (type-case Value v2
          [(numV n2)
-          (boolV (f n1 n2))]
+          (return (boolV (f n1 n2)))]
          [else
-          (error 'eval "type error")])]
+          (err 'eval "type error")])]
       [else
-       (error 'eval "type error")])))
+       (err 'eval "type error")])))
 
-(define (op->proc [op : Op]) : (Value Value -> Value)
+(define (op->proc [op : Op]) : (Value Value -> Answer)
   (type-case Op op
     [(add) (op-num-num->proc +)]
     [(sub) (op-num-num->proc -)]
@@ -161,14 +161,16 @@
     [(opE o l r)
      (do ([v-l (eval l)]
           [v-r (eval r)])
-       (return ((op->proc o) v-l v-r)))]
+          (if (and (equal? o (div)) (equal? v-r (numV 0)))
+              (err 'eval "division by zero")
+          ((op->proc o) v-l v-r)))]
     [(ifE b l r)
      (do ([v (eval b)])
        (type-case Value v
          [(boolV u)
           (if u (eval l) (eval r))]
          [else
-          (error 'eval "type error")]))]
+          (err 'eval "type error")]))]
     [(condE cs)
      (eval (cond->if cs))]
     [(errorE l m)

@@ -3,7 +3,7 @@
 # Lista 10
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
 |---|---|---|---|---|---|---|
-| X | X | X |   | X |   |   |
+| X | X | X |   | X | X |   |
 
 
 ## Info (wykład 11)
@@ -18,3 +18,5 @@ Metajęzyk - język interpretera / programu który rozumie semantykę naszego j�
 * Read-Eval-Print-Loop (REPL)
 * Wyjątki/błędy (efekty obliczeniowe, interpretacja metacykliczna, monada błędów, notacja do jako makro, maszyna abstrakcyjna)
 
+## Zadanie 6
+W funkcjach pomocniczych związanych z operatorami arytmetycznymi i logicznymi zamieniliśmy zwracany typ z Value na Answer.  

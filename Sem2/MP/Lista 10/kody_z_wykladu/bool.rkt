@@ -16,7 +16,6 @@
   (lcons)
   (lcar)
   (lcdr)
-  (lnull)
   (lisnull))
 
 (define-type Exp
@@ -128,9 +127,9 @@
          [(numV n2)
           (numV (f n1 n2))]
          [else
-          (error 'eval "type error")])]
+          (error 'op-num-num->proc "type error")])]
       [else
-       (error 'eval "type error")])))
+       (error 'op-num-num->proc "type error")])))
 
 (define (op-num-bool->proc [f : (Number Number -> Boolean)]) : (Value Value -> Value)
   (λ (v1 v2)
@@ -140,29 +139,41 @@
          [(numV n2)
           (boolV (f n1 n2))]
          [else
-          (error 'eval "type error")])]
+          (error 'op-num-bool->proc "type error")])]
       [else
-       (error 'eval "type error")])))
+       (error 'op-num-bool->proc "type error")])))
 
-(define (op-list-list->proc [f : ((Listof Value) (Listof Value) -> Value)]) : (Value Value -> Value)
+(define (op-val-list->proc f) : (Value Value -> Value)
   (λ (v1 v2)
-    (type-case Value v1
-      [(listV ls1)
-       (type-case Value v2
-         [(listV ls2)
-          (f ls1 ls2)]
-         [else
-          (error 'eval "type error")])]
+    (type-case Value v2
+      [(listV ls)
+       (listV (f v1 ls))]
       [else
-       (error 'eval "type error")])))
+       (error 'op-val-list->proc "type error")])))
 
-(define (op-list->proc [f : ((Listof Value) -> Value)]) : (Value -> Value)
+(define (op-list->bool->proc [f : ((Listof Value) -> Boolean)]) : (Value -> Value)
+  (λ (v)
+    (type-case Value v
+      [(listV ls)
+       (boolV (f ls))]
+      [else
+       (error 'op-list->bool->proc "type error")])))
+
+(define (op-list->proc f) : (Value -> Value)
   (λ (v)
     (type-case Value v
       [(listV ls)
        (f ls)]
       [else
-       (error 'eval "type error")])))
+       (error 'op-list->proc "type error")])))
+
+(define (op-list->list->proc f) : (Value -> Value)
+  (λ (v)
+    (type-case Value v
+      [(listV ls)
+       (listV (f ls))]
+      [else
+       (error 'op-list->list->proc "type error")])))
 
 (define (op->proc [op : Op]) : (Value Value -> Value)
   (type-case Op op
@@ -172,15 +183,15 @@
     [(div) (op-num-num->proc /)]
     [(eql) (op-num-bool->proc =)]
     [(leq) (op-num-bool->proc <=)]
-    [(lcons) (λ (v1 v2)
-               (type-case Value v2
-                 [(listV ls)
-                  (listV (cons v1 ls))]
-                 [else
-                  (error 'eval "type error")]))]
+    [(lcons) (op-val-list->proc cons)]
+    [else (error 'op->proc "error")]))
+
+(define (opun->proc [op : Op]) : (Value -> Value)
+  (type-case Op op
     [(lcar) (op-list->proc first)]
-    [(lcdr) (op-list->proc rest)]
-    [(lisnull) (op-list->proc null?)]))
+    [(lcdr) (op-list->list->proc rest)]
+    [(lisnull) (op-list->bool->proc empty?)]
+    [else (error 'opun->proc "error")]))
 
 (define (eval [e : Exp]) : Value
   (type-case Exp e
@@ -194,7 +205,8 @@
         (if v (eval l) (eval r))]
        [else
         (error 'eval "type error")])]
-    [(listE ls) (listV (map eval ls))]))
+    [(listE ls) (listV (map eval ls))]
+    [(opEun o ls) ((opun->proc o) (eval ls))]))
     ; [(condE cs)
     ;  (eval (cond->if cs))]))
 
@@ -258,14 +270,14 @@
      (continueAM s (boolV #t))]
     [(falseE)
      (continueAM s (boolV #f))]
+    [(listE ls)
+     (continueAM s (listV (map (lambda (x) (evalAM x (emptyS))) ls)))]
     [(opE o e1 e2)
      (evalAM e1 (rightS o e2 s))]
-    [(opEun o e)    ; todo lvalue or smth like that
-      (evalAM e (rightS o e s))]
+    [(opEun o e)
+      (evalAM e (leftS o (listV '()) s))]
     [(ifE condition e1 e2) 
-     (evalAM condition (ifS e1 e2 s))]
-    [(listE ls)
-     (evalAM (list->if ls) s)]))
+     (evalAM condition (ifS e1 e2 s))]))
 
 (define (continueAM [s : Stack] [v : Value]) : Value
   (type-case Stack s
@@ -274,13 +286,15 @@
     [(rightS op e s)
      (evalAM e (leftS op v s))]
     [(leftS op u s)
-     (continueAM s ((op->proc op) v u))]
+      (if (and (listV? u) (empty? (listV-ls u)))
+          (continueAM s ((opun->proc op) v))
+          (continueAM s ((op->proc op) u v)))]
     [(ifS e1 e2 s)
      (type-case Value v
        [(boolV condition) (if condition
             (evalAM e1 s)
             (evalAM e2 s))]
-       [(numV _)
+       [else
         (error 'continueAM "if expression type error")])]))
   
 (define (runAM [e : S-Exp]) : Value

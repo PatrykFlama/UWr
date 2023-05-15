@@ -11,19 +11,28 @@
   (mul)
   (div)
   (eql)
-  (leq))
+  (leq)
+
+  (lcons)
+  (lcar)
+  (lcdr)
+  (lnull)
+  (lisnull))
 
 (define-type Exp
   (numE [n : Number])
   (opE [op : Op]
        [l : Exp]
        [r : Exp])
+  (opEun [op : Op]
+         [l : Exp])
   (ifE [b : Exp]
        [l : Exp]
        [r : Exp])
   ; (condE [cs : (Listof (Exp * Exp))])
   (trueE)
-  (falseE))
+  (falseE)
+  (listE [ls : (Listof Exp)]))
 
 ;; parse ----------------------------------------
 
@@ -39,22 +48,28 @@
           (parse (fourth (s-exp->list s))))]
     ; [(s-exp-match? `{cond ANY ...} s)
     ;  (condE (parse-cond (rest (s-exp->list s))))]
+
+    [(s-exp-match? `{null} s)
+      (listE empty)]
+    [(s-exp-match? `{list ANY ...} s)
+      (listE (parse-list (rest (s-exp->list s))))]
+
+    [(s-exp-match? `{SYMBOL ANY} s)
+      (opEun 
+        (parse-op (s-exp->symbol (first (s-exp->list s))))
+        (parse (second (s-exp->list s))))]
     [(s-exp-match? `{SYMBOL ANY ANY} s)
      (opE (parse-op (s-exp->symbol (first (s-exp->list s))))
           (parse (second (s-exp->list s)))
           (parse (third (s-exp->list s))))]
     [else (error 'parse "invalid input")]))
 
-; (define (parse-cond [ss : (Listof S-Exp)]) : (Listof (Exp * Exp))
-;   (type-case (Listof S-Exp) ss
-;     [empty
-;      empty]
-;     [(cons s ss)
-;      (if (s-exp-match? `{ANY ANY} s)
-;          (cons (pair (parse (first (s-exp->list s)))
-;                      (parse (second (s-exp->list s))))
-;                (parse-cond ss))
-;          (error 'parse "invalid input: cond"))]))
+(define (parse-list [ss : (Listof S-Exp)]) : (Listof Exp)
+  (type-case (Listof S-Exp) ss
+    [empty empty]
+    [(cons s ss)
+      (cons (parse s)
+            (parse-list ss))]))
 
 (define (parse-op [op : Symbol]) : Op
   (cond
@@ -64,6 +79,10 @@
     [(eq? op '/) (div)]
     [(eq? op '=) (eql)]
     [(eq? op '<=) (leq)]
+    [(eq? op 'cons) (lcons)]
+    [(eq? op 'car) (lcar)]
+    [(eq? op 'cdr) (lcdr)]
+    [(eq? op 'null?) (lisnull)]
     [else (error 'parse "unknown operator")]))
                 
 (module+ test
@@ -98,7 +117,8 @@
 
 (define-type Value
   (numV [n : Number])
-  (boolV [b : Boolean]))
+  (boolV [b : Boolean])
+  (listV [ls : (Listof Value)]))
 
 (define (op-num-num->proc [f : (Number Number -> Number)]) : (Value Value -> Value)
   (λ (v1 v2)
@@ -124,6 +144,26 @@
       [else
        (error 'eval "type error")])))
 
+(define (op-list-list->proc [f : ((Listof Value) (Listof Value) -> Value)]) : (Value Value -> Value)
+  (λ (v1 v2)
+    (type-case Value v1
+      [(listV ls1)
+       (type-case Value v2
+         [(listV ls2)
+          (f ls1 ls2)]
+         [else
+          (error 'eval "type error")])]
+      [else
+       (error 'eval "type error")])))
+
+(define (op-list->proc [f : ((Listof Value) -> Value)]) : (Value -> Value)
+  (λ (v)
+    (type-case Value v
+      [(listV ls)
+       (f ls)]
+      [else
+       (error 'eval "type error")])))
+
 (define (op->proc [op : Op]) : (Value Value -> Value)
   (type-case Op op
     [(add) (op-num-num->proc +)]
@@ -131,7 +171,16 @@
     [(mul) (op-num-num->proc *)]
     [(div) (op-num-num->proc /)]
     [(eql) (op-num-bool->proc =)]
-    [(leq) (op-num-bool->proc <=)]))
+    [(leq) (op-num-bool->proc <=)]
+    [(lcons) (λ (v1 v2)
+               (type-case Value v2
+                 [(listV ls)
+                  (listV (cons v1 ls))]
+                 [else
+                  (error 'eval "type error")]))]
+    [(lcar) (op-list->proc first)]
+    [(lcdr) (op-list->proc rest)]
+    [(lisnull) (op-list->proc null?)]))
 
 (define (eval [e : Exp]) : Value
   (type-case Exp e
@@ -144,7 +193,8 @@
        [(boolV v)
         (if v (eval l) (eval r))]
        [else
-        (error 'eval "type error")])]))
+        (error 'eval "type error")])]
+    [(listE ls) (listV (map eval ls))]))
     ; [(condE cs)
     ;  (eval (cond->if cs))]))
 
@@ -182,7 +232,9 @@
 (define (value->string [v : Value]) : String
   (type-case Value v
     [(numV n) (to-string n)]
-    [(boolV b) (if b "true" "false")]))
+    [(boolV b) (if b "true" "false")]
+    ; [(listV ls) (format "(list ~a)" (map value->string ls))]))
+    [(listV ls) "list, indeed"]))
 
 (define (print-value [v : Value]) : Void
   (display (value->string v)))
@@ -208,8 +260,12 @@
      (continueAM s (boolV #f))]
     [(opE o e1 e2)
      (evalAM e1 (rightS o e2 s))]
+    [(opEun o e)    ; todo lvalue or smth like that
+      (evalAM e (rightS o e s))]
     [(ifE condition e1 e2) 
-     (evalAM condition (ifS e1 e2 s))]))
+     (evalAM condition (ifS e1 e2 s))]
+    [(listE ls)
+     (evalAM (list->if ls) s)]))
 
 (define (continueAM [s : Stack] [v : Value]) : Value
   (type-case Stack s

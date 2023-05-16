@@ -89,7 +89,24 @@
                            (opE (mul) (numE 3) (numE 4)))
                      (pair (opE (eql) (numE 1) (numE 1))
                            (numE 8))))))
-  
+
+;; de-sugerize ----------------------------------
+
+(define (de-sugerize [e : Exp]) : Exp
+  (type-case Exp e
+    [(condE cs) (cond->if cs)]
+    [else
+      e]))
+
+(define (cond->if [cs : (Listof (Exp * Exp))]) : Exp
+  (type-case (Listof (Exp * Exp)) cs
+    [empty
+     (numE 42)]
+    [(cons c cs)
+     (ifE (fst c)
+          (snd c )
+          (cond->if cs))]))
+
 ;; eval --------------------------------------
 
 (define-type Value
@@ -139,20 +156,11 @@
         (if v (eval l) (eval r))]
        [else
         (error 'eval "type error")])]
-    [(condE cs)
-     (eval (cond->if cs))]))
-
-(define (cond->if [cs : (Listof (Exp * Exp))]) : Exp
-  (type-case (Listof (Exp * Exp)) cs
-    [empty
-     (numE 42)]
-    [(cons c cs)
-     (ifE (fst c)
-          (snd c )
-          (cond->if cs))]))
+    [else
+      (error 'eval "not de-sugerized cond func found")]))
 
 (define (run [e : S-Exp]) : Value
-  (eval (parse e)))
+  (eval (de-sugerize (parse e))))
 
 (module+ test
   (test (run `2)
@@ -182,4 +190,4 @@
   (display (value->string v)))
 
 (define (main [e : S-Exp]) : Void
-  (print-value (eval (parse e))))
+  (print-value (run e)))

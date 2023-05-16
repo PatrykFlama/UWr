@@ -2,7 +2,7 @@
 using namespace std;
 
 int DEPTH = 3;
-// #define wanna_go_faster
+#define wanna_go_faster
 #define measure_time
 using Clock = std::chrono::high_resolution_clock;
 

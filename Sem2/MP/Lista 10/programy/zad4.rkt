@@ -94,9 +94,10 @@
 
 (define (de-sugerize [e : Exp]) : Exp
   (type-case Exp e
+    [(opE o l r) (opE o (de-sugerize l) (de-sugerize r))]
+    [(ifE b l r) (ifE (de-sugerize b) (de-sugerize l) (de-sugerize r))]
     [(condE cs) (cond->if cs)]
-    [else
-      e]))
+    [else e]))
 
 (define (cond->if [cs : (Listof (Exp * Exp))]) : Exp
   (type-case (Listof (Exp * Exp)) cs

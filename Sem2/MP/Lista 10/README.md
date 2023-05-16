@@ -18,5 +18,8 @@ Metajęzyk - język interpretera / programu który rozumie semantykę naszego j�
 * Read-Eval-Print-Loop (REPL)
 * Wyjątki/błędy (efekty obliczeniowe, interpretacja metacykliczna, monada błędów, notacja do jako makro, maszyna abstrakcyjna)
 
+## Zadanie 4
+Pewnie ma to sens, szczególnie że w kilku zadaniach dokładnie tak zrobiliśmy, mniej roboty przy pisaniu kolejnych funkcji, możliwości programu te same. Z drugiej strony po odcukrzeniu istnienie conda nie będzie nam już dalej przeszkadzać.
+
 ## Zadanie 6
 W funkcjach pomocniczych związanych z operatorami arytmetycznymi i logicznymi zamieniliśmy zwracany typ z Value na Answer.  

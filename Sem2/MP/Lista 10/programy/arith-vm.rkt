@@ -229,7 +229,7 @@
   (test (decompile (compile (opE (add) (numE 2) (numE 1))))
         (opE (add) (numE 2) (numE 1)))
   (test (decompile (compile (parse `{+ 1 {* 2 3}})))
-        (decompile (compile (parse `{+ 1 {* 2 3}})))))
+        (parse `{+ 1 {* 2 3}})))
 
 ;; VM
 (define (runVM [e : S-Exp]) : Value

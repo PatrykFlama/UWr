@@ -1,12 +1,16 @@
 #pragma once
 
+#include "solution/Debitable.hpp"
+#include "solution/MoneyTransferTarget.hpp"
+#include "solution/OwnedAccount.hpp"
+
 #include <iostream>
 #include <string>
 
-class BankAccount
+class BankAccount : public Debitable, public MoneyTransferTarget, public OwnedAccount
 {
 public:
-    bool debit(unsigned amount)
+    bool debit(unsigned amount) override
     {
         if (amount > currentBalance)
         {
@@ -17,12 +21,12 @@ public:
         return true;
     }
 
-    void credit(unsigned deposit)
+    void credit(unsigned deposit) override
     {
         currentBalance += deposit;
     }
 
-    int balance() const
+    int balance() const override
     {
         return currentBalance;
     }

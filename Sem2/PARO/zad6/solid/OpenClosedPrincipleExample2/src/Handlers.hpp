@@ -33,3 +33,20 @@ public:
         std::cout << std::endl;
     }
 };
+
+struct Adder : CommandHandler
+{
+public:
+    std::string getCommandName() const override
+    {
+        return "add";
+    }
+
+    void handle(const std::vector<std::string>& parameters) const override
+    {
+        int res = 0;
+        for (const auto& p : parameters)
+            res += std::stoi(p);
+        std::cout << res << std::endl;
+    }
+};

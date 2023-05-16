@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BankAccount.hpp"
+#include "solution/Debitable.hpp"
 
 #include <iostream>
 #include <string>
@@ -11,7 +11,7 @@ struct Shop
     {
     }
 
-    void buyApples(BankAccount& account)
+    void buyApples(Debitable& account)
     {
         const unsigned price = 1999;
         std::cout << shopName << " sells an apple for " << price << " €" << std::endl;

@@ -54,6 +54,9 @@ const char starting_positions[9][7] = {
 enum Animals{
     RAT = 0, CAT, DOG, WOLF, JAGUAR, TIGER, LION, ELEPHANT
 };
+enum Jupmers{
+    TIGER_JUMP = 0, LION_JUMP
+};
 
 template <typename T,typename U>                                                   
 std::pair<T,U> operator+(const std::pair<T,U> & l,const std::pair<T,U> & r) {   
@@ -83,13 +86,13 @@ public:
         opponent_force_jump_direction = {{0, 0}, {0, 0}};
     }
 
-    void move_player_piece(int dx, int dy, int piece_index){
-        auto [x, y] = player_pieces[piece_index];
-        player_pieces[piece_index] = {x + dx, y + dy};
+    void move_player_piece(int player, pair<int, int> dir){
+        auto [x, y] = player_pieces[player];
+        player_pieces[player] = {x + dir.first, y + dir.second};
     }
-    void move_opponent_piece(int dx, int dy, int piece_index){
-        auto [x, y] = opponent_pieces[piece_index];
-        opponent_pieces[piece_index] = {x + dx, y + dy};
+    void move_opponent_piece(int opponent, pair<int, int> dir){
+        auto [x, y] = opponent_pieces[opponent];
+        opponent_pieces[opponent] = {x + dir.first, y + dir.second};
     }
 
     char get_cell(pair<int, int> d){
@@ -98,7 +101,7 @@ public:
 
     bool player_in_range(int player, int opponent){
         for(auto [x, y] : DIRS)
-            if(player_pieces[player] + (pair<int, int>){player, opponent} == opponent_pieces[opponent])
+            if(player_pieces[player] + pair<int, int>(player, opponent) == opponent_pieces[opponent])
                 return true;
         return false;
     }
@@ -113,10 +116,37 @@ public:
         return stronger(player, opponent);
     }
 
+    bool move_safe(int player, pair<int, int> dir){        // ignoring pieces on board
+        if(dir.first < 0 || dir.first >= 7 || dir.second < 0 || dir.second >= 9) return false;
+        if(get_cell(player_pieces[player] + dir) == '~'){
+            if(player == RAT || player == TIGER || player == LION) return true;
+            else return false;
+        }
+        return true;
+    }
     bool move_legal(int player, pair<int, int> dir){
-        
+        if(not move_safe(player, dir)) return false;
+        for(int teammate = 0; teammate < 8; teammate++)
+            if(player_pieces[teammate] == player_pieces[player] + dir)
+                return false;
+        for(int opponent = 0; opponent < 8; opponent++)
+            if(opponent_pieces[opponent] == player_pieces[player] + dir)
+                if(not can_beat(player, opponent)) return false;
+        return true;
+    }
+
+    vector<pair<int, int>> get_legal_moves(int player){
+        vector<pair<int, int>> moves;
+        for(auto [x, y] : DIRS){
+            pair<int, int> dir = {x, y};
+            if(move_legal(player, dir))
+                moves.push_back(dir);
+        }
+        return moves;
     }
 };
+
+
 
 int main() {
 

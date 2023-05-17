@@ -135,17 +135,30 @@ public:
         return true;
     }
 
-    vector<pair<int, int>> get_legal_moves(int player){
-        vector<pair<int, int>> moves;
-        for(auto [x, y] : DIRS){
-            pair<int, int> dir = {x, y};
-            if(move_legal(player, dir))
-                moves.push_back(dir);
+    vector<pair<int, pair<int, int>>> get_legal_moves(){
+        vector<pair<int, pair<int, int>>> moves;
+        for(int player = 0; player < 8; player++){
+            for(auto [x, y] : DIRS){
+                if(move_legal(player, {x, y}))
+                    moves.push_back({player, {x, y}});
+            }
         }
         return moves;
     }
+
+    Jungle gen_next_state(int piece, pair<int, int> dir){
+        Jungle next_state = *this;
+        if(piece < 8) next_state.move_player_piece(piece, dir);
+        else next_state.move_opponent_piece(piece - 8, dir);
+        return next_state;
+    }
 };
 
+
+class AI{
+public:
+    pair<int, pair<int, int>> best_move();
+};  
 
 
 int main() {

@@ -67,6 +67,15 @@ std::pair<T,U> operator+(const std::pair<T,U> & l,const std::pair<T,U> & r) {
 class Jungle {
     const int DIRS[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // R D L U
 public:
+    //TODO - memory efficiency upgrade:
+    /*
+    location now instead of vector<pair<int, int>> is vector<int>,
+    so [x, y] = x*7+y
+
+    player and opponent pieces are kept in table/vector
+    we keep which player (1 or 0) turn it is
+    now to access active player we do: pieces[1-turn]
+    */
     vector<pair<int, int>> player_pieces;   // positions of R C D W J T L E; -1 -1 if eaten (rat can eat elephant)
     vector<pair<int, int>> opponent_pieces;
     vector<pair<int, int>> player_force_jump_direction; // direction of jump for tiger and lion; 0 0 if no force jump

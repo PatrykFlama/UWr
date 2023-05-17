@@ -76,41 +76,46 @@ public:
     we keep which player (1 or 0) turn it is
     now to access active player we do: pieces[1-turn]
     */
-    vector<pair<int, int>> player_pieces;   // positions of R C D W J T L E; -1 -1 if eaten (rat can eat elephant)
-    vector<pair<int, int>> opponent_pieces;
-    vector<pair<int, int>> player_force_jump_direction; // direction of jump for tiger and lion; 0 0 if no force jump
-    vector<pair<int, int>> opponent_force_jump_direction;
-
-    Jungle(){
+    vector<pair<int, int>> pieces[2];   // positions of R C D W J T L E; -1 -1 if eaten (rat can eat elephant)
+    vector<pair<int, int>> force_jump_direction[2]; // direction of jump for tiger and lion; 0 0 if no force jump
+    int player;
+    
+    Jungle() : Jungle(0) {}
+    Jungle(int player){
+        this->player = player;
         reset();
     }
 
     void reset(){
-        player_pieces = {{0, 2}, {6, 1}, {1, 1}, {5, 2}, {2, 2}, {7, 0}, {0, 0}, {7, 2}};
-        opponent_pieces.clear();
-        opponent_pieces.reserve(8);
-        for(auto [x, y] : player_pieces)
-            opponent_pieces.push_back({7 - x, 9 - y});
-        player_force_jump_direction = {{0, 0}, {0, 0}};
-        opponent_force_jump_direction = {{0, 0}, {0, 0}};
+        pieces[player] = {{0, 2}, {6, 1}, {1, 1}, {5, 2}, {2, 2}, {7, 0}, {0, 0}, {7, 2}};
+        pieces[1-player].clear();
+        pieces[1-player].reserve(8);
+        for(auto [x, y] : pieces[player])
+            pieces[1-player].push_back({7 - x, 9 - y});
+        force_jump_direction[player] = {{0, 0}, {0, 0}};
+        force_jump_direction[1-player] = {{0, 0}, {0, 0}};
+    }
+
+    void swap_players(){
+        player = 1-player;
     }
 
     void move_player_piece(int player, pair<int, int> dir){
-        auto [x, y] = player_pieces[player];
-        player_pieces[player] = {x + dir.first, y + dir.second};
+        auto [x, y] = pieces[player][player];
+        pieces[player][player] = {x + dir.first, y + dir.second};
     }
     void move_opponent_piece(int opponent, pair<int, int> dir){
-        auto [x, y] = opponent_pieces[opponent];
-        opponent_pieces[opponent] = {x + dir.first, y + dir.second};
+        auto [x, y] = pieces[1-player][opponent];
+        pieces[1-player][opponent] = {x + dir.first, y + dir.second};
     }
 
-    char get_cell(pair<int, int> d){
+    char get_cell(pair<int, int> d) const {         // returns field type for given position
         return board[d.first][d.second];
     }
 
     bool player_in_range(int player, int opponent){
         for(auto [x, y] : DIRS)
-            if(player_pieces[player] + pair<int, int>(player, opponent) == opponent_pieces[opponent])
+            if(pieces[player][player] + pair<int, int>(player, opponent) == pieces[1-player][opponent])
                 return true;
         return false;
     }
@@ -120,14 +125,14 @@ public:
 
     bool can_beat(int player, int opponent){
         if(!player_in_range(player, opponent)) return false;
-        if(get_cell(player_pieces[player]) == '~' && get_cell(opponent_pieces[opponent]) != '~') return false;
-        if(get_cell(opponent_pieces[opponent]) == '#') return true;
+        if(get_cell(pieces[player][player]) == '~' && get_cell(pieces[1-player][opponent]) != '~') return false;
+        if(get_cell(pieces[1-player][opponent]) == '#') return true;
         return stronger(player, opponent);
     }
 
     bool move_safe(int player, pair<int, int> dir){        // ignoring pieces on board
         if(dir.first < 0 || dir.first >= 7 || dir.second < 0 || dir.second >= 9) return false;
-        if(get_cell(player_pieces[player] + dir) == '~'){
+        if(get_cell(pieces[player][player] + dir) == '~'){
             if(player == RAT || player == TIGER || player == LION) return true;
             else return false;
         }
@@ -136,10 +141,10 @@ public:
     bool move_legal(int player, pair<int, int> dir){
         if(not move_safe(player, dir)) return false;
         for(int teammate = 0; teammate < 8; teammate++)
-            if(player_pieces[teammate] == player_pieces[player] + dir)
+            if(pieces[player][teammate] == pieces[player][player] + dir)
                 return false;
         for(int opponent = 0; opponent < 8; opponent++)
-            if(opponent_pieces[opponent] == player_pieces[player] + dir)
+            if(pieces[1-player][opponent] == pieces[player][player] + dir)
                 if(not can_beat(player, opponent)) return false;
         return true;
     }
@@ -160,6 +165,37 @@ public:
         if(piece < 8) next_state.move_player_piece(piece, dir);
         else next_state.move_opponent_piece(piece - 8, dir);
         return next_state;
+    }
+
+    int result() const {
+        int res = 0;
+        for(int i = 0; i < pieces[player].size(); i++){
+            if(pieces[player][i].first != -1){      // if piece is alive
+                res += i;       //? small bonus for alive piece
+                if(get_cell(pieces[player][i]) == '*') res += 1000; 
+            }
+            if(pieces[1-player][i].first != -1){
+                res -= i;
+                if(get_cell(pieces[player][i]) == '*') res -= 1000; 
+            }
+        }
+        return res;
+    }
+
+    int heuristic_result() const {
+        // TODO
+    }
+
+    bool game_won(){
+        for(int i = 0; i < pieces[player].size(); i++){
+            if((pieces[player][i].first != -1 && get_cell(pieces[player][i]) == '*') ||
+               (pieces[1-player][i].first != -1 && get_cell(pieces[player][i]) == '*'))
+                return true;
+        }
+    }
+
+    bool terminal(vector<pair<int, pair<int, int>>> legal_moves){
+        return legal_moves.empty() || game_won();
     }
 };
 

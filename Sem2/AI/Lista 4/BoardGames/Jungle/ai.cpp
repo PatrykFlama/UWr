@@ -51,6 +51,15 @@ const char starting_positions[9][7] = {
     {'.', 'c', '.', '.', '.', 'd', '.'},
     {'t', '.', '.', '.', '.', '.', 'l'}};
 
+enum Animals{
+    RAT = 0, CAT, DOG, WOLF, JAGUAR, TIGER, LION, ELEPHANT
+};
+
+template <typename T,typename U>                                                   
+std::pair<T,U> operator+(const std::pair<T,U> & l,const std::pair<T,U> & r) {   
+    return {l.first+r.first,l.second+r.second};                                    
+}
+
 
 class Jungle {
     const int DIRS[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // R D L U
@@ -66,6 +75,7 @@ public:
 
     void reset(){
         player_pieces = {{0, 2}, {6, 1}, {1, 1}, {5, 2}, {2, 2}, {7, 0}, {0, 0}, {7, 2}};
+        opponent_pieces.clear();
         opponent_pieces.reserve(8);
         for(auto [x, y] : player_pieces)
             opponent_pieces.push_back({7 - x, 9 - y});
@@ -82,7 +92,30 @@ public:
         opponent_pieces[piece_index] = {x + dx, y + dy};
     }
 
-    
+    char get_cell(pair<int, int> d){
+        return board[d.first][d.second];
+    }
+
+    bool player_in_range(int player, int opponent){
+        for(auto [x, y] : DIRS)
+            if(player_pieces[player] + (pair<int, int>){player, opponent} == opponent_pieces[opponent])
+                return true;
+        return false;
+    }
+    bool stronger(int player, int opponent){
+        return (player > opponent) || (player == RAT && opponent == ELEPHANT);
+    }
+
+    bool can_beat(int player, int opponent){
+        if(!player_in_range(player, opponent)) return false;
+        if(get_cell(player_pieces[player]) == '~' && get_cell(opponent_pieces[opponent]) != '~') return false;
+        if(get_cell(opponent_pieces[opponent]) == '#') return true;
+        return stronger(player, opponent);
+    }
+
+    bool move_legal(int player, pair<int, int> dir){
+        
+    }
 };
 
 int main() {

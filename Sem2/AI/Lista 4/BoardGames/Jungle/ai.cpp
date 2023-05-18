@@ -31,6 +31,12 @@ animal abilities groups:
 
 /* //TODO
 * optimize new state creation (memore opt or smth)
+
+new opt idea: save piece location as bitmask
+that will lead to memory/2 usage, faster new state creation and faster hashing
+to move player we shift mask by 7*dirx + diry
+to transfer positions to bitmask we will also represent map as mask of water, trap, den:
+int water, trap, den
 */
 
 const char board[9][7] = {
@@ -79,10 +85,7 @@ public:
     we keep which player (1 or 0) turn it is
     now to access active player we do: pieces[1-turn]
     */
-    /*// TODO new opt idea: save piece location as bitmask
-    that will lead to memory/2 usage, faster new state creation and faster hashing
-    to move player we shift mask by 7*dirx + diry
-    */
+
     vector<pair<int, int>> pieces[2];   // positions of R C D W J T L E; -1 -1 if eaten (rat can eat elephant)
     vector<pair<int, int>> force_jump_direction[2]; // direction of jump for tiger and lion; 0 0 if no force jump
     int player;
@@ -205,6 +208,8 @@ public:
     }
 
     int hash(){
+        int res = 0;
+        // for(auto [piece, pos] : )
         // TODO with bitmask positions: xor everything, last bit for player turn?
     }
 };

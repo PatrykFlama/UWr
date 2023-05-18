@@ -32,11 +32,13 @@ animal abilities groups:
 /* //TODO
 * optimize new state creation (memore opt or smth)
 
-new opt idea: save piece location as bitmask
+todo new opt idea: save piece location as bitmask
 that will lead to memory/2 usage, faster new state creation and faster hashing
 to move player we shift mask by 7*dirx + diry
 to transfer positions to bitmask we will also represent map as mask of water, trap, den:
 int water, trap, den
+! Zobrist hashing
+! remember children in node of mcts tree
 */
 
 const char board[9][7] = {
@@ -208,9 +210,23 @@ public:
     }
 
     int hash(){
+        const int mod = 2e9+11;
         int res = 0;
-        // for(auto [piece, pos] : )
+        for(auto [x,y] : pieces[player]){
+            res += x+y*9;
+            res %= mod;
+            res *= 63;
+            res %= mod;
+        }
+        for(auto [x,y] : pieces[1-player]){
+            res += x+y*9;
+            res %= mod;
+            res *= 63;
+            res %= mod;
+        }
+        return res;         // todo is it any good?
         // TODO with bitmask positions: xor everything, last bit for player turn?
+        //! Zobrist hashing
     }
 };
 

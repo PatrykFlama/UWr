@@ -80,7 +80,7 @@ public:
     now to access active player we do: pieces[1-turn]
     */
     /*// TODO new opt idea: save piece location as bitmask
-    that will lead to memory/2 usage and faster new state creation
+    that will lead to memory/2 usage, faster new state creation and faster hashing
     to move player we shift mask by 7*dirx + diry
     */
     vector<pair<int, int>> pieces[2];   // positions of R C D W J T L E; -1 -1 if eaten (rat can eat elephant)
@@ -189,7 +189,7 @@ public:
         int res = 0;
         for(int i = 0; i < pieces[player].size(); i++){
             if(pieces[player][i].first != -1){      // if piece is alive
-                res += i;       //? small bonus for alive piece
+                res += i;       //? small bonus for alive piece should help to differentiate by 'better' and 'worse' wins
                 if(get_cell(pieces[player][i]) == '*') res += 1000; 
             }
             if(pieces[1-player][i].first != -1){
@@ -200,16 +200,12 @@ public:
         return res;
     }
 
-    int heuristic_result() const {
-        // TODO
-    }
-
     bool terminal(vector<pair<int, pair<int, int>>> legal_moves){
         return legal_moves.empty() || game_won();
     }
 
     int hash(){
-        // TODO
+        // TODO with bitmask positions: xor everything, last bit for player turn?
     }
 };
 

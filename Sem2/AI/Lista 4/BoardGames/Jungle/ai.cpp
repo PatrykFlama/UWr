@@ -224,7 +224,7 @@ public:
             res *= 63;
             res %= mod;
         }
-        return res;         // todo is it any good?
+        return res;         // todo is it any good? any yup, good nope
         // TODO with bitmask positions: xor everything, last bit for player turn?
         //! Zobrist hashing
     }
@@ -232,8 +232,8 @@ public:
 
 
 class Node{
-    //todo
 public:
+    vector<int> children;   // todo - actually use it
     int times_sampled = 0;
     bool is_leaf = true;
     int avg_value = 0;

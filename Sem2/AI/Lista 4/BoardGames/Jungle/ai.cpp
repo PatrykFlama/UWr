@@ -29,6 +29,10 @@ animal abilities groups:
 4. Elephant                     - can do nothing
 */
 
+/* //TODO
+* optimize new state creation (memore opt or smth)
+*/
+
 const char board[9][7] = {
     {'.', '.', '#', '*', '#', '.', '.'},
     {'.', '.', '.', '#', '.', '.', '.'},
@@ -67,7 +71,6 @@ std::pair<T,U> operator+(const std::pair<T,U> & l,const std::pair<T,U> & r) {
 class Jungle {
     const int DIRS[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // R D L U
 public:
-    //TODO - memory efficiency upgrade:
     /*
     location now instead of vector<pair<int, int>> is vector<int>,
     so [x, y] = x*7+y
@@ -100,17 +103,17 @@ public:
         player = 1-player;
     }
 
-    void move_player_piece(int player, pair<int, int> dir){
-        auto [x, y] = pieces[player][player];
-        pieces[player][player] = {x + dir.first, y + dir.second};
-    }
-    void move_opponent_piece(int opponent, pair<int, int> dir){
-        auto [x, y] = pieces[1-player][opponent];
-        pieces[1-player][opponent] = {x + dir.first, y + dir.second};
-    }
-
     char get_cell(pair<int, int> d) const {         // returns field type for given position
         return board[d.first][d.second];
+    }
+
+    void move_player_piece(int piece, pair<int, int> dir){
+        auto [x, y] = pieces[player][piece];
+        pieces[player][piece] = {x + dir.first, y + dir.second};
+    }
+    void move_opponent_piece(int piece, pair<int, int> dir){
+        auto [x, y] = pieces[1-player][piece];
+        pieces[1-player][piece] = {x + dir.first, y + dir.second};
     }
 
     bool player_in_range(int player, int opponent){
@@ -149,15 +152,26 @@ public:
         return true;
     }
 
-    vector<pair<int, pair<int, int>>> get_legal_moves(){
+    vector<pair<int, pair<int, int>>> get_legal_moves(){            // {piece, {dirx, diry}}
         vector<pair<int, pair<int, int>>> moves;
         for(int player = 0; player < 8; player++){
+            if(player == TIGER && force_jump_direction[player][TIGER_JUMP] != pair<int, int>(0, 0)) continue;   // tiger has to jump over water (on his own)
+            else if(player == LION && force_jump_direction[player][LION_JUMP] != pair<int, int>(0, 0)) continue;
+
             for(auto [x, y] : DIRS){
                 if(move_legal(player, {x, y}))
                     moves.push_back({player, {x, y}});
             }
         }
         return moves;
+    }
+
+    bool game_won(){
+        for(int i = 0; i < pieces[player].size(); i++){
+            if((pieces[player][i].first != -1 && get_cell(pieces[player][i]) == '*') ||
+               (pieces[1-player][i].first != -1 && get_cell(pieces[player][i]) == '*'))
+                return true;
+        }
     }
 
     Jungle gen_next_state(int piece, pair<int, int> dir){
@@ -186,23 +200,98 @@ public:
         // TODO
     }
 
-    bool game_won(){
-        for(int i = 0; i < pieces[player].size(); i++){
-            if((pieces[player][i].first != -1 && get_cell(pieces[player][i]) == '*') ||
-               (pieces[1-player][i].first != -1 && get_cell(pieces[player][i]) == '*'))
-                return true;
-        }
-    }
-
     bool terminal(vector<pair<int, pair<int, int>>> legal_moves){
         return legal_moves.empty() || game_won();
+    }
+
+    int hash(){
+        // TODO
     }
 };
 
 
-class AI{
+class Node{
+    //todo
 public:
-    pair<int, pair<int, int>> best_move();
+    int times_sampled = 0;
+    bool is_leaf = true;
+    int avg_value = 0;
+};
+
+class AI{
+    // todo MCTS tree, feg map <hash of state, node class>
+    unordered_map<int, Node> tree;
+public:
+    AI(){
+        srand(time(NULL));
+        tree[Jungle(0).hash()] = Node();
+        tree[Jungle(1).hash()] = Node();
+    }
+
+    pair<int, pair<int, int>> get_best_move(Jungle* state){            // {piece, {dirx, diry}}
+        vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
+        pair<int, pair<int, int>> best_move;
+        int max_score = INT_MIN;
+
+        for(auto [piece, dir] : legal_moves){
+            int score = tree[state->gen_next_state(piece, dir).hash()].avg_value;
+            if(score > max_score){
+                max_score = score;
+                best_move = {piece, dir};
+            }
+        }
+
+        return best_move;
+    }
+
+    /* #region //* MCTS */
+    void mcts(Jungle* state){
+        // tree traversal and node expansion phase:
+        Node* here = &tree[state->hash()];
+        while(not here->is_leaf){       // get leaf node in mcts tree
+            vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
+            int max_ucb = INT_MIN;
+            Jungle *best_state;
+            for(auto [piece, dir] : legal_moves){
+                Jungle *temp = &state->gen_next_state(piece, dir);
+                if(ucb1(temp, here->times_sampled) > max_ucb){
+                    best_state = temp;
+                }
+            }
+            state = best_state;
+        }
+
+        // rollout
+        if(tree[state->hash()].times_sampled == 0) rollout(state);
+        else{
+            vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
+            Jungle *temp;
+            for(auto [piece, dir] : legal_moves){       // create new nodes for each possible move
+                temp = &state->gen_next_state(piece, dir);
+                tree[temp->hash()] = Node();
+            }
+            rollout(temp);      // do rollout for one of those new states
+        }
+    }
+
+    int ucb1(Jungle* state, int parent_visits){
+        Node* here = &tree[state->hash()];
+        if(here->times_sampled == 0) return INT_MAX;
+        return here->avg_value + 2*sqrt(log(parent_visits)/here->times_sampled);
+    }
+
+    int rollout(Jungle* state){
+        vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
+        while(not state->terminal(legal_moves)){
+            // pick random move
+            auto random = rand() % legal_moves.size();
+            state = &state->gen_next_state(legal_moves[random].first, legal_moves[random].second);
+
+            legal_moves = state->get_legal_moves();
+        }
+        return state->result();
+    }
+    /* #endregion */
 };  
 
 

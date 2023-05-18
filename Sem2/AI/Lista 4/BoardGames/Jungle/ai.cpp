@@ -79,6 +79,10 @@ public:
     we keep which player (1 or 0) turn it is
     now to access active player we do: pieces[1-turn]
     */
+    /*// TODO new opt idea: save piece location as bitmask
+    that will lead to memory/2 usage and faster new state creation
+    to move player we shift mask by 7*dirx + diry
+    */
     vector<pair<int, int>> pieces[2];   // positions of R C D W J T L E; -1 -1 if eaten (rat can eat elephant)
     vector<pair<int, int>> force_jump_direction[2]; // direction of jump for tiger and lion; 0 0 if no force jump
     int player;
@@ -175,7 +179,7 @@ public:
     }
 
     Jungle gen_next_state(int piece, pair<int, int> dir){
-        Jungle next_state = *this;
+        Jungle next_state = *this;      // todo is that copying for sure?
         if(piece < 8) next_state.move_player_piece(piece, dir);
         else next_state.move_opponent_piece(piece - 8, dir);
         return next_state;
@@ -246,7 +250,7 @@ public:
 
     /* #region //* MCTS */
     void mcts(Jungle* state){
-        // tree traversal and node expansion phase:
+        // tree traversal phase:
         Node* here = &tree[state->hash()];
         while(not here->is_leaf){       // get leaf node in mcts tree
             vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
@@ -261,9 +265,9 @@ public:
             state = best_state;
         }
 
-        // rollout
+        
         if(tree[state->hash()].times_sampled == 0) rollout(state);
-        else{
+        else{   // node expansion
             vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
             Jungle *temp;
             for(auto [piece, dir] : legal_moves){       // create new nodes for each possible move

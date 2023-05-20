@@ -486,7 +486,7 @@ int main() {
     int MAX_GAMES = 10;
     int win_counter[2] = {0, 0};
 
-    while(MAX_GAMES--){
+    while(MAX_GAMES--){ // TODO repair win counter and heuristics
         int turn = rand()%2;
         if(turn) game.swap_players();
         int turns = 0;

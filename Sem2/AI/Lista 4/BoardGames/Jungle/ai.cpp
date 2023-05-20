@@ -51,10 +51,15 @@ const char board[9][7] = {
     {'.', '.', '.', '.', '.', '.', '.'},
     {'.', '.', '.', '#', '.', '.', '.'},
     {'.', '.', '#', '*', '#', '.', '.'}};
+const pair<int, int> upper_den(3, 0);
+const pair<int, int> lower_den(3, 8);
+
 
 enum Animals{
     RAT = 0, CAT, DOG, WOLF, JAGUAR, TIGER, LION, ELEPHANT
 };
+string AnimalNames[] = {"RAT", "CAT", "DOG", "WOLF", "JAGUAR", "TIGER", "LION", "ELEPHANT"};
+char AnimalShort[] = {'R', 'C', 'D', 'W', 'J', 'T', 'L', 'E'};
 
 template <typename T,typename U>
 std::pair<T,U> operator+(const std::pair<T,U> & l,const std::pair<T,U> & r) {
@@ -70,18 +75,47 @@ public:
     int player;
     int hash;           // todo zobrist hashing
     
+    /* #region //* ----constructors---- */
     Jungle() : Jungle(0) {}
     Jungle(int player){
         this->player = player;
         reset();
     }
+    Jungle(const Jungle &other){
+        pieces[0] = other.pieces[0];
+        pieces[1] = other.pieces[1];
+        player = other.player;
+        hash = other.hash;
+    }
+    Jungle &operator=(const Jungle &other){
+        pieces[0] = other.pieces[0];
+        pieces[1] = other.pieces[1];
+        player = other.player;
+        hash = other.hash;
+        return *this;
+    }
+    Jungle(Jungle &&other){
+        pieces[0] = move(other.pieces[0]);
+        pieces[1] = move(other.pieces[1]);
+        player = other.player;
+        hash = other.hash;
+    }
+    Jungle &operator=(Jungle &&other){
+        pieces[0] = move(other.pieces[0]);
+        pieces[1] = move(other.pieces[1]);
+        player = other.player;
+        hash = other.hash;
+        return *this;
+    }
+    /* #endregion */
 
     void reset(){
-        pieces[player] = {{0, 2}, {6, 1}, {1, 1}, {5, 2}, {2, 2}, {7, 0}, {0, 0}, {7, 2}};
-        pieces[1-player].clear();
-        pieces[1-player].reserve(8);
-        for(auto [x, y] : pieces[player])
-            pieces[1-player].push_back({7 - x, 9 - y});
+        //                    R       C       D       W       J       T       L       E
+        pieces[1-player] = {{0, 2}, {5, 1}, {1, 1}, {4, 2}, {2, 2}, {6, 0}, {0, 0}, {6, 2}};
+        pieces[player].clear();
+        pieces[player].reserve(8);
+        for(auto [x, y] : pieces[1-player])
+            pieces[player].push_back({6 - x, 8 - y});
     }
 
     void swap_players(){
@@ -96,6 +130,7 @@ public:
         for(int i = 0; i < pieces[player].size(); i++)
             if(pieces[player][i] == pair<int, int>(x, y))
                 return i;
+        return 0;       // that should not run
     }
 
     void move_player_piece(int piece, pair<int, int> dir){      //? moves piece and beats opponent piece on new position
@@ -122,6 +157,8 @@ public:
     bool move_safe(int piece, pair<int, int> dir){        // ignoring pieces on board
         pair<int, int> new_pos = pieces[player][piece] + dir;
         if(new_pos.first < 0 || new_pos.first >= 7 || new_pos.second < 0 || new_pos.second >= 9) return false;
+        if((player == 0 && new_pos == lower_den) ||
+           (player == 1 && new_pos == upper_den)) return false;        // player cant go to his own den
         if(get_cell(new_pos) == '~'){
             if(piece == RAT) return true;
             if(piece == TIGER || piece == LION){        // check if rat is not in line
@@ -132,8 +169,6 @@ public:
             }
             else return false;
         }
-        if((player == 0 && new_pos == pair<int, int>(8, 3)) ||
-           (player == 1 && new_pos == pair<int, int>(0, 3))) return false;        // player cant go to his own den
         return true;
     }
     bool move_legal(int piece, pair<int, int> dir){
@@ -164,6 +199,9 @@ public:
     }
     /* #endregion */
 
+    void execute_move(pair<int, pair<int, int>> move){
+        execute_move(move.first, move.second);
+    }
     void execute_move(int piece, pair<int, int> dir){
         move_player_piece(piece, dir);
         if(piece == TIGER || piece == LION)
@@ -184,6 +222,7 @@ public:
                (pieces[1-player][i].first != -1 && get_cell(pieces[1-player][i]) == '*'))
                 return true;
         }
+        return false;
     }
 
     int result() const {
@@ -204,19 +243,49 @@ public:
     bool terminal(vector<pair<int, pair<int, int>>> legal_moves){
         return legal_moves.empty() || game_won();
     }
+
+    friend ostream &operator<<(ostream &out, const Jungle &state) {
+        char tempboard[9][7];
+        for(int i = 0; i < 9; i++) for(int j = 0; j < 7; j++) tempboard[i][j] = board[i][j];
+
+        for(int i = 0 ; i < state.pieces[0].size(); i++){
+            if(state.pieces[0][i].first != -1)
+                tempboard[state.pieces[0][i].second][state.pieces[0][i].first] = AnimalShort[i]-'A'+'a';
+            if(state.pieces[1][i].first != -1)
+                tempboard[state.pieces[1][i].second][state.pieces[1][i].first] = AnimalShort[i];
+        }
+        for(int i = 0; i < 9; i++){
+            for(int j = 0; j < 7; j++){
+                out << tempboard[i][j];
+            }
+            out << '\n';
+        }
+        return out;
+    }
 };
 
 
+class Random{
+public: 
+    pair<int, pair<int, int>> gen_next_move(Jungle* state, int N = 2e4){            // {piece, {dirx, diry}}
+        vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
+        return legal_moves[rand() % legal_moves.size()];
+    }
+};
+
 class zad3AI{
 public:
-    pair<int, pair<int, int>> get_best_move(Jungle* state, int N = 2e4){            // {piece, {dirx, diry}}
+    pair<int, pair<int, int>> gen_next_move(Jungle* state, int N = 2e4){            // {piece, {dirx, diry}}
         vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
+        if(legal_moves.size() == 0) return {0, {0, 0}};
+
         pair<int, pair<int, int>> best_move;
         int max_score = INT_MIN;
 
         int moves_per_state = N/legal_moves.size();
         for(auto [piece, dir] : legal_moves){
-            int score = heuristics(&state->gen_next_state(piece, dir), moves_per_state);
+            Jungle temp = state->gen_next_state(piece, dir);
+            int score = heuristics(&temp, moves_per_state);
             if(score > max_score){
                 max_score = score;
                 best_move = {piece, dir};
@@ -227,22 +296,26 @@ public:
     }
 
     int heuristics(Jungle* state, int moves_left){
-        Jungle *temp_state = state;
+        Jungle here = *state;
         int total_res = 0, games_played = 0;
         vector<pair<int, pair<int, int>>> legal_moves;
         while(moves_left > 0){
-            legal_moves = temp_state->get_legal_moves();
-            if(temp_state->terminal(legal_moves)) {
-                total_res += temp_state->result();
+            legal_moves = here.get_legal_moves();
+            if(here.terminal(legal_moves)) {
+                total_res += here.result();
+                if(legal_moves.size() == 0) total_res -= 500;
                 ++games_played;
-                temp_state = state;
+                here = *state;      // copy 
+                continue;
             }
 
             auto [piece, dir] = legal_moves[rand() % legal_moves.size()];
-            temp_state = &temp_state->gen_next_state(piece, dir);
+            here = move(here.gen_next_state(piece, dir));
             --moves_left;
         }
+        total_res += here.result();     // todo not sure if good idea, but in theory shoud introduce some weight
 
+        if(games_played == 0) return total_res; 
         return total_res/games_played;
     }
 };
@@ -266,7 +339,7 @@ public:
         tree[Jungle(1).hash] = Node();
     }
 
-    pair<int, pair<int, int>> get_best_move(Jungle* state){            // {piece, {dirx, diry}}
+    pair<int, pair<int, int>> gen_next_move(Jungle* state){            // {piece, {dirx, diry}}
         vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
         pair<int, pair<int, int>> best_move;
         int max_score = INT_MIN;
@@ -290,10 +363,10 @@ public:
             int max_ucb = INT_MIN;
             Jungle *best_state;
             for(auto [piece, dir] : legal_moves){
-                Jungle *temp = &state->gen_next_state(piece, dir);
-                if(ucb1(temp, here->times_sampled) > max_ucb){
-                    best_state = temp;
-                }
+                //! Jungle *temp = &state->gen_next_state(piece, dir);
+                // if(ucb1(temp, here->times_sampled) > max_ucb){
+                //     best_state = temp;
+                // }
             }
             state = best_state;
         }
@@ -304,7 +377,7 @@ public:
             vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
             Jungle *temp;
             for(auto [piece, dir] : legal_moves){       // create new nodes for each possible move
-                temp = &state->gen_next_state(piece, dir);
+                //! temp = &(state->gen_next_state(piece, dir));
                 tree[temp->hash] = Node();
             }
             rollout(temp);      // do rollout for one of those new states
@@ -322,13 +395,48 @@ public:
         while(not state->terminal(legal_moves)){
             // pick random move
             auto random = rand() % legal_moves.size();
-            state = &state->gen_next_state(legal_moves[random].first, legal_moves[random].second);
+            //! state = &(state->gen_next_state(legal_moves[random].first, legal_moves[random].second));
 
             legal_moves = state->get_legal_moves();
         }
         return state->result();
     }
 };
+
+
+
+int main() {
+    bool display = false;
+    srand(time(NULL));
+    Jungle game;
+    Random ai1;
+    zad3AI ai2;
+    int turn = rand()%2;
+    if(turn) game.swap_players();
+
+    if(display) cout << game << "\n\n";
+    while(not game.game_won()){
+        if(turn){
+            auto move = ai1.gen_next_move(&game);
+            if(display) cout << "ai1_cap move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
+            auto [myxs, myys] = game.pieces[game.player][move.first];
+            if(display) cout << "(" << myxs << ' ' << myys << ' ' << myxs+move.second.first << ' ' << myys+move.second.second << ")\n";
+
+            game.execute_move(move);
+            turn = 1-turn;
+        } else{
+            auto move = ai2.gen_next_move(&game);
+            if(display) cout << "ai2_low move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
+            auto [myxs, myys] = game.pieces[game.player][move.first];
+            if(display) cout << "(" << myxs << ' ' << myys << ' ' << myxs+move.second.first << ' ' << myys+move.second.second << ")\n";
+
+            game.execute_move(move);
+            turn = 1-turn;
+        }
+        if(display) cout << game << '\n';
+    }
+    cout << "ai" << 1-turn << " won!\n";
+}
 
 
 void rdy(){
@@ -340,8 +448,7 @@ void ido(int xs, int ys, int xd, int yd){
     fflush(stdout);
 }
 
-int main() {
-    srand(time(NULL));
+void validator_loop(){
     Jungle game;    // defaults to starting at the bottom of board
     zad3AI ai;
     rdy();
@@ -356,23 +463,20 @@ int main() {
             int xs, ys, xd, yd;
             cin >> xs >> ys >> xd >> yd;
             if(xs == -1) continue;      // opponent passed
-            game.move_player_piece(game.get_piece_type(xs, ys), {xd, yd});
-            game.swap_players();
+            game.execute_move(game.get_piece_type(xs, ys), {xd, yd});
 
-            auto [piece, dir] = ai.get_best_move(&game);
+            auto [piece, dir] = ai.gen_next_move(&game);
             auto [myxs, myys] = game.pieces[game.player][piece];
             ido(myxs, myys, myxs+dir.first, myys+dir.second);
-            game.move_player_piece(piece, dir);
-            game.swap_players();
+            game.execute_move(piece, dir);
         } else if(cmd == "UGO"){
             double time_for_move, time_for_game; 
             cin >> time_for_move >> time_for_game;
 
-            auto [piece, dir] = ai.get_best_move(&game);
+            auto [piece, dir] = ai.gen_next_move(&game);
             auto [myxs, myys] = game.pieces[game.player][piece];
             ido(myxs, myys, myxs+dir.first, myys+dir.second);
-            game.move_player_piece(piece, dir);
-            game.swap_players();
+            game.execute_move(piece, dir);
         } else if(cmd == "ONEMORE"){
             game.reset();
             rdy();
@@ -381,3 +485,4 @@ int main() {
         }
     }
 }
+

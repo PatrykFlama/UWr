@@ -28,15 +28,6 @@ animal abilities groups:
 3. Tiger, Lion                  - can jump over water
 4. Elephant                     - can do nothing
 */
-/*
-BITMASK:
-bit0 -> ... -> bit6 ->
-bit7 -> ... -> ...
-...
-bit(8*6) -> ... -> bit(9*7-1)
-___
-bit 9*6 is free
-*/
 
 /* //TODO
 * optimize new state creation (memore opt or smth)
@@ -49,8 +40,6 @@ int water, trap, den
 ! Zobrist hashing
 ! remember children in node of mcts tree
 */
-const int X_MAX = 6;
-const int Y_MAX = 8;
 
 const char board[9][7] = {
     {'.', '.', '#', '*', '#', '.', '.'},
@@ -62,6 +51,7 @@ const char board[9][7] = {
     {'.', '.', '.', '.', '.', '.', '.'},
     {'.', '.', '.', '#', '.', '.', '.'},
     {'.', '.', '#', '*', '#', '.', '.'}};
+
 const char starting_positions[9][7] = {
     {'L', '.', '.', '.', '.', '.', 'T'},
     {'.', 'D', '.', '.', '.', 'C', '.'},
@@ -73,40 +63,33 @@ const char starting_positions[9][7] = {
     {'.', 'c', '.', '.', '.', 'd', '.'},
     {'t', '.', '.', '.', '.', '.', 'l'}};
 
-const int water_mask = 0b0000000'0000000'0000000'0110110'0110110'0110110'0000000'0000000'0000000;
-const int trap_mask =  0b0010100'0001000'0000000'0000000'0000000'0000000'0000000'0001000'0010100;
-const int den_mask =   0b0001000'0000000'0000000'0000000'0000000'0000000'0000000'0000000'0001000;
-
 enum Animals{
     RAT = 0, CAT, DOG, WOLF, JAGUAR, TIGER, LION, ELEPHANT
 };
 enum Jupmers{
     TIGER_JUMP = 0, LION_JUMP
 };
-enum DIR_NAMES{
-    R = 0, D, L, U
-};
 
 template <typename T,typename U>                                                   
-std::pair<T,U> operator+(const std::pair<T,U> & l,const std::pair<T,U> & r) {   //! that should not be used
+std::pair<T,U> operator+(const std::pair<T,U> & l,const std::pair<T,U> & r) {   
     return {l.first+r.first,l.second+r.second};                                    
 }
 
 
 class Jungle {
-    const int DIRS[4] = {-1, -7, 1, 7};  // R D L U for >> shift
+    const int DIRS[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // R D L U
 public:
     /*
     location now instead of vector<pair<int, int>> is vector<int>,
-    so [x, y] = x+7*y
+    so [x, y] = x*7+y
 
     player and opponent pieces are kept in table/vector
     we keep which player (1 or 0) turn it is
     now to access active player we do: pieces[1-turn]
     */
 
-    vector<int> pieces[2];   // positions of R C D W J T L E; -1 -1 if eaten (rat can eat elephant)
-    vector<int> force_jump_direction[2]; // direction of jump for tiger and lion; 0 0 if no force jump //todo that does not need int
+    vector<pair<int, int>> pieces[2];   // positions of R C D W J T L E; -1 -1 if eaten (rat can eat elephant)
+    vector<pair<int, int>> force_jump_direction[2]; // direction of jump for tiger and lion; 0 0 if no force jump
     int player;
     
     Jungle() : Jungle(0) {}
@@ -115,81 +98,45 @@ public:
         reset();
     }
 
-    inline int calc_pos(int x, int y){
-        return (1 << (x+y*X_MAX));
-    }
-    inline pair<int, int> get_pos(int mask){   //! actually that should not be in use
-        int y = 0;
-        while(mask > X_MAX){
-            ++y;
-            mask >>= X_MAX;
-        }
-        int x = 0;
-        while(mask > 0){
-            ++x;
-            mask >>= 1;
-        }
-        return {x, y};
-    }
-
     void reset(){
-        pieces[player] =   {calc_pos(0, 2), calc_pos(6, 1), calc_pos(1, 1), calc_pos(5, 2), 
-                            calc_pos(2, 2), calc_pos(7, 0), calc_pos(0, 0), calc_pos(7, 2)};
-        pieces[1-player] = {calc_pos(X_MAX-0, Y_MAX-2), calc_pos(X_MAX-6, Y_MAX-1), calc_pos(X_MAX-1, Y_MAX-1), calc_pos(X_MAX-5, Y_MAX-2), 
-                            calc_pos(X_MAX-2, Y_MAX-2), calc_pos(X_MAX-7, Y_MAX-0), calc_pos(X_MAX-0, Y_MAX-0), calc_pos(X_MAX-7, Y_MAX-2)};
-        force_jump_direction[player] =   {calc_pos(0, 0), calc_pos(0, 0)};
-        force_jump_direction[1-player] = {calc_pos(0, 0), calc_pos(0, 0)};
+        pieces[player] = {{0, 2}, {6, 1}, {1, 1}, {5, 2}, {2, 2}, {7, 0}, {0, 0}, {7, 2}};
+        pieces[1-player].clear();
+        pieces[1-player].reserve(8);
+        for(auto [x, y] : pieces[player])
+            pieces[1-player].push_back({7 - x, 9 - y});
+        force_jump_direction[player] = {{0, 0}, {0, 0}};
+        force_jump_direction[1-player] = {{0, 0}, {0, 0}};
     }
 
     void swap_players(){
         player = 1-player;
     }
 
-    char get_cell(pair<int, int> d) const {         //! should not be in use // returns field type for given position
+    char get_cell(pair<int, int> d) const {         // returns field type for given position
         return board[d.first][d.second];
     }
-    inline bool in_water(int mask){
-        return mask&water_mask;
+
+    void move_player_piece(int piece, pair<int, int> dir){
+        auto [x, y] = pieces[player][piece];
+        pieces[player][piece] = {x + dir.first, y + dir.second};
     }
-    inline bool in_trap(int mask){
-        return mask&trap_mask;
-    }
-    inline bool in_den(int mask){
-        return mask&den_mask;
+    void move_opponent_piece(int piece, pair<int, int> dir){
+        auto [x, y] = pieces[1-player][piece];
+        pieces[1-player][piece] = {x + dir.first, y + dir.second};
     }
 
-    void move_player_piece(int piece, int dir){
-        if(DIRS[dir] < 0)
-            pieces[player][piece] <<= (-DIRS[dir]);
-        else 
-            pieces[player][piece] >>= DIRS[dir];
-    }
-    void move_opponent_piece(int piece, int dir){
-        if(DIRS[dir] < 0)
-            pieces[1-player][piece] <<= (-DIRS[dir]);
-        else 
-            pieces[1-player][piece] >>= DIRS[dir];
-    }
-    int calc_move(int pos, int dir){
-        if(DIRS[dir] < 0)
-            pos <<= (-DIRS[dir]);
-        else 
-            pos >>= DIRS[dir];
-    }
-
-
-    bool player_in_range(int player, int opponent_pieces){
-        int res = 0; 
-        for(auto d : DIRS)
-            player |= calc_move(player, d);
-        return res&opponent_pieces;
+    bool player_in_range(int player, int opponent){
+        for(auto [x, y] : DIRS)
+            if(pieces[player][player] + pair<int, int>(player, opponent) == pieces[1-player][opponent])
+                return true;
+        return false;
     }
     bool stronger(int player, int opponent){
         return (player > opponent) || (player == RAT && opponent == ELEPHANT);
     }
 
-    bool can_beat(int player, int opponent, int opponent_pieces){
-        if(!player_in_range(player, opponent_pieces)) return false;
+    bool can_beat(int player, int opponent){
+        if(!player_in_range(player, opponent)) return false;
         if(get_cell(pieces[player][player]) == '~' && get_cell(pieces[1-player][opponent]) != '~') return false;
         if(get_cell(pieces[1-player][opponent]) == '#') return true;
         return stronger(player, opponent);

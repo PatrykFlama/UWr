@@ -111,6 +111,12 @@ public:
         return board[d.second][d.first];
     }
 
+    int get_piece(int x, int y){
+        for(int i = 0; i < pieces[player].size(); i++)
+            if(pieces[player][i] == pair<int, int>(x, y))
+                return i;
+    }
+
     void move_player_piece(int piece, pair<int, int> dir){
         auto [x, y] = pieces[player][piece];
         pieces[player][piece] = {x + dir.first, y + dir.second};
@@ -235,13 +241,14 @@ public:
 
 class zad3AI{
 public:
-    pair<int, pair<int, int>> get_best_move(Jungle* state){            // {piece, {dirx, diry}}
+    pair<int, pair<int, int>> get_best_move(Jungle* state, int N = 2e4){            // {piece, {dirx, diry}}
         vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
         pair<int, pair<int, int>> best_move;
         int max_score = INT_MIN;
 
+        int moves_per_state = N/legal_moves.size();
         for(auto [piece, dir] : legal_moves){
-            int score = heuristics(&state->gen_next_state(piece, dir));
+            int score = heuristics(&state->gen_next_state(piece, dir), moves_per_state);
             if(score > max_score){
                 max_score = score;
                 best_move = {piece, dir};
@@ -251,8 +258,24 @@ public:
         return best_move;
     }
 
-    int heuristics(Jungle* state){
-        
+    int heuristics(Jungle* state, int moves_left){
+        Jungle *temp_state = state;
+        int total_res = 0, games_played = 0;
+        vector<pair<int, pair<int, int>>> legal_moves;
+        while(moves_left > 0){
+            legal_moves = temp_state->get_legal_moves();
+            if(temp_state->terminal(legal_moves)) {
+                total_res += temp_state->result();
+                ++games_played;
+                temp_state = state;
+            }
+
+            auto [piece, dir] = legal_moves[rand() % legal_moves.size()];
+            temp_state = &temp_state->gen_next_state(piece, dir);
+            --moves_left;
+        }
+
+        return total_res/games_played;
     }
 };
 
@@ -340,6 +363,53 @@ public:
 };
 
 
+void rdy(){
+    printf("RDY\n");
+    fflush(stdout);
+}
+void ido(int xs, int ys, int xd, int yd){
+    printf("IDO %d %d %d %d\n", xs, ys, xd, yd);
+    fflush(stdout);
+}
+
 int main() {
     srand(time(NULL));
+    Jungle game;    // defaults to starting at the bottom of board
+    zad3AI ai;
+    rdy();
+
+    while(true){
+        string cmd; cin >> cmd;
+
+        if(cmd == "HEDID"){
+            double time_for_move, time_for_game; 
+            cin >> time_for_move >> time_for_game;
+
+            int xs, ys, xd, yd;
+            cin >> xs >> ys >> xd >> yd;
+            if(xs == -1) continue;      // opponent passed
+            game.move_player_piece(game.get_piece(xs, ys), {xd, yd});
+            game.swap_players();
+
+            auto [piece, dir] = ai.get_best_move(&game);
+            auto [myxs, myys] = game.pieces[game.player][piece];
+            ido(myxs, myys, myxs+dir.first, myys+dir.second);
+            game.move_player_piece(piece, dir);
+            game.swap_players();
+        } else if(cmd == "UGO"){
+            double time_for_move, time_for_game; 
+            cin >> time_for_move >> time_for_game;
+
+            auto [piece, dir] = ai.get_best_move(&game);
+            auto [myxs, myys] = game.pieces[game.player][piece];
+            ido(myxs, myys, myxs+dir.first, myys+dir.second);
+            game.move_player_piece(piece, dir);
+            game.swap_players();
+        } else if(cmd == "ONEMORE"){
+            game.reset();
+            rdy();
+        } else if(cmd == "BYE"){
+            break;
+        }
+    }
 }

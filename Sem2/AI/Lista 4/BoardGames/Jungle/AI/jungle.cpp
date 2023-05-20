@@ -66,9 +66,6 @@ const char starting_positions[9][7] = {
 enum Animals{
     RAT = 0, CAT, DOG, WOLF, JAGUAR, TIGER, LION, ELEPHANT
 };
-enum Jupmers{
-    TIGER_JUMP = 0, LION_JUMP
-};
 
 template <typename T,typename U>
 std::pair<T,U> operator+(const std::pair<T,U> & l,const std::pair<T,U> & r) {
@@ -90,7 +87,6 @@ public:
     */
 
     vector<pair<int, int>> pieces[2];   // positions of R C D W J T L E; -1 -1 if eaten (rat can eat elephant)
-    vector<pair<int, int>> force_jump_direction[2]; // direction of jump for tiger and lion; 0 0 if no force jump
     int player;
     
     Jungle() : Jungle(0) {}
@@ -105,8 +101,6 @@ public:
         pieces[1-player].reserve(8);
         for(auto [x, y] : pieces[player])
             pieces[1-player].push_back({7 - x, 9 - y});
-        force_jump_direction[player] = {{0, 0}, {0, 0}};
-        force_jump_direction[1-player] = {{0, 0}, {0, 0}};
     }
 
     void swap_players(){
@@ -139,7 +133,13 @@ public:
         pair<int, int> new_pos = pieces[player][piece] + dir;
         if(new_pos.first < 0 || new_pos.first >= 7 || new_pos.second < 0 || new_pos.second >= 9) return false;
         if(get_cell(new_pos) == '~'){
-            if(player == RAT || player == TIGER || player == LION) return true;
+            if(piece == RAT) return true;
+            if(piece == TIGER || piece == LION){        // check if rat is not in line
+                if(dir.first == 0)
+                    return pieces[player][piece].first != pieces[1-player][RAT].first;
+                else
+                    return pieces[player][piece].second != pieces[1-player][RAT].second;
+            }
             else return false;
         }
         if((player == 0 && new_pos == pair<int, int>(8, 3)) ||
@@ -148,11 +148,15 @@ public:
     }
     bool move_legal(int piece, pair<int, int> dir){
         if(not move_safe(piece, dir)) return false;
+        pair<int, int> new_pos = pieces[player][piece] + dir;
+        if(piece == TIGER || piece == LION)
+            while(get_cell(new_pos) == '~') new_pos = new_pos + dir;      // jump over water
+
         for(int teammate = 0; teammate < 8; teammate++)
-            if(pieces[player][teammate] == pieces[player][piece] + dir)
+            if(pieces[player][teammate] == new_pos)
                 return false;
         for(int opponent = 0; opponent < 8; opponent++)
-            if(pieces[1-player][opponent] == pieces[player][piece] + dir)
+            if(pieces[1-player][opponent] == new_pos)
                 if(not can_beat(player, opponent)) return false;
         return true;
     }
@@ -160,9 +164,6 @@ public:
     vector<pair<int, pair<int, int>>> get_legal_moves(){            // {piece, {dirx, diry}}
         vector<pair<int, pair<int, int>>> moves;
         for(int piece = 0; piece < 8; piece++){
-            if(piece == TIGER && force_jump_direction[player][TIGER_JUMP] != pair<int, int>(0, 0)) continue;   // tiger has to jump over water (on his own)
-            else if(piece == LION && force_jump_direction[player][LION_JUMP] != pair<int, int>(0, 0)) continue;
-
             for(auto [x, y] : DIRS){
                 if(move_legal(piece, {x, y}))
                     moves.push_back({piece, {x, y}});
@@ -175,37 +176,18 @@ public:
     bool game_won(){
         for(int i = 0; i < pieces[player].size(); i++){
             if((pieces[player][i].first != -1 && get_cell(pieces[player][i]) == '*') ||
-               (pieces[1-player][i].first != -1 && get_cell(pieces[player][i]) == '*'))
+               (pieces[1-player][i].first != -1 && get_cell(pieces[1-player][i]) == '*'))
                 return true;
-        }
-    }
-
-    void update_jumpers(){
-        if(force_jump_direction[player][TIGER_JUMP] != pair<int, int>(0, 0)){
-            move_player_piece(TIGER, force_jump_direction[player][TIGER_JUMP]);
-            if(get_cell(pieces[player][TIGER]) != '~') force_jump_direction[player][TIGER_JUMP] = {0, 0};
-        }
-        if(force_jump_direction[player][LION_JUMP] != pair<int, int>(0, 0)){
-            move_player_piece(LION, force_jump_direction[player][LION]);
-            if(get_cell(pieces[player][LION]) != '~') force_jump_direction[player][LION_JUMP] = {0, 0};
-        }
-
-        if(force_jump_direction[1-player][LION_JUMP] != pair<int, int>(0, 0)){
-            move_opponent_piece(TIGER, force_jump_direction[1-player][LION]);
-            if(get_cell(pieces[1-player][TIGER]) != '~') force_jump_direction[1-player][TIGER_JUMP] = {0, 0};
-        }
-        if(force_jump_direction[1-player][LION_JUMP] != pair<int, int>(0, 0)){
-            move_opponent_piece(LION, force_jump_direction[1-player][LION]);
-            if(get_cell(pieces[1-player][LION]) != '~') force_jump_direction[1-player][LION_JUMP] = {0, 0};
         }
     }
 
     Jungle gen_next_state(int piece, pair<int, int> dir){       // todo probably change/regen hash here
         Jungle next_state = *this;      // todo is that copying for sure?
-        next_state.update_jumpers();
         next_state.move_player_piece(piece, dir);
-        if((piece == TIGER || piece == LION) && get_cell(pieces[player][piece]) == '~')
-            next_state.force_jump_direction[player][piece == TIGER ? TIGER_JUMP : LION_JUMP] = dir;
+        if(piece == TIGER || piece == LION)
+            while(next_state.get_cell(next_state.pieces[next_state.player][piece]) == '~')
+                next_state.move_player_piece(piece, dir);
+
         next_state.swap_players();
         return next_state;
     }
@@ -253,7 +235,25 @@ public:
 
 class zad3AI{
 public:
+    pair<int, pair<int, int>> get_best_move(Jungle* state){            // {piece, {dirx, diry}}
+        vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
+        pair<int, pair<int, int>> best_move;
+        int max_score = INT_MIN;
 
+        for(auto [piece, dir] : legal_moves){
+            int score = heuristics(&state->gen_next_state(piece, dir));
+            if(score > max_score){
+                max_score = score;
+                best_move = {piece, dir};
+            }
+        }
+
+        return best_move;
+    }
+
+    int heuristics(Jungle* state){
+        
+    }
 };
 
 

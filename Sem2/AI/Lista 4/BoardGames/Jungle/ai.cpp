@@ -178,8 +178,8 @@ public:
     }
 
 
-    bool player_in_range(int player, int opponent_pieces){  //todo this opponent_pieces
-        int res = 0;
+    bool player_in_range(int player, int opponent_pieces){
+        int res = 0; 
         for(auto d : DIRS)
             player |= calc_move(player, d);
         return res&opponent_pieces;
@@ -187,8 +187,6 @@ public:
     bool stronger(int player, int opponent){
         return (player > opponent) || (player == RAT && opponent == ELEPHANT);
     }
-
-    //! TODO ----------------------------repaired till here-----------------------------------------
 
     bool can_beat(int player, int opponent, int opponent_pieces){
         if(!player_in_range(player, opponent_pieces)) return false;

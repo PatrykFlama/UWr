@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-/*
+/* //* GAME RULES
 '.' - land
 '#' - trap
 '*' - den
@@ -27,19 +27,19 @@ animal abilities groups:
 2. Cat, Dog, Wolf, Jaguar       - can do nothing
 3. Tiger, Lion                  - can jump over water
 4. Elephant                     - can do nothing
+-----------------
+STARTING positions:
+L.....T
+.D...C.
+R.J.W.E
+.......
+.......
+.......
+e.w.j.r
+.c...d.
+t.....l
 */
 
-/* //TODO
-* optimize new state creation (memore opt or smth)
-
-todo new opt idea: save piece location as bitmask
-that will lead to memory/2 usage, faster new state creation and faster hashing
-to move player we shift mask by 7*dirx + diry
-to transfer positions to bitmask we will also represent map as mask of water, trap, den:
-int water, trap, den
-! Zobrist hashing
-! remember children in node of mcts tree
-*/
 
 const char board[9][7] = {
     {'.', '.', '#', '*', '#', '.', '.'},
@@ -51,17 +51,6 @@ const char board[9][7] = {
     {'.', '.', '.', '.', '.', '.', '.'},
     {'.', '.', '.', '#', '.', '.', '.'},
     {'.', '.', '#', '*', '#', '.', '.'}};
-
-const char starting_positions[9][7] = {
-    {'L', '.', '.', '.', '.', '.', 'T'},
-    {'.', 'D', '.', '.', '.', 'C', '.'},
-    {'R', '.', 'J', '.', 'W', '.', 'E'},
-    {'.', '.', '.', '.', '.', '.', '.'},
-    {'.', '.', '.', '.', '.', '.', '.'},
-    {'.', '.', '.', '.', '.', '.', '.'},
-    {'e', '.', 'w', '.', 'j', '.', 'r'},
-    {'.', 'c', '.', '.', '.', 'd', '.'},
-    {'t', '.', '.', '.', '.', '.', 'l'}};
 
 enum Animals{
     RAT = 0, CAT, DOG, WOLF, JAGUAR, TIGER, LION, ELEPHANT
@@ -77,17 +66,9 @@ class Jungle {
     // player 0 is on bottom, 1 on top
     const int DIRS[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // R D L U
 public:
-    /*
-    location now instead of vector<pair<int, int>> is vector<int>,
-    so [x, y] = x*7+y
-
-    player and opponent pieces are kept in table/vector
-    we keep which player (1 or 0) turn it is
-    now to access active player we do: pieces[1-turn]
-    */
-
     vector<pair<int, int>> pieces[2];   // positions of R C D W J T L E; -1 -1 if eaten (rat can eat elephant)
     int player;
+    int hash;           // todo zobrist hashing
     
     Jungle() : Jungle(0) {}
     Jungle(int player){
@@ -111,21 +92,25 @@ public:
         return board[d.second][d.first];
     }
 
-    int get_piece(int x, int y){
+    int get_piece_type(int x, int y){
         for(int i = 0; i < pieces[player].size(); i++)
             if(pieces[player][i] == pair<int, int>(x, y))
                 return i;
     }
 
-    void move_player_piece(int piece, pair<int, int> dir){
+    void move_player_piece(int piece, pair<int, int> dir){      //? moves piece and beats opponent piece on new position
         auto [x, y] = pieces[player][piece];
         pieces[player][piece] = {x + dir.first, y + dir.second};
-    }
-    void move_opponent_piece(int piece, pair<int, int> dir){
-        auto [x, y] = pieces[1-player][piece];
-        pieces[1-player][piece] = {x + dir.first, y + dir.second};
+
+        for(int i = 0; i < pieces[1-player].size() ;i++){       // beat opponent pieces
+            if(pair<int, int>(x, y) == pieces[1-player][i]){
+                pieces[1-player][i] = pair<int, int>(-1, -1);
+                break;
+            }
+        }
     }
 
+    /* #region //* ----moves generation---- */
     bool stronger(int player, int opponent){
         return (player > opponent) || (player == RAT && opponent == ELEPHANT);
     }
@@ -134,7 +119,6 @@ public:
         if(get_cell(pieces[1-player][opponent_piece]) == '#') return true;
         return stronger(player_piece, opponent_piece);
     }
-
     bool move_safe(int piece, pair<int, int> dir){        // ignoring pieces on board
         pair<int, int> new_pos = pieces[player][piece] + dir;
         if(new_pos.first < 0 || new_pos.first >= 7 || new_pos.second < 0 || new_pos.second >= 9) return false;
@@ -178,6 +162,21 @@ public:
 
         return moves;
     }
+    /* #endregion */
+
+    void execute_move(int piece, pair<int, int> dir){
+        move_player_piece(piece, dir);
+        if(piece == TIGER || piece == LION)
+            while(get_cell(pieces[player][piece]) == '~')
+                move_player_piece(piece, dir);
+        swap_players();
+    }
+
+    Jungle gen_next_state(int piece, pair<int, int> dir){
+        Jungle next_state = *this;      // todo is that copying for sure?
+        next_state.execute_move(piece, dir);
+        return next_state;
+    }
 
     bool game_won(){
         for(int i = 0; i < pieces[player].size(); i++){
@@ -185,17 +184,6 @@ public:
                (pieces[1-player][i].first != -1 && get_cell(pieces[1-player][i]) == '*'))
                 return true;
         }
-    }
-
-    Jungle gen_next_state(int piece, pair<int, int> dir){       // todo probably change/regen hash here
-        Jungle next_state = *this;      // todo is that copying for sure?
-        next_state.move_player_piece(piece, dir);
-        if(piece == TIGER || piece == LION)
-            while(next_state.get_cell(next_state.pieces[next_state.player][piece]) == '~')
-                next_state.move_player_piece(piece, dir);
-
-        next_state.swap_players();
-        return next_state;
     }
 
     int result() const {
@@ -215,26 +203,6 @@ public:
 
     bool terminal(vector<pair<int, pair<int, int>>> legal_moves){
         return legal_moves.empty() || game_won();
-    }
-
-    int hash(){
-        const int mod = 2e9+11;
-        int res = 0;
-        for(auto [x,y] : pieces[player]){
-            res += x+y*9;
-            res %= mod;
-            res *= 63;
-            res %= mod;
-        }
-        for(auto [x,y] : pieces[1-player]){
-            res += x+y*9;
-            res %= mod;
-            res *= 63;
-            res %= mod;
-        }
-        return res;         // todo is it any good? any yup, good nope
-        // TODO with bitmask positions: xor everything, last bit for player turn?
-        //! Zobrist hashing
     }
 };
 
@@ -294,8 +262,8 @@ class MCTS{
 public:
     MCTS(){
         srand(time(NULL));
-        tree[Jungle(0).hash()] = Node();
-        tree[Jungle(1).hash()] = Node();
+        tree[Jungle(0).hash] = Node();
+        tree[Jungle(1).hash] = Node();
     }
 
     pair<int, pair<int, int>> get_best_move(Jungle* state){            // {piece, {dirx, diry}}
@@ -304,7 +272,7 @@ public:
         int max_score = INT_MIN;
 
         for(auto [piece, dir] : legal_moves){
-            int score = tree[state->gen_next_state(piece, dir).hash()].avg_value;
+            int score = tree[state->gen_next_state(piece, dir).hash].avg_value;
             if(score > max_score){
                 max_score = score;
                 best_move = {piece, dir};
@@ -316,7 +284,7 @@ public:
 
     void mcts(Jungle* state){
         // tree traversal phase:
-        Node* here = &tree[state->hash()];
+        Node* here = &tree[state->hash];
         while(not here->is_leaf){       // get leaf node in mcts tree
             vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
             int max_ucb = INT_MIN;
@@ -331,20 +299,20 @@ public:
         }
 
 
-        if(tree[state->hash()].times_sampled == 0) rollout(state);
+        if(tree[state->hash].times_sampled == 0) rollout(state);
         else{   // node expansion
             vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
             Jungle *temp;
             for(auto [piece, dir] : legal_moves){       // create new nodes for each possible move
                 temp = &state->gen_next_state(piece, dir);
-                tree[temp->hash()] = Node();
+                tree[temp->hash] = Node();
             }
             rollout(temp);      // do rollout for one of those new states
         }
     }
 
     int ucb1(Jungle* state, int parent_visits){
-        Node* here = &tree[state->hash()];
+        Node* here = &tree[state->hash];
         if(here->times_sampled == 0) return INT_MAX;
         return here->avg_value + 2*sqrt(log(parent_visits)/here->times_sampled);
     }
@@ -388,7 +356,7 @@ int main() {
             int xs, ys, xd, yd;
             cin >> xs >> ys >> xd >> yd;
             if(xs == -1) continue;      // opponent passed
-            game.move_player_piece(game.get_piece(xs, ys), {xd, yd});
+            game.move_player_piece(game.get_piece_type(xs, ys), {xd, yd});
             game.swap_players();
 
             auto [piece, dir] = ai.get_best_move(&game);

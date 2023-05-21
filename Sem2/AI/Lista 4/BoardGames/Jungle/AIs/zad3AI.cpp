@@ -36,7 +36,7 @@ public:
 
     int random(Jungle* state, int max_games){
         vector<pair<int, pair<int, int>>> starting_legal_moves = state->get_legal_moves();
-        if(state->terminal(starting_legal_moves)) return state->heuristic_result(main_player)*max_games;
+        if(state->terminal(starting_legal_moves)) return state->result(main_player)*max_games;
 
         Jungle here = *state;
         int total_res = 0, games_played = 0;
@@ -44,7 +44,7 @@ public:
         while(games_played < max_games){
             legal_moves = here.get_legal_moves();
             if(here.terminal(legal_moves)) {
-                total_res += here.heuristic_result(main_player);
+                total_res += here.result(main_player);
                 ++games_played;
                 here = *state;      // copy 
                 legal_moves = starting_legal_moves;

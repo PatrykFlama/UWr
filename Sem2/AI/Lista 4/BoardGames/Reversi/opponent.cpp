@@ -328,6 +328,7 @@ int main() {
     mask act = Game.get_player_actions();
 
     // wypisz(act);
+    Game.reset(1);
 
     say("RDY");
     double t0, t1;
@@ -355,7 +356,7 @@ int main() {
             play(action);
 
         } else if(str == "ONEMORE") {
-            Game.reset(0);
+            Game.reset(1);
             say("RDY");
         }
     }

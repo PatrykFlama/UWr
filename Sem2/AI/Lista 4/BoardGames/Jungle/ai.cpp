@@ -3,7 +3,7 @@ using namespace std;
 #include "AIs/Jungle.cpp"
 #include "AIs/Random.cpp"
 #include "AIs/zad3AI.cpp"
-#include "AIs/zad4AI.cpp"
+#include "AIs/AlphaBeta.cpp"
 #include "AIs/MCTS.cpp"
 
 

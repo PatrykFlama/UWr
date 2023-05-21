@@ -3,7 +3,7 @@
 using namespace std;
 #include "Jungle.cpp"
 
-class zad4AI{
+class AlphaBeta{
     int main_player;
 public:
     pair<int, pair<int, int>> gen_next_move(Jungle* state, int N = 3){            // {piece, {dirx, diry}}

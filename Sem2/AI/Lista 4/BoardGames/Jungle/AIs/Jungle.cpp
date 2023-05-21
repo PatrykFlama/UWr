@@ -226,6 +226,10 @@ public:
         return false;
     }
 
+    bool terminal(vector<pair<int, pair<int, int>>> legal_moves){
+        return legal_moves.empty() || game_won();
+    }
+
     int result(int player) const {
         int res = 0;
         for(int i = 0; i < pieces[player].size(); i++){
@@ -239,7 +243,7 @@ public:
         return -1;          // -1 for draw
     }
 
-    int heuristic_result(int player){
+    int heuristic_result(int player){       // todo calc in the distances from the den
         //                             R  C  D  W  J  T  L  E
         const int pieces_weights[] = {10, 2, 3, 5, 6, 7, 8, 9};
         int res = 0;
@@ -254,10 +258,6 @@ public:
             }
         }
         return res;
-    }
-
-    bool terminal(vector<pair<int, pair<int, int>>> legal_moves){
-        return legal_moves.empty() || game_won();
     }
 
     friend ostream &operator<<(ostream &out, const Jungle &state) {

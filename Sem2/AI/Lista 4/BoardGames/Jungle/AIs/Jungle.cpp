@@ -243,7 +243,7 @@ public:
         return -1;          // -1 for draw
     }
 
-    int heuristic_result(int player){       // todo calc in the distances from the den
+    int heuristic_result(int player){
         //                             R  C  D  W  J  T  L  E
         const int pieces_weights[] = {10, 2, 3, 5, 6, 7, 8, 9};
         int res = 0;

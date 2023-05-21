@@ -9,7 +9,7 @@ using namespace std;
 
 int main() {
     const bool debug = false;
-    const bool display = true;
+    const bool display = false;
     srand(time(NULL));
     Jungle game;
     Random ai0;

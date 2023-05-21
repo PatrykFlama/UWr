@@ -1,295 +1,362 @@
-#include <bits/stdc++.h>
+#include "bits/stdc++.h"
 
 using namespace std;
 
-#define INF 1e9
+using Clock = std::chrono::high_resolution_clock;
 
-int weight[][8] = {{20, -3, 11, 8, 8, 11, -3, 20},
-{-3, -7, -4, 1, 1, -4, -7, -3},
-{11, -4, 2, 2, 2, 2, -4, 11},
-{8, 1, 2, -3, -3, 2, 1, 8},
-{8, 1, 2, -3, -3, 2, 1, 8},
-{11, -4, 2, 2, 2, 2, -4, 11},
-{-3, -7, -4, 1, 1, -4, -7, -3},
-{20, -3, 11, 8, 8, 11, -3, 20}};
+#define mask unsigned long long
 
-int actualBoard[8][8];
-struct State{
-    int board[8][8]; // hashing table
+const int DEPTH = 1;
+
+#pragma region STUFF
+
+const int DIRECTIONS = 8;
+const int BOARD_SIZE = 64, BOARD_LEN = 8;
+
+const int ROW[DIRECTIONS] = {-1, -1, 0, +1, +1, +1, 0, -1};
+const int COL[DIRECTIONS] = {0, +1, +1, +1, 0, -1, -1, -1};
+
+const int SHIFT[DIRECTIONS] = {-8, -7, +1, +9, +8, +7, -1, -9};
+
+const mask STARTING_WHITE = (1LL << 27) | (1LL << 36);
+const mask STARTING_BLACK = (1LL << 28) | (1LL << 35);
+
+const mask CORNERS = 1 | (1LL << 7) | (1LL << 56) | (1LL << 63);
+
+inline int count(mask m) {
+    return __builtin_popcountll(m);
+}
+
+int lst(mask m) {
+    return __builtin_ctzll(m);
+}
+
+mask shift(mask m, int d) {
+    return (SHIFT[d] > 0 ? m << (+SHIFT[d]) : m >> (-SHIFT[d]));
+}
+
+int get_row(mask m) {
+    return lst(m) / BOARD_LEN;
+}
+
+int get_col(mask m) {
+    return lst(m) % BOARD_LEN;
+}
+
+mask get_mask(int row, int col) {
+    if(row == -1 || col == -1)  return 0;
+    return (1LL << (BOARD_LEN * row + col));
+}
+
+bool good_position(int row, int col) {
+    return (0 <= row && row < BOARD_LEN) && (0 <= col && col < BOARD_LEN);
+}
+
+#pragma endregion STUFF
+
+int CELL_SCORE[BOARD_LEN][BOARD_LEN] = {
+        {20, -3, 11,  8,  8,  11, -3,  20},
+        {-3, -7, -4,  1,  1, -4,  -7, -3},
+        {11, -4,  2,  2,  2,  2,  -4 , 11},
+        {8,   1,  2, -3, -3,  2,   1,  8},
+        {8,   1,  2, -3, -3,  2,   1,  8},
+        {11, -4,  2,  2,  2,  2,  -4,  11},
+        {-3, -7, -4,  1,  1, -4,  -7, -3},
+        {20, -3, 11,  8,  8,  11, -3,  20}};
+
+
+class BitBoarding {
+public:
+    mask current_player, current_opponent;
+
+    BitBoarding(bool starting = false) { reset(starting); } // domyślnie biały (tzn jestem drugi i jestem opponenetem)
+
+    BitBoarding(mask _current_player, mask _current_opponent) : current_player(_current_player), current_opponent(_current_opponent) {}
+
+    void reset(bool starting) {
+        if(!starting) {
+            current_player = STARTING_WHITE, current_opponent = STARTING_BLACK;
+        } else {
+            current_player = STARTING_BLACK, current_opponent = STARTING_WHITE;
+        }
+    }
+
+    mask generate_moves() {
+        mask moves = 0;
+        mask empty = ~(current_player | current_opponent);
+        for(int d = 0; d < DIRECTIONS; d++) {
+            mask candidates = current_opponent & shift(current_player, d);
+            while(candidates) {
+                moves |= empty & shift(candidates, d);
+                candidates = current_opponent & shift(candidates, d);
+            }
+        }
+        return moves;
+    }
+
+    void make_move(mask move) {
+        current_player |= move;
+        mask empty = ~(current_player | current_opponent);
+        for(int d = 0; d < DIRECTIONS; d++) {
+            int row = get_row(move), col = get_col(move);
+            int num = 0, flag = 0;
+            mask cnt = move;
+            while(good_position(row, col)) {
+                row += ROW[d], col += COL[d];
+                cnt = shift(cnt, d);
+                num++;
+                if(empty & cnt) { 
+                    break;
+                } else if(current_player & cnt) {
+                    flag = 1;   break;
+                }
+            }
+            row = get_row(move), col = get_col(move);
+            cnt = move;
+            for(int i = 0; i < num && flag; i++) {
+                row += ROW[d], col += COL[d];
+                cnt = shift(cnt, d);
+                current_player |= cnt;
+                current_opponent &= ~(cnt);
+            }
+        }
+    }
+
+    void swap_masks() {
+        swap(current_player, current_opponent);
+    }
+
 };
-int licznik = 0;
-bool GameOver(State s){
-    return false;
-}
 
-void initialize_positions(){
-    for(int i=0; i<8; i++){
-        for(int j=0; j<8; j++){
-            actualBoard[i][j] = 0;
-        }
-    }
-    actualBoard[3][3] = 1;
-    actualBoard[4][4] = 1;
-    actualBoard[3][4] = -1;
-    actualBoard[4][3] = -1;
-}
-void initialize_positionsNIGIGER(){
-    for(int i=0; i<8; i++){
-        for(int j=0; j<8; j++){
-            actualBoard[i][j] = 0;
-        }
-    }
-    actualBoard[3][3] = -1;
-    actualBoard[4][4] = -1;
-    actualBoard[3][4] = 1;
-    actualBoard[4][3] = 1;
-}
+class State {
+public:
+    bool player;
+    // player - 1 oznacza, że JA jestem playerem, 0 że opponentem
 
-bool onBoard(int x, int y){
-    return x >= 0 and y >= 0 and x < 8 and y < 8;
-}
+    BitBoarding board;
 
-void propagateMove(int x, int y, int deltaX, int deltaY){
-    bool is_possible = true;
-    if(onBoard(x + deltaX, y + deltaY) and actualBoard[x + deltaX][y + deltaY] != -actualBoard[x][y]){
-        is_possible = false; // sprawdzamy, czy 1 pionek w danym kierunku da się zamienić
+    State(bool starting = false) { reset(starting); } // tzn, jestem na początku opponenetem
+    State(BitBoarding _board, bool _player) : board(_board), player(_player) {}
+
+    void reset(bool starting) {
+        board = BitBoarding(starting);
+        player = starting;
     }
-    int x1 = x + deltaX, y1 = y + deltaY;
-    while(true){ // sprawdzamy czy i ile da się zamienic
-        if(!onBoard(x1, y1) || actualBoard[x1][y1] == 0){ // poza mapa lub puste pole
-            is_possible = false;
-            break;
-        }
-        if(actualBoard[x][y] == actualBoard[x1][y1]){ //znalezlismy pole z naszym pionkeim
-            break;
-        }
-        x1 += deltaX, y1 += deltaY; // pionek przeciwnika, więc próbujemy dalej
+
+    void make_action(mask action) {
+        board.make_move(action);
+        swap_players();
     }
-    if(is_possible){ // zamieniamy
-        x1 = x + deltaX, y1 = y + deltaY;
-        //cout << x1 << y1 << "\n";
-        while(true){
-            if(actualBoard[x][y] == actualBoard[x1][y1]){
+
+    State make_new_state(mask action = 0) {
+        State new_state = *this;
+        new_state.make_action(action);
+        return new_state;
+    }
+
+    void play_action(int row, int col) {
+        make_action(get_mask(row, col));
+    }
+
+    mask get_player_actions(bool who = 1) { // 1 - aktualny gracz, 0 - następny gracz
+        if(who == 0)    swap_players();
+        mask result = board.generate_moves();
+        if(who == 0)    swap_players();
+        return result;
+    }
+
+    bool terminal() {
+        return (get_player_actions(1) | get_player_actions(0)) == 0;
+    }
+
+    int utility() {
+        return fix((count(board.current_player) - count(board.current_opponent)));
+    }
+
+    int heuristic_value() {
+        int disks_ratio = ratio(count(board.current_player), count(board.current_opponent));
+        return 10 * disks_ratio + 800 * eval_corners() + 80 * eval_positions();
+    }
+
+private:
+    int fix(int value) {
+        return value * (player == 1 ? +1 : -1);
+    }
+
+    void swap_players() {
+        board.swap_masks();
+        player = 1 - player;
+    }
+
+    int ratio(int player, int opponent) {
+        if(player + opponent == 0)    return 0;
+        return fix(100 * ((double)(player - opponent)) / (player + opponent));
+    }
+
+    int eval_positions() {
+        int p0 = 0, p1 = 0;
+        mask bit = 1;
+        for(int i = 0; i < BOARD_SIZE; i++) {
+            for(int j = 0; j < BOARD_SIZE; j++) {
+                if(bit & board.current_player) p0 += CELL_SCORE[i][j];
+                else if(bit & board.current_opponent) p1 += CELL_SCORE[i][j];
+            }
+        }
+        return fix(p0 - p1);
+    }
+
+    int eval_corners() {
+        int p0 = count(board.current_player & CORNERS);
+        int p1 = count(board.current_opponent & CORNERS);
+        if(p0 + p1 == 0)    return 0;
+        return ratio(p0, p1);
+    }
+
+};
+
+class AI {
+    static const int MAX_DEPTH = DEPTH;
+    static const bool MAXI = true, MINI = false;
+    static const int INF = 1e9;
+public:
+    mask get_best_actions(State state) {
+        return AlphaBetaRoot(state);
+    }
+    mask AlphaBetaRoot(State state) {
+        int max_value = -INF;
+        mask move = 0;
+        mask actions = state.get_player_actions();
+        while(actions) {
+            mask action = actions & (~actions + 1);
+            int value = AlphaBeta(state.make_new_state(action), MAX_DEPTH, MINI, -INF, +INF);
+            if(value > max_value) {
+                max_value = value;
+                move = action;
+            }
+            actions &= actions - 1;
+        }
+        return move;
+    }
+
+    mask AlphaBeta(State state, int depth, bool maximizing_player, int alpha, int beta) {
+        if(state.terminal()) {
+            return state.utility();
+        }
+        mask actions = state.get_player_actions();
+        if(actions == 0) {
+            return AlphaBeta(state.make_new_state(), depth, !maximizing_player, alpha, beta);
+        }
+        if(depth == 0) {
+            return state.heuristic_value();
+        }
+        int value = (maximizing_player ? -INF : +INF);
+        while(actions) {
+            mask action = actions & (~actions + 1);
+            int cnt_value = AlphaBeta(state.make_new_state(action), depth - 1, !maximizing_player, alpha, beta);
+            maximizing_player ?        
+                value = max(cnt_value, value) : 
+                value = min(cnt_value, value);
+            maximizing_player ? 
+            alpha = max(alpha, value) : 
+            beta = min(beta, value);     
+            if(alpha >= beta) {
                 break;
             }
-            actualBoard[x1][y1] *= -1;
-            x1 += deltaX;
-            y1 += deltaY;
+            actions &= actions - 1;
         }
+        return value;
     }
+};
+
+void say(string s) {
+    cout << s << "\n";
+    fflush(stdout);
 }
 
-void printBoard(int pos[8][8]){
-    for(int i=0; i<8; i++){
-        for(int j=0; j<8; j++){
-            if(pos[i][j] == 1){
-                cout << "1";
+void play(mask move) {
+    int row = -1, col = -1;
+    if(move != 0) row = get_row(move), col = get_col(move);
+    swap(row, col);
+    printf("IDO %d %d\n", row, col);
+    // cout << "IDO" << " " << row << " " << col << "\n";
+    // cout << "(" << move << ")\n";
+    fflush(stdout);
+}
+
+void wypisz(mask m) {
+    cout << "----\n";
+    for(int i = 0; i < BOARD_SIZE; i++) {
+        if(m & (1LL << i)) {
+            mask bit = (1LL << i);
+            cout << get_row(bit) << " " << get_col(bit) << "(" << i << ")\n";
+        }
+    }
+    cout << "----\n";
+}
+
+void wypisz_stan(State stan) {
+    mask bit = 1;
+    for(int row = 0; row < BOARD_LEN; row++) {
+        for(int col = 0; col < BOARD_LEN; col++) {
+            if(stan.player == 0) {
+                if(stan.board.current_player & bit) {
+                    cout << "1";
+                } else if(stan.board.current_opponent & bit) {
+                    cout << "2";
+                } else {
+                    cout << "0";
+                }
+            } else {
+                if(stan.board.current_player & bit) {
+                    cout << "2";
+                } else if(stan.board.current_opponent & bit) {
+                    cout << "1";
+                } else {
+                    cout << "0";
+                }
             }
-            else if(pos[i][j] == 0){
-                cout << ".";
-            }
-            else{
-                cout << "0";
-            }
+            bit <<= 1;
         }
         cout << "\n";
     }
-    cout << "\n";
-}
-void makeMove(int x, int y, bool maxPlayer){
-    if(actualBoard[x][y] != 0){
-        return;
-        //throw logic_error("Attempt of placing a pawn on an occupied square!");
-    }
-    if(maxPlayer){
-        actualBoard[x][y] = 1;
-    }
-    else{
-        actualBoard[x][y] = -1;
-    }
-    for(int i=0; i<3; i++){
-        for(int j=0; j<3; j++){
-            if(i == 1 and j == 1){
-                continue;
-            }
-            propagateMove(x, y, i - 1, j - 1);
-        }
-    }
-
 }
 
-int static_eval(int pos[8][8]){
-    int res = 0;
-    for(int i=0; i<8; i++){
-        for(int j=0; j<8; j++){
-            res += (pos[i][j] * weight[i][j]);
+int main() {
+    AI ai;
+    State Game;
+
+    mask act = Game.get_player_actions();
+
+    // wypisz(act);
+
+    say("RDY");
+    double t0, t1;
+    while(true) {
+        string str; cin >> str;
+        if(str == "BYE") break;
+        if(str == "UGO") {
+            cin >> t0 >> t1;
+            Game.reset(1);
+            // wypisz_stan(Game);
+            mask action = ai.get_best_actions(Game);
+            Game.make_action(action);
+            // wypisz_stan(Game);
+            play(action);
+        } else if(str == "HEDID") {
+            cin >> t0 >> t1;
+            int row, col;   cin >> row >> col;
+
+            swap(row, col);
+
+            Game.make_action(get_mask(row, col));
+
+            mask action = ai.get_best_actions(Game);
+            Game.make_action(action);
+            play(action);
+
+        } else if(str == "ONEMORE") {
+            Game.reset(0);
+            say("RDY");
         }
     }
-    return res;
-}
-
-
-bool possibleMove(int board[8][8], int x, int y, int maxPlayer){
-
-    if(board[x][y] != 0){
-        return false;
-    }
-    for(int i=0; i<3; i++){
-        for(int j=0; j<3; j++){
-            if(i == 1 and j == 1){
-                continue;
-            }
-            int deltaX = i - 1, deltaY = j - 1;
-            int x1 = x + deltaX, y1 = y + deltaY;
-
-            if(onBoard(x1, y1) and board[x1][y1] == -maxPlayer){
-                while(true){ // sprawdzamy czy i ile da się zamienic
-                    if(!onBoard(x1, y1) || board[x1][y1] == 0){ // poza mapa lub puste pole
-                        break;
-                    }
-                    if(board[x1][y1] == maxPlayer){ //znalezlismy pole z naszym pionkeim
-                        return true;
-                    }
-                     x1 += deltaX, y1 += deltaY; // pionek przeciwnika, więc próbujemy dalej
-                }
-            }
-        }
-    }
-    return false;
-}
-
-vector<State> generatePossibleMoves(State s, int maxPlayer){
-    // jesli max player to 1 jesli enemey to -1 powinno być
-    vector<State> possibleStates;
-    for(int i=0; i<8; i++){
-        for(int j=0; j<8; j++){
-            if(possibleMove(s.board, i, j, maxPlayer)){
-                State newState;
-                for(int k=0; k<8; k++){
-                    for(int p = 0; p < 8; p++){
-                        newState.board[k][p] = s.board[k][p];
-                    }
-                }
-                newState.board[i][j] = maxPlayer;
-                possibleStates.push_back(newState);
-            }
-        }
-    }
-    return possibleStates;
-}
-
-
-int Minimax(State s, int depth, int alpha, int beta, bool maxPlayer){
-    if(GameOver(s)){
-        if(maxPlayer){
-            return INF;
-        }
-        else
-            return -INF;
-    }
-    if(depth == 0){
-        //cout << "C\n";
-        //cout << (static_eval(s.board)) << "\n";
-        //printBoard(s.board);
-        licznik ++;
-        return static_eval(s.board);
-    }
-
-    if(maxPlayer){
-        int max_result = -INF;
-        vector<State> optional_states = generatePossibleMoves(s, 1);
-        for(auto new_state : optional_states){
-            //cout << "A\n";
-            int eval = Minimax(new_state, depth - 1, alpha, beta, false);
-            max_result = max(max_result, eval);
-            alpha = max(alpha, eval);
-            if(beta <= alpha)
-                break;
-        }
-        return max_result;
-    }
-    else{
-        int min_result = INF;
-        vector<State> optional_states = generatePossibleMoves(s, -1);
-        for(auto new_state : optional_states){
-            //cout << "B\n";
-            int eval = Minimax(new_state, depth - 1, alpha, beta, true);
-            min_result = min(min_result, eval);
-            beta = min(beta, eval);
-            if(beta <= alpha)
-                break;
-        }
-        return min_result;  
-    }
-}
-
-void f(){
-    State s;
-            for(int i=0; i<8; i++){
-                for(int j=0; j<8; j++){
-                    s.board[i][j] = actualBoard[i][j];
-                }
-            }
-            int res = -INF;
-            vector<State> v = generatePossibleMoves(s, 1);
-            for(auto state : v){
-                int q = Minimax(state, 2, -INF, INF, false);
-                if(q > res){
-                    res = q;
-                    s = state;
-                }
-            }
-            int x = -1;
-            int y = -1;
-            for(int i=0; i<8; i++){
-                for(int j=0; j<8; j++){
-                    if(s.board[i][j] != actualBoard[i][j]){
-                        x = i; y = j;
-                    }
-                }
-            }
-            cout << "IDO " << y << " " << x << "\n";
-            makeMove(x, y, true);
-}
-
-
-int main(){
-    
-
-    initialize_positions();
-    cout << "RDY\n";
-
-    while(true){
-        string message; cin >> message;
-        if(message == "BYE"){
-            break;
-        }
-        else if(message == "ONEMORE"){
-            initialize_positions();
-            cout << "RDY\n";
-        }
-        else if(message == "UGO"){
-            double a, b; cin >> a >> b;
-            initialize_positionsNIGIGER();
-            f();
-            //printBoard(actualBoard);   
-            //cout << licznik << "\n"; 
-        }
-        else if(message == "HEDID"){
-            double a, b; cin >> a >> b;
-            int x, y; cin >> y >> x;
-            if(x != -1 and y != -1){
-                makeMove(x, y, false);
-            }
-            f();
-            //printBoard(actualBoard);  
-        }
-        else{
-            cout << "ZLY INPUT";
-            break;
-        }
-
-
-    }
-
 }

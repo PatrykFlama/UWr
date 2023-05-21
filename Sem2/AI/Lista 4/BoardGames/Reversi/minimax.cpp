@@ -314,7 +314,7 @@ public:
 
         if(state.terminal(free_cells)){
             Reversi next = state.gen_next_state(-1, -1);
-            if(next.terminal()) return state.result() * (player == MAX_PLAYER ? 1 : -1);
+            if(next.terminal()) return state.heuristic_result() * (player == MAX_PLAYER ? 1 : -1);
             else return alphabeta(next, depth - 1, 1 - player, alpha, beta);
         }
 

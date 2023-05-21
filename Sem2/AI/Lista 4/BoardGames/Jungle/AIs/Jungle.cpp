@@ -249,15 +249,21 @@ public:
         int res = 0;
         for(int i = 0; i < pieces[player].size(); i++){
             if(pieces[player][i].first != -1){      // if piece is alive
-                res += pieces_weights[i];
+                res += pieces_weights[i] * dist(pieces[player][i], (player ? upper_den : lower_den));
                 if(get_cell(pieces[player][i]) == '*') res += 100; 
             }
             if(pieces[1-player][i].first != -1){
-                res -= pieces_weights[i];
+                res -= pieces_weights[i] * dist(pieces[1-player][i], (1-player ? upper_den : lower_den));
                 if(get_cell(pieces[player][i]) == '*') res -= 100; 
             }
         }
+        
         return res;
+    }
+
+    inline int dist(pair<int, int> from, pair<int, int> den){
+        return sqrt((from.first+den.first)*(from.first+den.first) + 
+                    (from.second+den.second)*(from.second+den.second));
     }
 
     friend ostream &operator<<(ostream &out, const Jungle &state) {

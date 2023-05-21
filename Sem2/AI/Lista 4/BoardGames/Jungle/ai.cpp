@@ -6,15 +6,23 @@ using namespace std;
 #include "AIs/AlphaBeta.cpp"
 #include "AIs/MCTS.cpp"
 
+void validator_loop();
+void game_loop();
+
 
 int main() {
+    game_loop();
+}
+
+
+void game_loop(){
     const bool debug = false;
     const bool display = true;
     srand(time(NULL));
     Jungle game;
     Random ai0;
     AlphaBeta ai1;
-    int MAX_GAMES = 100;
+    int MAX_GAMES = 10;
     int win_counter[2] = {0, 0};
 
     while(MAX_GAMES--){
@@ -58,6 +66,7 @@ int main() {
 }
 
 
+
 void rdy(){
     printf("RDY\n");
     fflush(stdout);
@@ -69,7 +78,7 @@ void ido(int xs, int ys, int xd, int yd){
 
 void validator_loop(){
     Jungle game;    // defaults to starting at the bottom of board
-    zad3AI ai;
+    AlphaBeta ai;
     rdy();
 
     while(true){
@@ -87,6 +96,11 @@ void validator_loop(){
             auto [piece, dir] = ai.gen_next_move(&game);
             auto [myxs, myys] = game.pieces[game.player][piece];
             ido(myxs, myys, myxs+dir.first, myys+dir.second);
+            cerr << "AI move: " << AnimalNames[piece] << ' ' << dir.first << ' ' << dir.second << '\n';
+            for(auto [piece, dir] : game.get_legal_moves()){
+                cerr << AnimalNames[piece] << ' ' << dir.first << ' ' << dir.second << '\n';
+            }
+            cerr << '\n';
             game.execute_move(piece, dir);
         } else if(cmd == "UGO"){
             double time_for_move, time_for_game; 
@@ -95,6 +109,7 @@ void validator_loop(){
             auto [piece, dir] = ai.gen_next_move(&game);
             auto [myxs, myys] = game.pieces[game.player][piece];
             ido(myxs, myys, myxs+dir.first, myys+dir.second);
+            cerr << "AI move: " << AnimalNames[piece] << ' ' << dir.first << ' ' << dir.second << '\n';
             game.execute_move(piece, dir);
         } else if(cmd == "ONEMORE"){
             game.reset();

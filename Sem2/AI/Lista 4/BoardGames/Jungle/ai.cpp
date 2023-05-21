@@ -303,7 +303,7 @@ public:
         for(auto [piece, dir] : legal_moves){
             Jungle temp = state->gen_next_state(piece, dir);
             int score = random(&temp, N);
-            score += reinforced_random(&temp, N);
+            // score += reinforced_random(&temp, N);
             if(score > max_score){
                 max_score = score;
                 best_move = {piece, dir};
@@ -321,7 +321,7 @@ public:
 
     int random(Jungle* state, int max_games){
         vector<pair<int, pair<int, int>>> starting_legal_moves = state->get_legal_moves();
-        if(state->terminal(starting_legal_moves)) return state->result(main_player)*max_games;
+        if(state->terminal(starting_legal_moves)) return state->heuristic_result(main_player)*max_games;
 
         Jungle here = *state;
         int total_res = 0, games_played = 0;
@@ -329,7 +329,7 @@ public:
         while(games_played < max_games){
             legal_moves = here.get_legal_moves();
             if(here.terminal(legal_moves)) {
-                total_res += here.result(main_player);
+                total_res += here.heuristic_result(main_player);
                 ++games_played;
                 here = *state;      // copy 
                 legal_moves = starting_legal_moves;
@@ -362,9 +362,12 @@ public:
             int best_piece;
             pair<int, int> best_dir;
             int max_score = INT_MIN;
+            int heur = heuristics(&here);
             for(auto [piece, dir] : legal_moves){
-                Jungle temp = here.gen_next_state(piece, dir);
-                int score = heuristics(&temp);
+                pair<int, int> pos = here.pieces[here.player][piece];
+                int score = heur - dist(pos.first, pos.second, (here.player ? upper_den : lower_den)) +
+                                   dist(pos.first + dir.first, pos.second + dir.second, 
+                                                  (here.player ? upper_den : lower_den));
                 if(score > max_score){
                     max_score = score;
                     best_piece = piece;
@@ -374,14 +377,14 @@ public:
             here.execute_move(best_piece, best_dir);
         }
 
-        // cerr << "Games played: " << games_played << " res: " << rate(total_res, games_played) << '\n';
+        // cerr << "Games played: " << games_played << " res: " << total_res << '\n';
         return total_res;
     }
 
     int heuristics(Jungle *state){
         int res = 0;
         for(auto [x, y] : state->pieces[main_player]){
-            res += dist(x, y, (main_player ? upper_den : lower_den));
+            res += dist(x, y, (state->player ? upper_den : lower_den));
         }
         return res;
     }
@@ -478,7 +481,8 @@ public:
 
 
 int main() {
-    bool display = false;
+    bool debug = true;
+    bool display = true;
     srand(time(NULL));
     Jungle game;
     Random ai0;
@@ -486,37 +490,40 @@ int main() {
     int MAX_GAMES = 10;
     int win_counter[2] = {0, 0};
 
-    while(MAX_GAMES--){ // TODO repair win counter and heuristics
+    while(MAX_GAMES--){
         int turn = rand()%2;
+        game.reset();
         if(turn) game.swap_players();
         int turns = 0;
 
-        if(display) cout << game << "\n\n";
+        if(debug) cout << game << "\n\n";
         while(not game.game_won()){
             turns++;
-            if(turn){
+            if(!turn){
                 auto move = ai0.gen_next_move(&game);
-                if(display) cout << "ai1_cap move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
+                if(debug) cout << "ai0_low move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
                 auto [myxs, myys] = game.pieces[game.player][move.first];
-                if(display) cout << "(" << myxs << ' ' << myys << ' ' << myxs+move.second.first << ' ' << myys+move.second.second << ")\n";
+                if(debug) cout << "(" << myxs << ' ' << myys << ' ' << myxs+move.second.first << ' ' << myys+move.second.second << ")\n";
 
                 game.execute_move(move);
-                turn = 1-turn;
             } else{
                 auto move = ai1.gen_next_move(&game);
-                if(display) cout << "ai2_low move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
+                if(debug) cout << "ai1_cap move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
                 auto [myxs, myys] = game.pieces[game.player][move.first];
-                if(display) cout << "(" << myxs << ' ' << myys << ' ' << myxs+move.second.first << ' ' << myys+move.second.second << ")\n";
+                if(debug) cout << "(" << myxs << ' ' << myys << ' ' << myxs+move.second.first << ' ' << myys+move.second.second << ")\n";
 
                 game.execute_move(move);
-                turn = 1-turn;
             }
-            if(display) cout << game << '\n';
+            if(debug) cout << game << '\n';
+            turn = 1-turn;
+        }
+        if(game.get_legal_moves().size() == 0){
+            if(display) cout << "draw in " << turns << "turns\n" << game << '\n';
+            continue;
         }
         win_counter[1-turn]++;
-        cout << "ai" << 1-turn << " won in " << turns << "turns\n" << game << '\n';
-
-        game.reset();
+        if(display) cout << "ai" << 1-turn << " won in " << turns << "turns\n" << game << '\n';
+        cout << "---------------------------------\n\n";
     }
 
     cout << "ai0 wins: " << win_counter[0] << '\n';

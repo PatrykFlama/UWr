@@ -9,12 +9,12 @@ using namespace std;
 
 int main() {
     const bool debug = false;
-    const bool display = false;
+    const bool display = true;
     srand(time(NULL));
     Jungle game;
     Random ai0;
-    zad3AI ai1;
-    int MAX_GAMES = 10;
+    AlphaBeta ai1;
+    int MAX_GAMES = 100;
     int win_counter[2] = {0, 0};
 
     while(MAX_GAMES--){
@@ -23,7 +23,7 @@ int main() {
         if(turn) game.swap_players();
         int turns = 0;
 
-        if(debug) cout << game << "\n\n";
+        if(debug) cout << "Begins ai" << turn << '\n' << game << "\n\n";
         while(not game.game_won()){
             turns++;
             if(!turn){

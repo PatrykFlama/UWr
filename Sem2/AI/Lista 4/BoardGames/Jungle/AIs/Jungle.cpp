@@ -234,7 +234,7 @@ public:
         int res = 0;
         for(int i = 0; i < pieces[player].size(); i++){
             if(pieces[player][i].first != -1){      // if piece is alive
-                if(get_cell(pieces[player][i]) == '*') return 3; 
+                if(get_cell(pieces[player][i]) == '*') return 3;
             }
             if(pieces[1-player][i].first != -1){
                 if(get_cell(pieces[player][i]) == '*') return -3; 

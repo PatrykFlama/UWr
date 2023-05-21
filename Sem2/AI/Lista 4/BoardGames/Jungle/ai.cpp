@@ -20,7 +20,7 @@ void game_loop(){
     const bool display = true;
     srand(time(NULL));
     Jungle game;
-    Random ai0;
+    zad3AI ai0;
     AlphaBeta ai1;
     int MAX_GAMES = 10;
     int win_counter[2] = {0, 0};

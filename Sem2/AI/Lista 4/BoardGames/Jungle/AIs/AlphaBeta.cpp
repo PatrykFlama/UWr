@@ -2,7 +2,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 #include "Jungle.cpp"
-int blob =0;
 
 class AlphaBeta{
     int main_player;

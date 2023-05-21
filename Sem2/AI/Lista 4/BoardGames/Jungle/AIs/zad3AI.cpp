@@ -30,10 +30,6 @@ public:
         return best_move;
     }
 
-    inline int rate(int total_res, int games_played){
-        return (games_played == 0 ? total_res : 100*((double)total_res)/games_played);
-    }
-
     int random(Jungle* state, int max_games){
         vector<pair<int, pair<int, int>>> starting_legal_moves = state->get_legal_moves();
         if(state->terminal(starting_legal_moves)) return state->result(main_player)*max_games;

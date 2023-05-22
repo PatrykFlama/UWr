@@ -13,7 +13,8 @@
   (opE [op : Op] [l : Exp] [r : Exp])
   (ifE [b : Exp] [l : Exp] [r : Exp])
   (condE [cs : (Listof (Exp * Exp))])
-  (errorE [loc : Symbol] [msg : String]))
+  (errorE [loc : Symbol] [msg : String])
+  (tryE [e1 : Exp] [e2 : Exp]))
 
 ;; parse ----------------------------------------
 
@@ -30,6 +31,9 @@
     [(s-exp-match? `{error SYMBOL STRING} s)
      (errorE (s-exp->symbol (second (s-exp->list s)))
              (s-exp->string (third (s-exp->list s))))]
+    [(s-exp-match? `{try ANY ANY} s)
+     (tryE (parse-exp (second (s-exp->list s)))
+           (parse-exp (third (s-exp->list s))))]
     [(s-exp-match? `{SYMBOL ANY ANY} s)
      (opE (parse-op (s-exp->symbol (first (s-exp->list s))))
           (parse-exp (second (s-exp->list s)))
@@ -115,7 +119,7 @@
     [(do () a)
      a]
     [(do ([x1 a1] [x2 a2] ...) a)
-     (bind a1 (λ (x1) (do ([x2 a2] ...) a)))])) 
+     (bind a1 (λ (x1) (do ([x2 a2] ...) a)))]))
 
 ;; primitive operations
 
@@ -172,7 +176,13 @@
     [(condE cs)
      (eval (cond->if cs))]
     [(errorE l m)
-     (err l m)]))
+     (err l m)]
+    [(tryE e1 e2)
+      (let ([v (eval e1)])
+        (type-case Answer v
+          [(errorA l m)
+           (eval e2)]
+          [else v]))]))
 
 (define (cond->if [cs : (Listof (Exp * Exp))]) : Exp
   (type-case (Listof (Exp * Exp)) cs

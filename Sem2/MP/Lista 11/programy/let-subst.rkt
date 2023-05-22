@@ -1,5 +1,6 @@
 #lang plait
 
+
 (module+ test
   (print-only-errors #t))
 
@@ -17,6 +18,13 @@
   (varE [x : Symbol])
   (letE [x : Symbol] [e1 : Exp] [e2 : Exp]))
 
+;; variable renaming ----------------------------
+(define name-counter 0)
+(define (rename_variable [s : Symbol])
+(begin
+  (set! name-counter (+ name-counter 1))
+  (string->symbol (string-append (symbol->string s) (number_to_string name-counter)))))
+
 ;; parse ----------------------------------------
 
 (define (parse [s : S-Exp]) : Exp
@@ -24,7 +32,7 @@
     [(s-exp-match? `SYMBOL s)
      (varE (s-exp->symbol s))]
     [(s-exp-match? `{let SYMBOL ANY ANY} s)
-     (letE (s-exp->symbol (second (s-exp->list s)))
+     (letE (rename_variable (s-exp->symbol (second (s-exp->list s))))
            (parse (third (s-exp->list s)))
            (parse (fourth (s-exp->list s))))]
     [(s-exp-match? `NUMBER s)

@@ -113,6 +113,27 @@
                         [(eq? n (bind-name b))
                          (bind-val b)]
                         [else (lookup-env n rst-env)])]))
+(define (find-env [n : Symbol] [env : Env]) : Boolean
+  (type-case (Listof Binding) env
+    [empty #f]
+    [(cons b rst-env) (cond
+                        [(eq? n (bind-name b))
+                         #t]
+                        [else (find-env n rst-env)])]))
+
+(define (_fv [e : Exp] [env : Env]) : (Listof Symbol)
+    (type-case Exp e
+      [(numE n) empty]
+      [(opE o l r) (append (_fv l env) (_fv r env))]
+      [(ifE b l r) (append (_fv b env) (append (_fv l env) (_fv r env)))]
+      [(varE x) (if (find-env x env) empty (list x))]
+      [(letE x e1 e2) (append 
+                                (_fv e1 env)
+                                (_fv e2 (extend-env env x (numV 0))))]
+      [(lamE x e) (_fv e (extend-env env x (numV 0)))]
+      [(appE e1 e2) (append (_fv e1 env) (_fv e2 env))]))
+(define (fv [e : Exp]) : (Listof Symbol)
+  (_fv e mt-env))
 
 ;; primitive operations
 

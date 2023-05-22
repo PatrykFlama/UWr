@@ -173,7 +173,7 @@
   (type-case (Listof Symbol) ls
     [empty (eval e env)]
     [(cons x xs)
-     (funV (λ (v) (eval-lamE xs e (extend-env env x v))))]))    ; todo name generator instead of v
+     (funV (λ (v) (eval-lamE xs e (extend-env env x v))))]))
 
 (define (apply [v : Value] [es : (Listof Exp)] [env : Env]) : Value
   (type-case Value v

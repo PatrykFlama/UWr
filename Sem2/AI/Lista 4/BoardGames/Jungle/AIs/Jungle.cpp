@@ -68,19 +68,24 @@ std::pair<T,U> operator+(const std::pair<T,U> & l,const std::pair<T,U> & r) {
 }
 
 
+int hash_table[2][8][7][9];     // player, piece, x, y -> random int for zobrist hashing
+// TODO randomize hash table, once per program run
+
+
 class Jungle {
     // player 0 is on bottom, 1 on top
     const int DIRS[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}; // R D L U
 public:
     vector<pair<int, int>> pieces[2];   // positions of R C D W J T L E; -1 -1 if eaten (rat can eat elephant)
     int player;
-    int hash;           // todo zobrist hashing
+    int hash;
     
     /* #region //* ----constructors---- */
     Jungle() : Jungle(0) {}
     Jungle(int player){
         this->player = player;
         reset();
+        recalc_hash();
     }
     Jungle(const Jungle &other){
         pieces[0] = other.pieces[0];
@@ -118,6 +123,30 @@ public:
         for(auto [x, y] : pieces[1-player])
             pieces[player].push_back({6 - x, 8 - y});
     }
+    void recalc_hash(){
+        hash = 0;
+        for(int i = 0; i < 8; i++){     // iterate over pieces
+            hash ^= hash_table[player][i][pieces[player][i].first][pieces[player][i].second];
+            hash ^= hash_table[1-player][i][pieces[1-player][i].first][pieces[1-player][i].second];
+        }
+    }
+    int gen_next_hash(int piece, pair<int, int> dir){
+        int new_hash = hash;
+        auto [x, y] = pieces[player][piece];
+        new_hash ^= hash_table[player][piece][x][y];        // remove current piece at location from hash
+
+        auto [new_x, new_y] = pieces[player][piece] + dir;
+        new_hash ^= hash_table[player][piece][new_x][new_y];    // add current piece at new location to hash
+
+        for(int i = 0; i < pieces[1-player].size() ;i++){       // beat opponent pieces
+            if(pair<int, int>(x, y) == pieces[1-player][i]){
+                new_hash ^= hash_table[1-player][i][x][y];      // remove opponent piece at location from hash
+                break;
+            }
+        }
+
+        return new_hash;
+    }
 
     void swap_players(){
         player = 1-player;
@@ -136,10 +165,15 @@ public:
 
     void move_player_piece(int piece, pair<int, int> dir){      //? moves piece and beats opponent piece on new position
         auto [x, y] = pieces[player][piece];
-        pieces[player][piece] = {x + dir.first, y + dir.second};
+        hash ^= hash_table[player][piece][x][y];        // remove current piece at location from hash
+
+        auto [new_x, new_y] = pieces[player][piece] + dir;
+        pieces[player][piece] = {new_x, new_y};
+        hash ^= hash_table[player][piece][new_x][new_y];    // add current piece at new location to hash
 
         for(int i = 0; i < pieces[1-player].size() ;i++){       // beat opponent pieces
             if(pair<int, int>(x, y) == pieces[1-player][i]){
+                hash ^= hash_table[1-player][i][x][y];      // remove opponent piece at location from hash
                 pieces[1-player][i] = pair<int, int>(-1, -1);
                 break;
             }

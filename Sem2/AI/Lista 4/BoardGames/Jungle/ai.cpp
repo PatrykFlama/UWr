@@ -4,8 +4,9 @@ using namespace std;
 #include "AIs/Random.cpp"
 #include "AIs/zad3AI.cpp"
 #include "AIs/AlphaBeta.cpp"
+#include "AIs/MCTS.cpp"
 
-void validator_loop();
+void validator_loop();      // yeah, well, that ain't gonna fly here
 void game_loop();
 
 
@@ -22,8 +23,8 @@ void game_loop(){
     Jungle game;
     zad3AI ai0;
     AlphaBeta ai1;
-    int MAX_GAMES = 1000;
-    int MAX_TURNS = 500;
+    int MAX_GAMES = 100;        // games to be played
+    int MAX_TURNS = 500;        // maximum turns before game is considered a draw
     int win_counter[2] = {0, 0};
 
     while(MAX_GAMES--){

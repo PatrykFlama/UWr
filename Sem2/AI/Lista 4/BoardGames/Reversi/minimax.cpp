@@ -1,9 +1,14 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int DEPTH = 3;
+//! ---- PROGRAM SETTINGS ----
+int DEPTH = 2;              // how many moves ahead AI (minimax and alpha beta) will look thru
 #define wanna_go_faster
-#define measure_time
+// #define measure_time
+// #define enable_sorting
+#define SORTING_TRESHOLD 10         // after how many moves sorting is disabled
+//! --------------------------
+
 using Clock = std::chrono::high_resolution_clock;
 
 /*
@@ -274,11 +279,13 @@ public:
         pair<int, int> best_move = {-1, -1};
         vector<pair<int, int>> free_cells = state.free_cells();
 
-        // if(SORTING) sort(free_cells.begin(), free_cells.end(), 
-        //     [&](pair<int, int> a, pair<int, int> b){
-        //     return (state.gen_next_state(a.first, a.second)).heuristic_result() >
-        //            (state.gen_next_state(b.first, b.second)).heuristic_result();
-        // });
+        #ifdef enable_sorting
+        if(SORTING) sort(free_cells.begin(), free_cells.end(), 
+            [&](pair<int, int> a, pair<int, int> b){
+            return (state.gen_next_state(a.first, a.second)).heuristic_result() >
+                   (state.gen_next_state(b.first, b.second)).heuristic_result();
+        });
+        #endif
 
         #ifdef wanna_go_faster
         vector<future<int>> scores;
@@ -320,11 +327,13 @@ public:
 
         if(depth <= 0) return state.heuristic_result() * (player == MAX_PLAYER ? 1 : -1);
 
-        // if(SORTING) sort(free_cells.begin(), free_cells.end(), 
-        //     [&](pair<int, int> a, pair<int, int> b){
-        //     return (state.gen_next_state(a.first, a.second)).heuristic_result() >
-        //            (state.gen_next_state(b.first, b.second)).heuristic_result();
-        // });
+        #ifdef enable_sorting
+        if(SORTING) sort(free_cells.begin(), free_cells.end(), 
+            [&](pair<int, int> a, pair<int, int> b){
+            return (state.gen_next_state(a.first, a.second)).heuristic_result() >
+                   (state.gen_next_state(b.first, b.second)).heuristic_result();
+        });
+        #endif
 
         int best_score = (player == MAX_PLAYER ? INT_MIN : INT_MAX);
         for(auto [x, y] : free_cells){
@@ -363,10 +372,13 @@ int main(int argc, char *argv[]){
 
     Reversi game(true);
     AI ai;
-    // bool sorting = true;
+    #ifdef enable_sorting
+    bool sorting = true;
+    #endif
     #ifdef measure_time
     chrono::milliseconds::rep avg_player_time = 0;
     int moves = 0;
+    int preprint = 30-1;
     #endif
 
     
@@ -382,8 +394,13 @@ int main(int argc, char *argv[]){
             #ifdef measure_time
             auto  start  = Clock::now();
             #endif
+            
+            #ifdef enable_sorting
+            auto p = ai.get_best_move(game, sorting);
+            #else
             auto p = ai.get_best_move(game);
-            // auto p = ai.get_best_move(game, sorting);
+            #endif
+
             #ifdef measure_time
             auto  stop  = Clock::now();
             avg_player_time += chrono::duration_cast<chrono::milliseconds>(stop - start).count();
@@ -404,8 +421,13 @@ int main(int argc, char *argv[]){
             #ifdef measure_time
             auto  start  = Clock::now();
             #endif
+
+            #ifdef enable_sorting
+            auto p = ai.get_best_move(game, sorting);
+            #else
             auto p = ai.get_best_move(game);
-            // auto p = ai.get_best_move(game, sorting);
+            #endif
+            
             #ifdef measure_time
             auto  stop  = Clock::now();
             avg_player_time += chrono::duration_cast<chrono::milliseconds>(stop - start).count();
@@ -417,7 +439,19 @@ int main(int argc, char *argv[]){
             game.swap_players();
         } else if(cmd == "ONEMORE"){
             game.reset(true);
-            // sorting = true;
+
+            #ifdef enable_sorting
+            sorting = true;
+            #endif
+
+            #ifdef measure_time
+            preprint--;
+            avg_player_time = avg_player_time/moves;
+            if(not preprint)
+                cerr << "Avg move time: " << avg_player_time << "ms, " << moves << " moves\n";
+            moves = 0;
+            #endif
+
             say("RDY");
         } else if(cmd == "BYE"){
             #ifdef measure_time
@@ -429,7 +463,9 @@ int main(int argc, char *argv[]){
             break;
         }
 
-        // if(moves > 10) sorting = false;
+        #ifdef enable_sorting
+        if(moves > SORTING_TRESHOLD) sorting = false;
+        #endif
     }
 }
 

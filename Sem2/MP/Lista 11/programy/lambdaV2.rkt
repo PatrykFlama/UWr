@@ -15,7 +15,7 @@
   (varE [x : Symbol])
   (letE [x : Symbol] [e1 : Exp] [e2 : Exp])
   (lamE [xs : (Listof Symbol)] [e : Exp])
-  (appE [e1 : Exp] [e2 : Exp]))
+  (appE [e : Exp] [es : (Listof Exp)]))
 
 ;; parse ----------------------------------------
 
@@ -23,11 +23,9 @@
   (cond
     [(s-exp-match? `NUMBER s)
      (numE (s-exp->number s))]
-    [(s-exp-match? `{lambda {SYMBOL} ANY} s)
-     (lamE (s-exp->symbol
-            (first (s-exp->list 
-                    (second (s-exp->list s)))))
-           (parse (third (s-exp->list s))))]
+    [(s-exp-match? `{lambda {SYMBOL ...} ANY} s)
+      (lamE (map s-exp->symbol (s-exp->list (second (s-exp->list s))))
+            (parse (third (s-exp->list s))))]
     [(s-exp-match? `{SYMBOL ANY ANY} s)
      (opE (parse-op (s-exp->symbol (first (s-exp->list s))))
           (parse (second (s-exp->list s)))
@@ -42,9 +40,9 @@
      (letE (s-exp->symbol (second (s-exp->list s)))
            (parse (third (s-exp->list s)))
            (parse (fourth (s-exp->list s))))]
-    [(s-exp-match? `{ANY ANY} s)
-     (appE (parse (first (s-exp->list s)))
-           (parse (second (s-exp->list s))))]
+    [(s-exp-match? `{ANY ...} s)
+      (appE (parse (first (s-exp->list s)))
+            (map parse (rest (s-exp->list s))))]
     [else (error 'parse "invalid input")]))
 
 (define (parse-op [op : Symbol]) : Op
@@ -75,15 +73,15 @@
   (test/exn (parse `{{+ 1 2}})
             "invalid input")
   (test (parse `{+ 1})
-        (appE (varE '+) (numE 1)))
+        (appE (varE '+) (list (numE 1))))
   (test/exn (parse `{^ 1 2})
             "unknown operator")
   (test (parse `{let x 1 {+ x 1}})
         (letE 'x (numE 1) (opE (add) (varE 'x) (numE 1))))
   (test (parse `{lambda {x} 9})
-        (lamE 'x (numE 9)))
+        (lamE (list 'x) (numE 9)))
   (test (parse `{double 9})
-        (appE (varE 'double) (numE 9))))
+        (appE (varE 'double) (list (numE 9)))))
 
 
 ;; eval --------------------------------------
@@ -166,15 +164,25 @@
     [(letE x e1 e2)
      (let ([v1 (eval e1 env)])
        (eval e2 (extend-env env x v1)))]
-    [(lamE x b)
-     (funV (λ (v) (eval b (extend-env env x v))))]
-    [(appE e1 e2)
-     (apply (eval e1 env) (eval e2 env))]))
+    [(lamE xs b)
+      (eval-lamE xs b env)]
+    [(appE e es)
+     (apply (eval e env) es env)]))
 
-(define (apply [v1 : Value] [v2 : Value]) : Value
-  (type-case Value v1
-    [(funV f) (f v2)]
-    [else (error 'apply "type error")]))
+(define (eval-lamE [ls : (Listof Symbol)] [e : Exp] [env : Env]) : Value
+  (type-case (Listof Symbol) ls
+    [empty (eval e env)]
+    [(cons x xs)
+     (funV (λ (v) (eval-lamE xs e (extend-env env x v))))]))    ; todo name generator instead of v
+
+(define (apply [v : Value] [es : (Listof Exp)] [env : Env]) : Value
+  (type-case Value v
+    [(funV f) 
+      (type-case (Listof Exp) es
+        [empty (error 'apply "too few arguments")]
+        [(cons e rst-es) 
+          (apply (f (eval e env)) rst-es env)])]
+    [else v]))
 
 
 (define (run [e : S-Exp]) : Value

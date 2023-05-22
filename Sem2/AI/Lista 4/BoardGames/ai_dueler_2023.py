@@ -220,7 +220,7 @@ class Jungle:
         6: 8,
         7: 10
     }
-    MAXIMAL_PASSIVE = 50 # This number could be changed (be aware!)
+    MAXIMAL_PASSIVE = 500 # This number could be changed (be aware!)
     DENS_DIST = 0.1
     MX = 7
     MY = 9

@@ -155,6 +155,7 @@ public:
         if(get_cell(pieces[1-player][opponent_piece]) == '#') return true;
         return stronger(player_piece, opponent_piece);
     }
+
     bool move_safe(int piece, pair<int, int> dir){        // ignoring pieces on board
         pair<int, int> new_pos = pieces[player][piece] + dir;
         if(new_pos.first < 0 || new_pos.first >= 7 || new_pos.second < 0 || new_pos.second >= 9) return false;
@@ -172,6 +173,7 @@ public:
         }
         return true;
     }
+
     bool move_legal(int piece, pair<int, int> dir){
         if(not move_safe(piece, dir)) return false;
         pair<int, int> new_pos = pieces[player][piece] + dir;
@@ -230,31 +232,37 @@ public:
         return legal_moves.empty() || game_won();
     }
 
-    int result(int player) const {
+    int result(int main_player) const {
         int res = 0;
-        for(int i = 0; i < pieces[player].size(); i++){
-            if(pieces[player][i].first != -1){      // if piece is alive
-                if(get_cell(pieces[player][i]) == '*') return 3;
+        for(int i = 0; i < pieces[main_player].size(); i++){
+            if(pieces[main_player][i].first != -1){      // if piece is alive
+                if(get_cell(pieces[main_player][i]) == '*') return 3;
             }
-            if(pieces[1-player][i].first != -1){
-                if(get_cell(pieces[player][i]) == '*') return -3; 
+            if(pieces[1-main_player][i].first != -1){
+                if(get_cell(pieces[main_player][i]) == '*') return -3; 
             }
         }
         return -1;          // -1 for draw
     }
 
-    int heuristic_result(int player){
-        //                             R  C  D  W  J  T  L  E
-        const int pieces_weights[] = {10, 2, 3, 5, 6, 7, 8, 9};
+    int heuristic_result(int main_player){
+        //                             R   C   D   W  J  T  L  E
+        const int pieces_weights[] = {10,  2,  3,  5, 6, 7, 8, 9};
+        const int pieces_weight_scale = 5;
+        const int board_placement[] = {1, -1, -1, -1, 1, 1, 1, 1};
         int res = 0;
-        for(int i = 0; i < pieces[player].size(); i++){
-            if(pieces[player][i].first != -1){      // if piece is alive
-                res += pieces_weights[i] * dist(pieces[player][i], (player ? upper_den : lower_den));
-                if(get_cell(pieces[player][i]) == '*') res += 100; 
+        for(int i = 0; i < pieces[main_player].size(); i++){
+            if(pieces[main_player][i].first != -1){      // if piece is alive
+                res += board_placement[i] * dist(pieces[main_player][i], (main_player ? upper_den : lower_den));
+                if(get_cell(pieces[main_player][i]) == '*') res += 1000;
+            } else{
+                res -= pieces_weights[i] * pieces_weight_scale;
             }
-            if(pieces[1-player][i].first != -1){
-                res -= pieces_weights[i] * dist(pieces[1-player][i], (1-player ? upper_den : lower_den));
-                if(get_cell(pieces[player][i]) == '*') res -= 100; 
+            if(pieces[1-main_player][i].first != -1){
+                res -= board_placement[i] * dist(pieces[1-main_player][i], (1-main_player ? upper_den : lower_den));
+                if(get_cell(pieces[1-main_player][i]) == '*') res -= 1000; 
+            } else{
+                res += pieces_weights[i] * pieces_weight_scale;
             }
         }
         
@@ -262,8 +270,9 @@ public:
     }
 
     inline int dist(pair<int, int> from, pair<int, int> den){
-        return sqrt((from.first+den.first)*(from.first+den.first) + 
-                    (from.second+den.second)*(from.second+den.second));
+        // return sqrt((from.first+den.first)*(from.first+den.first) + 
+        //             (from.second+den.second)*(from.second+den.second));
+        return abs(from.first-den.first) + abs(from.second-den.second);
     }
 
     friend ostream &operator<<(ostream &out, const Jungle &state) {

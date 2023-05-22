@@ -13,7 +13,8 @@
   (opE [op : Op] [l : Exp] [r : Exp])
   (ifE [b : Exp] [l : Exp] [r : Exp])
   (varE [x : Symbol])
-  (letE [x : Symbol] [e1 : Exp] [e2 : Exp]))
+  (letE [vs : (Listof (Symbol * Exp))] [e : Exp])
+  (let*E [vs : (Listof (Symbol * Exp))] [e : Exp]))
 
 ;; parse ----------------------------------------
 
@@ -21,6 +22,14 @@
   (cond
     [(s-exp-match? `NUMBER s)
      (numE (s-exp->number s))]
+    [(s-exp-match? `{let ANY ANY} s)
+      (letE
+        (parse-let (s-exp->list (second (s-exp->list s))))
+        (parse (third (s-exp->list s))))]
+    [(s-exp-match? `{let* ANY ANY} s)
+      (let*E
+        (parse-let (s-exp->list (second (s-exp->list s))))
+        (parse (third (s-exp->list s))))]
     [(s-exp-match? `{SYMBOL ANY ANY} s)
      (opE (parse-op (s-exp->symbol (first (s-exp->list s))))
           (parse (second (s-exp->list s)))
@@ -31,11 +40,18 @@
           (parse (fourth (s-exp->list s))))]
     [(s-exp-match? `SYMBOL s)
      (varE (s-exp->symbol s))]
-    [(s-exp-match? `{let SYMBOL ANY ANY} s)
-     (letE (s-exp->symbol (second (s-exp->list s)))
-           (parse (third (s-exp->list s)))
-           (parse (fourth (s-exp->list s))))]
-    [else (error 'parse "invalid input")]))
+    ))
+
+(define (parse-let [ss : (Listof S-Exp)]) : (Listof (Symbol * Exp))
+  (type-case (Listof S-Exp) ss
+    [empty empty]
+    [(cons s ss)
+      (if (s-exp-match? `{SYMBOL ANY} s)
+          (cons (pair
+                  (s-exp->symbol (first (s-exp->list s)))
+                  (parse (second (s-exp->list s))))
+                (parse-let ss))
+          (error 'parse "invalid input: let"))]))
 
 (define (parse-op [op : Symbol]) : Op
   (cond
@@ -68,8 +84,8 @@
             "invalid input")
   (test/exn (parse `{^ 1 2})
             "unknown operator")
-  (test (parse `{let x 1 {+ x 1}})
-        (letE 'x (numE 1) (opE (add) (varE 'x) (numE 1)))))
+  (test (parse `{let ((x 1)) {+ x 1}})
+        (letE (list (pair 'x (numE 1))) (opE (add) (varE 'x) (numE 1)))))
 
 ;; eval --------------------------------------
 
@@ -147,9 +163,21 @@
         (error 'eval "type error")])]
     [(varE x)
      (lookup-env x env)]
-    [(letE x e1 e2)
-     (let ([v1 (eval e1 env)])
-       (eval e2 (extend-env env x v1)))]))
+    [(letE ls e)
+      (eval e (calc-env ls env))]
+    [(let*E ls e)
+      (type-case (Listof (Symbol * Exp)) ls
+        [empty (eval e env)]
+        [(cons p rst-ls)
+         (eval (let*E rst-ls e) 
+            (extend-env env (fst p) (eval (snd p) env)))])]))
+
+(define (calc-env [ls : (Listof (Symbol * Exp))] [env : Env]) : Env
+  (type-case (Listof (Symbol * Exp)) ls
+    [empty env]
+    [(cons p rst-ls)
+      (let ([v (eval (snd p) env)])
+        (extend-env (calc-env rst-ls env) (fst p) v))]))
 
 (define (run [e : S-Exp]) : Value
   (eval (parse e) mt-env))

@@ -43,15 +43,16 @@
            (parse (fourth (s-exp->list s))))]
     [(s-exp-match? `{ANY ...} s)
      (gen-apply 
-            (rest (s-exp->list s))
+            (reverse (rest (s-exp->list s)))
             (parse (first  (s-exp->list s))))]
     [else (error 'parse "invalid input")]))
 
 (define (gen-lambda [ss : (Listof S-Exp)] [e : Exp]) : Exp
   (type-case (Listof S-Exp) ss
     [empty e]
-    [else (lamE (s-exp->symbol (first ss))
-                (gen-lambda (rest ss) e))]))
+    [(cons x xs)
+          (lamE (s-exp->symbol x)
+                (gen-lambda xs e))]))
 
 (define (gen-apply [ss : (Listof S-Exp)] [e : Exp]) : Exp
   (type-case (Listof S-Exp) ss

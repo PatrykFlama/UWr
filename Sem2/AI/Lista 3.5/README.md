@@ -17,7 +17,7 @@ Since _local beam search_ is search algorithm that keeps _k_ best nodes and recu
 So _local beam search_ for _k = 1_ is the same as _hill climbing_.
 
 #### b) Local beam search _with one state and no limit for saved states_
-Having only one starting state and no limit for saved states, _local beam search_ will behave exactly like _A*_.
+Having only one starting state and no limit for saved states, _local beam search_ will behave exactly like _BFS_.
 
 #### c) Simulated annealing with T = 0 for the entire running time of the algorithm
 Lets take _T = ε_, now $p=e^{\frac{ΔF}{T}}=e^{\frac{ΔF}{ε}} \xrightarrow ε 0$.\

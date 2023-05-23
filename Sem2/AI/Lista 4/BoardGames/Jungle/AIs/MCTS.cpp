@@ -8,7 +8,7 @@ using Clock = std::chrono::high_resolution_clock;
 
 class Node{
 public:
-    vector<int> children;   // todo - actually use it
+    vector<pair<int, pair<int, pair<int, int>>>> children;   // todo - actually use it
     bool is_leaf = true;
     int times_sampled = 0;
     int avg_value = 0;
@@ -57,34 +57,34 @@ public:
         // tree traversal phase:
         Node* here = &tree[state->hash];
         vector<Node*> path;
-        pair<int, pair<int, int>> best_move;
         path.push_back(here);
         while(not here->is_leaf){       // get leaf node in mcts tree
             int max_ucb = INT_MIN;
-            for(auto [piece, dir] : state->get_legal_moves()){
-                int next_hash = state->gen_next_hash(piece, dir);
+            int best_hash;
+            pair<int, pair<int, int>> best_move;
+            for(auto [next_hash, move] : here->children){
                 int curr_ucb = ucb1(next_hash, here->times_sampled);
                 if(curr_ucb > max_ucb){
-                    best_move = {piece, dir};
                     max_ucb = curr_ucb;
+                    best_hash = next_hash;
+                    best_move = move;
                 }
             }
 
+            here = &tree[best_hash];
             state->execute_move(best_move);
-            here = &tree[state->hash];
             path.push_back(here);
         }
 
 
         int result;
-        if(tree[state->hash].times_sampled == 0) result = rollout(state);
+        if(here->times_sampled == 0) result = rollout(state);
         else{   // node expansion
-            Node* here = &tree[state->hash];
             here->is_leaf = false;
             vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
             for(auto [piece, dir] : legal_moves){       // create new nodes for each possible move and save children
                 int next_hash = state->gen_next_hash(piece, dir);
-                here->children.push_back(next_hash);            //todo
+                here->children.push_back({next_hash, {piece, dir}});
                 tree[next_hash] = Node();
             }
             if(legal_moves.size() == 0) result = rollout(state);      // do rollout for one of those new states
@@ -94,7 +94,7 @@ public:
             }
         }
 
-        // backpropagation phase:
+        // backpropagation
         for(auto node : path){
             // node->avg_value += (result - node->avg_value)/node->times_sampled;
             node->avg_value += result;

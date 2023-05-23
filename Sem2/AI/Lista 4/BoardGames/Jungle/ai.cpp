@@ -27,6 +27,8 @@ void game_loop(){
     int MAX_TURNS = 500;        // maximum turns before game is considered a draw
     int win_counter[2] = {0, 0};
 
+    ai1.run_mcts_for(4*1000, &game);
+
     while(MAX_GAMES--){
         int turn = rand()%2;
         game.reset();

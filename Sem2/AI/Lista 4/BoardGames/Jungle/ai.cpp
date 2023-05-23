@@ -44,7 +44,7 @@ void game_loop(){
 
                 game.execute_move(move);
             } else{
-                auto move = ai1.gen_next_move(&game, 1*1000);
+                auto move = ai1.gen_next_move(&game, 500);
                 if(debug) cerr << "ai1_cap move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
                 auto [myxs, myys] = game.pieces[game.player][move.first];
                 if(debug) cerr << "(" << myxs << ' ' << myys << ' ' << myxs+move.second.first << ' ' << myys+move.second.second << ")\n";
@@ -85,7 +85,8 @@ void ido(int xs, int ys, int xd, int yd){
 void validator_loop(){
     #define cerr if(true) cerr
     Jungle game;    // defaults to starting at the bottom of board
-    AlphaBeta ai;
+    MCTS ai;
+    #define MCTS_TIME 1*1000        // in milliseconds
     // game.swap_players();
     rdy();
 
@@ -101,7 +102,12 @@ void validator_loop(){
             if(xs == -1) continue;      // opponent passed
             game.execute_move(game.get_piece_type(xs, ys), {xd, yd});
 
+            #ifdef MCTS_TIME
+            auto [piece, dir] = ai.gen_next_move(&game, MCTS_TIME);
+            #else
             auto [piece, dir] = ai.gen_next_move(&game);
+            #endif
+
             auto [myxs, myys] = game.pieces[game.player][piece];
             ido(myxs, myys, myxs+dir.first, myys+dir.second);
             cerr << "AI move: " << AnimalNames[piece] << ' ' << dir.first << ' ' << dir.second << '\n';
@@ -115,7 +121,12 @@ void validator_loop(){
             double time_for_move, time_for_game; 
             cin >> time_for_move >> time_for_game;
 
+            #ifdef MCTS_TIME
+            auto [piece, dir] = ai.gen_next_move(&game, MCTS_TIME);
+            #else
             auto [piece, dir] = ai.gen_next_move(&game);
+            #endif
+            
             auto [myxs, myys] = game.pieces[game.player][piece];
             ido(myxs, myys, myxs+dir.first, myys+dir.second);
             cerr << "AI move: " << AnimalNames[piece] << ' ' << dir.first << ' ' << dir.second << '\n';

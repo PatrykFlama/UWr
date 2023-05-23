@@ -79,10 +79,13 @@ public:
         int result;
         if(tree[state->hash].times_sampled == 0) result = rollout(state);
         else{   // node expansion
-            tree[state->hash].is_leaf = false;
+            Node* here = &tree[state->hash];
+            here->is_leaf = false;
             vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
-            for(auto [piece, dir] : legal_moves){       // create new nodes for each possible move
-                tree[state->gen_next_hash(piece, dir)] = Node();
+            for(auto [piece, dir] : legal_moves){       // create new nodes for each possible move and save children
+                int next_hash = state->gen_next_hash(piece, dir);
+                here->children.push_back(next_hash);            //todo
+                tree[next_hash] = Node();
             }
             if(legal_moves.size() == 0) result = rollout(state);      // do rollout for one of those new states
             else{
@@ -93,10 +96,10 @@ public:
 
         // backpropagation phase:
         for(auto node : path){
-            node->times_sampled++;
             // node->avg_value += (result - node->avg_value)/node->times_sampled;
             node->avg_value += result;
             if(node->times_sampled != 0) node->avg_value /= 2;
+            node->times_sampled++;
         }
     }
 
@@ -106,7 +109,7 @@ public:
         return here->avg_value + 2*sqrt(log(parent_visits)/here->times_sampled);
     }
 
-    int rollout(Jungle* state){ //todo
+    int rollout(Jungle* state){
         Jungle temp_state = *state;
         vector<pair<int, pair<int, int>>> legal_moves = temp_state.get_legal_moves();
         while(not temp_state.terminal(legal_moves)){
@@ -116,6 +119,6 @@ public:
 
             legal_moves = temp_state.get_legal_moves();
         }
-        return temp_state.heuristic_result(main_player);
+        return temp_state.result(main_player);
     }
 };

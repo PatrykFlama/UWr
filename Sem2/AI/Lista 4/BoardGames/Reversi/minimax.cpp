@@ -2,9 +2,9 @@
 using namespace std;
 
 //! ---- PROGRAM SETTINGS ----
-int DEPTH = 2;              // how many moves ahead AI (minimax and alpha beta) will look thru
+int DEPTH = 3;                      // how many moves ahead AI (minimax and alpha beta) will look thru
 #define wanna_go_faster
-// #define measure_time
+#define measure_time
 // #define enable_sorting
 #define SORTING_TRESHOLD 10         // after how many moves sorting is disabled
 //! --------------------------

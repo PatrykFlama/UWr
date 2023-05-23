@@ -1,3 +1,4 @@
+//! treat as deleted file
 #pragma once
 #include "Candidate.hpp"
 

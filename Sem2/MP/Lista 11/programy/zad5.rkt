@@ -113,6 +113,37 @@
                         [(eq? n (bind-name b))
                          (bind-val b)]
                         [else (lookup-env n rst-env)])]))
+
+
+; ----------------------
+(define-type-alias (Setof 'a) (Listof 'a))
+
+(define (emptyS) : (Setof 'a)
+  empty)
+
+(define (singletonS [x : 'a]) : (Setof 'a)
+  (list x)) 
+
+(define (inS [x : 'a] [s : (Setof 'a)]) : Boolean
+  (member x s))
+
+(define (unionS [s1 : (Setof 'a)] [s2 : (Setof 'a)]) : (Setof 'a)
+  (append (filter (λ (x) (not (member x s2))) s1) s2)) 
+
+(define (removeS [x : 'a] [s : (Setof 'a)]): (Setof 'a)
+  (filter (λ (y) (not (eq? x y))) s))
+
+(define (subsetS [s1 : (Setof 'a)] [s2 : (Setof 'a)]) : Boolean
+  (empty? (filter (λ (x) (not (member x s2))) s1)))
+
+(define (equalS [s1 : (Setof 'a)] [s2 : (Setof 'a)]) : Boolean
+  (and (subsetS s1 s2) (subsetS s2 s1)))
+  
+(define (fromList [xs : (Listof 'a)]) : (Setof 'a)
+  (foldr (λ (x s) (unionS (singletonS x) s))
+         (emptyS)
+         xs))
+
 (define (find-env [n : Symbol] [env : Env]) : Boolean
   (type-case (Listof Binding) env
     [empty #f]
@@ -121,18 +152,18 @@
                          #t]
                         [else (find-env n rst-env)])]))
 
-(define (_fv [e : Exp] [env : Env]) : (Listof Symbol)
+(define (_fv [e : Exp] [env : Env]) : (Setof Symbol)
     (type-case Exp e
-      [(numE n) empty]
-      [(opE o l r) (append (_fv l env) (_fv r env))]
-      [(ifE b l r) (append (_fv b env) (append (_fv l env) (_fv r env)))]
-      [(varE x) (if (find-env x env) empty (list x))]
-      [(letE x e1 e2) (append 
+      [(numE n) (emptyS)]
+      [(opE o l r) (unionS (_fv l env) (_fv r env))]
+      [(ifE b l r) (unionS (_fv b env) (unionS (_fv l env) (_fv r env)))]
+      [(varE x) (if (find-env x env) (emptyS) (fromList (list x)))]
+      [(letE x e1 e2) (unionS 
                                 (_fv e1 env)
                                 (_fv e2 (extend-env env x (numV 0))))]
       [(lamE x e) (_fv e (extend-env env x (numV 0)))]
-      [(appE e1 e2) (append (_fv e1 env) (_fv e2 env))]))
-(define (fv [e : Exp]) : (Listof Symbol)
+      [(appE e1 e2) (unionS (_fv e1 env) (_fv e2 env))]))
+(define (fv [e : Exp]) : (Setof Symbol)
   (_fv e mt-env))
 
 ;; primitive operations

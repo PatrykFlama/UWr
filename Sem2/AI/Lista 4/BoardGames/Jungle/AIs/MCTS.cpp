@@ -2,6 +2,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 #include "Jungle.cpp"
+using Clock = std::chrono::high_resolution_clock;
+
 
 
 class Node{
@@ -22,7 +24,12 @@ public:
         tree[Jungle(1).hash] = Node();
     }
 
-    pair<int, pair<int, int>> gen_next_move(Jungle* state){            // {piece, {dirx, diry}}
+    pair<int, pair<int, int>> gen_next_move(Jungle* state, int time){
+        run_mcts_for(time, state);
+        return get_best_move(state);
+    }
+
+    pair<int, pair<int, int>> get_best_move(Jungle* state){            // {piece, {dirx, diry}}
         vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
         pair<int, pair<int, int>> best_move;
         int max_score = INT_MIN;
@@ -38,9 +45,10 @@ public:
         return best_move;
     }
 
-    void run_mcts_for(int miliseocnds, Jungle* state){
+    void run_mcts_for(int milliseocnds, Jungle* state){
         main_player = state->player;
-        while(miliseocnds--){       // todo - add time limit calculation
+        auto start = Clock::now();
+        while(chrono::duration_cast<chrono::milliseconds>(Clock::now() - start).count() < milliseocnds){
             mcts(state);
         }
     }
@@ -99,14 +107,15 @@ public:
     }
 
     int rollout(Jungle* state){ //todo
-        vector<pair<int, pair<int, int>>> legal_moves = state->get_legal_moves();
-        while(not state->terminal(legal_moves)){
+        Jungle temp_state = *state;
+        vector<pair<int, pair<int, int>>> legal_moves = temp_state.get_legal_moves();
+        while(not temp_state.terminal(legal_moves)){
             // pick random move
             auto random = rand() % legal_moves.size();
-            //! state = &(state->gen_next_state(legal_moves[random].first, legal_moves[random].second));
+            temp_state.execute_move(legal_moves[random].first, legal_moves[random].second);
 
-            legal_moves = state->get_legal_moves();
+            legal_moves = temp_state.get_legal_moves();
         }
-        return state->result(main_player);
+        return temp_state.heuristic_result(main_player);
     }
 };

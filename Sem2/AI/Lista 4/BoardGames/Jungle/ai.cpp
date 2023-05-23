@@ -16,13 +16,13 @@ int main() {
 
 
 void game_loop(){
-    const bool display_res = false;
+    const bool display_res = true;
     const bool display_res_board = false;
     const bool debug = false;
     srand(time(NULL));
     Jungle game;
     zad3AI ai0;
-    AlphaBeta ai1;
+    MCTS ai1;
     int MAX_GAMES = 100;        // games to be played
     int MAX_TURNS = 500;        // maximum turns before game is considered a draw
     int win_counter[2] = {0, 0};
@@ -44,7 +44,7 @@ void game_loop(){
 
                 game.execute_move(move);
             } else{
-                auto move = ai1.gen_next_move(&game);
+                auto move = ai1.gen_next_move(&game, 1*1000);
                 if(debug) cerr << "ai1_cap move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
                 auto [myxs, myys] = game.pieces[game.player][move.first];
                 if(debug) cerr << "(" << myxs << ' ' << myys << ' ' << myxs+move.second.first << ' ' << myys+move.second.second << ")\n";

@@ -266,17 +266,17 @@ public:
         return legal_moves.empty() || game_won();
     }
 
-    int result(int main_player) const {
+    int result(int main_player) const { // for mcts, big values for precise avg results
         int res = 0;
         for(int i = 0; i < pieces[main_player].size(); i++){
             if(pieces[main_player][i].first != -1){      // if piece is alive
-                if(get_cell(pieces[main_player][i]) == '*') return 3;
+                if(get_cell(pieces[main_player][i]) == '*') return INT_MAX;
             }
             if(pieces[1-main_player][i].first != -1){
-                if(get_cell(pieces[main_player][i]) == '*') return -3; 
+                if(get_cell(pieces[main_player][i]) == '*') return INT_MIN; 
             }
         }
-        return -1;          // -1 for draw
+        return -1000000;          // for draw
     }
 
     int heuristic_result(int main_player){

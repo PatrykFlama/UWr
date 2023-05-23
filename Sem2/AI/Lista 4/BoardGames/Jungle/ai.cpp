@@ -21,13 +21,11 @@ void game_loop(){
     const bool debug = false;
     srand(time(NULL));
     Jungle game;
-    zad3AI ai0;
-    MCTS ai1;
-    int MAX_GAMES = 100;        // games to be played
+    Random ai0;
+    AlphaBeta ai1;
+    int MAX_GAMES = 10;        // games to be played
     int MAX_TURNS = 500;        // maximum turns before game is considered a draw
     int win_counter[2] = {0, 0};
-
-    ai1.run_mcts_for(4*1000, &game);
 
     while(MAX_GAMES--){
         int turn = rand()%2;
@@ -40,14 +38,14 @@ void game_loop(){
             turns++;
             if(!turn){
                 auto move = ai0.gen_next_move(&game);
-                if(debug) cerr << "ai0_low move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
+                if(debug) cerr << "ai0 move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
                 auto [myxs, myys] = game.pieces[game.player][move.first];
                 if(debug) cerr << "(" << myxs << ' ' << myys << ' ' << myxs+move.second.first << ' ' << myys+move.second.second << ")\n";
 
                 game.execute_move(move);
             } else{
-                auto move = ai1.gen_next_move(&game, 500);
-                if(debug) cerr << "ai1_cap move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
+                auto move = ai1.gen_next_move(&game);
+                if(debug) cerr << "ai1 move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
                 auto [myxs, myys] = game.pieces[game.player][move.first];
                 if(debug) cerr << "(" << myxs << ' ' << myys << ' ' << myxs+move.second.first << ' ' << myys+move.second.second << ")\n";
 

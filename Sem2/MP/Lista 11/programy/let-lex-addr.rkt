@@ -265,6 +265,36 @@
      (letA (translate e1 env)
            (translate e2 (extend-envA env x)))]))
 
+
+; ------------------------------------------
+(define (generate-var-name number)
+  (if (> number 20)
+      (error 'generate-var-name "too many variables or wrong id")
+      (list-ref 
+        '(x y z a b c d e f g h i j k l m n o p r s t)
+        number)))
+
+
+(define (translateA [e : ExpA] [env : (EnvA Symbol)] [var-counter : Number]) : Exp 
+  (type-case ExpA e
+    [(numA n)
+     (numE n)]
+    [(opA o l r)
+     (opE o (translateA l env var-counter) (translateA r env var-counter))]
+    [(ifA b l r)
+     (ifE (translateA b env var-counter)
+          (translateA l env var-counter)
+          (translateA r env var-counter))]
+    [(varA id)
+     (varE (list-ref env id))] 
+    [(letA e1 e2)
+     (let ((name (generate-var-name var-counter))) 
+           (letE name
+                 (translateA e1 env var-counter)
+                 (translateA e2 (extend-envA env name) (+ var-counter 1))))]))
+; ------------------------------------------
+
+
 (module+ test
   (test (run `2)
         (runA `2))
@@ -287,4 +317,14 @@
                        {* x 3}}}})
         (runA `{let x 1
                  {+ x {let x {+ x 1}
-                        {* x 3}}}})))
+                        {* x 3}}}}))
+  (test (eval   
+         (translateA (translate 
+              (parse `{let x 1 {+ x {let x {+ x 1} {* x 3}}}})
+              mt-env) empty 0)
+         mt-env)
+        (eval
+         (parse `{let x 1
+                 {+ x {let x {+ x 1}
+                        {* x 3}}}})
+         mt-env)))

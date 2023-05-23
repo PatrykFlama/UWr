@@ -2,6 +2,9 @@
 
 (module+ test
   (print-only-errors #t))
+(require (typed-in racket/base
+                   (gensym : (-> Symbol))))
+
 
 ;; abstract syntax -------------------------------
 
@@ -267,14 +270,6 @@
 
 
 ; ------------------------------------------
-(define (generate-var-name number)
-  (if (> number 20)
-      (error 'generate-var-name "too many variables or wrong id")
-      (list-ref 
-        '(x y z a b c d e f g h i j k l m n o p r s t)
-        number)))
-
-
 (define (untranslate [e : ExpA] [env : (EnvA Symbol)] [var-counter : Number]) : Exp 
   (type-case ExpA e
     [(numA n)
@@ -288,7 +283,8 @@
     [(varA id)
      (varE (list-ref env id))] 
     [(letA e1 e2)
-     (let ((name (generate-var-name var-counter))) 
+    ;  (let ((name (generate-var-name var-counter))) 
+     (let ((name (gensym))) 
            (letE name
                  (untranslate e1 env var-counter)
                  (untranslate e2 (extend-envA env name) (+ var-counter 1))))]))

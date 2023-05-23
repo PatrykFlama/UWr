@@ -85,8 +85,8 @@ void ido(int xs, int ys, int xd, int yd){
 void validator_loop(){
     #define cerr if(true) cerr
     Jungle game;    // defaults to starting at the bottom of board
-    MCTS ai;
-    #define MCTS_TIME 1*1000        // in milliseconds
+    AlphaBeta ai;
+    // #define MCTS_TIME 1*1000        // in milliseconds
     // game.swap_players();
     rdy();
 

@@ -5,6 +5,7 @@ using namespace std;
 int DEPTH = 3;                      // how many moves ahead AI (minimax and alpha beta) will look thru
 #define wanna_go_faster
 #define measure_time
+const int PREPRINT = 10;
 // #define enable_sorting
 #define SORTING_TRESHOLD 10         // after how many moves sorting is disabled
 //! --------------------------
@@ -378,7 +379,7 @@ int main(int argc, char *argv[]){
     #ifdef measure_time
     chrono::milliseconds::rep avg_player_time = 0;
     int moves = 0;
-    int preprint = 30-1;
+    int preprint = PREPRINT-1;
     #endif
 
     

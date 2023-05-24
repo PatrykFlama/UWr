@@ -4,10 +4,10 @@ using namespace std;
 //! ---- PROGRAM SETTINGS ----
 int DEPTH = 3;                      // how many moves ahead AI (minimax and alpha beta) will look thru
 #define wanna_go_faster
-#define measure_time
-const int PREPRINT = 10;
+// #define measure_time
+// const int PREPRINT = 10;
 // #define enable_sorting
-#define SORTING_TRESHOLD 10         // after how many moves sorting is disabled
+// #define SORTING_TRESHOLD 10         // after how many moves sorting is disabled
 //! --------------------------
 
 using Clock = std::chrono::high_resolution_clock;

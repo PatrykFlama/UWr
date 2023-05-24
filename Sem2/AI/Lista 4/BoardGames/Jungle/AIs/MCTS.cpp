@@ -3,7 +3,7 @@
 using namespace std;
 #include "Jungle.cpp"
 using Clock = std::chrono::high_resolution_clock;
-
+#define HEUR_AS_ROLLOUT			// use heuristics as rollout result
 
 
 class Node{
@@ -25,7 +25,8 @@ public:
     }
 
     pair<int, pair<int, int>> gen_next_move(Jungle* state, int time){
-        run_mcts_for(time, state);
+        main_player = state->player;
+		run_mcts_for(time, state);
         return get_best_move(state);
     }
 
@@ -110,6 +111,9 @@ public:
     }
 
     int rollout(Jungle* state){
+		#ifdef HEUR_AS_ROLLOUT
+		return state->heuristic_result(main_player);
+		#else
         Jungle temp_state = *state;
         vector<pair<int, pair<int, int>>> legal_moves = temp_state.get_legal_moves();
         while(not temp_state.terminal(legal_moves)){
@@ -120,5 +124,6 @@ public:
             legal_moves = temp_state.get_legal_moves();
         }
         return temp_state.result(main_player);
+		#endif
     }
 };

@@ -94,3 +94,6 @@ Based on the table, the **rational player** (the rational thing to do) is to **d
 3. So independantly from opponent player choice, my payoff is increased by defecting.
 
 But **superrational players** would assume that opponent is going thru the same thought process and would see that most profitable for them is when they will both **cooperate**, choosing that option.  
+
+# Exercise 10
+[Nice link, probably corelated with the topic](https://ncase.me/trust/)

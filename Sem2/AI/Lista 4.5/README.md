@@ -19,14 +19,15 @@ During the bidding opponents decide what type of playthrought is most profitable
 But that creates another problem - opponent can be bluffing during the bidding or simply can try to communicate with his partner creating false impression about his hand.
 
 ## c)
-In such simulation we ignore a lot of small details, that are quite frequent in real life. For example bluffing, cheating, cooperation not provided for by the rules of the game, assuming that opponent is playing optimally, etc. Those factors can have significant impact on the game, but are hard to simulate.
+In such simulation we ignore a lot of small details, that are quite frequent in real life. For example bluffing, cheating, cooperation not provided for by the rules of the game, assuming that opponent is playing optimally, etc. Those factors can have significant impact on the game, but are hard to simulate.  
+Also poker has some stuff in it. <!-- TODO -->
 
 # Exercise 4
 Agents for cheat game (better than random)  
 * Agent 1  
 First thing that comes to mind is simply player that counts cards, to which he is sure that are in the game. When opponent declares impossible amount of cards we can assume that he is cheating and can check him.
 
-* Agent 2
+* Agent 2  
 Another simple improvement would be our play style - how we put the cards on the stack. We can always, if its possible, put without cheating the lowest possible cards up to some set figure (that we precalculatet to be optimal, lets say that thats 8). Then we would save the more powerful cards for later and in another range (precalculated - 9 Q) try to blend in the lowest cards that we have. For cards above that range we play normally, if possible.
 
 # Exercise 5
@@ -75,7 +76,8 @@ Plotting xor function we can see that we are unable to separate it using just on
 We can represent any boolean function with neural network. Bollean function takes _n_ arguments and returns binary output. To represent such function we actually need 1 layer of neurons (up to $2^n$). In the worst case, considering input very diverse, we could assing every input combination to neuron weighting the input appropriately.
 
 # Exercise 9
-_Superrationality_ is a concept in game theory, which states that the opponent performs identical reasoning as we do, and goes for the best result that it gives with such assumption.  
+_Superrationality_ is a concept in game theory, which states that the opponent performs identical reasoning as we do, and goes for the best result that it gives with such assumption.
+  
 ### Example on the prissoner's dilemma:
 The most known version of prissoner's dilemma is based on sentences for criminals, but in the example from (Wikipedia)[https://en.wikipedia.org/wiki/Superrationality] cash prizes are used instead.  
 Two players have choice to cooperate or defect without communicating. If one of them defects the other one will get $200, if both deflect they will get $1, and if noone deflect both get $100.  

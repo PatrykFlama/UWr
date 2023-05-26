@@ -96,7 +96,7 @@
 (define gate-nor-delay  1)
 (define gate-xor-delay  2)
 
-(define (gate-not in out)
+(define (gate-not out in)
     (define (_gate-not)
         (after-delay 
             (wire-sim in)
@@ -106,7 +106,7 @@
     (wire-on-change! in _gate-not)
     (_gate-not))
 
-(define (gate-and in1 in2 out)
+(define (gate-and out in1 in2)
     (define (_gate-and)
         (after-delay 
             (wire-sim in1)
@@ -117,7 +117,7 @@
     (wire-on-change! in2 _gate-and)
     (_gate-and))
 
-(define (gate-nand in1 in2 out)
+(define (gate-nand out in1 in2)
     (define (_gate-nand)
         (after-delay 
             (wire-sim in1)
@@ -128,7 +128,7 @@
     (wire-on-change! in2 _gate-nand)
     (_gate-nand))
 
-(define (gate-or in1 in2 out)
+(define (gate-or out in1 in2)
     (define (_gate-or)
         (after-delay 
             (wire-sim in1)
@@ -139,7 +139,7 @@
     (wire-on-change! in2 _gate-or)
     (_gate-or))
 
-(define (gate-nor in1 in2 out) 
+(define (gate-nor out in1 in2) 
     (define (_gate-nor)
         (after-delay 
             (wire-sim in1)
@@ -150,7 +150,7 @@
     (wire-on-change! in2 _gate-nor)
     (_gate-nor))
 
-(define (gate-xor in1 in2 out)
+(define (gate-xor out in1 in2)
     (define (_gate-xor)
         (after-delay 
             (wire-sim in1)
@@ -167,27 +167,27 @@
 ; ----- SYNTACTIC ICING (WIRE) -----
 (define (wire-not in) 
     (let ((out (make-wire (wire-sim in))))
-        (gate-not in out)
+        (gate-not out in)
         out))
 (define (wire-and in1 in2)
     (let ((out (make-wire (wire-sim in1))))
-        (gate-and in1 in2 out)
+        (gate-and out in1 in2)
         out))
 (define (wire-nand in1 in2)
     (let ((out (make-wire (wire-sim in1))))
-        (gate-nand in1 in2 out)
+        (gate-nand out in1 in2)
         out))
 (define (wire-or in1 in2)
     (let ((out (make-wire (wire-sim in1))))
-        (gate-or in1 in2 out)
+        (gate-or out in1 in2)
         out))
 (define (wire-nor in1 in2)
     (let ((out (make-wire (wire-sim in1))))
-        (gate-nor in1 in2 out)
+        (gate-nor out in1 in2)
         out))
 (define (wire-xor in1 in2)
     (let ((out (make-wire (wire-sim in1))))
-        (gate-xor in1 in2 out)
+        (gate-xor out in1 in2)
         out))
 
 ; ----- BUS -----

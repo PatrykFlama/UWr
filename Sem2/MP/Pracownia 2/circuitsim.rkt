@@ -43,34 +43,34 @@
         (make-heap (lambda (e1 e2) 
             (<= (event-time e1) (event-time e2))))))
 
-(define (sim-wait! sim time)
+(define (sim-wait! S time)
     (define (call-all) (cond
-        [(= 0 (heap-count (sim-actions sim))) (void)]
-        [(< time (event-time (heap-min (sim-actions sim)))) 
+        [(= 0 (heap-count (sim-actions S))) (void)]
+        [(< (sim-time S) (event-time (heap-min (sim-actions S)))) 
             (void)]
         [else (begin
-            ((event-action (heap-min (sim-actions sim))))
-            (heap-remove-min! (sim-actions sim))
+            ((event-action (heap-min (sim-actions S))))
+            (heap-remove-min! (sim-actions S))
             (call-all))]))
 
     (if (= time 0) (void) (begin
     (call-all)
-    (set-sim-time! sim (+ (sim-time sim) 1))
-    (sim-wait! sim (- time 1)))))
+    (set-sim-time! S (+ (sim-time S) 1))
+    (sim-wait! S (- time 1)))))
 
-(define (sim-add-action! sim time action)
+(define (sim-add-action! S time action)
     (heap-add! 
-        (sim-actions sim) 
+        (sim-actions S) 
         (event time action)))
 
-(define (sim-add-action-now! sim action)
-    (sim-add-action! sim (sim-time sim) action))
+(define (sim-add-action-now! S action)
+    (sim-add-action! S (sim-time S) action))
 
 ; ----- WIRE -----
 (struct wire (value actions sim) #:mutable #:transparent)
 
-(define (make-wire sim)     ;; todo add sim
-    (wire #f '() sim))
+(define (make-wire S)
+    (wire #f '() S))
 
 (define (wire-on-change! wire action-procedure)
     (set-wire-actions! 
@@ -167,8 +167,8 @@
     (wire-on-change! in2 _gate-xor)
     (_gate-xor))
 
-(define (after-delay sim delay action)
-    (sim-add-action! sim (+ delay (sim-time sim)) action))
+(define (after-delay S delay action)
+    (sim-add-action! S (+ delay (sim-time S)) action))
 
 ; ----- SYNTACTIC ICING (WIRE) -----
 

@@ -61,10 +61,10 @@
 (define (sim-add-action! S time action)
     (heap-add! 
         (sim-actions S) 
-        (event time action)))
+        (event (+ time (sim-time S)) action)))
 
 (define (sim-add-action-now! S action)
-    (sim-add-action! S (sim-time S) action))
+    (sim-add-action! S 0 action))
 
 ; ----- WIRE -----
 (struct wire (value actions sim) #:mutable #:transparent)
@@ -84,21 +84,22 @@
         (set-wire-value! wire new_value)
         (if (not (equal? old_value new_value))
             (for-each (lambda (action) 
-                    (sim-add-action-now! (wire-sim wire) action))
+                    ;(sim-add-action-now! (wire-sim wire) action))       ;;todo which is correct?
+                    (action))
                 (wire-actions wire))
             (void))))
 
 ; ------ GATES -----
 (define gate-not-delay  1)
 (define gate-and-delay  1)
-(define gate-nand-delay 2)
+(define gate-nand-delay 1)
 (define gate-or-delay   1)
 (define gate-nor-delay  1)
 (define gate-xor-delay  2)
 
 (define (gate-not in out)
     (define (_gate-not)
-        (let ((new-value (not (wire-value in))))
+        (let ((new-value (not (wire-value in))))           ; todo that should be calculated in lambda
              (after-delay 
                 (wire-sim in)
                 gate-not-delay
@@ -168,7 +169,7 @@
     (_gate-xor))
 
 (define (after-delay S delay action)
-    (sim-add-action! S (+ delay (sim-time S)) action))
+    (sim-add-action! S delay action))
 
 ; ----- SYNTACTIC ICING (WIRE) -----
 
@@ -201,4 +202,7 @@
 (define SIM (make-sim))
 (define w1 (make-wire SIM))
 (define w2 (make-wire SIM))
+(define w3 (make-wire SIM))
 (gate-not w1 w2)
+(gate-not w2 w3)
+(gate-not w3 w1)

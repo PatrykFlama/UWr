@@ -69,7 +69,11 @@ std::pair<T,U> operator+(const std::pair<T,U> & l,const std::pair<T,U> & r) {
 
 
 int hash_table[2][8][7][9];     // player, piece, x, y -> random int for zobrist hashing
-// TODO randomize hash table, once per program run
+void randomize_hash_table(){
+    srand(time(NULL)-100);
+    for(int i=0;i<2;i++) for(int j=0;j<8;j++) for(int x=0;x<7;x++) for(int y=0;y<9;y++) 
+        hash_table[i][j][x][y] = rand();
+}
 
 
 class Jungle {
@@ -83,6 +87,7 @@ public:
     /* #region //* ----constructors---- */
     Jungle() : Jungle(0) {}
     Jungle(int player){
+        randomize_hash_table();
         this->player = player;
         reset();
         recalc_hash();

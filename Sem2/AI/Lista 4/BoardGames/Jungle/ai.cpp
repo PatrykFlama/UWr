@@ -22,7 +22,7 @@ void game_loop(){
     srand(time(NULL));
     Jungle game;
     Random ai0;
-    AlphaBeta ai1;
+    MCTS ai1;
     int MAX_GAMES = 10;        // games to be played
     int MAX_TURNS = 500;        // maximum turns before game is considered a draw
     int win_counter[2] = {0, 0};
@@ -44,7 +44,7 @@ void game_loop(){
 
                 game.execute_move(move);
             } else{
-                auto move = ai1.gen_next_move(&game);
+                auto move = ai1.gen_next_move(&game, 300);
                 if(debug) cerr << "ai1 move: " << AnimalNames[move.first] << ' ' << move.second.first << ' ' << move.second.second << ' '; 
                 auto [myxs, myys] = game.pieces[game.player][move.first];
                 if(debug) cerr << "(" << myxs << ' ' << myys << ' ' << myxs+move.second.first << ' ' << myys+move.second.second << ")\n";

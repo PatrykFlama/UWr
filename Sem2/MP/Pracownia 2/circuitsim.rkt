@@ -204,20 +204,35 @@
          0
          ws))
 
-; ----- FLIP FLOP -----
+; ----- COMPONENTS -----
 (define (flip-flop out clk data)
-  (define sim (wire-sim data))
-  (define w1  (make-wire sim))
-  (define w2  (make-wire sim))
-  (define w3  (wire-nand (wire-and w1 clk) w2))
-  (gate-nand w1 clk (wire-nand w2 w1))
-  (gate-nand w2 w3 data)
-  (gate-nand out w1 (wire-nand out w3)))
+    (define sim (wire-sim data))
+    (define w1  (make-wire sim))
+    (define w2  (make-wire sim))
+    (define w3  (wire-nand (wire-and w1 clk) w2))
+    (gate-nand w1 clk (wire-nand w2 w1))
+    (gate-nand w2 w3 data)
+    (gate-nand out w1 (wire-nand out w3)))
 
 
-; (define SIM (make-sim))
-; (define clk (make-wire SIM))
-; (define data (make-wire SIM))
-; (define out (make-wire SIM))
-; (flip-flop out clk data)
+(define (half-adder inA inB outS outC)
+    (define sim (wire-sim inA))
+    (gate-and outC inA inB)
+    (gate-xor outS inA inB))
 
+(define (full-adder inA inB inC outS outC)
+    (define sim (wire-sim inA))
+    (define ha1-oS (make-wire sim))
+    (define ha1-oC (make-wire sim))
+    (define ha2-oC (make-wire sim))
+    (half-adder inA inB ha1-oS ha1-oC)
+    (half-adder inC ha1-oS outS ha2-oC)
+    (gate-or outC ha2-oC ha1-oC))
+
+(define SIM (make-sim))
+(define inA (make-wire SIM))
+(define inB (make-wire SIM))
+(define inC (make-wire SIM))
+(define outS (make-wire SIM))
+(define outC (make-wire SIM))
+(full-adder inA inB inC outS outC)

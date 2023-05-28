@@ -11,7 +11,7 @@ void game_loop();
 
 
 int main() {
-    game_loop();
+    validator_loop();
 }
 
 
@@ -110,7 +110,7 @@ void validator_loop(){
 
             auto [myxs, myys] = game.pieces[game.player][piece];
             ido(myxs, myys, myxs+dir.first, myys+dir.second);
-            cerr << "AI move: " << AnimalNames[piece] << ' ' << dir.first << ' ' << dir.second << '\n';
+            // cerr << "AI move: " << AnimalNames[piece] << ' ' << dir.first << ' ' << dir.second << '\n';
             // for(auto [piece, dir] : game.get_legal_moves()){
             //     cerr << AnimalNames[piece] << ' ' << dir.first << ' ' << dir.second << '\n';
             // }
@@ -129,7 +129,7 @@ void validator_loop(){
             
             auto [myxs, myys] = game.pieces[game.player][piece];
             ido(myxs, myys, myxs+dir.first, myys+dir.second);
-            cerr << "AI move: " << AnimalNames[piece] << ' ' << dir.first << ' ' << dir.second << '\n';
+            // cerr << "AI move: " << AnimalNames[piece] << ' ' << dir.first << ' ' << dir.second << '\n';
             game.execute_move(piece, dir);
         } else if(cmd == "ONEMORE"){
             game.reset();

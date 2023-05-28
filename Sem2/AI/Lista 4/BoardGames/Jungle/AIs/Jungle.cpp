@@ -177,8 +177,8 @@ public:
         hash ^= hash_table[player][piece][new_x][new_y];    // add current piece at new location to hash
 
         for(int i = 0; i < pieces[1-player].size() ;i++){       // beat opponent pieces
-            if(pair<int, int>(x, y) == pieces[1-player][i]){
-                hash ^= hash_table[1-player][i][x][y];      // remove opponent piece at location from hash
+            if(pair<int, int>(new_x, new_y) == pieces[1-player][i]){
+                hash ^= hash_table[1-player][i][new_x][new_y];      // remove opponent piece at location from hash
                 pieces[1-player][i] = pair<int, int>(-1, -1);
                 break;
             }

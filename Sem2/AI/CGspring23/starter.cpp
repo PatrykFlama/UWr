@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-using namespace std;        // todo: get rid of it
+using namespace std;
 
 
 class Cell {
@@ -17,8 +17,7 @@ class Cell {
         }
 };
 
-int main()
-{
+int main() {
     vector<Cell> cells;
     vector<int> myBases, oppBases;
     int numberOfCells; // amount of hexagonal cells in this map

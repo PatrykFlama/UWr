@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-using namespace std;        // todo: just dont
+using namespace std;        // TODO: just dont
 
 /**
  * Auto-generated code below aims at helping you parse

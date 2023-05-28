@@ -1,5 +1,5 @@
 #lang racket
-(require "solution")
+(require "solution.rkt")
 
 (define sim (make-sim))
 

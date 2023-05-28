@@ -44,19 +44,20 @@
             (<= (event-time e1) (event-time e2))))))
 
 (define (sim-wait! S time)
-    (define (call-all) (cond
-        [(= 0 (heap-count (sim-actions S))) (void)]
-        [(< (sim-time S) (event-time (heap-min (sim-actions S)))) 
-            (void)]
-        [else (begin
-            ((event-action (heap-min (sim-actions S))))
-            (heap-remove-min! (sim-actions S))
-            (call-all))]))
-
-    (if (= time 0) (void) (begin
-    (call-all)
-    (set-sim-time! S (+ (sim-time S) 1))
-    (sim-wait! S (- time 1)))))
+    (let ((time-end (+ time (sim-time S))))
+    (define (_sim-wait!)
+        (if [or
+                (= 0 (heap-count (sim-actions S)))
+                (< time-end (event-time (heap-min (sim-actions S))))]
+            (void)
+            (let ((next-event (heap-min (sim-actions S))))
+                (begin
+                    (heap-remove-min! (sim-actions S))
+                    (set-sim-time! S (event-time next-event))
+                    ((event-action next-event))
+                    (_sim-wait!)))))
+    (_sim-wait!)
+    (set-sim-time! S time-end)))
 
 (define (sim-add-action! S time action)
     (heap-add! 
@@ -77,7 +78,8 @@
         wire
         (cons 
             action-procedure
-            (wire-actions wire))))
+            (wire-actions wire)))
+    (action-procedure))
 
 (define (wire-set! wire new_value)
     (let ((old_value (wire-value wire)))
@@ -99,7 +101,7 @@
 (define (gate-not out in)
     (define (_gate-not)
         (after-delay 
-            (wire-sim in)
+            (wire-sim out)
             gate-not-delay
             (lambda ()
                 (wire-set! out (not (wire-value in))))))
@@ -109,7 +111,7 @@
 (define (gate-and out in1 in2)
     (define (_gate-and)
         (after-delay 
-            (wire-sim in1)
+            (wire-sim out)
             gate-and-delay
             (lambda ()
                 (wire-set! out (and (wire-value in1) (wire-value in2))))))
@@ -120,10 +122,10 @@
 (define (gate-nand out in1 in2)
     (define (_gate-nand)
         (after-delay 
-            (wire-sim in1)
+            (wire-sim out)
             gate-nand-delay
             (lambda ()
-                (wire-set! out (not (and (wire-value in1) (wire-value in2)))))))
+                (wire-set! out (nand (wire-value in1) (wire-value in2))))))
     (wire-on-change! in1 _gate-nand)
     (wire-on-change! in2 _gate-nand)
     (_gate-nand))
@@ -131,7 +133,7 @@
 (define (gate-or out in1 in2)
     (define (_gate-or)
         (after-delay 
-            (wire-sim in1)
+            (wire-sim out)
             gate-or-delay
             (lambda ()
                 (wire-set! out (or (wire-value in1) (wire-value in2))))))
@@ -142,10 +144,10 @@
 (define (gate-nor out in1 in2) 
     (define (_gate-nor)
         (after-delay 
-            (wire-sim in1)
+            (wire-sim out)
             gate-nor-delay
             (lambda ()
-                (wire-set! out (not (or (wire-value in1) (wire-value in2)))))))
+                (wire-set! out (nor (wire-value in1) (wire-value in2))))))
     (wire-on-change! in1 _gate-nor)
     (wire-on-change! in2 _gate-nor)
     (_gate-nor))
@@ -153,7 +155,7 @@
 (define (gate-xor out in1 in2)
     (define (_gate-xor)
         (after-delay 
-            (wire-sim in1)
+            (wire-sim out)
             gate-xor-delay
             (lambda ()
                 (wire-set! out (xor (wire-value in1) (wire-value in2))))))
@@ -215,24 +217,24 @@
     (gate-nand out w1 (wire-nand out w3)))
 
 
-(define (half-adder inA inB outS outC)
-    (define sim (wire-sim inA))
-    (gate-and outC inA inB)
-    (gate-xor outS inA inB))
+; (define (half-adder inA inB outS outC)
+;     (define sim (wire-sim inA))
+;     (gate-and outC inA inB)
+;     (gate-xor outS inA inB))
 
-(define (full-adder inA inB inC outS outC)
-    (define sim (wire-sim inA))
-    (define ha1-oS (make-wire sim))
-    (define ha1-oC (make-wire sim))
-    (define ha2-oC (make-wire sim))
-    (half-adder inA inB ha1-oS ha1-oC)
-    (half-adder inC ha1-oS outS ha2-oC)
-    (gate-or outC ha2-oC ha1-oC))
+; (define (full-adder inA inB inC outS outC)
+;     (define sim (wire-sim inA))
+;     (define ha1-oS (make-wire sim))
+;     (define ha1-oC (make-wire sim))
+;     (define ha2-oC (make-wire sim))
+;     (half-adder inA inB ha1-oS ha1-oC)
+;     (half-adder inC ha1-oS outS ha2-oC)
+;     (gate-or outC ha2-oC ha1-oC))
 
-(define SIM (make-sim))
-(define inA (make-wire SIM))
-(define inB (make-wire SIM))
-(define inC (make-wire SIM))
-(define outS (make-wire SIM))
-(define outC (make-wire SIM))
-(full-adder inA inB inC outS outC)
+; (define SIM (make-sim))
+; (define inA (make-wire SIM))
+; (define inB (make-wire SIM))
+; (define inC (make-wire SIM))
+; (define outS (make-wire SIM))
+; (define outC (make-wire SIM))
+; (full-adder inA inB inC outS outC)

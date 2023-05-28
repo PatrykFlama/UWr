@@ -1,4 +1,26 @@
 [(wróć)](../)
+
+<details>
+    <summary>Podsumowanie wykładu</summary>
+
+1. Diagramy pudełkowe
+    * Diagramy pudełkowe dla list
+    * Współdzielenie i kopiowanie
+    * Pojęcie nieużytku
+    * Predykaty eq? i equal?
+2. Cytowanie w Rackecie
+    * Symbole
+    * Cytowanie wyrażeń listowych
+    * Notacja z kropką
+    * Kwazicytowanie
+3. Funkcje wyższego rzędu
+    * Funkcje jako narzędzie abstrakcji
+    * Funkcje map i filter
+    * Funkcje foldr i foldl
+    * Wyrażenia lambda
+
+</details>
+
 # Lista 3
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---|---|---|---|---|---|---|

@@ -1,4 +1,18 @@
 [(wróć)](../)
+
+<details>
+    <summary>Podsumowanie wykładu</summary>
+
+1. Programowanie z typami w języku Plait
+    * Podstawowe typy danych (liczby, ciągi znaków, wartości boolowskie)
+    * Typy procedur
+    * Inferencja typów
+    * Pary i listy w języku Plait
+    * Definicje aliasów typów
+    * Definicje własnych typów danych
+
+</details>
+
 # Lista 5
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 |---|---|---|---|---|---|---|---|---|

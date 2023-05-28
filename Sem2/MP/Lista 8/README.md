@@ -1,5 +1,20 @@
 [(wróć)](../)
 
+<details>
+    <summary>Podsumowanie wykładu</summary>
+
+1. Implemetacja systemu kontraktów
+    * Kontrakty proste
+    * Kontrakty dla funkcji
+    * Polarność wystąpienia i blaming
+    * Kontrakty parametryczne
+2. Wstęp do programowania Imperatywnego w Rackecie
+___
+1. Programowanie ze stanem
+2. Składnia konkretna i abstrakcyjna
+
+</details>
+
 # Lista 8
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
 |---|---|---|---|---|---|---|

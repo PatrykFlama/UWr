@@ -1,5 +1,21 @@
 [(wróć)](../)
 
+<details>
+    <summary>Podsumowanie wykładu</summary>
+
+1. Dopasowanie wzorca
+2. Programowanie z typami (w języku Plait)
+    * Projektowanie struktur danych
+    * Wyrażanie niezmienników w typach
+3. Kontrakty w języku Racket
+    * Dynamiczne sprawdzanie poprawności ­– asercje
+    * Kontrakty proste
+    * Kontrakty złożone
+    * Kontrakty parametryczne
+    * Kontrakty dla typów danych
+
+</details>
+
 # Lista 7
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---|---|---|---|---|---|---|

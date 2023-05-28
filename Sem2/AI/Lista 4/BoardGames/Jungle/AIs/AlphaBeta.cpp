@@ -43,7 +43,7 @@ public:
         if(depth <= 0) return state->heuristic_result(main_player);
 
         int best_score = (player == main_player ? INT_MIN : INT_MAX);
-        for(auto [piece, dir] : legal_moves){
+        for(auto [piece, dir] : legal_moves){       // TODO that could be gravely optimized by moving player type check outside of the loop
             Jungle next_state = state->gen_next_state(piece, dir);
             int score = alphabeta(&next_state, depth - 1, 1 - player, alpha, beta);
 

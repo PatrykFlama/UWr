@@ -1,3 +1,2 @@
 #!/bin/bash
-
-python3 chess_random.py
+python3 Chess/chess_random.py

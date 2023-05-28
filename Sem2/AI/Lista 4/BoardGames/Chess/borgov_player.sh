@@ -1,3 +1,2 @@
 #!/bin/bash
-
-python3 borgov.py
+python3 Chess/borgov.py

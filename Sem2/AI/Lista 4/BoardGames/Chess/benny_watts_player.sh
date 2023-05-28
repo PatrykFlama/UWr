@@ -1,3 +1,2 @@
 #!/bin/bash
-
-python3 benny_watts.py
+python3 Chess/benny_watts.py

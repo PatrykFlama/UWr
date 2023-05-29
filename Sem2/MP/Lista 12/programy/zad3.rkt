@@ -211,3 +211,5 @@
 
 (define (main [e : S-Exp]) : Void
   (print-value (eval (parse e) init-env)))
+
+; (run `(let x 1 (let f (lambda (y) (+ y x)) (let x 10 (f 2)))))

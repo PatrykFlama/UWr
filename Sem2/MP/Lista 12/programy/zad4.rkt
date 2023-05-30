@@ -13,11 +13,6 @@
   (lamE [x : Symbol] [e : Exp])
   (appE [e1 : Exp] [e2 : Exp]))
 
-; fix ----------------------------------------
-(define (fix f)
-(let ([w (λ (g) (f (λ (z) ((g g) z))))])
-    (w w)))
-
 ;; parse ----------------------------------------
 
 (define (parse [s : S-Exp]) : Exp
@@ -41,7 +36,11 @@
            (parse (fourth (s-exp->list s))))]
     [(s-exp-match? `{letrec SYMBOL ANY ANY} s)
      (letE (s-exp->symbol (second (s-exp->list s)))
-           (parse (third (s-exp->list s)))
+           (appE (lamE 'f (letE 'w
+                                (lamE 'g (appE (varE 'f)
+                                               (lamE 'z (appE (appE (varE 'g) (varE 'g)) (varE 'z)))))
+                                (appE (varE 'w) (varE 'w))))
+                 (lamE (s-exp->symbol (second (s-exp->list s))) (parse (third (s-exp->list s)))))
            (parse (fourth (s-exp->list s))))]
     [(s-exp-match? `{SYMBOL ANY ANY} s)
      (appE (appE (varE (parse-op (s-exp->symbol (first (s-exp->list s)))))
@@ -221,3 +220,7 @@
 
 (define (main [e : S-Exp]) : Void
   (print-value (eval (parse e) init-env)))
+
+
+; (main `(letrec x (lambda (n) (if (= n 0) 1 (* n (x (- n 1))))) (x 5)))
+; (main `(letrec f (lambda (n) (if (<= n 1) 1 (+ (f (- n 1)) (f (- n 2))))) (f 5)))

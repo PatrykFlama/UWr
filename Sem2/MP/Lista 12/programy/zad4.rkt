@@ -224,3 +224,5 @@
 
 ; (main `(letrec x (lambda (n) (if (= n 0) 1 (* n (x (- n 1))))) (x 5)))
 ; (main `(letrec f (lambda (n) (if (<= n 1) 1 (+ (f (- n 1)) (f (- n 2))))) (f 5)))
+; { letrec x {+ x 1} x} nie ponieważ pod x nie podstawiamy żadnej wartości,
+; więc nasza łatka przepuszcza nielegalne wyrażenie (zawierające nieprzypisaną zmienną rekurencyjną) do ewaluatora

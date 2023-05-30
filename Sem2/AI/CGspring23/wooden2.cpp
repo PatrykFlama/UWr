@@ -8,12 +8,12 @@ public:
     vector<int> neighbors;
 
     Cell(int index, int cellType, int resources, vector<int> neighbors, int myAnts = 0, int oppAnts = 0) {
-        index = index;
-        cellType = cellType;
-        resources = resources;
-        neighbors = neighbors;
-        myAnts = myAnts;
-        oppAnts = oppAnts;
+        this->index = index;
+        this->cellType = cellType;
+        this->resources = resources;
+        this->neighbors = neighbors;
+        this->myAnts = myAnts;
+        this->oppAnts = oppAnts;
     }
 };
 
@@ -67,7 +67,7 @@ int main() {
 
         // ------------------ TURN LOGIC && OUTPUT ------------------
         for(auto i : cells) {
-            cout << "LINE " << myBases[0] << ' ' << i.index << ' ' << i.resources << ';';
+            if(i.resources != 0) cout << "LINE " << myBases[0] << ' ' << i.index << ' ' << i.resources << ';';
         }
         cout << endl;
     }

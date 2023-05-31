@@ -10,7 +10,6 @@ std::string Brainfuck::interpret(Code const& code, Input const& input) const {
 
     long unsigned int input_pos = 0;
     long unsigned int code_pos  = 0;
-    long unsigned int global_nest_level = 0;
 
     while(code_pos < code.size()){
 

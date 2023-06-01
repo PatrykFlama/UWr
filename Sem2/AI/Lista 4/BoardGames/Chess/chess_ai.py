@@ -125,7 +125,7 @@ class AI(object):
             return book_move
          
         
-    # ---- book moves ----
+    # ---- book moves ---- (yeah, i know - ugly as hell)
     def book_move(self, state):
         try:
             with chess.polyglot.open_reader("/mnt/d/patry/Documents/Programming/UWr/Sem2/AI/Lista 4/BoardGames/Chess/Human.bin") as reader:

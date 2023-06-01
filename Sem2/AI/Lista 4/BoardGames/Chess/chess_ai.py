@@ -4,6 +4,7 @@
 import random
 import sys
 import chess
+import chess.polyglot
 
 WHITE = 1       # True
 BLACK = 0       # False
@@ -117,10 +118,36 @@ class AI(object):
         self.main_player = player
     
     def get_best_move(self, state):
-        # legal_moves = state.get_legal_moves()
-        # return random.choice(legal_moves)
-        return self.alphabeta_root(state)
+        book_move = self.book_move(state)
+        if(book_move == None):
+            return self.alphabeta_root(state)
+        else:
+            return book_move
+         
+        
+    # ---- book moves ----
+    def book_move(self, state):
+        try:
+            with chess.polyglot.open_reader("/mnt/d/patry/Documents/Programming/UWr/Sem2/AI/Lista 4/BoardGames/Chess/Human.bin") as reader:
+                for entry in reader.find_all(state.board):
+                    return str(entry.move)
+        except:
+            pass
+        try:
+            with chess.polyglot.open_reader("/mnt/d/patry/Documents/Programming/UWr/Sem2/AI/Lista 4/BoardGames/Chess/baron30.bin") as reader:
+                for entry in reader.find_all(state.board):
+                    return str(entry.move)
+        except:
+            pass
+        try:
+            with chess.polyglot.open_reader("/mnt/d/patry/Documents/Programming/UWr/Sem2/AI/Lista 4/BoardGames/Chess/Titans.bin") as reader:
+                for entry in reader.find_all(state.board):
+                    return str(entry.move)
+        except:
+            return None
 
+
+    # ---- alpha-beta pruning ----
     def alphabeta_root(self, state):
         best_score = self.MIN
         best_move = [None]

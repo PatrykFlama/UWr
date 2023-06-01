@@ -96,7 +96,7 @@
 ; values
 (define-type-alias Value Number)
 
-; environment
+; environment ;TODO - not sure about the structure yet
 (define-type Binding
   (bind [name : Symbol]
         [val : (-> Value)]))
@@ -112,7 +112,63 @@
         [(cons b rst-env) (cond [(eq? n (bind-name b)) ((bind-val b))]
                                 [else (lookup-env n rst-env)])]))
 
+; ---
+(define-type Storable
+  (valS [v : Value])
+  (undefS))
 
+(define-type Binding
+  (bind [name : Symbol]
+        [ref : (Boxof Storable)]))
+
+(define-type-alias Env (Listof Binding))
+
+(define mt-env empty)
+
+(define (extend-env-undef [env : Env] [x : Symbol]) : Env
+  (cons (bind x (box (undefS))) env))
+
+(define (extend-env [env : Env] [x : Symbol] [v : Value]) : Env
+  (cons (bind x (box (valS v))) env))
+
+(define (find-var [env : Env] [x : Symbol]) : (Boxof Storable)
+  (type-case (Listof Binding) env
+    [empty (error 'lookup "unbound variable")]
+    [(cons b rst-env) (cond
+                        [(eq? x (bind-name b))
+                         (bind-ref b)]
+                        [else
+                         (find-var rst-env x)])]))
+  
+(define (lookup-env [x : Symbol] [env : Env]) : Value
+  (type-case Storable (unbox (find-var env x))
+    [(valS v) v]
+    [(undefS) (error 'lookup-env "undefined variable")]))
+   
+(define (update-env! [env : Env] [x : Symbol] [v : Value]) : Void
+  (set-box! (find-var env x) (valS v)))
+
+; primitive operations
+; TODO probably some conversions to functions, although there are no bools here
+
+(define (op-num-num->proc [f : (Number Number -> Number)]) : (Value Value -> Value)
+  (λ (v1 v2)
+    (type-case Value v1
+      [(numV n1)
+       (type-case Value v2
+         [(numV n2)
+          (numV (f n1 n2))]
+         [else
+          (error 'eval "type error")])]
+      [else
+       (error 'eval "type error")])))
+
+(define (op->proc [op : Op]) : (Value Value -> Value)
+  (type-case Op op
+    [(add) (op-num-num->proc +)]
+    [(sub) (op-num-num->proc -)]
+    [(mul) (op-num-num->proc *)]
+    [(leq) (op-num-bool->proc (lambda (a b) (if (<= a b) 0 1)))]))
 
 
 

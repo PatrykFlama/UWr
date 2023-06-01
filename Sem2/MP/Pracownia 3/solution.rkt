@@ -94,7 +94,12 @@
 
 ;! ----- interpreter -----
 ; values
-(define-type-alias Value Number)
+; (define-type-alias Value Number)
+(define-type Value
+  (numV [n : Number])
+  (boolV [b : Boolean])
+  (funV [x : Symbol] [e : Exp] [env : Env])
+  (primopV [f : (Value -> Value)]))
 
 ; environment ;TODO - not sure about the structure yet
 (define-type Binding
@@ -149,8 +154,6 @@
   (set-box! (find-var env x) (valS v)))
 
 ; primitive operations
-; TODO probably some conversions to functions, although there are no bools here
-
 (define (op-num-num->proc [f : (Number Number -> Number)]) : (Value Value -> Value)
   (λ (v1 v2)
     (type-case Value v1
@@ -168,13 +171,41 @@
     [(add) (op-num-num->proc +)]
     [(sub) (op-num-num->proc -)]
     [(mul) (op-num-num->proc *)]
-    [(leq) (op-num-bool->proc (lambda (a b) (if (<= a b) 0 1)))]))
+    [(leq) (op-num-bool->proc (λ (a b) (if (<= a b) 0 1)))]))
 
 
+; evaluation
+;TODO calculate definitions and add them to the environment, then eval main exp with that env
+(define (eval-program [p : Program]) : Value
+    (type-case Program p
+        [(program ds e)
+         (let ([env (foldl (λ (d env) (eval-def d env)) mt-env ds)])    
+            (eval-exp e env))]))
+
+; TODO eval expression in given evnironment
+(define (eval-exp [e : Exp] [env : Env]) : Value
+    (type-case Exp e
+        [(numE n) n]
+        [(varE v) (lookup-env v env)]
+        [(opE e1 op e2)
+            ((op->proc op) (eval-exp e1 env) (eval-exp e2 env))]
+        [(ifzE e1 e2 e3)
+            (if (= 0 (eval-exp e1 env))
+                (eval-exp e1 env)
+                (eval-exp e2 env))]
+        [(letE x e1 e2)
+            (eval-exp e2 (extend-env env x (eval-exp e1 env)))]
+        [(appE f es)
+            (apply (lookup-env f env) (map (λ (e) (eval-exp e env)) es))])) 
+
+; TODO actually idk, but thats shit for sure
+(define (apply [v : Value] [vs : (Listof Value)]) : Value
+  (type-case Value v1
+    [(funV x e env)
+     (eval-exp e (extend-env env x v2))]
+    [else (error 'apply "not a function")]))
 
 
-
-
-
-
+(define (run [s : S-Exp]) : Value
+  (display "What about NO?"))
 

@@ -12,6 +12,12 @@
 (define (s-exp-ref [s : S-Exp] [i : Natural]) : S-Exp
     (list-ref (s-exp->list s) i))
 
+(define (contains-duplicates? [xs : (Listof Symbol)]) : Boolean
+    (cond
+        [(empty? xs) #f]
+        [(member (first xs) (rest xs)) #t]
+        [else (contains-duplicates? (rest xs))]))
+
 ;! ----- abstract syntax -----
 (define-type Op
     (add) (sub) (mul) (leq))
@@ -25,27 +31,33 @@
 (define-type Exp
     (numE [n : Number])
     (varE [x : Symbol])
-    (opE  [op : Op] [e1 : Exp] [e2 : Exp])
+    (opE  [e1 : Exp] [op : Op] [e2 : Exp])
     (ifzE [e1 : Exp] [e2 : Exp] [e3 : Exp])
     (letE [x : Symbol] [e1 : Exp] [e2 : Exp])
-    (appE [e : Exp] [es : (Listof Exp)]))
-
+    (appE [f : Symbol] [es : (Listof Exp)]))
 
 ;! ----- parser -----
 (define (parse-program [s : S-Exp]) : Program
     (cond
         [(s-exp-match? `{define {ANY ...} for ANY} s)
-            (program (map parse-def (s-exp->list (s-exp-ref s 1)))
-                     (parse-exp (s-exp-ref s 2)))]
+         (let ([defs (map parse-def (s-exp->list (s-exp-ref s 1)))])
+            (if (contains-duplicates? (map funD-f defs))
+                (error 'parse-program "duplicate function names")
+                (program defs (parse-exp (s-exp-ref s 2)))))]
         [else
-            (error 'parse-program "invalid program")]))
+            (error 'parse-program (string-append "invalid program: " (s-exp->string s)))]))
 
 (define (parse-def [s : S-Exp]) : Def
     (cond
-        [(s-exp-match? `{fun SYMBOL {ANY ...} = ANY})
-            (funD (s-exp->symbol (s-exp-ref s 1))
-                  (map s-exp->symbol (s-exp->list (s-exp-ref s 2)))
-                  (parse-exp (s-exp-ref s 3)))]))
+        [(s-exp-match? `{fun SYMBOL {ANY ...} = ANY} s)
+         (let ([xs (map s-exp->symbol (s-exp->list (s-exp-ref s 2)))])
+            (if (contains-duplicates? xs)
+                (error 'parse-def "duplicate parameter names")
+                (funD (s-exp->symbol (s-exp-ref s 1))
+                      xs
+                      (parse-exp (s-exp-ref s 3)))))]
+        [else
+            (error 'parse-def (string-append "invalid definition: " (s-exp->string s)))]))
 
 (define (parse-exp [s : S-Exp]) : Exp
     (cond
@@ -54,9 +66,10 @@
         [(s-exp-match? SYMBOL s)
             (varE (s-exp->symbol s))]
         [(s-exp-match? `{ANY SYMBOL ANY} s)
-            (parse-op (s-exp->symbol (s-exp-ref s 1))
-                      (parse-exp (s-exp-ref s 0))
-                      (parse-exp (s-exp-ref s 2)))] 
+            (opE
+                (parse-exp (s-exp-ref s 0))
+                (parse-op (s-exp->symbol (s-exp-ref s 1)))
+                (parse-exp (s-exp-ref s 2)))] 
         [(s-exp-match? `{ifz ANY ANY ANY} s)
             (ifzE (parse-exp (s-exp-ref s 1))
                   (parse-exp (s-exp-ref s 2))
@@ -66,8 +79,9 @@
                   (parse-exp (s-exp-ref s 2))
                   (parse-exp (s-exp-ref s 3)))]
         [(s-exp-match? `{SYMBOL {ANY ...}} s)
-            (appE (parse-exp (s-exp-ref s 0))
-                  (map parse-exp (s-exp->list (s-exp-ref s 1))))]))
+            (appE (s-exp->symbol (s-exp-ref s 0))
+                  (map parse-exp (s-exp->list (s-exp-ref s 1))))]
+        [else (error 'parse-exp (string-append "invalid expression: " (s-exp->string s)))]))
 
 (define (parse-op [op : Symbol]) : Op
   (cond
@@ -75,16 +89,12 @@
     [(eq? op '-) (sub)]
     [(eq? op '*) (mul)]
     [(eq? op '<=) (leq)]
-    [else (error 'parse "unknown operator")]))
+    [else (error 'parse (string-append "unknown operator: " (symbol->string op)))]))
 
 
 ;! ----- interpreter -----
 ; values
-(define-type Value
-  (numV [n : Number])
-  (boolV [b : Boolean])
-  (funV [x : Symbol] [e : Exp] [env : Env])
-  (primopV [f : (Value -> Value)]))
+(define-type-alias Value Number)
 
 ; environment
 (define-type Binding

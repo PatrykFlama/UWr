@@ -19,6 +19,8 @@ ___
 ___
 ### [Lab 5](./Lista%205/)
 ### [Exercises 5](./Lista%205.5/)
+___
+### [Codingame](./CGspring23/)
 
 </details>
 
@@ -43,6 +45,8 @@ ___
 ___
 ### [Pracownia 5](./Lista%205/)
 ### [Ćwiczenia 5](./Lista%205.5/)
+___
+### [Codingame](./CGspring23/)
 
 </details>
 

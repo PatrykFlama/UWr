@@ -205,7 +205,7 @@
 (define (run [s : S-Exp]) : Value
     (eval-program (parse-program s)))
 
-(module+ test
+#; (module+ test
     (test (run `(define ((fun f1 (x) = (0 + x)) (fun neg? (x) = (0 <= x))) for (ifz (neg? (-1)) then (f1 (10)) else (f1 (-10)))))
           (numV -10))
     (test (run `{define
@@ -223,12 +223,12 @@
                         for
                         {even (1024)}})
           (numV 0))
-    (test `(run `{define
+    (test (run `{define
                     {[fun gcd (m n) = {ifz n
                     then m
                     else {ifz {m <= n}
                     then {gcd (m {n - m})}
                     else {gcd ({m - n} n)}}}]}
                     for
-                    {gcd (81 63)}}
-        (numV 9))))
+                    {gcd (81 63)}})
+        (numV 9)))

@@ -201,3 +201,6 @@ fib        0 1 1 2 3 5 ...
         (scale _hamming 5)))))
 (define hamming
   (stream-cdr _hamming))
+
+; (stream-gen fact 10)
+; (stream-gen hamming 10)

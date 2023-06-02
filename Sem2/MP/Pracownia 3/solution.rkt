@@ -3,11 +3,6 @@
 (module+ test
     (print-only-errors #t))
 
-; ----- included template -----
-(define (run [s : S-Exp]) : Value
-    (error 'run "not implemented"))
-; -----------------------------
-
 ;! ----- helper functions -----
 (define (s-exp-ref [s : S-Exp] [i : Natural]) : S-Exp
     (list-ref (s-exp->list s) i))
@@ -207,5 +202,5 @@
 
 
 (define (run [s : S-Exp]) : Value
-  (display "What about NO?"))
+  (error "What about NO?"))
 

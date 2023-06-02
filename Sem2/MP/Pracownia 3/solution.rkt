@@ -58,7 +58,7 @@
     (cond
         [(s-exp-match? `NUMBER s)
             (numE (s-exp->number s))]
-        [(s-exp-match? SYMBOL s)
+        [(s-exp-match? `SYMBOL s)
             (varE (s-exp->symbol s))]
         [(s-exp-match? `{ANY SYMBOL ANY} s)
             (opE
@@ -153,37 +153,43 @@
          (list (pair '+  (op-num-num->value +))
                (pair '-  (op-num-num->value -))
                (pair '*  (op-num-num->value *))
-               (pair '<= (op-num-bool->value <=)))))
+               (pair '<= (op-num-num->value <=)))))
 
 
 ; evaluation
-;TODO calculate definitions and add them to the environment, then eval main exp with that env
 (define (eval-program [p : Program]) : Value
     (type-case Program p
         [(program ds e)
-         (let ([env (foldl (λ (d env) (eval-def d env)) mt-env ds)])    
-            (eval-exp e env))]))
+         ; first we declare functions existance, so iterate over definitions and add their name to env
+         (let ([env (foldl (λ (d env) (extend-env-undef env (funD-f))) mt-env ds)])     
+            ; now we can evaluate definitions and add them to env
+            (begin
+            (foldl (λ (d env) 
+                (update-env! env (funD-f d) (funV (first (funD-xs d)) (funD-e d) env)))
+                ds)     ;;TODO 1arg usage of function here! ;;TODO should i evaluate it now?
+            (eval-exp e env)))]))
 
-; TODO eval expression in given evnironment
 (define (eval-exp [e : Exp] [env : Env]) : Value
     (type-case Exp e
-        [(numE n) n]
+        [(numE n) (numV n)]
         [(varE v) (lookup-env v env)]
         [(opE e1 op e2)
             ((op->proc op) (eval-exp e1 env) (eval-exp e2 env))]
-        [(ifzE e1 e2 e3)
-            (if (= 0 (eval-exp e1 env))
-                (eval-exp e1 env)
-                (eval-exp e2 env))]
+        [(ifzE ech ez enz) 
+            (if (= 0 (eval-exp ech env))
+                (eval-exp ez  env)
+                (eval-exp enz env))]
         [(letE x e1 e2)
-            (eval-exp e2 (extend-env env x (eval-exp e1 env)))]
+            (let ([v (eval-exp e1 env)])
+                (eval-exp e2 (extend-env env x v)))]
         [(appE f es)
-            (apply (lookup-env f env) (map (λ (e) (eval-exp e env)) es))])) 
+            (apply (lookup-env f env)
+                   (map (λ (e) (eval-exp e env)) es))])) 
 
-; TODO actually idk, but thats shit for sure
-(define (apply [v : Value] [vs : (Listof Value)]) : Value
-  (type-case Value v1
-    [(funV x e env)
+; TODO actually idk, but thats shit for sure    ;; TODO apply should be zealous
+(define (apply [func : Value] [args : (Listof Value)]) : Value      ;;TODO for now arguments has one element
+  (type-case Value func
+    [(funV x e env)     ;;TODO 1arg here
      (eval-exp e (extend-env env x v2))]
     [else (error 'apply "not a function")]))
 

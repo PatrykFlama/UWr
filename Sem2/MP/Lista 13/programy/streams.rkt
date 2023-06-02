@@ -31,8 +31,11 @@
   (= n (smallest-divisor n)))
 
 ;; streams aka lazy lists ---------------------------------
+;* so streams are essentially lists with delayed cdr evaluation
 
 ;; delay and force
+;* delay - promises to calculate the value of function, but not immediately
+;* force - forces the calculation of a delayed function
 
 (define-syntax-rule
   (stream-cons v s)
@@ -48,12 +51,12 @@
 
 ;; operations on streams
 
-(define (stream-ref s n)
+(define (stream-ref s n)    ; return nth element of stream s
   (if (= n 0)
       (stream-car s)
       (stream-ref (stream-cdr s) (- n 1))))
 
-(define (stream-filter p s)
+(define (stream-filter p s)     ; erase elements of s that don't satisfy p, where p is a predicate
   (if (stream-null? s)
       stream-null
       (if (p (stream-car s))

@@ -98,7 +98,7 @@
 (define-type Value
   (numV [n : Number])
   (boolV [b : Boolean])
-  (funV [x : Symbol] [e : Exp] [env : Env])
+  (funV [x : Symbol] [e : Exp] [env : Env])     ;TODO maybe make a list of symbols from that
   (primopV [f : (Value -> Value)]))
 
 ; environment ;TODO - not sure about the structure yet

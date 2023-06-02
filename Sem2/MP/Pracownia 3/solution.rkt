@@ -21,7 +21,7 @@
     (program [ds : (Listof Def)] [e : Exp]))
 
 (define-type Def
-    (funD [f : Symbol] [xs : (Listof Symbol)] [e : Exp]))
+    (funD [f : Symbol] [xs : (Listof Symbol)] [e : Exp]))       ;TODO for now functions can take only one argument
 
 (define-type Exp
     (numE [n : Number])
@@ -92,27 +92,10 @@
 ; (define-type-alias Value Number)
 (define-type Value
   (numV [n : Number])
-  (boolV [b : Boolean])
   (funV [x : Symbol] [e : Exp] [env : Env])     ;TODO maybe make a list of symbols from that
   (primopV [f : (Value -> Value)]))
 
 ; environment ;TODO - not sure about the structure yet
-(define-type Binding
-  (bind [name : Symbol]
-        [val : (-> Value)]))
-
-(define-type-alias Env (Listof Binding))
-
-(define empty-env empty)
-(define (extend-env [env : Env] [x : Symbol] [t : (-> Value)]) : Env
-    (cons (bind x t) env))
-(define (lookup-env [n : Symbol] [env : Env]) : Value
-    (type-case (Listof Binding) env
-        [empty (error 'lookup "unbound variable")]
-        [(cons b rst-env) (cond [(eq? n (bind-name b)) ((bind-val b))]
-                                [else (lookup-env n rst-env)])]))
-
-; ---
 (define-type Storable
   (valS [v : Value])
   (undefS))
@@ -149,24 +132,28 @@
   (set-box! (find-var env x) (valS v)))
 
 ; primitive operations
-(define (op-num-num->proc [f : (Number Number -> Number)]) : (Value Value -> Value)
-  (λ (v1 v2)
-    (type-case Value v1
-      [(numV n1)
-       (type-case Value v2
-         [(numV n2)
-          (numV (f n1 n2))]
-         [else
-          (error 'eval "type error")])]
-      [else
-       (error 'eval "type error")])))
+(define (op-num-num->value [f : (Number Number -> Number)]) : Value 
+  (primopV
+   (λ (v1)
+     (type-case Value v1
+       [(numV n1)
+        (primopV
+         (λ (v2)
+           (type-case Value v2
+             [(numV n2)
+              (numV (f n1 n2))]
+             [else
+              (error 'eval "type error")])))]
+       [else
+        (error 'eval "type error")]))))
 
-(define (op->proc [op : Op]) : (Value Value -> Value)
-  (type-case Op op
-    [(add) (op-num-num->proc +)]
-    [(sub) (op-num-num->proc -)]
-    [(mul) (op-num-num->proc *)]
-    [(leq) (op-num-bool->proc (λ (a b) (if (<= a b) 0 1)))]))
+(define init-env 
+  (foldr (λ (b env) (extend-env env (fst b) (snd b)))
+         mt-env 
+         (list (pair '+  (op-num-num->value +))
+               (pair '-  (op-num-num->value -))
+               (pair '*  (op-num-num->value *))
+               (pair '<= (op-num-bool->value <=)))))
 
 
 ; evaluation

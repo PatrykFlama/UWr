@@ -16,6 +16,12 @@
 (define (string-append-symbol [s : String] [x : Symbol]) : String
     (string-append s (symbol->string x)))
 
+(define (double-foldl f base xs ys)
+    (cond
+        [(empty? xs) base]
+        [(empty? (rest xs)) (f base (first xs) (first ys))]
+        [else (double-foldl f (f base (first xs) (first ys)) (rest xs) (rest ys))]))
+
 ;! ----- abstract syntax -----
 (define-type Op
     (add) (sub) (mul) (leq))
@@ -24,7 +30,7 @@
     (program [ds : (Listof Def)] [e : Exp]))
 
 (define-type Def
-    (funD [f : Symbol] [xs : (Listof Symbol)] [e : Exp]))       ;TODO for now functions can take only one argument
+    (funD [f : Symbol] [xs : (Listof Symbol)] [e : Exp]))
 
 (define-type Exp
     (numE [n : Number])
@@ -95,9 +101,9 @@
 ; (define-type-alias Value Number)
 (define-type Value
   (numV [n : Number])
-  (funV [x : Symbol] [e : Exp] [env : Env]))     ;TODO maybe make a list of symbols from that
+  (funV [xs : (Listof Symbol)] [e : Exp] [env : Env]))
 
-; environment ;TODO - not sure about the structure yet
+; environment ;TODO - not sure about the structure yet, but so far it works
 (define-type Storable
   (valS [v : Value])
   (undefS))
@@ -163,8 +169,8 @@
             ; now we can evaluate definitions and add them to env
             (begin
             (foldl (λ (d dummy) 
-                (update-env! env (funD-f d) (funV (first (funD-xs d)) (funD-e d) env)))
-                (void) ds)     ;;TODO 1arg usage of function here! ;;TODO should i evaluate it now?
+                (update-env! env (funD-f d) (funV (funD-xs d) (funD-e d) env)))
+                (void) ds)     ;;TODO should i evaluate it here?
             (eval-exp e env)))]))
 
 (define (eval-exp [e : Exp] [env : Env]) : Value
@@ -184,11 +190,15 @@
             (apply (lookup-env f env)
                    (map (λ (e) (eval-exp e env)) es))])) 
 
-; TODO actually idk, but thats shit for sure    ;; TODO apply should be zealous
-(define (apply [func : Value] [args : (Listof Value)]) : Value      ;;TODO for now arguments has one element
+;; TODO apply should be zealous
+(define (apply [func : Value] [args : (Listof Value)]) : Value
   (type-case Value func
-    [(funV x e env)     ;;TODO 1arg here
-     (eval-exp e (extend-env env x (first args)))]
+    [(funV xs e env)
+     (eval-exp e 
+        (double-foldl
+            (λ (new-env x arg)
+                (extend-env new-env x arg))
+            env xs args))]
     [else (error 'apply "not a function")]))
 
 
@@ -202,4 +212,23 @@
                     {[fun fact (n) = {ifz n then 1 else {n * {fact ({n - 1})}}}]}
                     for
                     {fact (5)}})
-          (numV 120)))
+          (numV 120))
+    (test (run `(define () for (let x be (1 + 2) in (x + x))))
+          (numV 6))
+    (test (run `(define ((fun sum (x y) = (y + x)) (fun neg? (x) = (0 <= x))) for (ifz (neg? (-1)) then (sum (10 30)) else (sum (-10 -30)))))
+          (numV -40))
+    (test (run `{define
+                    {[fun even (n) = {ifz n then 0 else {odd ({n - 1})}}]
+                        [fun odd (n) = {ifz n then 42 else {even ({n - 1})}}]}
+                        for
+                        {even (1024)}})
+          (numV 0))
+    (test `(run `{define
+                    {[fun gcd (m n) = {ifz n
+                    then m
+                    else {ifz {m <= n}
+                    then {gcd (m {n - m})}
+                    else {gcd ({m - n} n)}}}]}
+                    for
+                    {gcd (81 63)}}
+        (numV 9))))

@@ -92,14 +92,10 @@
      (λ (x) (not (divides? (stream-car s) x)))
      (stream-cdr s)))))
 
-(define (nosieve s)   ;;TODO yeah well, thats basically the same
-    (stream-cons
-        (stream-car s)
-        (nosieve
-            (stream-filter
-                (check-privedividebility (stream-car))))))
-
 (define primes (sieve (integers-from 2)))
+
+; zad2
+(define primes2 'todo)
 
  ;; combining (infinite) streams 
 
@@ -111,6 +107,13 @@
 
 (define nats2 (stream-cons 0 (map2 + nats2 ones)))
 
+; generate
+(define (stream-gen s n)
+  (if (= n 0)
+      stream-null
+      (cons (stream-car s)
+            (stream-gen (stream-cdr s) (- n 1)))))
+
 #|
 nats2    0 1 2 ...
 ones     1 1 1 ...
@@ -120,6 +123,16 @@ nats2  0 1 2 3 ...
 
 (define fibs
   (stream-cons 0 (stream-cons 1 (map2 + fibs (stream-cdr fibs)))))
+
+; zad3
+(define fact
+  (stream-cons 1 (map2 * (integers-from 1) fact)))
+
+; zad4
+(define (partial-sums s)
+  (stream-cons
+   (stream-car s)
+   (map2 + (stream-cdr s) (partial-sums s))))
 
 #|
 fib            0 1 1 2 3 ...  
@@ -149,3 +162,42 @@ fib        0 1 1 2 3 5 ...
 (define (force t)
   (t))
 |#
+
+; zad5
+; assume that s1 and s2 are sorted and not null
+(define (merge s1 s2)
+  (cond
+      [(= (stream-car s1) (stream-car s2))
+        (stream-cons
+          (stream-car s1)
+          (merge
+            (stream-cdr s1)
+            (stream-cdr s2)))]
+      [(< (stream-car s1) (stream-car s2))
+        (stream-cons  
+          (stream-car s1)
+          (merge
+            (stream-cdr s1)
+            s2))]
+      [else
+        (stream-cons
+          (stream-car s2)
+          (merge
+            s1
+            (stream-cdr s2)))]))
+
+(define (scale s t)
+  (stream-cons
+    (* (stream-car s) t)
+    (scale (stream-cdr s) t)))
+
+(define _hamming
+  (stream-cons
+    1
+    (merge
+      (scale _hamming 2)
+      (merge
+        (scale _hamming 3)
+        (scale _hamming 5)))))
+(define hamming
+  (stream-cdr _hamming))

@@ -4,7 +4,7 @@
     (print-only-errors #t))
 
 ;! ----- helper functions -----
-(define (s-exp-ref [s : S-Exp] [i : Natural]) : S-Exp
+(define (s-exp-ref [s : S-Exp] [i : Number]) : S-Exp
     (list-ref (s-exp->list s) i))
 
 (define (contains-duplicates? [xs : (Listof Symbol)]) : Boolean
@@ -40,7 +40,7 @@
                 (error 'parse-program "duplicate function names")
                 (program defs (parse-exp (s-exp-ref s 2)))))]
         [else
-            (error 'parse-program (string-append "invalid program: " (s-exp->string s)))]))
+            (error 'parse-program "invalid program")]))
 
 (define (parse-def [s : S-Exp]) : Def
     (cond
@@ -148,7 +148,7 @@
     [(add) (op-num-num->proc +)]
     [(sub) (op-num-num->proc -)]
     [(mul) (op-num-num->proc *)]
-    [(leq) (op-num-num->proc <=)]))
+    [(leq) (op-num-num->proc (lambda (a b) (if (<= a b) 0 1)))]))
 
 
 ; evaluation
@@ -156,12 +156,12 @@
     (type-case Program p
         [(program ds e)
          ; first we declare functions existance, so iterate over definitions and add their name to env
-         (let ([env (foldl (λ (d env) (extend-env-undef env (funD-f))) mt-env ds)])     
+         (let ([env (foldl (λ (d env) (extend-env-undef env (funD-f d))) mt-env ds)])     
             ; now we can evaluate definitions and add them to env
             (begin
-            (foldl (λ (d env) 
+            (foldl (λ (d dummy) 
                 (update-env! env (funD-f d) (funV (first (funD-xs d)) (funD-e d) env)))
-                ds)     ;;TODO 1arg usage of function here! ;;TODO should i evaluate it now?
+                (void) ds)     ;;TODO 1arg usage of function here! ;;TODO should i evaluate it now?
             (eval-exp e env)))]))
 
 (define (eval-exp [e : Exp] [env : Env]) : Value
@@ -171,7 +171,7 @@
         [(opE e1 op e2)
             ((op->proc op) (eval-exp e1 env) (eval-exp e2 env))]
         [(ifzE ech ez enz) 
-            (if (= 0 (eval-exp ech env))
+            (if (= 0 (numV-n (eval-exp ech env)))
                 (eval-exp ez  env)
                 (eval-exp enz env))]
         [(letE x e1 e2)
@@ -185,10 +185,10 @@
 (define (apply [func : Value] [args : (Listof Value)]) : Value      ;;TODO for now arguments has one element
   (type-case Value func
     [(funV x e env)     ;;TODO 1arg here
-     (eval-exp e (extend-env env x v2))]
+     (eval-exp e (extend-env env x (first args)))]
     [else (error 'apply "not a function")]))
 
 
 (define (run [s : S-Exp]) : Value
-  (error "What about NO?"))
+    (eval-program (parse-program s)))
 

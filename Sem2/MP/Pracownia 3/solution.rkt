@@ -13,6 +13,9 @@
         [(member (first xs) (rest xs)) #t]
         [else (contains-duplicates? (rest xs))]))
 
+(define (string-append-symbol [s : String] [x : Symbol]) : String
+    (string-append s (symbol->string x)))
+
 ;! ----- abstract syntax -----
 (define-type Op
     (add) (sub) (mul) (leq))
@@ -38,7 +41,7 @@
          (let ([defs (map parse-def (s-exp->list (s-exp-ref s 1)))])
             (if (contains-duplicates? (map funD-f defs))
                 (error 'parse-program "duplicate function names")
-                (program defs (parse-exp (s-exp-ref s 2)))))]
+                (program defs (parse-exp (s-exp-ref s 3)))))]
         [else
             (error 'parse-program "invalid program")]))
 
@@ -50,9 +53,9 @@
                 (error 'parse-def "duplicate parameter names")
                 (funD (s-exp->symbol (s-exp-ref s 1))
                       xs
-                      (parse-exp (s-exp-ref s 3)))))]
+                      (parse-exp (s-exp-ref s 4)))))]
         [else
-            (error 'parse-def (string-append "invalid definition: " (s-exp->string s)))]))
+            (error 'parse-def "invalid definition")]))
 
 (define (parse-exp [s : S-Exp]) : Exp
     (cond
@@ -65,18 +68,18 @@
                 (parse-exp (s-exp-ref s 0))
                 (parse-op (s-exp->symbol (s-exp-ref s 1)))
                 (parse-exp (s-exp-ref s 2)))] 
-        [(s-exp-match? `{ifz ANY ANY ANY} s)
+        [(s-exp-match? `{ifz ANY then ANY else ANY} s)
             (ifzE (parse-exp (s-exp-ref s 1))
-                  (parse-exp (s-exp-ref s 2))
-                  (parse-exp (s-exp-ref s 3)))]
-        [(s-exp-match? `{let {SYMBOL} = ANY in ANY} s)
+                  (parse-exp (s-exp-ref s 3))
+                  (parse-exp (s-exp-ref s 5)))]
+        [(s-exp-match? `{let SYMBOL be ANY in ANY} s)
             (letE (s-exp->symbol (s-exp-ref s 1))
-                  (parse-exp (s-exp-ref s 2))
-                  (parse-exp (s-exp-ref s 3)))]
+                  (parse-exp (s-exp-ref s 3))
+                  (parse-exp (s-exp-ref s 5)))]
         [(s-exp-match? `{SYMBOL {ANY ...}} s)
             (appE (s-exp->symbol (s-exp-ref s 0))
                   (map parse-exp (s-exp->list (s-exp-ref s 1))))]
-        [else (error 'parse-exp (string-append "invalid expression: " (s-exp->string s)))]))
+        [else (error 'parse-exp "invalid expression")]))
 
 (define (parse-op [op : Symbol]) : Op
   (cond
@@ -115,7 +118,7 @@
 
 (define (find-var [env : Env] [x : Symbol]) : (Boxof Storable)
   (type-case (Listof Binding) env
-    [empty (error 'lookup "unbound variable")]
+    [empty (error 'lookup (string-append-symbol "unbound variable: " x))]
     [(cons b rst-env) (cond
                         [(eq? x (bind-name b))
                          (bind-ref b)]
@@ -192,3 +195,11 @@
 (define (run [s : S-Exp]) : Value
     (eval-program (parse-program s)))
 
+(module+ test
+    (test (run `(define ((fun f1 (x) = (0 + x)) (fun neg? (x) = (0 <= x))) for (ifz (neg? (-1)) then (f1 (10)) else (f1 (-10)))))
+          (numV -10))
+    (test (run `{define
+                    {[fun fact (n) = {ifz n then 1 else {n * {fact ({n - 1})}}}]}
+                    for
+                    {fact (5)}})
+          (numV 120)))

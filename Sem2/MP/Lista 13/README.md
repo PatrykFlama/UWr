@@ -10,8 +10,10 @@
 
 </details>
 
+`box` zwraca referencję do danej zmiennej, a nie jej wartość. Wartość można uzyskać za pomocą `unbox` a zmienić za pomocą `set-box!`.	
+
 # Lista 13
-| 1 | 2 | 3 | 4 | 5 | 6 |
-|---|---|---|---|---|---|
-|   |   |   |   |   |   |
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|---|---|---|---|---|---|---|---|
+|   |   |   |   |   |   |   |   |
 

@@ -95,7 +95,19 @@
 (define primes (sieve (integers-from 2)))
 
 ; zad2
-(define primes2 'todo)
+(define (check-if-prime n)
+  (define (check-if-prime-helper n s)
+    (cond
+      [(> (square (stream-car s)) n) #t]
+      [(divides? (stream-car s) n) #f]
+      [else (check-if-prime-helper n (stream-cdr s))]))
+  (check-if-prime-helper n primes2))
+(define primes2
+  (stream-cons
+   2
+   (stream-filter
+    (λ (x) (check-if-prime x))
+    (integers-from 3))))
 
  ;; combining (infinite) streams 
 

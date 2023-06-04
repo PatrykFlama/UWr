@@ -79,7 +79,7 @@ We can represent any boolean function with neural network. Bollean function take
 _Superrationality_ is a concept in game theory, which states that the opponent performs identical reasoning as we do, and goes for the best result that it gives with such assumption.
   
 ### Example on the prissoner's dilemma:
-The most known version of prissoner's dilemma is based on sentences for criminals, but in the example from (Wikipedia)[https://en.wikipedia.org/wiki/Superrationality] cash prizes are used instead.  
+The most known version of prissoner's dilemma is based on sentences for criminals, but in the example from [Wikipedia](https://en.wikipedia.org/wiki/Superrationality) cash prizes are used instead.  
 Two players have choice to cooperate or defect without communicating. If one of them defects the other one will get $200, if both deflect they will get $1, and if noone deflect both get $100.  
 These are the four possible outcomes:  
 

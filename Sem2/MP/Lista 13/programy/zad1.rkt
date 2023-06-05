@@ -14,7 +14,10 @@
   (appE [e1 : Exp] [e2 : Exp])
   (letrecE [x : Symbol] [e1 : Exp] [e2 : Exp])
   (beginE [e1 : Exp] [e2 : Exp])
-  (setE [x : Symbol] [e : Exp]))
+  (setE [x : Symbol] [e : Exp])
+  (boxE [e : Exp])                                        ;* box related types added
+  (unboxE [x : Symbol])
+  (set-boxE [x : Symbol] [e : Exp]))
 
 ;; parse ----------------------------------------
 
@@ -47,6 +50,13 @@
     [(s-exp-match? `{set! SYMBOL ANY} s)
      (setE (s-exp->symbol (second (s-exp->list s)))
            (parse (third (s-exp->list s))))]
+    [(s-exp-match? `{box ANY} s)                            ;* box parsing
+     (boxE (parse (second (s-exp->list s))))]
+    [(s-exp-match? `{unbox SYMBOL} s)
+     (unboxE (s-exp->symbol (second (s-exp->list s))))]
+    [(s-exp-match? `{set-box! SYMBOL ANY} s)
+     (set-boxE (s-exp->symbol (second (s-exp->list s)))
+                (parse (third (s-exp->list s))))]
     [(s-exp-match? `{SYMBOL ANY ANY} s)
      (appE (appE (varE (parse-op (s-exp->symbol (first (s-exp->list s)))))
                  (parse (second (s-exp->list s))))
@@ -81,7 +91,9 @@
   (test (parse `{lambda {x} 9})
         (lamE 'x (numE 9)))
   (test (parse `{double 9})
-        (appE (varE 'double) (numE 9))))
+        (appE (varE 'double) (numE 9)))
+  (test (parse`{let x {box 3} {+ (unbox (set-box! x 5)) 2}})          ;* box parsing tests
+        (letE 'x (boxE (numE 3)) (appE (appE (varE '+) (appE (varE 'unbox) (set-boxE 'x (numE 5)))) (numE 2)))))
 
 ;; eval --------------------------------------
 
@@ -92,7 +104,9 @@
   (boolV [b : Boolean])
   (funV [x : Symbol] [e : Exp] [env : Env])
   (primopV [f : (Value -> Value)])
-  (voidV))
+  (voidV)
+  (refV [b : (Boxof Value)]))                       ;* reference to Value as type of Value
+
 
 ;; storage (heap)
 
@@ -108,19 +122,32 @@
   (let ([next-free (length sto)])
     (pair next-free
           (append sto (list u)))))
+
 (define (deref-sto [sto : Storage] [l : Location]) : Value
   (if (<= l (- (length sto) 1))
       (type-case Storable (list-ref sto l)
         [(valS v) v]
         [(undefS) (error 'lookup-env "undefined object")])
       (error 'deref "unknown location")))
+
 (define (update-sto [sto : Storage] [l : Location] [u : Storable]) : Storage
   (local
-    ((define (walk sto l)
-       (if (= l 0)
-           (cons u (rest sto))
-           (cons (first sto)
-                 (walk (rest sto) (- l 1))))))
+    [(define (walk sto l)
+       (if (= l 0)                            ; if we found the location
+           (type-case Storable (first sto)
+             [(valS v)                            ; extract found value
+              (type-case Value v
+                [(refV r)                             ; extract reference-val-type from value
+                 (type-case Storable u
+                   [(valS v1)                             ; extract box from reference type
+                    (begin
+                    (set-box! r v1)                         ; set box to new value
+                    (cons u (rest sto)))]                   ; return storage with updated reference
+                   [else (error 'update-sto "Update-sto error")])]
+                [else (cons u (rest sto))])]          ; unless its not ref, then just change it
+             [else (cons u (rest sto))])          ; unless its undefined, then just change it
+           (cons (first sto)                ; otherwise, keep looking
+                 (walk (rest sto) (- l 1)))))]
     (if (<= l (- (length sto) 1))
         (walk sto l)
         (error 'deref "unknown location"))))
@@ -206,6 +233,7 @@
   (type-case Answer call
     [(v*s val sto) body]))
 
+
 (define (eval [e : Exp] [env : Env] [sto : Storage]) : Answer
   (type-case Exp e
     [(numE n)
@@ -242,7 +270,21 @@
     [(setE x e0)
      (with [(v0 sto0) (eval e0 env sto)]
        (let ([sto1 (update-sto sto0 (lookup-env env x) (valS v0))])
+         (v*s (voidV) sto1)))]
+    [(boxE e)                                ;* box evaluation
+     (with [(v0 sto0) (eval e env sto)]
+       (v*s (refV (box v0)) sto0))]
+    [(unboxE x)
+     (let ([l (lookup-env env x)])
+       (let ([v0 (deref-sto sto l)])
+         (type-case Value v0
+           [(refV r) (v*s (unbox r) sto)]
+           [else (error 'eval "Attempt to unbox a non-refference variable")])))]
+    [(set-boxE x e0)
+       (with [(v0 sto0) (eval e0 env sto)]
+       (let ([sto1 (update-sto sto0 (lookup-env env x) (valS v0))])
          (v*s (voidV) sto1)))]))
+     
 
 (define (apply [v1 : Value] [v2 : Value] [sto : Storage]) : Answer
   (type-case Value v1
@@ -298,7 +340,8 @@
     [(boolV b) (if b "true" "false")]
     [(funV x e env) "#<procedure>"]
     [(primopV f) "#<primop>"]
-    [(voidV) ""]))
+    [(voidV) ""]
+    [(refV r) "#refference"]))
 
 (define (print-value [v : Value]) : Void
   (display (value->string v)))
@@ -307,3 +350,38 @@
   (with [(v sto)
          (eval (parse e) (fst init-env-sto) (snd init-env-sto))]
     (print-value v)))
+
+
+; testing and comparing new vs old mutable state ———————————————————————————————————
+
+
+
+(define test1 `{let x 42 {begin {{lambda {z} {begin {set! z (+ z 1)} z}} x} x}}) ; here despite set! value stays 42
+(run test1)
+
+(define test2 `{let x (box 42) {begin {{lambda {z} {begin {set-box! z (+ (unbox z) 1)} z}} x} x}})
+(run test2)
+
+
+
+; {+ z 1 } should not work, {+ (unbox z} 1} should
+;(define test3 `{let x (box 42)
+;                 {begin {let p {+ 3 2}
+ ;                         {set-box! x {+ (unbox x) p}}}
+ ;                       x}})
+;(run test3)
+
+
+
+; TEST FROM LECTURE
+;(define x 42)
+;(define (foo z)
+;  (begin 
+;    (set! z (+ z 1))
+;    z))
+;(module+ test
+;  (test (begin (foo x)
+;               x)
+;        42))
+
+

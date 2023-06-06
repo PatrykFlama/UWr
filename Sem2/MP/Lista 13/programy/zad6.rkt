@@ -120,22 +120,22 @@
 ; mhms
 (define-type Binding
   (bind [name : Symbol]
-        [e : Exp]))
+        [e : Promise]))
 
 ;; environments
 
 (define-type-alias Env (Listof Binding))
  ; srodowisko przechowuje exp a nie val
 (define mt-env empty)
-(define (extend-env [env : Env] [x : Symbol] [e : Exp]) : Env
-  (cons (bind x e) env))
+(define (extend-env [env : Env] [x : Symbol] [e : Exp] [expEnv : Env]) : Env
+  (cons (bind x (delay e env)) env))
 
 (define (lookup-env [n : Symbol] [env : Env]) : Value
   (type-case (Listof Binding) env
     [empty (error 'lookup "unbound variable")]
     [(cons b rst-env) (cond
                         [(eq? n (bind-name b))
-                         (new-eval (bind-e b) (rest env))]
+                         (force (bind-e b))]
                         [else (lookup-env n rst-env)])]))
 
 ;; primitive operations
@@ -190,16 +190,16 @@
     [(varE x) ; tu obliczamy
      (lookup-env x env)]
     [(letE x e1 e2)
-       (delay e2 (extend-env env x e1))] ; rozszerzamy srodowiko o exp nie o val
+       (new-eval e2 (extend-env env x e1 env))] ; rozszerzamy srodowiko o exp nie o val
     [(lamE x b)
      (funV x b env)]
     [(appE e1 e2)
-     (apply (delay e1 env) e2)]))
+     (apply (new-eval e1 env) e2 env)]))
 
-(define (apply [v1 : Value] [e2 : Exp]) : Value
+(define (apply [v1 : Value] [e2 : Exp] [origEnv : Env]) : Value
   (type-case Value v1
     [(funV x b env)
-     (new-eval (force b) (extend-env env x e2))] 
+     (new-eval b (extend-env env x e2 origEnv))] 
     [else (error 'apply "not a function")]))
 
 (define (run [e : S-Exp]) : Value

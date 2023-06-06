@@ -212,12 +212,16 @@
      (begin 
        (update-env! env x (eval e0 env))
        (voidV))]
-    [(whileE eCond eBody)
-     (if (boolV-b (eval eCond env))
-        (begin 
-            (eval eBody env)
-            (eval (whileE eCond eBody) env))
-        (voidV))]))
+    [(whileE eCond eBody)   ; TODO error for econd not bool
+      (type-case  Value (eval eCond env)
+        [(boolV v)
+         (if v
+             (begin 
+               (eval eBody env)
+               (eval (whileE eCond eBody) env))
+             (voidV))]
+        [else
+          (error 'eval "type error")])]))
 
 (define (apply v1 v2)
   (type-case Value v1

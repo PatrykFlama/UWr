@@ -12,6 +12,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_subdirectory(gtest)
 add_subdirectory(exercise1)
+add_subdirectory(exercise2)
 add_subdirectory(application)
 
 

@@ -1,8 +1,11 @@
+#pragma GCC optimize("Ofast")
+#pragma GCC target("avx2,bmi,bmi2,lzcnt,popcnt,fma")
+
 #include <bits/stdc++.h>
 using namespace std;
 
 //! ---- PROGRAM SETTINGS ----
-int DEPTH = 3;                      // how many moves ahead AI (minimax and alpha beta) will look thru
+int DEPTH = 6;                      // how many moves ahead AI (minimax and alpha beta) will look thru
 #define wanna_go_faster
 // #define measure_time
 // const int PREPRINT = 10;
@@ -291,13 +294,13 @@ public:
         #ifdef wanna_go_faster
         vector<future<int>> scores;
         scores.reserve(free_cells.size());
-        for(int i = 0; i < free_cells.size(); i++){
+        for(unsigned int i = 0; i < free_cells.size(); i++){
             scores.push_back(async(launch::async, &AI::alphabeta, this, 
                                                     state.gen_next_state(free_cells[i].first, free_cells[i].second), 
                                                     MAX_DEPTH, MIN_PLAYER, INT_MIN, INT_MAX));
             // alphabeta(state.gen_next_state(x, y), MAX_DEPTH, MIN_PLAYER, INT_MIN, INT_MAX);
         }
-        for(int i = 0; i < free_cells.size(); i++){
+        for(unsigned int i = 0; i < free_cells.size(); i++){
             int score = scores[i].get();
             if(score > best_score){
                 best_score = score;
@@ -369,6 +372,9 @@ void say(string what, int x, int y){
 }
 
 int main(int argc, char *argv[]){
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+
     if(argc > 1) DEPTH = atoi(argv[1]);
 
     Reversi game(true);

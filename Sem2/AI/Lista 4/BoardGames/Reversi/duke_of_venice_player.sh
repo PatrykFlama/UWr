@@ -1,4 +1,4 @@
 #!/bin/bash
 
-pypy3 duke_of_venice.py 4
+pypy3 Reversi/duke_of_venice.py 4
 

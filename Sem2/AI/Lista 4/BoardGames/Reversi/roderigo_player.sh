@@ -1,3 +1,3 @@
 #!/bin/bash
 
-pypy3 roderigo.py 3
+pypy3 Reversi/roderigo.py 3

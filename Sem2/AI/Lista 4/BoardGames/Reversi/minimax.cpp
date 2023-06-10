@@ -5,7 +5,7 @@
 using namespace std;
 
 //! ---- PROGRAM SETTINGS ----
-int DEPTH = 6;                      // how many moves ahead AI (minimax and alpha beta) will look thru
+int DEPTH = 5;                      // how many moves ahead AI (minimax and alpha beta) will look thru
 #define wanna_go_faster
 // #define measure_time
 // const int PREPRINT = 10;

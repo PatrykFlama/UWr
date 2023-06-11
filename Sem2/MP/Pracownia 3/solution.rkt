@@ -13,14 +13,14 @@
         [(member (first xs) (rest xs)) #t]
         [else (contains-duplicates? (rest xs))]))
 
-(define (string-append-symbol [s : String] [x : Symbol]) : String
-    (string-append s (symbol->string x)))
-
 (define (double-foldl f base xs ys)
     (cond
         [(empty? xs) base]
         [(empty? (rest xs)) (f base (first xs) (first ys))]
         [else (double-foldl f (f base (first xs) (first ys)) (rest xs) (rest ys))]))
+
+(define (nice-error [func : Symbol] [str : String] [s : Symbol])
+    (error func (string-append str (symbol->string s))))
 
 
 ;! ----- abstract syntax -----
@@ -95,19 +95,19 @@
     [(eq? op '-)  (sub)]
     [(eq? op '*)  (mul)]
     [(eq? op '<=) (leq)]
-    [else (error 'parse (string-append "unknown operator: " (symbol->string op)))]))
+    [else (nice-error 'parse "unknown operator: " op)]))
 
 
 ;! ----- interpreter -----
 ; values
-; (define-type-alias Value Number)
-(define-type Value
-  (numV [n : Number])
-  (funV [xs : (Listof Symbol)] [e : Exp] [env : Env]))
+(define-type-alias Value Number)
+(define-type Function
+    (funV [xs : (Listof Symbol)] [e : Exp] [env : Env]))
 
 ; environment ;TODO - not sure about the structure yet, but so far it works
 (define-type Storable
   (valS [v : Value])
+  (funS [f : Function])
   (undefS))
 
 (define-type Binding
@@ -126,40 +126,40 @@
 
 (define (find-var [env : Env] [x : Symbol]) : (Boxof Storable)
   (type-case (Listof Binding) env
-    [empty (error 'lookup (string-append-symbol "unbound variable: " x))]
+    [empty (nice-error 'lookup "unbound variable: " x)]
     [(cons b rst-env) (cond
                         [(eq? x (bind-name b))
                          (bind-ref b)]
                         [else
                          (find-var rst-env x)])]))
   
-(define (lookup-env [x : Symbol] [env : Env]) : Value
+(define (lookup-env-var [x : Symbol] [env : Env]) : Value
   (type-case Storable (unbox (find-var env x))
     [(valS v) v]
-    [(undefS) (error 'lookup-env "undefined variable")]))
+    [(funS f) 
+        (nice-error 'lookup-env-var "not a variable: " x)]
+    [(undefS) (nice-error 'lookup-env-var "undefined variable: " x)]))
+
+(define (lookup-env-fun [x : Symbol] [env : Env]) : Function
+  (type-case Storable (unbox (find-var env x))
+    [(funS f) f]
+    [(valS v) 
+        (nice-error 'lookup-env-fun "not a function: " x)]
+    [(undefS) (nice-error 'lookup-env-fun "undefined variable: " x)]))
    
-(define (update-env! [env : Env] [x : Symbol] [v : Value]) : Void
+(define (update-env-val! [env : Env] [x : Symbol] [v : Value]) : Void
   (set-box! (find-var env x) (valS v)))
 
-; primitive operations
-(define (op-num-num->proc [f : (Number Number -> Number)]) : (Value Value -> Value)
-  (λ (v1 v2)
-    (type-case Value v1
-      [(numV n1)
-       (type-case Value v2
-         [(numV n2)
-          (numV (f n1 n2))]
-         [else
-          (error 'eval "type error")])]
-      [else
-       (error 'eval "type error")])))
+(define (update-env-fun! [env : Env] [x : Symbol] [f : Function]) : Void
+  (set-box! (find-var env x) (funS f)))
 
+; primitive operations         
 (define (op->proc [op : Op]) : (Value Value -> Value)
   (type-case Op op
-    [(add) (op-num-num->proc +)]
-    [(sub) (op-num-num->proc -)]
-    [(mul) (op-num-num->proc *)]
-    [(leq) (op-num-num->proc (lambda (a b) (if (<= a b) 0 1)))]))
+    [(add) +]
+    [(sub) -]
+    [(mul) *]
+    [(leq) (lambda (a b) (if (<= a b) 0 1))]))
 
 
 ; evaluation
@@ -171,37 +171,36 @@
             ; now we can evaluate definitions and add them to env
             (begin
             (foldl (λ (d dummy) 
-                (update-env! env (funD-f d) (funV (funD-xs d) (funD-e d) env)))
+                (update-env-fun! env (funD-f d) (funV (funD-xs d) (funD-e d) env)))
                 (void) ds)     ;;TODO should i evaluate it here?
             (eval-exp e env)))]))
 
 (define (eval-exp [e : Exp] [env : Env]) : Value
     (type-case Exp e
-        [(numE n) (numV n)]
-        [(varE v) (lookup-env v env)]
+        [(numE n) n]
+        [(varE v) (lookup-env-var v env)]
         [(opE e1 op e2)
             ((op->proc op) (eval-exp e1 env) (eval-exp e2 env))]
         [(ifzE ech ez enz) 
-            (if (= 0 (numV-n (eval-exp ech env)))
+            (if (= 0 (eval-exp ech env))
                 (eval-exp ez  env)
                 (eval-exp enz env))]
         [(letE x e1 e2)
             (let ([v (eval-exp e1 env)])
                 (eval-exp e2 (extend-env env x v)))]
         [(appE f es)
-            (apply (lookup-env f env)
+            (apply (lookup-env-fun f env)
                    (map (λ (e) (eval-exp e env)) es))])) 
 
 ;; TODO apply should be zealous
-(define (apply [func : Value] [args : (Listof Value)]) : Value
-  (type-case Value func
+(define (apply [fun : Function] [args : (Listof Value)]) : Value
+  (type-case Function fun
     [(funV xs e env)
      (eval-exp e 
         (double-foldl
             (λ (new-env x arg)
                 (extend-env new-env x arg))
-            env xs args))]
-    [else (error 'apply "not a function")]))
+            env xs args))]))
 
 
 (define (run [s : S-Exp]) : Value
@@ -209,22 +208,22 @@
 
 (module+ test
     (test (run `(define ((fun f1 (x) = (0 + x)) (fun neg? (x) = (0 <= x))) for (ifz (neg? (-1)) then (f1 (10)) else (f1 (-10)))))
-          (numV -10))
+          -10)
     (test (run `{define
                     {[fun fact (n) = {ifz n then 1 else {n * {fact ({n - 1})}}}]}
                     for
                     {fact (5)}})
-          (numV 120))
+          120)
     (test (run `(define () for (let x be (1 + 2) in (x + x))))
-          (numV 6))
+          6)
     (test (run `(define ((fun sum (x y) = (y + x)) (fun neg? (x) = (0 <= x))) for (ifz (neg? (-1)) then (sum (10 30)) else (sum (-10 -30)))))
-          (numV -40))
+          -40)
     (test (run `{define
                     {[fun even (n) = {ifz n then 0 else {odd ({n - 1})}}]
                         [fun odd (n) = {ifz n then 42 else {even ({n - 1})}}]}
                         for
                         {even (1024)}})
-          (numV 0))
+          0)
     (test (run `{define
                     {[fun gcd (m n) = {ifz n
                     then m
@@ -233,4 +232,4 @@
                     else {gcd ({m - n} n)}}}]}
                     for
                     {gcd (81 63)}})
-        (numV 9)))
+        9))

@@ -109,7 +109,7 @@
 ;   (numV [n : Number])
 ;   (funV [xs : (Listof Symbol)] [e : Exp] [env : Env]))
 
-; environment ;TODO - not sure about the structure yet, but so far it works
+; environment
 (define-type Storable
   (valS [v : Value])
   (funS [f : Function])
@@ -177,7 +177,7 @@
             (begin
             (foldl (λ (d dummy) 
                 (update-env-fun! env (funD-f d) (funV (funD-xs d) (funD-e d) env)))
-                (void) ds)     ;;TODO should i evaluate it here?
+                (void) ds)
             (eval-exp e env)))]))
 
 (define (eval-exp [e : Exp] [env : Env]) : Value
@@ -197,7 +197,6 @@
             (apply (lookup-env-fun f env)
                    (map (λ (e) (eval-exp e env)) es))])) 
 
-;; TODO apply should be zealous
 (define (apply [fun : Function] [args : (Listof Value)]) : Value
   (type-case Function fun
     [(funV xs e env)

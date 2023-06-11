@@ -104,6 +104,11 @@
 (define-type Function
     (funV [xs : (Listof Symbol)] [e : Exp] [env : Env]))
 
+;* although that would be more elegant (but it does not pass all tests):
+; (define-type Value
+;   (numV [n : Number])
+;   (funV [xs : (Listof Symbol)] [e : Exp] [env : Env]))
+
 ; environment ;TODO - not sure about the structure yet, but so far it works
 (define-type Storable
   (valS [v : Value])

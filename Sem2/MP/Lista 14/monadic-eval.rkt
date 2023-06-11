@@ -10,7 +10,7 @@
 
 (define-type Exp
   (numE [n : Number])
-  (opE [op : Op] [e1 : Exp] [e2 : Exp])
+  (opE  [op : Op] [e1 : Exp] [e2 : Exp])
   (varE [x : Symbol])
   (lamE [x : Symbol] [e : Exp])
   (appE [e0 : Exp] [e1 : Exp]))

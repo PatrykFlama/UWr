@@ -1,7 +1,7 @@
 #lang plait
 
-(module+ test
-    (print-only-errors #t))
+(module+ test)
+    ; (print-only-errors #t))
 
 ;! ----- helper functions -----
 (define (s-exp-ref [s : S-Exp] [i : Number]) : S-Exp
@@ -22,6 +22,7 @@
         [(empty? (rest xs)) (f base (first xs) (first ys))]
         [else (double-foldl f (f base (first xs) (first ys)) (rest xs) (rest ys))]))
 
+
 ;! ----- abstract syntax -----
 (define-type Op
     (add) (sub) (mul) (leq))
@@ -35,10 +36,11 @@
 (define-type Exp
     (numE [n : Number])
     (varE [x : Symbol])
-    (opE  [e1 : Exp] [op : Op] [e2 : Exp])
-    (ifzE [e1 : Exp] [e2 : Exp] [e3 : Exp])
+    (opE  [e1 : Exp]   [op : Op]  [e2 : Exp])
+    (ifzE [e1 : Exp]   [e2 : Exp] [e3 : Exp])
     (letE [x : Symbol] [e1 : Exp] [e2 : Exp])
     (appE [f : Symbol] [es : (Listof Exp)]))
+
 
 ;! ----- parser -----
 (define (parse-program [s : S-Exp]) : Program
@@ -53,7 +55,7 @@
 
 (define (parse-def [s : S-Exp]) : Def
     (cond
-        [(s-exp-match? `{fun SYMBOL {ANY ...} = ANY} s)
+        [(s-exp-match? `{fun SYMBOL {SYMBOL ...} = ANY} s)
          (let ([xs (map s-exp->symbol (s-exp->list (s-exp-ref s 2)))])
             (if (contains-duplicates? xs)
                 (error 'parse-def "duplicate parameter names")
@@ -69,11 +71,6 @@
             (numE (s-exp->number s))]
         [(s-exp-match? `SYMBOL s)
             (varE (s-exp->symbol s))]
-        [(s-exp-match? `{ANY SYMBOL ANY} s)
-            (opE
-                (parse-exp (s-exp-ref s 0))
-                (parse-op (s-exp->symbol (s-exp-ref s 1)))
-                (parse-exp (s-exp-ref s 2)))] 
         [(s-exp-match? `{ifz ANY then ANY else ANY} s)
             (ifzE (parse-exp (s-exp-ref s 1))
                   (parse-exp (s-exp-ref s 3))
@@ -82,6 +79,11 @@
             (letE (s-exp->symbol (s-exp-ref s 1))
                   (parse-exp (s-exp-ref s 3))
                   (parse-exp (s-exp-ref s 5)))]
+        [(s-exp-match? `{ANY SYMBOL ANY} s)
+            (opE
+                (parse-exp (s-exp-ref s 0))
+                (parse-op (s-exp->symbol (s-exp-ref s 1)))
+                (parse-exp (s-exp-ref s 2)))] 
         [(s-exp-match? `{SYMBOL {ANY ...}} s)
             (appE (s-exp->symbol (s-exp-ref s 0))
                   (map parse-exp (s-exp->list (s-exp-ref s 1))))]
@@ -89,9 +91,9 @@
 
 (define (parse-op [op : Symbol]) : Op
   (cond
-    [(eq? op '+) (add)]
-    [(eq? op '-) (sub)]
-    [(eq? op '*) (mul)]
+    [(eq? op '+)  (add)]
+    [(eq? op '-)  (sub)]
+    [(eq? op '*)  (mul)]
     [(eq? op '<=) (leq)]
     [else (error 'parse (string-append "unknown operator: " (symbol->string op)))]))
 
@@ -205,7 +207,7 @@
 (define (run [s : S-Exp]) : Value
     (eval-program (parse-program s)))
 
-#; (module+ test
+(module+ test
     (test (run `(define ((fun f1 (x) = (0 + x)) (fun neg? (x) = (0 <= x))) for (ifz (neg? (-1)) then (f1 (10)) else (f1 (-10)))))
           (numV -10))
     (test (run `{define

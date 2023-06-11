@@ -3,6 +3,8 @@
 <details>
     <summary> Co to jest monada w programowaniu funkcyjnym? </summary>
 
+https://youtu.be/VgA4wCaxp-Q
+
 ## [Co to jest monada w programowaniu funkcyjnym?](https://4programmers.net/Forum/Newbie/232253-co_to_jest_monada_w_programowaniu_funkcyjnym)
 
 Cytując klasyka: _A monad is just a monoid in the category of endofunctors._ ([źródło](https://stackoverflow.com/questions/3870088/a-monad-is-just-a-monoid-in-the-category-of-endofunctors-whats-the-problem))

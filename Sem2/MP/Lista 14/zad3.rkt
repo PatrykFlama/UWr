@@ -49,9 +49,9 @@
 
 (define (showM [c : (M Value)]) : String
   (let ([startM (c 0)])
-    (rec-string-append
+    (rec-string-append (list
         "value: "   (value->string (fst startM)) 
-        ", state: " (to-string (snd startM)))))
+        ", state: " (to-string (snd startM))))))
 
 (define tickM : (M Void)
   (λ (s) (pair (void) (+ s 1))))

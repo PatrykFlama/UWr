@@ -46,7 +46,7 @@
   (type-case (M 'a) c
     [(valM v) (value->string v)]
     [(errM l m) (rec-string-append 
-                    (list "error: " (symbol->string l) " " m))]))
+                    (list "error in " (symbol->string l) ": " m))]))
 
 (define-type Value
   (numV [n : Number])
@@ -128,25 +128,19 @@
 (define (run [e : S-Exp]) : String
   (showM (eval (parse e) mt-env)))
 
-#; (module+ test
-  (test (run `2)
-        "2")
-  (test (run `{+ 2 1})
-        "3")
-  (test (run `{* 2 1})
-        "2")
-  (test (run `{+ {* 2 3} {+ 5 8}})
-        "19")
-  (test (run `{{lambda {x} {+ x 1}} 5})
-        "6")
-  (test (run `{lambda {x} {+ x 1}})
-        "#<procedure>")
-  (test/exn (run `{1 2})
-            "not a function")
-  (test/exn (run `x)
-            "unbound variable")
-  (test/exn (run `{+ 1 {lambda {x} x}})
-            "not a number"))
+( module+ test
+    ( test ( run `{+ {* 2 3} {+ 5 8}})
+    "value: 19")
+    ( test ( run `{{ lambda {x} {+ x 1}} 5})
+    "value: 6")
+    ( test ( run `{lambda {x} {+ x 1}})
+    "value: #< procedure >")
+    ( test ( run `{1 2})
+    "error in apply: not a function")
+    ( test ( run `x)
+    "error in lookup-env: unbound variable")
+    ( test ( run `{+ 1 { lambda {x} x }})
+    "error in prim-op: not a number"))
 
 ;; parse ----------------------------------------
 

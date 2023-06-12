@@ -44,7 +44,7 @@
      (let ([pM (c s)])
          (type-case (E 'a) (fst pM)
             [(valE v)
-                ((f v) (snd pM))]       ;; TODO that may be incorrect - to check
+                ((f v) (snd pM))]
             [(errE l m) pM]))))
 
 (define (errorM [l : Symbol] [m : String]) : (M 'a)
@@ -150,39 +150,6 @@
 (define (run [e : S-Exp]) : String
   (showM (eval (parse e) mt-env)))
 
-; (module+ test
-;    (test (run `2)
-;           "value: 2, state: 0")
-;    (test (run `{+ {* 2 3} {+ 5 8}})
-;           "value: 19, state: 3")
-;    (test (run `{{ lambda {x} {+ x 1}} 5})
-;           "value: 6, state: 2")
-;    (test/exn (run `{1 2})
-;               "not a function")
-;    (test (run `{+ {+ count count}
-;                      {+ count count}})
-;           "value: 2, state: 3"))
-
-;(module+ test
-;  (test (run `2)
-;        "2")
-;  (test (run `{+ 2 1})
-;        "3")
-;  (test (run `{* 2 1})
-;        "2")
-;  (test (run `{+ {* 2 3} {+ 5 8}})
-;        "19")
-;  (test (run `{{lambda {x} {+ x 1}} 5})
-;        "6")
-;  (test (run `{lambda {x} {+ x 1}})
-;        "#<procedure>")
-;  (test/exn (run `{1 2})
-;            "not a function")
-;  (test/exn (run `x)
-;            "unbound variable")
-;  (test/exn (run `{+ 1 {lambda {x} x}})
-;            "not a number"))
-
 ;; parse ----------------------------------------
 
 (define (parse [s : S-Exp]) : Exp
@@ -214,3 +181,8 @@
     [(eq? op '*) (mul)]
     [else (error 'parse "unknown operator")]))
 
+( module+ test
+  (test (run `{+ {* 2 3} {+ 5 8}})
+  " value: 19 , state: 3")
+  (test (run `{+ {+ 1 2} {lambda {x} x}})
+  " error in prim-op: not a number , state: 1"))

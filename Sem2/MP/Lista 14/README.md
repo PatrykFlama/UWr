@@ -151,7 +151,7 @@ main = print findThemAll >> print findThemAllFail
 # Lista 14
 | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|
-| X | X | X | ~ | X | X |
+| X | X | X | X | X | X |
 
 ## Zadanie 1
 ![zadanie1](./zad1.png)

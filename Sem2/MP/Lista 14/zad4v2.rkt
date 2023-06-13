@@ -53,7 +53,7 @@
 
 (define (showM [c : (M Value)]) : String
   (let ([startM (c 0)])
-    (type-case (E 'a) (fst startM)
+    (type-case (E Value) (fst startM)
         [(valE v)
          (rec-string-append (list
             "value: "   (value->string v) 
@@ -64,16 +64,18 @@
             ", state: " (to-string (snd startM))))])))
 
 (define tickM 
-  (λ (s) (pair (valE (numV 0)) (+ s 1))))
+  (λ (s) (pair (valE (voidV)) (+ s 1))))
 
 (define-type Value
   (numV [n : Number])
-  (funV [f : (Value -> (M Value))]))
+  (funV [f : (Value -> (M Value))])
+  (voidV))
 
 (define (value->string [v : Value]) : String
   (type-case Value v
     [(numV n) (to-string n)]
-    [(funV _) "#<procedure>"]))
+    [(funV _) "#<procedure>"]
+    [(voidV)  "#<void>"]))
 
 ;; environments
 

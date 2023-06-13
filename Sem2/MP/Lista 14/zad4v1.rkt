@@ -54,7 +54,7 @@
 (define (errorM [l : Symbol] [m : String]) : (M 'a)
   (λ ([s : State]) (errE l m)))
 
-(define (showM [c : (M 'a)]) : String
+(define (showM [c : (M Value)]) : String
   (let ([startM (c 0)])
     (type-case (E (Value * State)) startM
       [(valE p)
@@ -164,26 +164,6 @@
                      {+ count count}})
           "value: 2, state: 3"))
 
-;(module+ test
-;  (test (run `2)
-;        "2")
-;  (test (run `{+ 2 1})
-;        "3")
-;  (test (run `{* 2 1})
-;        "2")
-;  (test (run `{+ {* 2 3} {+ 5 8}})
-;        "19")
-;  (test (run `{{lambda {x} {+ x 1}} 5})
-;        "6")
-;  (test (run `{lambda {x} {+ x 1}})
-;        "#<procedure>")
-;  (test/exn (run `{1 2})
-;            "not a function")
-;  (test/exn (run `x)
-;            "unbound variable")
-;  (test/exn (run `{+ 1 {lambda {x} x}})
-;            "not a number"))
-
 ;; parse ----------------------------------------
 
 (define (parse [s : S-Exp]) : Exp
@@ -222,4 +202,3 @@
   " error in prim-op: not a number ")
   (test (run `{+ {+ count count} {+ count count }})
   " value: 2, state: 3"))
-  

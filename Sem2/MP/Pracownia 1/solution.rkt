@@ -115,7 +115,7 @@ table:
                 (get_column_info (rest col_nums)))))
 
     (if (empty? cols)
-        (empty-table)
+        (empty-table cols)
         (let ((column_numbers (get_cols_nums cols tab)))
             (table
                 (get_column_info column_numbers)

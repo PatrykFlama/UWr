@@ -46,3 +46,51 @@
 * [**P**raktyczne **A**spekty **R**ozwoju **O**programowania](Sem2/PARO/)
 
 </details>
+
+
+<details open>
+    <summary> Planer </summary>
+
+```mermaid
+gantt
+    title Zimowy 23/24
+    dateFormat HH
+    axisFormat %H:%M
+
+    section Monday
+        Matematyka Dyskretna M          : done, 14, 17
+        Machine Learning                : active, 14, 16
+        KPA z bazami danych             : crit, 16, 18
+
+        OWI                             : 15, 16
+        %% OWI                          : 14, 15
+
+        Algebra 1                       : 12, 14
+
+    section Tuesday
+        WEPPO                           : 10, 12
+        Ekonomia                        : 14, 16
+
+        Algebra 1                       : 08, 10
+        Analiza III                     : 16, 18
+
+    section Wednesday
+        Analiza numeryczna              : 10, 13
+        Analiza III                     : 08, 10
+
+    section Thursday
+
+
+    section Friday
+        Rozszerzony Python         : 10, 12
+
+
+
+```
+
+</details>
+
+
+
+
+

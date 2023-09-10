@@ -52,7 +52,6 @@
     <summary> Planer </summary>
 
 ```mermaid
-%% active <=> lectures
 gantt
     title Zimowy 23/24
     dateFormat HH
@@ -64,7 +63,7 @@ gantt
         KPA z bazami danych             : active, 16, 18
 
         OWI                             : active, 15, 16
-        %% OWI                          : active, 14, 15
+        OWI                             : active, 14, 15
         
         ML (Adamczyk)                   : 16, 18
         KPABD (Rajba)                   : 18, 20

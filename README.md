@@ -1,11 +1,46 @@
 # UWr
 
-[English](README.en.md)
-
-<details open>
-    <summary>Polish</summary>
+[\[English\]](README.en.md)
 
 ## [Semestr 1](Sem1/)
+
+<details>
+    <summary> Plan </summary>
+    
+```mermaid
+gantt
+    title Zimowy 22/23
+    dateFormat HH
+    axisFormat %H:%M
+
+    section Monday
+        LDI : 10, 12
+        Logika dla informatyków : active, 12, 14
+
+    section Tuesday
+        Analiza I : active, 08, 10
+        Podstawowy warsztat informatyka: active, 11, 12
+
+    section Wednesday
+        Algebra liniowa 1R : active, 09, 11
+        Algebra liniowa 1R : 11, 13
+        WdpC : 14, 16
+        PWI : 16, 17
+
+    section Thursday
+        Analiza I : 08, 10
+        Wstęp do programowania w C : active, 10, 12
+        Algebra liniowa 1R : active, 12, 14
+
+    section Friday
+        Analiza I : 08, 10
+        Analiza I : active, 10, 12
+        MIA : 14, 16
+        Metody implementacji algorytmów : active, 16, 17
+
+```
+</details>
+
 * Analiza matematyczna I
 * Algebra liniowa 1R
 * Logika dla informatyków
@@ -15,6 +50,44 @@
 * Język angielski poziom B2
 
 ## [Semestr 2](Sem2/)
+
+<details>
+    <summary> Plan </summary>
+
+```mermaid
+gantt
+    title Letni 22/23
+    dateFormat HH
+    axisFormat %H:%M
+
+    section Monday
+        Algebra liniowa 2   : 12, 14 
+
+    section Tuesday
+        Algebra liniowa 2   : active, 09, 12
+        MP                  : 12, 15
+        PARO                : 16, 19
+
+    section Wednesday
+        Analiza II          : active, 08, 10
+        Sztuczna inteligencja : active, 08, 10
+        Metody programowania : active, 10, 13
+
+    section Thursday
+        Seminarium Młody Badacz : 08, 10
+        Programowanie obiektowe : active, 10, 12
+        AI                      : 10, 12
+        Analiza II              : active, 12, 14
+        PO                      : 12, 14
+        Kurs C++                : 14, 16
+        Analiza II              : 16, 18
+        Kurs C++                : active, 16, 18
+
+    section Friday
+        Analiza II              : 08, 10
+```
+</details>
+
 * Analiza matematyczna II
 * Algebra liniowa 2
 * [**A**rtificial **I**ntelligence](Sem2/AI)
@@ -24,9 +97,6 @@
 * [**P**raktyczne **A**spekty **R**ozwoju **O**programowania](Sem2/PARO/)
 
 ## [Semestr 3](Sem3/)
-
-</details>
-
 
 <details open>
     <summary> Planer </summary>
@@ -115,8 +185,6 @@ gantt
 ```
 
 </details>
-
-
 
 
 

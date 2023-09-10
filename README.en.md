@@ -1,9 +1,6 @@
 # UWr
 
-[Polish](README.md)
-
-<details open>
-    <summary>English</summary>
+[\[Polish\]](README.md)
 
 ## [Term 1](Sem1/)
 * Mathematical analysis I
@@ -22,5 +19,3 @@
 * [Object Oriented Programming](Sem2/PO/)
 * [C++ language course](Sem2/CPP/)
 * [Practical Aspects of Software Development](Sem2/PARO/)
-
-</details>

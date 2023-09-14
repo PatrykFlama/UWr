@@ -112,6 +112,7 @@ Preferowane (na podstawie opinii):
 **AN**: Woźny (ciężej, ale dokładniej), Karczewski (luźny, łatwy, gorzej uczy), Nowak (lepiej nie)  
 **ML**: Adamczyk, Biernacka Stypułkowski, Słupiński, Balcer   
 **Kursz rozszerzony Python**: Młotkowski  
+**WEPPO**: Zchla
 
 **Plan ataku:**  
 * 1 [ML](https://zapisy.ii.uni.wroc.pl/courses/machine-learning-202324-zimowy) (Adamczyk)                   : 16, 18

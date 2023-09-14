@@ -102,10 +102,27 @@ gantt
     <summary> Planer </summary>
 
 Preferowane (na podstawie zimowego 22/23):  
-**MDM**: Stachowiak; Jeż? Dudek?  
-**AN**: Karczewski, Chudy, Nowak  
+**MDM**: Stachowiak; Dudek?  
+**AN**: Karczewski, Nowak  
 **ML**: Adamczyk, Biernacka Stypułkowski, Słupiński, Balcer   
 **Kursz rozszerzony Python**: Młotkowski  
+
+Preferowane (na podstawie opinii):  
+**MDM**: Stachowiak; Dudek?  
+**AN**: Woźny (ciężej, ale dokładniej), Karczewski (luźny, łatwy, gorzej uczy), Nowak (lepiej nie)  
+**ML**: Adamczyk, Biernacka Stypułkowski, Słupiński, Balcer   
+**Kursz rozszerzony Python**: Młotkowski  
+
+**Plan ataku:**  
+* 1 [ML](https://zapisy.ii.uni.wroc.pl/courses/machine-learning-202324-zimowy) (Adamczyk)                   : 16, 18
+* 1 [AN](https://zapisy.ii.uni.wroc.pl/courses/analiza-numeryczna-202324-zimowy) (Woźny)                      : 10, 12
+* 1 [MDM](https://zapisy.ii.uni.wroc.pl/courses/matematyka-dyskretna-m-202324-zimowy) (Stachowiak)                : 16, 19
+* 1 [PY](https://zapisy.ii.uni.wroc.pl/courses/kurs-rozszerzony-jezyka-python-202324-zimowy) (Młotkowski)                 : 10, 12
+* 1 [KPABD](https://zapisy.ii.uni.wroc.pl/courses/kurs-projektowania-aplikacji-z-bazami-danych-202324-zimowy) (Rajba)                   : 18, 20
+* 1 [WEPPO](https://zapisy.ii.uni.wroc.pl/courses/wybrane-elementy-praktyki-projektowania-oprogramowania-202324-zimowy) (Wieczorek)               : 14, 16
+* 2 AN (Karczewski)                 : 16, 18
+* [Ekonomia](https://zapisy.ii.uni.wroc.pl/courses/o-ekonomii-i-gospodarce-inaczej-w-202324-zimowy)                        : active, 14, 16
+* 
 
 _active_ => lectures  
 _done_ => probably non-existent  
@@ -113,6 +130,7 @@ _%_ => strict collision
 _%%_ => prefert to not  
 _%%%_ => backup  
 _%%%%_ => to analyze  
+_%%%%%_ => WEPPO
 
 ```mermaid
 gantt
@@ -125,32 +143,29 @@ gantt
         Machine Learning                : active, 14, 16
         KPA z bazami danych             : active, 16, 18
 
-        % OWI                             : active, 15, 16
-        % OWI                             : active, 14, 15
-        
         1 ML (Adamczyk)                   : 16, 18
         1 KPABD (Rajba)                   : 18, 20
 
         Algebra 1                       : active, 12, 14
 
     section Tuesday
-        WEPPO                           : active, 10, 12
+        %%%%% WEPPO                           : active, 10, 12
         Ekonomia                        : active, 14, 16
 
         %%% 3 ML (Słupiński)                  : 08, 10
         %%% 4 ML (Balcer)                     : 08, 10
-        AN (Karczewski)                 : 14, 16
-        AN (Karczewski)                 : 16, 18
-        AN (Nowak)                      : 10, 12
-        AN (Nowak)                      : 12, 14
+        1 AN (Woźny)                      : 10, 12
         AN (Woźny)                      : 14, 16
-        AN (Woźny)                      : 10, 12
+        %% AN (Nowak)                      : 10, 12
+        %% AN (Nowak)                      : 12, 14
+        AN (Karczewski)                 : 14, 16
+        %%% 2 AN (Karczewski)                 : 16, 18
         %%% 2 KPABD (Abbasi)                  : 18, 20
-        %% PY (Piróg)                      : 12, 14
         %% PY (Balcer)                     : 10, 12
-        WEPPO (Zychla)                  : 12, 14
-        % WEPPO (Zychla)                  : 08, 10
-        WEPPO (Gańczorz)                : 14, 16
+        %% PY (Piróg)                      : 12, 14
+        %%%%% % WEPPO (Zychla)                  : 08, 10
+        %%%%% WEPPO (Zychla)                  : 12, 14
+        %%%%% WEPPO (Gańczorz)                : 14, 16
         %%%% Ekonomia                        : 16, 18
 
         Algebra 1                       : active, 08, 10
@@ -166,7 +181,7 @@ gantt
         % ML (Stypułkowski)               : 10, 12
         %%% 3 KPABD (Abbasi)                  : 18, 20
         %% PY (Adamczyk)                   : 08, 10
-        WEPPO (Wieczorek)               : 14, 16
+        %%%%% WEPPO (Wieczorek)               : 14, 16
 
     section Thursday
         Analiza numeryczna (repe)       : active, 12, 14
@@ -176,7 +191,7 @@ gantt
         1 PY (Młotkowski)                 : 10, 12
         %%% 2 PY (Młotkowski)                 : 08, 10
         %% PY (Słupiński)                  : 18, 20
-        WEPPO (Wieczorek)               : 14, 16
+        %%%%% 1 WEPPO (Wieczorek)               : 14, 16
 
         Analiza III                     : done, 12, 14
 
@@ -184,7 +199,7 @@ gantt
         Rozszerzony Python              : active, 10, 12
 
         %%% 3 PY (Młotkowski)                 : 08, 10
-        % WEPPO (Gańczorz)                : 10, 12
+        %%%%% % WEPPO (Gańczorz)                : 10, 12
 
         Algebra 1                       : 08, 10
 ```

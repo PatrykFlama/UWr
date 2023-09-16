@@ -116,8 +116,8 @@ Preferowane (na podstawie opinii):
 
 **Plan ataku:**  
 * 1 [ML](https://zapisy.ii.uni.wroc.pl/courses/machine-learning-202324-zimowy) (Adamczyk)                   : 16, 18
-* 1 [AN](https://zapisy.ii.uni.wroc.pl/courses/analiza-numeryczna-202324-zimowy) (Woźny)                      : 10, 12
 * 1 [MDM](https://zapisy.ii.uni.wroc.pl/courses/matematyka-dyskretna-m-202324-zimowy) (Stachowiak)                : 16, 19
+* 1 [AN](https://zapisy.ii.uni.wroc.pl/courses/analiza-numeryczna-202324-zimowy) (Woźny)                      : 10, 12
 * 1 [PY](https://zapisy.ii.uni.wroc.pl/courses/kurs-rozszerzony-jezyka-python-202324-zimowy) (Młotkowski)                 : 10, 12
 * 1 [KPABD](https://zapisy.ii.uni.wroc.pl/courses/kurs-projektowania-aplikacji-z-bazami-danych-202324-zimowy) (Rajba)                   : 18, 20
 * 1 [WEPPO](https://zapisy.ii.uni.wroc.pl/courses/wybrane-elementy-praktyki-projektowania-oprogramowania-202324-zimowy) (Wieczorek)               : 14, 16
@@ -164,10 +164,9 @@ gantt
         %%% 2 KPABD (Abbasi)                  : 18, 20
         %% PY (Balcer)                     : 10, 12
         %% PY (Piróg)                      : 12, 14
-        %%%%% % WEPPO (Zychla)                  : 08, 10
-        %%%%% WEPPO (Zychla)                  : 12, 14
+        % 1 WEPPO (Zychla)                  : 08, 10
+        %%%%% 2 WEPPO (Zychla)                  : 12, 14
         %%%%% WEPPO (Gańczorz)                : 14, 16
-        %%%% Ekonomia                        : 16, 18
 
         Algebra 1                       : active, 08, 10
         Analiza III (wyk)               : done, 16, 18
@@ -177,7 +176,7 @@ gantt
         Analiza numeryczna              : active, 10, 13
         Analiza III                     : active, done, 08, 10
 
-        %%% MDM (Jeż)                       : 14, 17
+        %%% 2 MDM (Jeż)                       : 14, 17
         %%% 2 ML (Biernacka)                  : 14, 16
         % ML (Stypułkowski)               : 10, 12
         %%% 3 KPABD (Abbasi)                  : 18, 20
@@ -192,7 +191,7 @@ gantt
         1 PY (Młotkowski)                 : 10, 12
         %%% 2 PY (Młotkowski)                 : 08, 10
         %% PY (Słupiński)                  : 18, 20
-        %%%%% 1 WEPPO (Wieczorek)               : 14, 16
+        %%%%% 3 WEPPO (Wieczorek)               : 14, 16
 
         Analiza III                     : done, 12, 14
 

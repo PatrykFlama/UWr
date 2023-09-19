@@ -98,29 +98,16 @@ gantt
 
 ## [Semestr 3](Sem3/)
 
-<details open>
+<details>
     <summary> Planer </summary>
 
-Preferowane (na podstawie zimowego 22/23):  
-**MDM**: Stachowiak; Dudek?  
-**AN**: Karczewski, Nowak  
-**Kurs rozszerzony Python**: Młotkowski  
-
-Preferowane (na podstawie opinii):  
+Wykładowcy:  
 **MDM**: Stachowiak; Dudek?  
 **AN**: Woźny (ciężej, ale dokładniej), Karczewski (luźny, łatwy, gorzej uczy), Nowak (lepiej nie)  
 **Kurs rozszerzony Python**: Młotkowski  
 **WEPPO**: Zychla
 
-**Priorytety**:
-* MDM
-* AN
-* WEPPO
-* PY
-* KPABD
-* Ekonomia
 
-**Plan ataku:**  
 * 1 [WEPPO](https://zapisy.ii.uni.wroc.pl/courses/wybrane-elementy-praktyki-projektowania-oprogramowania-202324-zimowy) (Zychla)                  : 12, 14
 * 1 [MDM](https://zapisy.ii.uni.wroc.pl/courses/matematyka-dyskretna-m-202324-zimowy) (Stachowiak)                : 16, 19
 * 1 [AN](https://zapisy.ii.uni.wroc.pl/courses/analiza-numeryczna-202324-zimowy) (Woźny)                      : 10, 12
@@ -129,12 +116,14 @@ Preferowane (na podstawie opinii):
 * 2 AN (Karczewski)                 : 16, 18
 * [Ekonomia](https://zapisy.ii.uni.wroc.pl/courses/o-ekonomii-i-gospodarce-inaczej-w-202324-zimowy)                        : active, 14, 16
 
+<!-- 
 _active_ => lectures  
-_done_ => probably non-existent  
+_done_ => analysis  
 _%_ => strict collision  
 _%%_ => prefert to not  
 _%%%_ => backup  
-_%%%%_ => to analyze  
+_%%%%_ => to analyze   
+-->
 
 ```mermaid
 gantt

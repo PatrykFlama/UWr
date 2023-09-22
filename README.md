@@ -119,6 +119,52 @@ Wykładowcy:
 * 2 AN (Karczewski)                 : 16, 18
 * [Ekonomia](https://zapisy.ii.uni.wroc.pl/courses/o-ekonomii-i-gospodarce-inaczej-w-202324-zimowy)                        : active, 14, 16
 
+
+
+1. MDM Stachowiak 16-19
+2. AN Woźny 10-12
+3. WEPPO Zychla 12-14
+4. Python Młotkowski 10-12
+5. KPABD Rajba 18-20
+6. O ekonomii inaczej 14-16
+_________
+
+1. MDM:
+* Stachowiak 16-19
+* Jeż 14-17
+
+2. AN:
+* Woźny 10-12
+
+3. WEPPO:
+* Zychla 12-14
+
+4. Python:
+* Młotkowski 10-12
+* Młotkowski ...
+
+5. KPABD:
+* Rajba 18-20
+_________
+
+1. MDM 9
+2. AN 17
+3. WEPPO 23
+4. Python 28
+5. KPABD 33
+6. Eko 36
+__________
+
+* MDM 9
+* AN 8
+* WEPPO 6
+* Python 5
+* KPABD 5
+* Ekonomia 3
+
+
+
+
 <!-- 
 _active_ => lectures  
 _done_ => analysis  

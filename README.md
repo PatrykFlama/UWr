@@ -98,8 +98,11 @@ gantt
 
 ## [Semestr 3](Sem3/)
 
-<details>
+<details open>
     <summary> Planer </summary>
+
+**Do rozważenia:**
+* kurs .NET
 
 Wykładowcy:  
 **MDM**: Stachowiak; Dudek?  
@@ -108,9 +111,9 @@ Wykładowcy:
 **WEPPO**: Zychla
 
 
-* 1 [WEPPO](https://zapisy.ii.uni.wroc.pl/courses/wybrane-elementy-praktyki-projektowania-oprogramowania-202324-zimowy) (Zychla)                  : 12, 14
 * 1 [MDM](https://zapisy.ii.uni.wroc.pl/courses/matematyka-dyskretna-m-202324-zimowy) (Stachowiak)                : 16, 19
 * 1 [AN](https://zapisy.ii.uni.wroc.pl/courses/analiza-numeryczna-202324-zimowy) (Woźny)                      : 10, 12
+* 1 [WEPPO](https://zapisy.ii.uni.wroc.pl/courses/wybrane-elementy-praktyki-projektowania-oprogramowania-202324-zimowy) (Zychla)                  : 12, 14
 * 1 [PY](https://zapisy.ii.uni.wroc.pl/courses/kurs-rozszerzony-jezyka-python-202324-zimowy) (Młotkowski)                 : 10, 12
 * 1 [KPABD](https://zapisy.ii.uni.wroc.pl/courses/kurs-projektowania-aplikacji-z-bazami-danych-202324-zimowy) (Rajba)                   : 18, 20
 * 2 AN (Karczewski)                 : 16, 18

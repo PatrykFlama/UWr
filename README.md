@@ -105,55 +105,56 @@ gantt
 * kurs .NET
 
 Wykładowcy:  
-**MDM**: Stachowiak; Dudek?  
+**MDM**: Stachowiak; Dudek; NIE Jeż  
 **AN**: Woźny (ciężej, ale dokładniej), Karczewski (luźny, łatwy, gorzej uczy), Nowak (lepiej nie)  
 **Kurs rozszerzony Python**: Młotkowski  
 **WEPPO**: Zychla
 
 
-* 1 [MDM](https://zapisy.ii.uni.wroc.pl/courses/matematyka-dyskretna-m-202324-zimowy) (Stachowiak)                : 16, 19
 * 1 [AN](https://zapisy.ii.uni.wroc.pl/courses/analiza-numeryczna-202324-zimowy) (Woźny)                      : 10, 12
 * 1 [WEPPO](https://zapisy.ii.uni.wroc.pl/courses/wybrane-elementy-praktyki-projektowania-oprogramowania-202324-zimowy) (Zychla)                  : 12, 14
 * 1 [PY](https://zapisy.ii.uni.wroc.pl/courses/kurs-rozszerzony-jezyka-python-202324-zimowy) (Młotkowski)                 : 10, 12
+* 1 [MDM](https://zapisy.ii.uni.wroc.pl/courses/matematyka-dyskretna-m-202324-zimowy) (Stachowiak)                : 16, 19
 * 1 [KPABD](https://zapisy.ii.uni.wroc.pl/courses/kurs-projektowania-aplikacji-z-bazami-danych-202324-zimowy) (Rajba)                   : 18, 20
 * 2 AN (Karczewski)                 : 16, 18
 * [Ekonomia](https://zapisy.ii.uni.wroc.pl/courses/o-ekonomii-i-gospodarce-inaczej-w-202324-zimowy)                        : active, 14, 16
 
 
 
-1. MDM Stachowiak 16-19
-2. AN Woźny 10-12
-3. WEPPO Zychla 12-14
-4. Python Młotkowski 10-12
+1. AN Woźny 10-12
+2. WEPPO Zychla 12-14
+3. Python Młotkowski 10-12
+4. MDM Stachowiak 16-19
 5. KPABD Rajba 18-20
 6. O ekonomii inaczej 14-16
 _________
 
-1. MDM:
-* Stachowiak 16-19
-* Jeż 14-17
+1. AN:
+   * Woźny 10-12
+   * Karczewski 16-18
 
-2. AN:
-* Woźny 10-12
+2. WEPPO:
+   * Zychla 12-14
 
-3. WEPPO:
-* Zychla 12-14
-
+3. KPABD:
+   * Rajba 18-20
+   * 
 4. Python:
-* Młotkowski 10-12
-* Młotkowski ...
+   * Młotkowski 10-12
+   * Młotkowski ...
 
-5. KPABD:
-* Rajba 18-20
+5. MDM:
+   * Stachowiak 16-19
+   * Dudek 14-17
 _________
 
-1. MDM 9
-2. AN 17
-3. WEPPO 23
-4. Python 28
+1. AN 17
+2. WEPPO 23
+3. Python 28
+4. MDM 9
 5. KPABD 33
 6. Eko 36
-__________
+_________
 
 * MDM 9
 * AN 8

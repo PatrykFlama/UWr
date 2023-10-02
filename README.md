@@ -146,5 +146,14 @@ gantt
 
 </details>
 
+* Analiza matematyczna III
+* Algebra 1
+* **M**atematyka **D**yskretna **M**
+* [**A**naliza **N**umeryczna](Sem3/AN/)
+* [**W**ybrane **E**lementy **P**raktyki **P**rojektowania **O**programowania](Sem3/WEPPO/)
+* [**K**urs **P**rojektowania **A**plikacji z **B**azami **D**anych](Sem3/KPABD/)
+* [Kurs rozszerzony języka **Python**](Sem3/PY/)
+* Ekonomia
+
 
 

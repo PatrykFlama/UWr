@@ -10,8 +10,10 @@
     <summary>Polish</summary>
 
 [(wróć)](../../../)
-## [**M**atematyka **D**yskretna **M**](MDM/)
 ## [**A**naliza **N**umeryczna](AN/)
+## [**W**ybrane **E**lementy **P**raktyki **P**rojektowania **O**programowania](WEPPO/)
+## [**K**urs **P**rojektowania **A**plikacji z **B**azami **D**anych](KPABD/)
+## [Kurs rozszerzony języka **Python**](PY/)
 
 </details>
 

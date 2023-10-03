@@ -18,7 +18,8 @@ def common_prefix(strs):
     return CP([s.lower() for s in strs])
 
 
-print(common_prefix(["Cyprian", "cyberotoman", "cynik", "ceniąc", "czule"]))
-print(common_prefix(["Cyprian", "cyberotoman", "cynik", "ceniąc", "czule", "cyba", "cybb"]))
-print(common_prefix(["aaa", "aba", "aca", "ada", ""]))
-print(common_prefix(["a", "b", "c", "d", "e"]))
+print("->", common_prefix(["Cyprian", "cyberotoman", "cynik", "ceniąc", "czule"]))
+print("->", common_prefix(["Cyprian", "cyberotoman", "cynik", "ceniąc", "czule", "cyba", "cybb"]))
+print("->", common_prefix(["aaa", "aba", "aca", "ada", ""]))
+print("->", common_prefix(["a", "b", "c", "d", "e"]))
+print("->", common_prefix([]))

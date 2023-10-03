@@ -21,5 +21,5 @@ def common_prefix(strs):
 print("->", common_prefix(["Cyprian", "cyberotoman", "cynik", "ceniąc", "czule"]))
 print("->", common_prefix(["Cyprian", "cyberotoman", "cynik", "ceniąc", "czule", "cyba", "cybb"]))
 print("->", common_prefix(["aaa", "aba", "aca", "ada", ""]))
-print("->", common_prefix(["a", "b", "c", "d", "e"]))
+print("->", common_prefix(["a", "b", "c", "d", "b"]))
 print("->", common_prefix([]))

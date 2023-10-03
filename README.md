@@ -74,6 +74,7 @@ gantt
         Metody programowania : active, 10, 13
 
     section Thursday
+        Algebra liniowa 2       : active, 08, 10
         Seminarium Młody Badacz : 08, 10
         Programowanie obiektowe : active, 10, 12
         AI                      : 10, 12

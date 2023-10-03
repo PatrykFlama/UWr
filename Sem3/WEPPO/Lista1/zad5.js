@@ -21,6 +21,6 @@ function measureTime(func, name, n){
 }
 
 
-measureTime(nthFibRec, "nthFibRec", 40);
-measureTime(nthFibIt, "nthFibIt", 40);
+for(let i = 10; i <= 40; i++) measureTime(nthFibRec, "nthFibRec", i);
+for(let i = 10; i <= 40; i++) measureTime(nthFibIt, "nthFibIt", i);
 

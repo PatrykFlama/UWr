@@ -14,6 +14,14 @@ def CP(strs, depth=0):
         
     return max_pref
 
+def CP2(strs):
+    strs.sort()
+    longest = ""
+
+    for i in range(0, strs.len()-2):
+        pass
+        # if n+1 and n+2 words contain [for i from len(n word) to 0: [n word][0:i]] then update longest pref
+
 def common_prefix(strs):
     return CP([s.lower() for s in strs])
 

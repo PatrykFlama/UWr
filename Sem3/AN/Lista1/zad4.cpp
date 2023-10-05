@@ -16,5 +16,13 @@ precision rec(int n, bool print_all = false){
 }
 
 int main() {
-    rec(50, true);
+    // rec(50, true);
+    int exp = 0;
+    int limit = 100;
+    while(1.+pow(10, exp) != 1. && limit--){
+        exp--;
+    }
+    cout << exp+1 << '\n' << 
+         pow(10, exp+1) << ' ' << (double)(1.+pow(10, exp+1)) << '\n'  <<
+         pow(10, exp)   << ' ' << 1.+pow(10, exp) << '\n';
 }

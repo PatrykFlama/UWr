@@ -54,6 +54,6 @@ do [] podajemy string do . podajemy nazwę zmiennej
 
 
 ## Zadanie 4
-Typeof zwraca stringa, który reprezentuje typ zmiennej.  
+Typeof zwraca stringa, który reprezentuje typ zmiennej. Działa tylko dla obiektów prostych.  
 Natomiast instanceof sprawdza czy dany obiekt jest instancją danej klasy.  
 

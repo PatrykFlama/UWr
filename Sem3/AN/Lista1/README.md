@@ -8,7 +8,16 @@
 ## Zadanie 1
 zfałszowane działanie
 
-
+## Zadanie 5
+$I_n := \int_0^1 \frac{x^n}{x+2023}dx$  
+$I_n := \frac{1}{n} - 2023 I_{n-1}$; gdzie $I_0 = \ln(\frac{2024}{2023})$  
+d-d że rekurencja działa (indukcja):  
+$I_0 = \int_0^1 \frac{x^0}{x+2023}dx=\ln(x+2023)|_0^1=\ln(\frac{2024}{2023})$  
+$I_n = \frac{1}{n} - 2023I_{n-1}$  
+$\frac{1}{n} = I_n + 2023I_{n-1}$  
+$\frac{1}{n} = \int_0^1 \frac{x^n}{x+2023}dx + 2023 \int_0^1 \frac{x^{n-1}}{x+2023}dx =
+ \int_0^1 \frac{x^n + 2023 x^{n-1}}{x+2023}dx = \int_0^1 x^{n-1}dx =
+ \frac{x^n}{n}|_0^1 = \frac{1}{n}$  
 
 ## Zadanie 6
 $\pi = 4 \sum_{k=0}^{\infty} \frac{(-1)^k}{2k+1}$  

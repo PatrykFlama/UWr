@@ -3,7 +3,7 @@
 # Lista 1
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---|---|---|---|---|---|---|
-| X | X | X | X |   | X | X | X |
+| X | X | X | X | X | X | X | X |
 
 ## Zadanie 1
 zfałszowane działanie

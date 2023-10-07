@@ -18,6 +18,8 @@ $\frac{1}{n} = I_n + 2023I_{n-1}$
 $\frac{1}{n} = \int_0^1 \frac{x^n}{x+2023}dx + 2023 \int_0^1 \frac{x^{n-1}}{x+2023}dx =
  \int_0^1 \frac{x^n + 2023 x^{n-1}}{x+2023}dx = \int_0^1 x^{n-1}dx =
  \frac{x^n}{n}|_0^1 = \frac{1}{n}$  
+wynik programu dla całek od _n = 1_ co _2_ jest niepoprawny, poniważ zwraca ujemne wyniki podczas gdy funkcja pod całką jest dodatnia na _[0, 1]_  
+natomiast dla całek od _n = 2_ co _2_ też jest niepoprawny, bo funkcja maleje po _n_ na _[0, 1]_ a wyniki są coraz większe
 
 ## Zadanie 6
 $\pi = 4 \sum_{k=0}^{\infty} \frac{(-1)^k}{2k+1}$  
@@ -25,7 +27,8 @@ monotoniczne, szereg naprzemienny, więc szukamy takiego k, że $\frac{4}{2k+1} 
 $\frac{4}{2k+1} < 10^{-6}$  
 $2k+1 > 4 * 10^6$  
 $k > 2 * 10^6 - 1$  
-więc najmniejsze $k = 2 * 10^6$
+więc najmniejsze $k = 2 * 10^6$  
+nie mniej jednak _float_ ma zbyt małą precyzję aby to policzyć natomiast _double_ już tak
 
 ## Zadanie 7
 $\ln(x) = \sum_{k=1}^{\infty} (-1)^{k-1} \frac{(x-1)^k}{k}$  

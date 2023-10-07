@@ -16,7 +16,6 @@ precision In(int to, bool print = false, int step = 1, int from = 1){
 }
 
 
-
 int main(){
     In(20, true);
     cout << '\n';

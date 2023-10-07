@@ -8,6 +8,9 @@
 ## Zadanie 1
 zfałszowane działanie
 
+## Zadanie 4
+![image](./zad4.png)
+
 ## Zadanie 5
 $I_n := \int_0^1 \frac{x^n}{x+2023}dx$  
 $I_n := \frac{1}{n} - 2023 I_{n-1}$; gdzie $I_0 = \ln(\frac{2024}{2023})$  

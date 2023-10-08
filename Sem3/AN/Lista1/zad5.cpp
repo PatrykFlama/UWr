@@ -8,6 +8,7 @@ precision In(int to, bool print = false, int step = 1, int from = 1){
     int print_step = -from+1;
 
     for(int i = 1; i <= to; i++){
+        // if(print && !(print_step++%step)) cout << i << ": " << 1./(precision)i - 2023*res << " = " << 1./(precision)i << " - " << 2023*res << '\n';
         res = 1./(precision)i - 2023*res;
         if(print && !(print_step++%step)) cout << i << ": " << res << '\n';
     }

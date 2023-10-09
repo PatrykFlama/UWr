@@ -6,7 +6,7 @@
 | X | X | X | X | X | X | X | X |
 
 ## Zadanie 1
-zfałszowane działanie
+Jakieśtam oszustwo, że program na liczenie sinusa nie działał, bo za dużo bitów (30), więc poprawili program do liczenia sinusów licząc sinusy manualnie i podając je do programu, który liczył sinusy, których nie umiał liczyć. Prawie nikt nie wiedział i nikt się nie domyślił że coś jest nie tak, pieniądze dali.
 
 ## Zadanie 2
 Wynik nie jest wiarygodny, $x^14$ dla małych argumentów będzie wymagać dużej precyzji, natomiast po dodaniu 1 do niego, zmniejszymy precyzje aby moc skorzystac z liczby > 1.

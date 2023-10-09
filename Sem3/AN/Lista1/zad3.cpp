@@ -25,6 +25,4 @@ int main(){
         cout << "single: " << f_single(r) << '\n';
         cout << "double: " << f_double(r, true) << '\n';
     }
-
-    cout << "dla malego x, nawet przemnozonego przez 17, wynik cos bedzie zbyt bliski 1, nawet dla podwojnej precyzji\n";
 }

@@ -8,6 +8,12 @@
 ## Zadanie 1
 zfałszowane działanie
 
+## Zadanie 2
+Wynik nie jest wiarygodny, $x^14$ dla małych argumentów będzie wymagać dużej precyzji, natomiast po dodaniu 1 do niego, zmniejszymy precyzje aby moc skorzystac z liczby > 1.
+
+## Zadanie 3
+Dla małych x wynik $\cos(x)$ będzie zbyt bliski 1, nawet dla podwójnej precyzji, więc zostaje zaokrąglony.
+
 ## Zadanie 4
 ![image](./zad4.png)
 

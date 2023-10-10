@@ -9,7 +9,7 @@
 Jakieśtam oszustwo, że program na liczenie sinusa nie działał, bo za dużo bitów (30), więc poprawili program do liczenia sinusów licząc sinusy manualnie i podając je do programu, który liczył sinusy, których nie umiał liczyć. Prawie nikt nie wiedział i nikt się nie domyślił że coś jest nie tak, pieniądze dali.
 
 ## Zadanie 2
-Wynik nie jest wiarygodny, $x^14$ dla małych argumentów będzie wymagać dużej precyzji, natomiast po dodaniu 1 do niego, zmniejszymy precyzje aby moc skorzystac z liczby > 1.
+Wynik nie jest wiarygodny, $x^{14}$ dla małych argumentów będzie wymagać dużej precyzji, natomiast po dodaniu 1 do niego, zmniejszymy precyzje aby moc skorzystac z liczby > 1.
 
 ## Zadanie 3
 Dla małych x wynik $\cos(x)$ będzie zbyt bliski 1, nawet dla podwójnej precyzji, więc zostaje zaokrąglony.
@@ -52,7 +52,8 @@ $\sum_{k=1}^{\infty} (-1)^{k} \frac{(\frac{2}{e}-1)^k}{k} = \sum_{k=1}^{\infty} 
 $\frac{(1-\frac{2}{e})^k}{k} < \frac{1}{k}$  
 czyli dla danej iteracji _k_ drugi szereg będzie mniejszy od pierwszego, 
 zarazem maleje on szybciej oraz jest monotoniczny, dodatni i ograniczony, 
-więc szybciej osiągnie mały błąd  
+więc szybciej osiągnie mały błąd   
+ewentualnie $\sum_{k=1}^{\infty} (-1)^{k} \frac{(\frac{2}{e}-1)^k}{k}$ jest bliżej promienia zbieżności szeregu (który wynosi (0; 2]) więc szybciej osiągnie mały błąd
 
 ## Zadanie 8
 Mamy funkcję $\arctan$, która zwraca dokładny wynik tylko dla $x \in [-1, 1]$, 

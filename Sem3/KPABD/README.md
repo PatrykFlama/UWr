@@ -11,7 +11,7 @@
     <summary>Polish</summary>
 
 [(wróć)](../)
-# **K**urs **P**rojektowania **A**plikacji z **B**azami **D**anych
+# [**K**urs **P**rojektowania **A**plikacji z **B**azami **D**anych](http://itcourses.eu/database-applications)
 
 
 </details>

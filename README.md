@@ -122,12 +122,9 @@ gantt
         WEPPO (Zychla)                  : 08, 10
 
         Algebra 1                       : active, 08, 10
-        Analiza III (wyk)               : done, 16, 18
-        Analiza III                     : done, 14, 16
 
     section Wednesday
         Analiza numeryczna              : active, 10, 13
-        Analiza III                     : active, done, 08, 10
 
         KPABD (Abbasi)                  : 18, 20
 
@@ -137,8 +134,6 @@ gantt
         MDM (Stachowiak)              : 16, 19
         PY (Młotkowski)                 : 10, 12
 
-        Analiza III                     : done, 14, 16
-
     section Friday
         Rozszerzony Python              : active, 10, 12
 
@@ -147,7 +142,6 @@ gantt
 
 </details>
 
-* Analiza matematyczna III
 * Algebra 1
 * **M**atematyka **D**yskretna **M**
 * [**A**naliza **N**umeryczna](Sem3/AN/)

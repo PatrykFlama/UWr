@@ -122,3 +122,5 @@ console.log(tab); // [szesc: 6]
 Typeof zwraca stringa, który reprezentuje typ zmiennej. Działa tylko dla obiektów prostych.  
 Natomiast instanceof sprawdza czy dany obiekt jest instancją danej klasy. Działa tylko dla typów złożonych.  
 
+## Zadanie 5
+

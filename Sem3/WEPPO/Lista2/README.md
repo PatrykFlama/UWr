@@ -1,9 +1,9 @@
 [(wróć)](../)
 
 # Lista 2
-| 1 | 2 | 3 | 4 |
-|---|---|---|---|
-| X | X | X | X |
+| 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|
+| X | X | X | X | X |
 
 ## NPM
 `-g` - instalacja globalna, w pp instaluje lokalnie do projektu

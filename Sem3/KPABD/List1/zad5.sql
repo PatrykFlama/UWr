@@ -1,3 +1,6 @@
-SELECT TOP 1 h.SalesOrderID, SalesOrderNumber, PurchaseOrderNumber, LineTotal, (LineTotal-UnitPrice*UnitPriceDiscount) AfterDiscount, OrderQty
+SELECT h.SalesOrderID, h.SalesOrderNumber, h.PurchaseOrderNumber, SUM(LineTotal) AS TotalAfterDiscount, SUM(LineTotal) + SUM(UnitPrice*UnitPriceDiscount*OrderQty) AS TotalBeforeDiscount, SUM(OrderQty) AS TotalQuantity
 FROM [SalesLT].[SalesOrderDetail] d LEFT JOIN [SalesLT].[SalesOrderHeader] h ON d.SalesOrderID = h.SalesOrderID
-ORDER BY UnitPrice*UnitPriceDiscount DESC
+GROUP BY h.SalesOrderID, h.SalesOrderNumber, h.PurchaseOrderNumber
+ORDER BY SUM(UnitPrice*UnitPriceDiscount*OrderQty) DESC
+
+-- according to documentation, linetotal is total price with discount included

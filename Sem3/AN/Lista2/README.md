@@ -3,7 +3,7 @@
 # Lista 1
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 |---|---|---|---|---|---|---|---|---|
-|   | X | X |   | X | X | X | X |   |
+| X | X | X |   | X | X | X | X | X |
 
 ## Zadanie 2
 ![image](zad2.png)
@@ -35,3 +35,10 @@ $14\frac{1-\cos(17x)}{x^2}$ daje niewiarygodne wyniki, ponieważ dla małych x w
 aby tego uniknąć, dla x bliskich 1 możemy zastosować przybliżenie (za pomocą szeregu Maclaurina):  
 $14\frac{1-\cos(17x)}{x^2} = 14\frac{1-1+(17x)^2-(17x)^4}{x^2} = 14\frac{(17x)^2-(17x)^4}{x^2} = 14*17^2(1-17^2x^2)$  
 dzięki temu pozbywamy się 1 z dużą precyzją w ułamku w obliczeniach i od razu przechodzimy do wysokiej precyzji, zarazem zmniejszamy liczbę operacji  
+
+
+# TODO
+* zad 6 wektor^n wyciągnąć max
+* 9 skracanie pierwiastków
+* zad 1 V2 przedstawić na prostej
+* zad 8 taylor poprawić

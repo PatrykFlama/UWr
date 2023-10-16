@@ -37,7 +37,5 @@ $14\frac{1-\cos(17x)}{x^2} = 14\frac{1-1+\frac{(17x)^2}{2}-\frac{(17x)^4}{4!}}{x
 
 
 # TODO
-* zad 6 wektor^n wyciągnąć max
 * 9 skracanie pierwiastków
 * zad 1 V2 przedstawić na prostej
-* zad 8 taylor poprawić

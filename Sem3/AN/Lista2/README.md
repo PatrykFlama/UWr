@@ -33,8 +33,7 @@ wtedy osiągamy lepszą precyzję dla małych x, ponieważ wtedy zaokrąglenie p
 ## Zadanie 8
 $14\frac{1-\cos(17x)}{x^2}$ daje niewiarygodne wyniki, ponieważ dla małych x wynik $cos(x)$ jest na tyle bliski 1, że braknie precyzji i komputer zwraca 1   
 aby tego uniknąć, dla x bliskich 1 możemy zastosować przybliżenie (za pomocą szeregu Maclaurina):  
-$14\frac{1-\cos(17x)}{x^2} = 14\frac{1-1+(17x)^2-(17x)^4}{x^2} = 14\frac{(17x)^2-(17x)^4}{x^2} = 14*17^2(1-17^2x^2)$  
-dzięki temu pozbywamy się 1 z dużą precyzją w ułamku w obliczeniach i od razu przechodzimy do wysokiej precyzji, zarazem zmniejszamy liczbę operacji  
+$14\frac{1-\cos(17x)}{x^2} = 14\frac{1-1+\frac{(17x)^2}{2}-\frac{(17x)^4}{4!}}{x^2} = 14\frac{\frac{(17x)^2}{2}-\frac{(17x)^4}{24}}{x^2} = 14(\frac{17^2}{2}-\frac{17^4x^2}{24})$  
 
 
 # TODO

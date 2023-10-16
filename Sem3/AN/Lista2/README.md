@@ -35,7 +35,5 @@ $14\frac{1-\cos(17x)}{x^2}$ daje niewiarygodne wyniki, ponieważ dla małych x w
 aby tego uniknąć, dla x bliskich 1 możemy zastosować przybliżenie (za pomocą szeregu Maclaurina):  
 $14\frac{1-\cos(17x)}{x^2} = 14\frac{1-1+\frac{(17x)^2}{2}-\frac{(17x)^4}{4!}}{x^2} = 14\frac{\frac{(17x)^2}{2}-\frac{(17x)^4}{24}}{x^2} = 14(\frac{17^2}{2}-\frac{17^4x^2}{24})$  
 
-
-# TODO
-* 9 skracanie pierwiastków
-* zad 1 V2 przedstawić na prostej
+## Zadanie 9
+![image](zad9.png)

@@ -13,7 +13,7 @@ Najmniejszy przedział zawierający te liczby to $[0b0.10000*2^{-1}, 0b0.11111*2
 ![image](zad3.png)
 
 ## Zadanie 4
-25 lutego 1991 r. wojsko amerykańskie wystrzeliło rakietę Patiot w kierunku Dharany w Arabii Saudyjskiej. Po błędzie numerycznym pocisk zamiast we wroga trafił w amerykańskie koszary, zabijając 28 żołnierzy i raniąc około 100 innych. Ten błąd jest wielokrotnym powtórzeniem błędu rzędu 0,000000095, wynikającym z użycia 24-bitowego systemu zmiennych, więc 1/10 sekundy jest obcinana. Błąd końcowy wyniósł 0,34 sekundy, ale ze względu na dużą prędkość pocisku wystarczył, aby minąć cel o pół kilometra. 
+25 lutego 1991 r. wojsko amerykańskie wystrzeliło rakietę Patiot w kierunku Dharany w Arabii Saudyjskiej. W wyniku błedu numerycznego pocisk zamiast we wroga trafił w amerykański barak, zabijając 28 żołnierzy i raniąc około 100 kolejnych. Błąd polegał na wielokrotnym powtórzeniem błędu rzędu 0.000000095, wynikającym z użycia 24-bitowego systemu zmiennych, więc 1/10 (używane przy mnożeniu) było zaokrąglane. Błąd końcowy wyniósł 0.34 sekundy, ale ze względu na dużą prędkość rakiety wystarczył, aby minąć cel o pół kilometra.  
 
 ## Zadanie 5
 Standard IEEE 754 dzieli liczbę na 3 części: znak, wykładnik i mantysę   

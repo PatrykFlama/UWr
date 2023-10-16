@@ -37,3 +37,5 @@ $14\frac{1-\cos(17x)}{x^2} = 14\frac{1-1+\frac{(17x)^2}{2}-\frac{(17x)^4}{4!}}{x
 
 ## Zadanie 9
 ![image](zad9.png)
+W pierwszym wzorze mamy dużo operacji wymagających dużej precyzji na liczbach bliskich 1, co powoduje utratę cyfr znaczących.  
+W drugim wzorze mamy operacje na liczbach bliskich 0, co zmniejsza błąd.

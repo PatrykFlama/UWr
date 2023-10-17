@@ -5,6 +5,9 @@
 |---|---|---|---|---|---|---|---|---|
 | X | X | X | X | X | X | X | X | X |
 
+## Zadanie 1
+![image](zad1.png)
+
 ## Zadanie 2
 ![image](zad2.png)
 

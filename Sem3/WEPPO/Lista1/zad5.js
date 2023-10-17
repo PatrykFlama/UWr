@@ -7,9 +7,11 @@ function nthFibRec(n){
 function nthFibIt(n){
     let fib1 = 0, fib2 = 1;
     for(let i = 0; i < n; i++){
-        let temp = fib1;
-        fib1 = fib2;
-        fib2 += temp;
+        // let temp = fib1;
+        // fib1 = fib2;
+        // fib2 += temp;
+
+        [fib1, fib2] = [fib2, fib1+fib2];   //? cleaner way
     }
     return fib1;
 }

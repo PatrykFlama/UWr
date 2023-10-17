@@ -58,6 +58,10 @@ public:
         return wynik;
     }
 
+    void wypisz_mieszane(){
+        cout << licznik/mianownik << ' ' << licznik%mianownik << '/' << mianownik;
+    }
+
     friend ostream& operator<<(ostream& os, const Ulamek& u){
         os << u.licznik << "/" << u.mianownik;
         return os;

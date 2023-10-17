@@ -20,7 +20,9 @@ Najmniejszy przedział zawierający te liczby to $[0b0.10000*2^{-1}, 0b0.11111*2
 
 ## Zadanie 5
 Standard IEEE 754 dzieli liczbę na 3 części: znak, wykładnik i mantysę   
-mantysa jest zawsze zapisana w postaci 1,xxxxx... gdzie pierwsza 1 nie jest zapisywana    
+dodatkowo ma zapisane specjalne wartości, takie jak +-0, nan, +-infs  
+mantysa jest (prawie) zawsze zapisana w postaci 1,xxxxx... gdzie pierwsza 1 nie jest zapisywana    
+wyjątkiem jest skrajnie mała cecha, przy której zakładamy brak 1 i zwiększamy precyzję wokół 0  
 Długość wykładnika i mantysy zależy od liczby bitów przeznaczonej na liczbę:  
 ![image](ieee754.png)
 
@@ -40,5 +42,4 @@ $14\frac{1-\cos(17x)}{x^2} = 14\frac{1-1+\frac{(17x)^2}{2}-\frac{(17x)^4}{4!}}{x
 
 ## Zadanie 9
 ![image](zad9.png)
-W pierwszym wzorze mamy dużo operacji wymagających dużej precyzji na liczbach bliskich 1, co powoduje utratę cyfr znaczących.  
-W drugim wzorze mamy operacje na liczbach bliskich 0, co zmniejsza błąd.
+W pierwszym wzorze mamy operacje odejmowania na liczbach blisko siebie, co doprowadza do zjawiska utraty cyfr znaczących.  

@@ -43,6 +43,11 @@ INSERT INTO S2 (K, MFK1, MFK2, V) VALUES (4, 4, 4, 'Value S2 4');
 
 -- ALTER TABLE table_name
 -- ADD CONSTRAINT constraint_name constraint_definition;
+-- for egzample
+-- ALTER TABLE S1
+-- ADD CONSTRAINT FK_S1_M1
+-- FOREIGN KEY (MFK) REFERENCES M1(K) ON UPDATE CASCADE ON DELETE SET NULL;
+
 
 -- ON UPDATE and ON DELETE clauses
 -- the NO ACTION option prevents the action from being taken, 

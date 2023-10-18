@@ -1,6 +1,6 @@
 -- to view the constraint we use [EXEC sp_helpconstraint 'table_name']:
 EXEC sp_helpconstraint 'SalesLT.SalesOrderHeader';
--- EXEC sp_help 'SalesLT.SalesOrderHeader';     -- to view everything; constraints, indexes, triggers, etc.
+-- EXEC sp_help 'SalesLT.SalesOrderHeader';     -- to view everything: constraints, indexes, triggers, etc.
 
 
 -- Insert a row into the SalesOrderHeader table with a ShipDate earlier than the OrderDate

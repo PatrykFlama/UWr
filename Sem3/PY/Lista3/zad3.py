@@ -8,16 +8,56 @@ def pos_type(lab, pos):
         return 'EXIT'
     return 'EMPTY'
 
-def solve(lab, start):      # returns deque of pairs=steps
-    pos = start
-    steps = collections.deque()
+vis = set()
+moves = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
-    moves = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+def solve(lab, pos):      # returns deque of pairs=steps
+    vis.add(pos)
+
     for move in moves:
-        if pos_type(lab, (pos[0] + move[0], pos[1] + move[1])) == 'EXIT':
-            steps.append((pos[0] + move[0], pos[1] + move[1]))
-            return steps
-        if pos_type(lab, (pos[0] + move[0], pos[1] + move[1])) == 'EMPTY':
-            steps.append((pos[0] + move[0], pos[1] + move[1]))
-            pos = (pos[0] + move[0], pos[1] + move[1])
-            solve(lab, pos)
+        next_pos = (pos[0] + move[0], pos[1] + move[1])
+        if pos_type(lab, (next_pos[0], next_pos[1])) == 'WALL' or (next_pos[0], next_pos[1]) in vis:
+            continue
+
+        if pos_type(lab, (next_pos[0], next_pos[1])) == 'EXIT':
+            return collections.deque([(pos[0], pos[1]), (next_pos[0], next_pos[1])])
+        if pos_type(lab, (next_pos[0], next_pos[1])) == 'EMPTY':
+            steps = solve(lab, (next_pos[0], next_pos[1]))
+            if steps:
+                steps.appendleft((pos[0], pos[1]))
+                return steps
+            
+    return None
+
+def print_solution(lab, pos):
+    vis.clear()
+    steps = solve(lab, pos)
+
+    if steps is None:
+        print('No solution')
+        return
+    
+    print(steps)
+    for x in range(len(lab)):
+        for y in range(len(lab[0])):
+            if (x, y) in steps or (x, y) == pos:
+                print('o', end='')
+            else:
+                print(lab[x][y], end='')
+        print()
+
+# ---- test -----
+lab = [
+    'XXXXXXXXXXXX',
+    '           X',
+    'XXXXXXXX X X',
+    'X   X    X X',
+    'X XXXXXX X X',
+    'X     X  X X',
+    'X XX XXX X X',
+    'X X      X X',
+    'X XXXXXXXXXX',
+    'X          X',
+    'XXXXXXXXXX X'
+]
+print_solution(lab, (1, 0))

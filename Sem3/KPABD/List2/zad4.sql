@@ -1,9 +1,28 @@
-CREATE PROCEDURE get_borrowed_days_by_reader_id
-    @reader_ids TABLE (id INT)
+DROP PROCEDURE IF EXISTS GetBorrowedDaysByReaderID
+DROP TYPE IF EXISTS dbo.czytelnik_id
+GO
+
+CREATE TYPE dbo.czytelnik_id AS TABLE
+(
+    Czytelnik_ID INT
+);
+GO
+
+CREATE PROCEDURE GetBorrowedDaysByReaderID
+    @reader_ids dbo.czytelnik_id READONLY
 AS
 BEGIN
-    SELECT b.reader_id, SUM(DATEDIFF(day, b.borrow_date, b.return_date)) AS 'sum_days'
-    FROM borrows b
-    WHERE b.reader_id IN (SELECT id FROM @reader_ids)
-    GROUP BY b.reader_id
+    SELECT r.Czytelnik_ID, SUM(Wypozyczenie.Liczba_Dni) Suma_Dni_Wypozyczenia
+    FROM @reader_ids r RIGHT JOIN Wypozyczenie ON r.Czytelnik_ID = Wypozyczenie.Czytelnik_ID
+    GROUP BY r.Czytelnik_ID
 END
+GO
+
+
+-- test
+DECLARE @CzytelnikIds dbo.czytelnik_id
+INSERT INTO @CzytelnikIds (Czytelnik_ID)
+    SELECT Czytelnik_ID FROM Czytelnik
+
+EXEC GetBorrowedDaysByReaderID @reader_ids = @CzytelnikIds
+GO

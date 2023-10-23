@@ -5,10 +5,10 @@ using namespace std;
 
 
 float actg(float x){
-    return atan(1./x);
+    return PI/2. - atan(x); 
 }
 
-float acc(float x, float y){
+double acc(float x, float y){
     return -log10(abs(1-x/y));
 }
 
@@ -18,7 +18,8 @@ float a(float x){
 }
 
 float a_better(float x){
-    return -(pow(x, 3) + sqrt(pow(x, 6) + 2023.*2023.)) / 2023.*2023.;
+    // return -(pow(x, 3) + sqrt(pow(x, 6) + 2023.*2023.)) / 2023.*2023.;
+    return 1/(pow(x, 3) * (1+sqrt(1+2023*2023/pow(x, 6))));
 }
 
 
@@ -36,9 +37,6 @@ float c(float x){
 }
 
 float c_better(float x){
-    // return pow(x, 6)/9. - pow(x, 4)/7. + pow(x, 2)/5. -1./3.;
-    // if(x >= 0) return -1./(x*x) + atan(x)/pow(x, 3);
-    // else return -1./(x*x) + atan(x)/pow(x, 3);
     return atan(x)/pow(x, 3) - 1/(x*x);
 }
 
@@ -55,8 +53,8 @@ int main(){
     cout << "b_better) " << b_better(B) << "\n";
     cout << "difference: " << acc(b(B), b_better(B)) << "\n\n";
 
-    float C = 0.000000000000001;
-    // float C = M_PI/2.;
+    // float C = 0.001;
+    float C = PI/2.;
     cout << "c) " << c(C) << "\n";
     cout << "c_better) " << c_better(C) << "\n";
     cout << "difference: " << acc(c(C), c_better(C)) << "\n\n";

@@ -33,22 +33,26 @@ void find_zeros_better(float a, float b, float c){
     }
     else{
         if(b > 0){
-            cout << (-b - sqrt(delta)) / (2*a) << ' '
-                 << (2*c)/(-b-sqrt(b*b-4*a*c)) << '\n';
+            float x1 = (-b - sqrt(delta)) / (2*a),
+                  x2 = (2*c)/(-b-sqrt(b*b-4*a*c));
+                //   x2 = c/(a*x1);
+            cout << x1 << ' ' << x2 << '\n';
         }
         else{
-            cout << (2*c)/(-b+sqrt(b*b-4*a*c)) / (2*a) << ' '
-                 << (-b + sqrt(delta)) / (2*a) << '\n';
+            float x1 = (-b + sqrt(delta)) / (2*a),
+                  x2 = (2*c)/(-b+sqrt(b*b-4*a*c));
+                //   x2 = c/(a*x1);
+            cout << x1 << ' ' << x2 << '\n';
         }
     }
 }
 
 
 int main(){
-    find_zeros(0.01, 100000000, 2);
-    find_zeros_better(0.01, 100000000, 2);
+    find_zeros(0.01, 1e8, 2);
+    find_zeros_better(0.01, 1e8, 2);
 
     cout << '\n';
-    find_zeros(0.01, -200000000, 2);
-    find_zeros_better(0.01, -200000000, 2);
+    find_zeros(0.01, -2e8, 2);
+    find_zeros_better(0.01, -2e8, 2);
 }

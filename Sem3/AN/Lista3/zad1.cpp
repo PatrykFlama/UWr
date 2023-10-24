@@ -37,7 +37,8 @@ float c(float x){
 }
 
 float c_better(float x){
-    return atan(x)/pow(x, 3) - 1/(x*x);
+    // return atan(x)/pow(x, 3) - 1/(x*x);
+    return -1/3 + (x*x)/5 - pow(x, 5)/7;
 }
 
 
@@ -46,16 +47,16 @@ int main(){
     float A = -10000.;
     cout << "a) " << a(A) << "\n";
     cout << "a_better) " << a_better(A) << "\n";
-    cout << "difference: " << acc(a(A), a_better(A)) << "\n\n";
+    cout << "accuracy: " << acc(a(A), a_better(A)) << "\n\n";
 
     float B = 4.000001;
     cout << "b) " << b(B) << "\n";
     cout << "b_better) " << b_better(B) << "\n";
-    cout << "difference: " << acc(b(B), b_better(B)) << "\n\n";
+    cout << "accuracy: " << acc(b(B), b_better(B)) << "\n\n";
 
     // float C = 0.001;
     float C = PI/2.;
     cout << "c) " << c(C) << "\n";
     cout << "c_better) " << c_better(C) << "\n";
-    cout << "difference: " << acc(c(C), c_better(C)) << "\n\n";
+    cout << "accuracy: " << acc(c(C), c_better(C)) << "\n\n";
 }

@@ -23,9 +23,14 @@ BEGIN
     END
 
     -- Validate birth date format
+    IF @birthDate NOT LIKE '[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]'
+    BEGIN
+        THROW 50003, 'Invalid date format', 1;
+        RETURN;
+    END
     IF @birthDate > GETDATE()
     BEGIN
-        THROW 50003, 'Invalid birth date', 1;
+        THROW 50003, 'Birth date in the future', 1;
         RETURN;
     END
 
@@ -43,6 +48,8 @@ GO
 EXEC AddReader '12345678901', 'abc', 'Hell', '1990-01-01';
 GO
 EXEC AddReader '12345678901', '2abc', 'Hell', '1990-01-01';
+GO
+EXEC AddReader '12345678901', '2abc', 'Aaa', 'date';
 GO
 
 SELECT * FROM Czytelnik

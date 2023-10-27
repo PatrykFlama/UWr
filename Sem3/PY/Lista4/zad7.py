@@ -125,22 +125,23 @@ def _solutions_iterator(board):
                 return          # return, to not display unsolved sudoku
     yield board         # no empty slots => solution found => return it
 
+
 def solutions_iterator(board):
     if all(False for _ in _solutions_iterator(board)):
         yield None
     else:
         return _solutions_iterator(board)
 
-
-
 # -------- TEST --------
-for solution in solutions_iterator(read_sudoku()):
+lsol = 0
+for solution in _solutions_iterator(read_sudoku()):
     if solution is None:
         print("No solution")
         break
     print()
     print_sudoku(solution)
-
+    lsol += 1
+if lsol == 0: print("No solution")
 
 # microtests
 # def unfun(t):

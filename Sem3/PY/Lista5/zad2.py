@@ -61,7 +61,9 @@ class Variable(Formula):
             raise ValueError("Name must be a string")
         self.name = name
 
-    def calculate(self, values):        # TODO check if variable exists in mapping
+    def calculate(self, values):
+        if self.name not in values:
+            raise ValueError("Value for variable " + self.name + " not found")
         return values[self.name]
     
     def __str__(self):

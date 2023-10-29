@@ -1,22 +1,27 @@
 /*
 -> Czy wartości typów prostych też mają prototypy?
-Wartości typów prostych w JavaScript (takie jak string, number, boolean, null, undefined i symbol) 
-nie mają prototypów. Prototypy są zdefiniowane tylko dla obiektów, 
-a wartości typów prostych nie są obiektami
+Tak, ale nie. Wartości typów prostych nie mają prototypów, ale mają obiekty opakowujące, które mają prototypy.
 
 -> Czy to znaczy że one są obiektami i można im dodawać dowolne pola/funkcje, jak wszystkim obiektom?
 Nie, wartości typów prostych nie są obiektami i nie można im dodawać dowolnych pól ani funkcji, 
-jak to jest możliwe w przypadku obiektów.
-
-Wartości typów prostych są przechowywane bezpośrednio na stosie, a nie w pamięci dynamicznej, 
-jak to jest w przypadku obiektów. Wartości te są przekazywane przez wartość, a nie przez referencję, 
-co oznacza, że kopiowanie wartości typu prostego tworzy nową wartość, a nie tylko referencję 
-do istniejącej wartości, jak to jest w przypadku obiektów.
+jednak mają one metody podobne do tych z obiektów, ponieważ mają powiązane obiekty opakowujące.
+Te obiekty opakowujące są tworzone automatycznie, gdy metoda jest używana na wartości typu prostego,
+po czym są usuwane. Proces ten nazywa się "boxing" lub "wrapping".
 */
 
 var n = 1;
 // liczba ma prototyp?
-console.log(typeof Object.getPrototypeOf(n));
+console.log(typeof Object.getPrototypeOf(n));       // object
+console.log(Object.getPrototypeOf(n));              // null prototype
+var obj = {}
+console.log(typeof Object.getPrototypeOf(obj));     // object
 // można jej dopisać pole/funkcję?
 n.foo = 'foo';
-console.log(n.foo);
+console.log(n.foo);             // undefined
+
+/*
+Ostatnia linia programu próbuje wyświetlić wartość właściwości foo dla zmiennej n. 
+Jednakże, ponieważ n jest wartością typu prostego (liczbą), a nie obiektem, 
+to metoda do niej przypisywana, jest tak na prawdę przypisana do tymczasowego obiektu opakowującego,
+który jest od razu usuwany razem z metodą.
+*/

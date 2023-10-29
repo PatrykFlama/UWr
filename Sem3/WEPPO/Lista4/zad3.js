@@ -9,6 +9,8 @@ var Worker = function (name, surname, age) {
 }
 
 Worker.prototype = Object.create(Person.prototype);
+Worker.prototype = Person.prototype;
+Worker.prototype = new Person();
 
 /*
 W powyższym kodzie, łańcuch prototypów jest ustawiany w taki sposób, że prototypem obiektu Worker 

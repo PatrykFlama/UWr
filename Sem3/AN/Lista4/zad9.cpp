@@ -1,6 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+float h(float x){
+    // todo
+}
 
 float f(float x){
     return pow(x-4, 3);

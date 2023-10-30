@@ -31,9 +31,5 @@ Miejsca zerowe będą w punktach przecięcia się funkcji _g(x)_ z _h(x)_
 ![image](zad8.png)
 
 # Zadanie 9
-
-
-
-
-
+![image](zad9.png)
 

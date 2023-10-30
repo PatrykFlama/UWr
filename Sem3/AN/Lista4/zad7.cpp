@@ -16,7 +16,7 @@ float calc_res(float x){
     int N = 1000;
     float last =  std::numeric_limits<float>::infinity();;
 
-    while(N-- && abs(last - x) > e && abs(f(x)) > e){
+    while(N-- && abs((last - x) / x) > e && abs(f(x)) > e){
         last = x;
         x = F(x);
     }

@@ -18,7 +18,7 @@ double calc_res(double x){
     double last =  std::numeric_limits<double>::infinity();
     int iterations = 0;
 
-    while(N-- && abs(last - x) > e && abs(func(x)) > e){
+    while(N-- && abs((last - x)) > e && abs(func(x)) > e){
         last = x;
         x = F(x);
         iterations++;

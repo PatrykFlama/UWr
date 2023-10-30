@@ -3,7 +3,7 @@
 # Lista 4
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 |---|---|---|---|---|---|---|---|---|
-| X | X | X | X |   | X | X |   |   |
+| X | X | X | X |   | X | X | X |   |
 
 
 # Zadanie 1
@@ -28,7 +28,7 @@ Miejsca zerowe będą w punktach przecięcia się funkcji _g(x)_ z _h(x)_
 ![image](zad7.png)
 
 # Zadanie 8
-
+![image](zad8.png)
 
 # Zadanie 9
 

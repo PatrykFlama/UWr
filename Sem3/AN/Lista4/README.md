@@ -3,7 +3,7 @@
 # Lista 4
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 |---|---|---|---|---|---|---|---|---|
-| X | X | X | X |   | X | X | X | X |
+| X | X | X | X | X | X | X | X | X |
 
 
 # Zadanie 1
@@ -19,6 +19,9 @@ Wynik bisekcji jest mniejszy od błędu, oraz coraz mniej się od niego różni
 Miejsca zerowe będą w punktach przecięcia się funkcji _g(x)_ z _h(x)_
 
 # Zadanie 5
+![image](zad5ab.png)
+![image](zad5c.png)
+![image](zad5c_graph.png)
 
 
 # Zadanie 6

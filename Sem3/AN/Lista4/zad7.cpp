@@ -12,35 +12,21 @@ float F(float x){
     return x/2.+a/(2*x);
 }
 
-
-bool test_for_conv(float x){
+float calc_res(float x){
     int N = 1000;
-    float last = std::numeric_limits<float>::infinity();
+    float last =  std::numeric_limits<float>::infinity();;
 
-    // while(N-- && abs(x - last) > e && abs(f(x)) > e){
-    while(N--){
+    while(N-- && abs(last - x) > e && abs(f(x)) > e){
         last = x;
         x = F(x);
     }
 
-    return abs(abs(x) - sqrt(a)) < e;
-}
-
-float bins(bool opt = true){
-    float l = -1e6, r = 1e6, mid = (l + r) / 2;
-    while(r - l > e){
-        if((opt ? test_for_conv(mid) : !test_for_conv(mid))) r = mid;
-        else l = mid;
-        mid = (l + r) / 2;
-    }
-    return mid;
+    return x;
 }
 
 
 int main(){
-    a = 0.6;
-    float limitR = bins(), limitL = bins(false);
-    cout << limitR << ' ' << limitL << '\n';
-    // cout << test_for_conv(1/2.+1/8.) << '\n';
-    // cout << test_for_conv(-2) << '\n';
+    a = 2;
+    cout << setprecision(10) << fixed;
+    cout << calc_res(100) << '\n';
 }

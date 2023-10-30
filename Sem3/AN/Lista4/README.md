@@ -3,7 +3,7 @@
 # Lista 4
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 |---|---|---|---|---|---|---|---|---|
-| X | X | X | X |   | X | X | X |   |
+| X | X | X | X |   | X | X | X | X |
 
 
 # Zadanie 1
@@ -33,3 +33,4 @@ Miejsca zerowe będą w punktach przecięcia się funkcji _g(x)_ z _h(x)_
 # Zadanie 9
 ![image](zad9.png)
 
+W eksperymentach dla funkcji $(x-2)^2*sin(x)$ metoda g dała szybciej precyzyjny wynik, więc może ona być lepsza.  

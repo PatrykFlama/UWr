@@ -52,4 +52,8 @@ int main(){
 
     a = num;
     cout << calc_res(x0) << '\n';
+
+    for(float i = -1e6; i <= 1e6; i += 0.1){
+        if(abs(f(calc_res(i))) > 64*e) cout << i << '\n';
+    }
 }

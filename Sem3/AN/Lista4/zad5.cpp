@@ -35,11 +35,11 @@ int main(){
     cout << "starting from " << x0 << '\n';
     cout << "x = " << x << '\n';
 
-    double a0 = 0+e, b0 = 1/R-e;
+    double a0 = 0+e, b0 = 3/(2*R)-e;
     for(double i = a0; i <= b0; i += 1e-3){
         calc_res(i);
     }
 
     cout << "avg_iter = " << avg_iter << '\n';
-    cout << "max_iter = " << max_iter << '\n';
+    // cout << "max_iter = " << max_iter << '\n';
 }

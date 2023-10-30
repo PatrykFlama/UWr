@@ -1,35 +1,25 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-float h(float x){
-    // todo
+
+double f(double x){
+    return pow(x-2, 2) * sin(x);
 }
 
-float f(float x){
-    return pow(x-4, 3);
+double F(double x){
+    return x - (x-2) * sin(x)/(2*sin(x) + (x-2)*cos(x));
 }
 
-float fp(float x){
-    return 3*x*x-24*x+48;
-}
-
-float g(float x){
-    return x-4;
-}
-
-float F(float x){
-    return x - f(x)/fp(x);
-}
-
-float G(float x){
-    return x - 3*f(x)/fp(x);
+double G(double x){
+    return x - 2 * (x-2) * sin(x)/(2*sin(x) + (x-2)*cos(x));
 }
 
 
 int main(){
-    float x0;
-    float xf = x0, xg = x0;
-    int max = 10;
+    cout << setprecision(15);
+    double x0 = 1.5;
+    double xf = x0, xg = x0;
+    int max = 24;
 
     for(int i = 0; i < max; i++){
         xf = F(xf);

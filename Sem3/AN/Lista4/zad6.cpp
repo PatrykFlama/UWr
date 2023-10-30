@@ -68,7 +68,10 @@ int main(){
     cout << l << ' ' << calc_res(l+4*e) << ' ' << calc_res(l-4*e) << '\n';
     cout << r << ' ' << calc_res(r-4*e) << ' ' << calc_res(r+4*e) << '\n';
 
-    for(double i = 1/(2*a); i < 5/(2*a); i += 0.01)
-        calc_res(i);
+    ofstream file("zad6.txt");
+    for(double i = l-1.; i < r+1.; i += 0.01){
+        double res = calc_res(i);
+        if(!isnan(res)) file << i << ' ' << res << '\n';
+    }
     cout << "avg iteartions: " << avg << '\n'; 
 }

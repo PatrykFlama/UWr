@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-const double e = 1e-6;
+const double e = 2e-8;
 double a;
 
 double f(double x){
@@ -74,6 +74,12 @@ int main(){
     cout << calc_res(x0) << '\n';
 
 
+    // check only for m, which is in (1/2, 2)
+    for(double x = 1./2. + 1e24; x < 2; x += 2e-24){
+        if(abs(supercalc_res(x0, a) - sqrt(num)) < e) cout << x << '\n';
+    }
+
+
     // x0 = 0 + 1e-127;
     // while(true){
     //     if(abs(supercalc_res(x0, a) - sqrt(num)) < 64*e) break;
@@ -81,10 +87,10 @@ int main(){
     // }
     // cout << x0 << '\n';
 
-    x0 = numeric_limits<double>::max();
-    while(true){
-        if(abs(supercalc_res(x0, a) - sqrt(num)) < 64*e) break;
-        x0 /= 2;
-    }
-    cout << numeric_limits<double>::max() - x0 << '\n';
+    // x0 = numeric_limits<double>::max();
+    // while(true){
+    //     if(abs(supercalc_res(x0, a) - sqrt(num)) < 64*e) break;
+    //     x0 /= 2;
+    // }
+    // cout << numeric_limits<double>::max() - x0 << '\n';
 }

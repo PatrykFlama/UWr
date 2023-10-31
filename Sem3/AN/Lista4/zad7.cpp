@@ -1,20 +1,19 @@
 #include <bits/stdc++.h>
 using namespace std;
-#define float double
-const float e = 1e-6;
-float a;
+const double e = 1e-6;
+double a;
 
-float f(float x){
+double f(double x){
     return x*x - a;
 }
 
-float F(float x){
+double F(double x){
     return x/2.+a/(2*x);
 }
 
-float calc_res(float x){
+double calc_res(double x){
     int N = 1000;
-    float last =  std::numeric_limits<float>::infinity();;
+    double last =  std::numeric_limits<double>::infinity();;
 
     while(N-- && abs((last - x) / x) > e && abs(f(x)) > e){
         last = x;
@@ -24,12 +23,33 @@ float calc_res(float x){
     return abs(x);
 }
 
+double supercalc_res(double x, double num){
+    a = num;
+    int exponent = 0;
+    while(a >= 1){
+        a /= 2;
+        exponent++;
+    }
+    while(a < 0.5){
+        a *= 2;
+        exponent--;
+    }
+
+    double res;
+    if (exponent%2 == 0)
+        res = calc_res(x) * pow(2, exponent/2);
+    else
+        res = calc_res(x*2) * pow(2, (exponent-1)/2);
+    a = num;
+    return res;
+}
+
 
 int main(){
     cout << setprecision(10) << fixed;
 
-    float x0 = 1000;
-    float num = 10;
+    double x0 = 1000;
+    double num = 10;
     
 
     a = num;
@@ -53,7 +73,18 @@ int main(){
     a = num;
     cout << calc_res(x0) << '\n';
 
-    for(float i = -1e6; i <= 1e6; i += 0.1){
-        if(abs(f(calc_res(i))) > 64*e) cout << i << '\n';
+
+    // x0 = 0 + 1e-127;
+    // while(true){
+    //     if(abs(supercalc_res(x0, a) - sqrt(num)) < 64*e) break;
+    //     x0 *= 2;
+    // }
+    // cout << x0 << '\n';
+
+    x0 = numeric_limits<double>::max();
+    while(true){
+        if(abs(supercalc_res(x0, a) - sqrt(num)) < 64*e) break;
+        x0 /= 2;
     }
+    cout << numeric_limits<double>::max() - x0 << '\n';
 }

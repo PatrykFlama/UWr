@@ -18,12 +18,14 @@ for (var f of foo)
 
 
 function createGeneratorParam(end) {
-    var _state = 0;
-    return {
-        next: function () {
-            return {
-                value: _state,
-                done: _state++ >= end
+    return function() {
+        var _state = 0;
+        return {
+            next: function () {
+                return {
+                    value: _state,
+                    done: _state++ >= end
+                }
             }
         }
     }

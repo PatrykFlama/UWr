@@ -22,6 +22,7 @@ Miejsca zerowe będą w punktach przecięcia się funkcji _g(x)_ z _h(x)_
 ![image](zad5ab.png)
 ![image](zad5c.png)
 ![image](zad5c_graph.png)
+![image](zad5c2.png)
 
 
 # Zadanie 6

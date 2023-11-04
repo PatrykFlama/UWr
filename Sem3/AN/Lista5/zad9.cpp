@@ -18,7 +18,7 @@ double fp(double x){
     if(func == 1) return 3*x*x - 4*x;
     if(func == 2) return 4*x*x*x - 12*x*x + 10*x - 2;
     if(func == 3) return 5*x*x*x*x - 20*x*x*x + 27*x*x - 14*x + 2;
-    if(func == 4) return cos(x)+10;
+    if(func == 4) return cos(x)+1;
     return 0;
 }
 double fb(double x){

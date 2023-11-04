@@ -1,12 +1,9 @@
-const moduleA = require('./zad1a.js');
+module.exports = { work_b };
+let a = require('./zad1a.js');
 
-console.log('Module B');
-moduleA.runModuleA();
-
-function runModuleB() {
-    console.log('Running module B');
+function work_b(n) {
+    if ( n > 0 ) {
+        console.log( `b: ${n}`);
+        a.work_a(n-1);
+    }
 }
-
-module.exports = {
-    runModuleB
-};

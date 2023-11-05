@@ -1,9 +1,9 @@
-module.exports = { work_a };
+module.exports = { fun_a };
 let b = require('./zad1b.js');
 
-function work_a(n) {
+function fun_a(n) {
     if ( n > 0 ) {
-        console.log( `a: ${n}`);
-        b.work_b(n-1);
+        console.log(`a: ${n}`);
+        b.fun_b(n-1);
     }
 }

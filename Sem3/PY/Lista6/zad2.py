@@ -17,8 +17,8 @@ def find_different_range(str1, str2):
     
     return (l1, r1)
 
-#   should update from time to time          should update every hour            maybe updates constantly
-urls = ['https://www.bbc.com/news', 'https://www.dota2.com/leaderboards/#europe', 'https://time.is/']
+#   should update from time to time          should update every hour
+urls = ['https://www.bbc.com/news', 'https://www.dota2.com/leaderboards/#europe', 'https://www.google.com']
 website_content = {}        # dictionary
 
 # initial content

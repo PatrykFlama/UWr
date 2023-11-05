@@ -1,26 +1,44 @@
 import requests
 import time
 
-urls = ['https://www.example.com', 'https://www.google.com']
+def find_different_range(str1, str2):
+    l1 = l2 = 0
+    r1, r2 = len(str1)-1, len(str2)-1
+
+    while l1 < len(str1) and l2 < len(str2) and \
+          str1[l1] == str2[l2]:
+        l1 += 1
+        l2 += 1
+    
+    while r1 >= 0 and r2 >= 0 and \
+          str1[r1] == str2[r2]:
+        r1 -= 1
+        r2 -= 1
+    
+    return (l1, r1)
+
+#   should update from time to time          should update every hour            maybe updates constantly
+urls = ['https://www.bbc.com/news', 'https://www.dota2.com/leaderboards/#europe', 'https://time.is/']
 website_content = {}        # dictionary
 
-# pobieramy zawartość każdej strony i zapisujemy ją w słowniku
+# initial content
 for url in urls:
     response = requests.get(url)
-    content_dict[url] = response.text
+    website_content[url] = response.text
 
-# ustawiamy timer na 1 minutę
 interval = 60
-
 while True:
-    # czekamy na upływ czasu
     time.sleep(interval)
     
-    # pobieramy ponownie zawartość każdej strony i porównujemy ją z zawartością zapisaną w słowniku
     for url in urls:
         response = requests.get(url)
-        if response.text != content_dict[url]:
-            # jeśli zawartość się zmieniła, zwracamy to, co się zmieniło
-            print(f'Zmiana na stronie {url}:')
-            print(response.text)
-            content_dict[url] = response.text
+        l, r = find_different_range(website_content[url], response.text)
+        if website_content[url] != response.text:
+            print(f'---------- Update on {url} ----------')
+            print("Old content: ")
+            print(website_content[url][l:r])
+            print("New content: ")
+            print(response.text[l:r])
+            print()
+            print()
+            website_content[url] = response.text

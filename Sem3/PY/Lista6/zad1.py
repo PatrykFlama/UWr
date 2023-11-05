@@ -2,25 +2,19 @@ import requests
 from bs4 import BeautifulSoup
 
 
-visited = None
-def crawl(start_page, depth, action, visit_foreign_hosts = False):
-    global visited
-    if visited is None: visited = set()
-
+def crawl(start_page, depth, action, visited = set(), visit_foreign_hosts = False):
     if start_page in visited: return
     visited.add(start_page)
 
     try:
         response = requests.get(start_page).text
     except:
-        visited = set()
         return
 
     result = action(response)
     yield (start_page, result)
 
     if depth <= 0: 
-        visited = set()
         return
 
     soup = BeautifulSoup(response, 'html.parser')
@@ -33,9 +27,13 @@ def crawl(start_page, depth, action, visit_foreign_hosts = False):
         if not(is_new_url):
             url = start_page + url
 
-        yield from crawl(url, depth - 1, action, visit_foreign_hosts)
+        yield from crawl(url, depth - 1, action, visited, visit_foreign_hosts)
 
 
-
+vis = {}
 for url, result in crawl("http://www.ii.uni.wroc.pl", 1, lambda text : 'Python' in text, visit_foreign_hosts = False):
     print(f"{url}: {result}")
+    if url not in vis:
+        vis[url] = 1
+    else: vis[url] += 1
+    

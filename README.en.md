@@ -1,3 +1,4 @@
+<!-- courses translations from usos transcript -->
 # UWr
 
 [\[Polish\]](README.md)
@@ -13,20 +14,20 @@
 
 
 ## [Term 2](Sem2/)
-* Mathematical analysis II
+* Advanced calculus II
 * Linear Algebra 2
 * [Artificial Intelligence](Sem2/AI)
-* [Programming Methods](Sem2/MP/)
-* [Object Oriented Programming](Sem2/PO/)
-* [C++ language course](Sem2/CPP/)
-* [Practical Aspects of Software Development](Sem2/PARO/)
+* [Programming methodology](Sem2/MP/)
+* [Object-oriented programming](Sem2/PO/)
+* [C++ course](Sem2/CPP/)
+* [Practical aspects in software development](Sem2/PARO/)
 
 
 ## [Term 1](Sem1/)
-* Mathematical analysis I
+* Advanced calculus I
 * Linear algebra 1R
-* Logic for computer scientists
-* [Introduction to programming in C](Sem1/WdpC/)
+* Logic for Computer Science
+* [Introduction to Programming in C](Sem1/WdpC/)
 * [Algorithm Implementation Methods](Sem1/MIA/)
 * Basic computer science workshop
-* English language B2 level
+* English language level B2

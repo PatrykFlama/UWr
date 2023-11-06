@@ -3,11 +3,11 @@ using namespace std;
 int func = 0;
 
 
-double X0[] = {0, 1, 1.809, 2.237, 0};
-double XP[] = {1, 1.5, 1.5, -1.5, 1};
+double X0[] = {0, -1, 1.809, 2.237, 0};
+double XP[] = {1, 1, 1.5, -1.5, 1};
 double f(double x){
     if(func == 0) return x*x;
-    if(func == 1) return x*x*x - 2*x*x + 4;
+    if(func == 1) return x*x*x - 2*x*x + 3;
     if(func == 2) return x*x*x*x - 4*x*x*x + 5*x*x - 2.5*x + 1.131;
     if(func == 3) return x*x*x*x*x - 5*x*x*x*x + 9*x*x*x - 7*x*x + 2*x - 1;
     if(func == 4) return sin(x)+x;
@@ -31,7 +31,7 @@ double fb(double x){
 }
 
 double F(double x){
-    return x - 1./2. * fb(x)/fp(x) * pow(f(x)/fp(x), 2);
+    return x - f(x)/fp(x) - 1./2. * fb(x)/fp(x) * pow(f(x)/fp(x), 2);
 }
 
 

@@ -5,8 +5,3 @@
 |---|---|---|---|---|---|---|
 | X | X | X | X | X | X | X |
 
-
-## Pytania
-### Zadanie 3
-czy da się i jak zrobić to ładniej? 
-

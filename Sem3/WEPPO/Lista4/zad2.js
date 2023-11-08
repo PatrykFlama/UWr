@@ -33,10 +33,10 @@ getFromObject(n); // name: jan, surname: kowalski
 function getFieldsFromChain(obj){
     while (obj) {
         for (var prop in obj) 
-            if (owns(obj, prop)) 
+            // if (owns(obj, prop)) 
                 console.log(prop);
 
-        obj = Object.getPrototypeOf(obj);
+        // obj = Object.getPrototypeOf(obj);
     }
 }
 

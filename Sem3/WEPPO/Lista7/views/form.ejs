@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Form</title>
+  <style>
+    /* nice out fields */
+    table {
+      border-collapse: collapse;
+      text-align: center;
+    }
+    td input[type="number"] {
+      width: 40px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #f8f8f8;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <form action="/submit" method="post"> <!-- create post form -->
+    <label for="firstName">Name:</label>
+    <input type="text" id="firstName" name="firstName"><br><br>
+    <label for="lastName">Surname:</label>
+    <input type="text" id="lastName" name="lastName"><br><br>
+    <label for="subject">Subject:</label>
+    <input type="text" id="subject" name="subject"><br><br>
+
+    <table border="1">
+      <!-- first row with exercise numbers -->
+      <tr>
+        <% for (let i=1; i <=10; i++) { %>
+          <td><strong> <%= i %> </strong></td>
+          <% } %>
+      </tr>
+
+      <!-- second row with form fields -->
+      <tr>
+        <% for (let i=1; i <=10; i++) { %>
+          <td><input type="number" name="tasks[]" value="0"></td>
+          <% } %>
+      </tr>
+    </table>
+    <br>
+
+    <input type="submit" value="Submit">
+  </form>
+</body>
+
+</html>

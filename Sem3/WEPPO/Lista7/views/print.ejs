@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Printout</title>
+    <style>
+        table {
+            width: 40px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            text-align: center;
+            padding: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Student data:</h1>
+    <p>Name: <%= firstName %>
+    </p>
+    <p>Surname: <%= lastName %>
+    </p>
+    <p>Subject: <%= subject %>
+    </p>
+
+    <h2>Tasks:</h2>
+    <table>
+        <tr>
+            <% tasks.forEach((task, index)=> { %>
+                <td><strong> <%= index + 1 %> </strong></td>
+            <% }) %>
+            <td><strong> SUM </strong></td>
+        </tr>
+        <tr>
+            <% tasks.forEach((task)=> { %> 
+                <td> <%= task %> </td>
+            <% }) %>
+
+            <td> <% let sum = tasks.reduce((a, b) => a + b, 0) %> <%= sum %> </td>
+        </tr>
+    </table>
+</body>
+
+</html>

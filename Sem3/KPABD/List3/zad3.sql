@@ -67,21 +67,21 @@ BEGIN
 
     WHILE @@FETCH_STATUS = 0
     BEGIN
-        DECLARE @RatePLN DECIMAL(10, 2)
+        DECLARE @RatePLN DECIMAL(10, 2) = NULL
         SELECT @RatePLN = PricePLN FROM Rates 
         WHERE Currency = @Currency
 
-        DECLARE @PricePLN DECIMAL(10, 2)
-        SELECT @PricePLN = Price FROM Prices 
-        WHERE ProductID = @ProductID AND Currency = 'PLN'
-
-        IF @PricePLN IS NULL
+        IF @RatePLN IS NULL
         BEGIN
             DELETE FROM Prices
             WHERE ProductID = @ProductID AND Currency = @Currency
         END
         ELSE
         BEGIN
+            DECLARE @PricePLN DECIMAL(10, 2)
+            SELECT @PricePLN = Price FROM Prices 
+            WHERE ProductID = @ProductID AND Currency = 'PLN'
+
             UPDATE Prices SET Price = @PricePLN / @RatePLN
             WHERE ProductID = @ProductID AND Currency = @Currency
         END

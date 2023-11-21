@@ -6,5 +6,6 @@
 | X | X | X | X | X | X |   |
 
 
-```tsc --init```
+```npm install -g typescript```    
+```tsc --init```  
 ```allowImportingTsExtensions: True```

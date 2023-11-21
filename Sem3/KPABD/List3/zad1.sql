@@ -14,7 +14,7 @@ BEGIN
     FROM SalesLT.ProductDescription;
 
     DECLARE @EndTime datetime = GETDATE();
-    SELECT DATEDIFF(ms, @StartTime, @EndTime) AS 'ExecutionTimeInMilliseconds';
+    SELECT DATEDIFF(ms, @StartTime, @EndTime) AS 'ExecutionTimeInMilliseconds_standartquery';
 END
 GO
 
@@ -53,7 +53,7 @@ BEGIN
     DEALLOCATE i;
 
     DECLARE @EndTime datetime = GETDATE();
-    SELECT DATEDIFF(ms, @StartTime, @EndTime) AS 'ExecutionTimeInMilliseconds';
+    SELECT DATEDIFF(ms, @StartTime, @EndTime) AS 'ExecutionTimeInMilliseconds_cursor';
 END
 GO
 

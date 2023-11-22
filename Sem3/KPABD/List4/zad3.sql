@@ -37,9 +37,7 @@ INSTEAD OF INSERT
 AS
 BEGIN
     SET NOCOUNT ON;
-    INSERT INTO dbo.brand_approvals ( 
-        brand_name
-    )
+    INSERT INTO dbo.brand_approvals (brand_name)
     SELECT i.brand_name
     FROM inserted i
     WHERE i.brand_name NOT IN (

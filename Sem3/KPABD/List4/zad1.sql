@@ -1,4 +1,4 @@
-DROP TRIGGER IF EXISTS UpdateModifiedDate
+DROP TRIGGER IF EXISTS SalesLT.UpdateModifiedDate
 GO
 
 CREATE TRIGGER UpdateModifiedDate
@@ -8,8 +8,7 @@ AS
 BEGIN
     UPDATE SalesLT.Customer
     SET ModifiedDate = GETDATE()
-    FROM SalesLT.Customer c
-    INNER JOIN inserted i ON c.CustomerID = i.CustomerID
+    FROM inserted
 END
 GO
 

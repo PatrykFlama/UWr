@@ -3,7 +3,7 @@
 # List 4
 | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|
-| X |   |   |   |   |   |
+| X | X |   |   |   |   |
 
 ## About triggers
 **DML Triggers**: These triggers are fired when a DML (Data Manipulation Language) event occurs (INSERT, UPDATE, or DELETE). They are further classified into two types:  

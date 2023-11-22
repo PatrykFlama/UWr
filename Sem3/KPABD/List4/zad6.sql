@@ -3,7 +3,7 @@ CREATE TABLE History(ID INT IDENTITY PRIMARY KEY, UrlAddress VARCHAR(150), LastA
 CREATE TABLE Parameters(nazwa VARCHAR(150), cache_size INT)
 GO
 
-INSERT INTO Parameters VALUES('tiny', 4)     -- size of cache
+INSERT INTO Parameters VALUES('max_cache', 4)     -- size of cache
 GO
 
 --------------------------------------------------------------
@@ -17,12 +17,14 @@ BEGIN
 	SELECT @I_UrlAddress=UrlAddress, @I_LastAccess=LastAccess 
     FROM INSERTED;
 
+    -- udpate if exists
 	IF EXISTS (SELECT 1 FROM Cache WHERE UrlAddress=@I_UrlAddress)
 		UPDATE Cache 
         SET LastAccess=@I_LastAccess 
         WHERE UrlAddress=@I_UrlAddress;
 	ELSE
 	BEGIN
+        -- calc rows
 		DECLARE @Rows INT,  @MaxRows INT;
 
 		SET @Rows = (SELECT COUNT(*) 
@@ -31,12 +33,14 @@ BEGIN
 		SET @MaxRows = (SELECT TOP 1 cache_size 
         FROM Parameters);
 
+        -- insert if we have space in cache
 		IF (@Rows < @MaxRows)
 			INSERT INTO Cache 
             SELECT UrlAddress, LastAccess 
             FROM INSERTED
 		ELSE
 		BEGIN
+            -- move to history
 			DECLARE @B_ID INT, @B_AdresUrl varchar(150), @B_LastAccess DATETIME
 			SELECT TOP 1 @B_ID=ID, @B_AdresUrl=UrlAddress, @B_LastAccess=LastAccess 
             FROM Cache ORDER BY LastAccess
@@ -46,6 +50,8 @@ BEGIN
                 WHERE UrlAddress=@B_AdresUrl
 			ELSE
 				INSERT INTO History VALUES(@B_AdresUrl, @B_LastAccess)
+
+            -- delete oldest and insert new
 			DELETE FROM Cache WHERE ID=@B_ID
 			INSERT INTO Cache SELECT UrlAddress, LastAccess FROM INSERTED
 		END

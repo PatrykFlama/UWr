@@ -15,7 +15,7 @@ DROP TRIGGER IF EXISTS SalesLT.update_ProductPriceHistory
 DROP TRIGGER IF EXISTS SalesLT.delete_ProductPriceHistory
 GO
 
-CREATE OR ALTER TRIGGER update_ProductPriceHistory
+CREATE TRIGGER update_ProductPriceHistory
 ON SalesLT.Product
 AFTER UPDATE
 AS

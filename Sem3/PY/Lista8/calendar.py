@@ -3,8 +3,8 @@ check calendar stuff
 calendarific.com
 """
 import requests
+from priv import api_key
 
-api_key = 'kCDdwE1wTzZPK0O8TKFjWKGmSk3XfQA8'
 
 response = requests.get('https://calendarific.com/api/v2/holidays?' + 
                         '&api_key=' + api_key + '&country=' + 'US' + '&year=' + '2019')

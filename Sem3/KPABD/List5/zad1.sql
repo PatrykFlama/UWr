@@ -2,7 +2,7 @@ DROP PROCEDURE IF EXISTS SaveTranExample;
 GO  
 
 CREATE PROCEDURE SaveTranExample  
-    @InputCandidateID INT  
+    @Name NVARCHAR(50)
 AS  
     -- Detect whether the procedure was called  
     -- from an active transaction and save  
@@ -22,15 +22,15 @@ AS
         -- to roll back only the work done  
         -- in the procedure if there is an  
         -- error.  
-        SAVE TRANSACTION ProcedureSave;  
+        SAVE TRANSACTION ProcedureSave;
     ELSE  
         -- Procedure must start its own  
         -- transaction.  
         BEGIN TRANSACTION;  
     -- Modify database.  
     BEGIN TRY  
-        DELETE HumanResources.JobCandidate  
-            WHERE JobCandidateID = @InputCandidateID;  
+        INSERT INTO [SalesLT].[ProductCategory] ([Name], [ModifiedDate]) 
+            VALUES (@Name, GETDATE())
         -- Get here if no errors; must commit  
         -- any transaction started in the  
         -- procedure, but not commit a transaction  
@@ -55,7 +55,7 @@ AS
             -- Transaction started before procedure  
             -- called, do not roll back modifications  
             -- made before the procedure was called.  
-            IF XACT_STATE() <> -1  
+            IF XACT_STATE() <> -1       -- check if transaction is still not uncommitable
                 -- If the transaction is still valid, just  
                 -- roll back to the savepoint set at the  
                 -- start of the stored procedure.  
@@ -65,7 +65,7 @@ AS
                 -- because the savepoint rollback writes to  
                 -- the log. Just return to the caller, which  
                 -- should roll back the outer transaction.  
-  
+
         -- After the appropriate rollback, echo error  
         -- information to the caller.  
         DECLARE @ErrorMessage NVARCHAR(4000);  
@@ -79,6 +79,20 @@ AS
         RAISERROR (@ErrorMessage, -- Message text.  
                    @ErrorSeverity, -- Severity.  
                    @ErrorState -- State.  
-                   );  
+                   );
     END CATCH  
 GO
+
+----------------------------
+BEGIN TRANSACTION;
+
+EXEC SaveTranExample "XXX";
+GO
+
+EXEC SaveTranExample "XXX";
+GO
+
+COMMIT TRANSACTION;
+
+DELETE FROM [SalesLT].[ProductCategory]
+    WHERE [Name] = 'XXX';  

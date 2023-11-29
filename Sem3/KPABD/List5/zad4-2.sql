@@ -1,3 +1,5 @@
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
 -- S1:
 -- drop table if exists liczby1;
 -- drop table if exists liczby2;
@@ -12,6 +14,8 @@
 -- S2:
 begin tran
 insert liczby2 values ( 1 )
+
+WAITFOR DELAY '00:00:5'
 
 -- S1:
 -- update liczby2 set liczba=10

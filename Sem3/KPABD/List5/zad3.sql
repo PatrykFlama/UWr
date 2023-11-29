@@ -9,8 +9,9 @@ go
 SELECT @@SPID;
 GO
 
--- 1 --
+-------- 1 --------
 -- set transaction isolation level repeatable read;
+
 -- begin transaction
 
 -- WAITFOR DELAY '00:00:5'
@@ -20,7 +21,7 @@ GO
 
 -- commit
 
--- 2 --
+-------- 2 --------
 set transaction isolation level serializable;
 GO
 
@@ -35,7 +36,7 @@ select * from liczby
 
 commit
 
--- 3 --
+-------- 3 --------
 -- ALTER DATABASE AdvWorksLT SET ALLOW_SNAPSHOT_ISOLATION ON
 -- GO
 

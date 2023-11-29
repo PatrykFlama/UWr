@@ -5,4 +5,4 @@ go
 
 SELECT *
 FROM sys.dm_tran_locks
-WHERE request_session_id = 75
+WHERE request_session_id = 64

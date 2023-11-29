@@ -23,13 +23,13 @@ INSERT INTO Test VALUES(5, 'P5', 1)
 GO
 
 -- Transaction 1 --
--- BEGIN TRAN
--- UPDATE Test SET Pcs = 12 WHERE ID = 1
--- UPDATE Test SET Pcs = 3  WHERE ID = 4
--- WAITFOR DELAY '00:00:05'
--- SELECT * FROM Test
--- ROLLBACK TRANSACTION
--- SELECT * FROM Test
+BEGIN TRAN
+UPDATE Test SET Pcs = 12 WHERE ID = 1
+UPDATE Test SET Pcs = 3  WHERE ID = 4
+WAITFOR DELAY '00:00:05'
+SELECT * FROM Test
+ROLLBACK TRANSACTION
+SELECT * FROM Test
 
 -- Transaction 2 --
 -- SELECT * FROM Test
@@ -48,12 +48,12 @@ INSERT INTO People VALUES('Name5', 'Surname5', 24)
 GO
 
 -- Transaction 1 --
--- BEGIN TRAN
--- SELECT * FROM People
--- WAITFOR DELAY '00:00:05'
--- SELECT * FROM People
--- ROLLBACK
--- GO
+BEGIN TRAN
+SELECT * FROM People
+WAITFOR DELAY '00:00:05'
+SELECT * FROM People
+ROLLBACK
+GO
 
 -- Transaction 2 --
 -- BEGIN TRAN
@@ -82,9 +82,9 @@ SELECT * FROM Cars
 ROLLBACK
 
 -- Transaction 2 --
-BEGIN TRAN
-DELETE FROM Cars WHERE Model = 'Model1'
-COMMIT
-GO
+-- BEGIN TRAN
+-- DELETE FROM Cars WHERE Model = 'Model1'
+-- COMMIT
+-- GO
 
 

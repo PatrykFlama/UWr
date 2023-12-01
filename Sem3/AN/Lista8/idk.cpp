@@ -2,8 +2,18 @@
 using namespace std;
 
 // find NIFS3
-//TODO 
+double calc_nifs3(double X, vector<double>& x, vector<double>& y, vector<double>& M){
+    int k = 1;
+    while(x[k] > X) k++;
 
+    return (1/(x[k]-x[k-1])) * (M[k-1]*pow(x[k] - X, 3)/6.
+            + M[k]* pow(X - x[k-1], 3)/6. 
+            + (y[k-1] - M[k-1]*pow(x[k]-x[k-1], 2)/6.)*(x[k]-X)
+            + (y[k] - M[k]*pow())
+}
+
+
+// helper functions
 double lambda(int k, vector<double>& x){
     return (x[k] - x[k-1])/(x[k+1] - x[k-1]);
 }
@@ -35,4 +45,4 @@ vector<double> calc_moments(int n, vector<double>& x, vector<double>& y){
     return M;
 }
 
-//TODO wzorek z repet
+//TODO wzorek z repetow

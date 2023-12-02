@@ -1,9 +1,9 @@
 [(wróć)](../)
 
-# Lista 6
-| 1 | 2 | 3 | 4 | 5 | 6 | 7 |
-|---|---|---|---|---|---|---|
-| X | X | X | X | X | X | X |
+# Lista 7
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|---|---|---|---|---|---|---|---|
+| X | X | X | X | X | X | X |   |
 
 # Zadanie 1
 ![image](./zad1.png)
@@ -12,8 +12,7 @@
 ![image](./zad2.png)
 
 # Zadanie 3
-![image](./zad3ab.png)
-![image](./zad3c.png)
+![image](./zad3.png)
 
 # Zadanie 4
 ![image](./zad4.png)
@@ -27,3 +26,5 @@
 # Zadanie 7
 ![image](./zad7.png)
 
+# Zadanie 8
+![image](./zad8.png)

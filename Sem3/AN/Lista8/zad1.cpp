@@ -1,6 +1,18 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+
+double calc_nifs3(double X, vector<double>& x0, vector<double>& y0, vector<double>& M){
+    int k = 1;
+    while(x0[k] < X) k++;
+
+    return (1/(x0[k]-x0[k-1]))
+            * (M[k-1]*pow(x0[k] - X, 3)/6.
+            +  M[k] * pow(X - x0[k-1], 3)/6. 
+            + (y0[k-1] - M[k-1]*pow(x0[k]-x0[k-1], 2)/6.)*(x0[k]-X)
+            + (y0[k] - M[k]*pow(x0[k]-x0[k-1], 2)/6.)*(X-x0[k-1]));
+}
+
 // helper functions
 double lambda(int k, vector<double>& x){
     return (x[k] - x[k-1])/(x[k+1] - x[k-1]);
@@ -14,16 +26,17 @@ double dk(int k, vector<double>& x, vector<double>& y){
 
 // fins M (moments)
 vector<double> calc_moments(vector<double>& x, vector<double>& y){
-    int n = x.size();
+    int n = x.size()-1;
     vector<double> q, p, u, M;
     q.reserve(n), p.reserve(n), u.reserve(n), M.resize(n+1);
     q.push_back(0), p.push_back(0), u.push_back(0);
 
-    for(int k = 1; k < n; k++){
+    for(int k = 1; k <= n-1; k++){
         double lk = lambda(k, x);
         p.push_back(lk * q[k-1] + 2);
         q.push_back((lk-1)/p[k]);
         u.push_back((dk(k, x, y) - lk * u[k-1])/p[k]);
+        // cout << k << ": " << p[k] << ' ' << q[k] << ' ' << u[k] << ' ' << dk(k, x, y) << ' ' << lk << ' ' << x[k-1] << ' ' << x[k] << ' ' << x[k+1] << '\n';
     }
 
     M[n] = 0;
@@ -42,7 +55,7 @@ int main(){
     cout << "a)\n";
     for(auto i : calc_moments(x, y))
         cout << i << ' ';
-    
+
     cout << "\nb)\n";
     x = {-7, -4, -2, 0, 1, 5, 10};
     y = {-16185, -10116, -6070, -2024, -1, 8091, 18206};

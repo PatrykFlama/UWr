@@ -86,17 +86,15 @@ public:
     }
 
     void print_values(int derivative = 0) {
-        cout << "\nValues at x0:\n";
-        cout << "F: \n";
-        for(auto i : values_at_x0(0)) cout << i.first << ' ' << i.second << '\n';
+        for(auto i : values_at_x0(0)) cout << "F(" << i.first << ") = " << i.second << '\n';
+        cout << '\n';
 
-        cout << "First derivative: \n";
-        for(auto i : values_at_x0(1)) cout << i.first << ' ' << i.second << '\n';
+        for(auto i : values_at_x0(1)) cout << "F'(" << i.first << ") = " << i.second << '\n';
+        cout << '\n';
 
-        cout << "Second derivative: \n";
-        cout << x0[0] << ' ' << s[0].derivative(2).eval(x0[0]) << '\n';
-        for(auto i : values_at_x0(2)) cout << i.first << ' ' << i.second << '\n';
-        cout << x0.back() << ' ' << s.back().derivative(2).eval(x0.back()) << '\n';
+        cout << "F''(" << x0[0] << ") = " << s[0].derivative(2).eval(x0[0]) << '\n';
+        for(auto i : values_at_x0(2)) cout << "F''(" << i.first << ") = " << i.second << '\n';
+        cout << "F''(" << x0.back() << ") = " << s.back().derivative(2).eval(x0.back()) << '\n';
     }
 };
 

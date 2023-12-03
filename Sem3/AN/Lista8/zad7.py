@@ -54,7 +54,7 @@ while M.isdigit():
     M = input("M = ")
 
 if M == "play":
-    for m in range(1, 150):
+    for m in range(1, 151):
         x, y, x0, y0 = get_values("zad7.in", m)
 
         plt.cla()
@@ -65,4 +65,5 @@ if M == "play":
         ax.set_aspect('equal', adjustable='box')
         plt.title(f"M = {m}")
         plt.show(block=False)
-        plt.pause(0.01)
+        plt.pause(0.01/m)
+    plt.show()

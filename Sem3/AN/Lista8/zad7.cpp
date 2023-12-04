@@ -45,8 +45,8 @@ pair<vector<double>, vector<double>> calc_2_moments(vector<double>& t, vector<do
     Mx[n-1] = ux[n-1];
     My[n-1] = uy[n-1];
     for(int k = n-2; k >= 0; k--){
-        Mx[k] = ux[k] - q[k] * Mx[k+1];
-        My[k] = uy[k] - q[k] * My[k+1];
+        Mx[k] = ux[k] + q[k] * Mx[k+1];
+        My[k] = uy[k] + q[k] * My[k+1];
     }
 
     return {Mx, My};

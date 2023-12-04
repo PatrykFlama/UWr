@@ -3,6 +3,6 @@
 # Lista 8
 | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|
-|   |   |   |   |   |   |
+| X |   |   |   |   |   |
 
-`npm install mysql -g`
+`npm install multer -g`

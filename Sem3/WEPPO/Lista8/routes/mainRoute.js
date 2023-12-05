@@ -3,8 +3,9 @@ const router = express.Router();
 const dropdownListRoute = require('./dropdownList');
 
 router.get('/', (req, res) => {
-  const selectedValue = 'Option 2';
-  res.render('mainView', {selectedValue});
+  const selectedValue = 'Option 3';
+  const options = ['Option 1', 'Option 2', 'Option 3'];
+  res.render('mainRouteView', {options, selectedValue});
 });
 
 router.use('/dropdownList', dropdownListRoute);

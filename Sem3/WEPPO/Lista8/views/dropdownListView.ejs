@@ -1,0 +1,6 @@
+
+<select>
+<% options.forEach(function(option) { %>
+  <option value="<%= option %>" <%= option === selectedValue ? 'selected' : '' %>><%= option %></option>
+  <% }); %>
+</select>

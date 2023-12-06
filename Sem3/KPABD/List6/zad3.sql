@@ -38,7 +38,9 @@ GO
 CREATE NONCLUSTERED INDEX IX_Egzemplarz_Ksiazka_ID ON Egzemplarz (Ksiazka_ID);
 CREATE NONCLUSTERED INDEX IX_Ksiazka_ID ON Ksiazka (Ksiazka_ID);
 
+SET SHOWPLAN_ALL ON;
 SELECT TOP 10 * FROM Ksiazka JOIN Egzemplarz ON Ksiazka.Ksiazka_ID = Egzemplarz.Ksiazka_ID;
+SET SHOWPLAN_ALL OFF;
 
 DROP INDEX IX_Egzemplarz_Ksiazka_ID ON Egzemplarz;
 DROP INDEX IX_Ksiazka_ID ON Ksiazka;

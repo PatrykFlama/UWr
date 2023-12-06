@@ -1,3 +1,8 @@
+SET STATISTICS TIME ON
+GO
+SET SHOWPLAN_ALL ON;
+GO
+
 SELECT
     TableName = t.name, 
     ClusteredIndexName = i.name,
@@ -44,4 +49,9 @@ SET SHOWPLAN_ALL OFF;
 
 DROP INDEX IX_Egzemplarz_Ksiazka_ID ON Egzemplarz;
 DROP INDEX IX_Ksiazka_ID ON Ksiazka;
+GO
+
+SET STATISTICS TIME OFF
+GO
+SET SHOWPLAN_ALL OFF;
 GO

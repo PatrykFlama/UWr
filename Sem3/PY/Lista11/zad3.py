@@ -1,60 +1,105 @@
-import mysql.connector
-from secrets import host, user, password
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, and_
+from sqlalchemy.orm import declarative_base, relationship, validates
+from sqlalchemy.orm.session import sessionmaker
+from secrets import username, password, host
 
-class Calendar:
-    def __init__(self):
-        self.db = mysql.connector.connect(user=user, password=password, host=host, database="pythoncourse")
-        self.cursor = self.db.cursor()
+# create the database engine with debug logging
+engine = create_engine(f'mysql+mysqlconnector://{username}:{password}@{host}/pythoncourse', echo=True)
 
-        self.cursor.execute("""
-        CREATE TABLE IF NOT EXISTS events (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            start_time DATETIME NOT NULL,
-            end_time DATETIME NOT NULL,
-            description VARCHAR(255) NOT NULL
-        )
-        """)
-        self.cursor.execute("""
-        CREATE TABLE IF NOT EXISTS assigned_people (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            event_id INT NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            email VARCHAR(255) NOT NULL,
-            
-            FOREIGN KEY (event_id) REFERENCES events(id)
-        )
-        """)
+# create a base class for declarative models
+Base = declarative_base()
 
-    def add_event(self, start_time, end_time, description, assigned_people):
-        if self.check_event_conflict(start_time, end_time):
-            print("Event conflicts with an existing event.")
-            return
+class Event(Base):
+    __tablename__ = 'events'
 
-        self.cursor.execute("INSERT INTO events (start_time, end_time, description) VALUES (%s, %s, %s)",
-                            (start_time, end_time, description))
-        event_id = self.cursor.lastrowid
+    id = Column(Integer, primary_key=True)
+    start_time = Column(DateTime)
+    end_time = Column(DateTime)
+    description = Column(String)
+    attendees = relationship('Attendee', back_populates='event')
+    event_type_id = Column(Integer, ForeignKey('event_types.id'))
+    event_type = relationship('EventTypes', back_populates='events')
 
-        for person in assigned_people:
-            self.cursor.execute("INSERT INTO assigned_people (event_id, name, email) VALUES (%s, %s, %s)",
-                                (event_id, person['name'], person['email']))
-
-        self.db.commit()
-        print("Event added successfully.")
-
-    def check_event_conflict(self, start_time, end_time):
-        self.cursor.execute("SELECT * FROM events WHERE start_time < %s AND end_time > %s",
-                            (end_time, start_time))
-        conflicting_events = self.cursor.fetchall()
-        return len(conflicting_events) > 0
+    @validates('start_time', 'end_time')
+    def validate_time(self, key, value):
+        if self.start_time and self.end_time:
+            overlapping_event = session.query(Event).filter(
+                Event.id != self.id,
+                and_(
+                    Event.start_time < self.end_time,
+                    Event.end_time > self.start_time
+                )
+            ).first()
+            assert overlapping_event is None, "Event timeslot is overlapping with another event"
+        return value
 
 
-calendar = Calendar()
-calendar.add_event("2022-01-01 10:00:00", "2022-01-01 12:00:00", "Event", [
-    {"name": "Name1", "email": "mail@mail.com"},
-    {"name": "Name2", "email": "mail@mail.com"}
-])
-calendar.add_event("2022-01-01 11:00:00", "2022-01-01 13:00:00", "Event", [
-    {"name": "Name3", "email": "mail@mail.com"},
-    {"name": "Name4", "email": "mail@mail.com"}
-])
+class Attendee(Base):
+    __tablename__ = 'attendees'
 
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    email = Column(String)
+    event_id = Column(Integer, ForeignKey('events.id'))
+    event = relationship('Event', back_populates='attendees')
+
+class EventTypes(Base):
+    __tablename__ = 'event_types'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    events = relationship('Event', back_populates='event_type')
+
+# create the tables with __tablename__ attribute
+Base.metadata.create_all(engine)
+
+"""
+# ------------------------------
+import argparse
+
+# create a session factory
+Session = sessionmaker(bind=engine)
+session = Session()
+
+# create the parser
+parser = argparse.ArgumentParser(description="Manage events and attendees")
+
+# define the commands
+subparsers = parser.add_subparsers(dest='command')
+
+# 'add' command
+add_parser = subparsers.add_parser('add', help='Add a new event')
+add_parser.add_argument('--description', required=True, help='Description of the event')
+
+# 'update' command
+update_parser = subparsers.add_parser('update', help='Update an existing event')
+update_parser.add_argument('--id', required=True, type=int, help='ID of the event to update')
+update_parser.add_argument('--description', required=True, help='New description of the event')
+
+# 'search' command
+search_parser = subparsers.add_parser('search', help='Search for an event')
+search_parser.add_argument('--description', required=True, help='Description of the event to search for')
+
+# parse the arguments
+args = parser.parse_args()
+
+
+
+# handle the commands
+if args.command == 'add':
+    event = Event(description=args.description)
+    session.add(event)
+    session.commit()
+elif args.command == 'update':
+    event = session.query(Event).get(args.id)
+    if event:
+        event.description = args.description
+        session.commit()
+elif args.command == 'search':
+    event = session.query(Event).filter(Event.description == args.description).first()
+    if event:
+        print(f'Found event: {event.description}')
+    else:
+        print('No event found')
+
+"""

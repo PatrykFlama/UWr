@@ -797,7 +797,7 @@
     "Microsoft.Win32.Registry/4.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-mYUxH/YY9PwvuWY93/qsovFHAh+Lu2CNxNHWxB/x0dnpaEy6oIy/9d7R2J6dFaLZ7jhE7emLjn7A8kSzsP1A+Q==",
+      "sha512": "sha512-q+eLtROUAQ3OxYA5mpQrgyFgzLQxIyrfT2eLpYX5IEPlHmIio2nh4F5bgOaQoGOV865kFKZZso9Oq9RlazvXtg==",
       "path": "microsoft.win32.registry/4.0.0",
       "hashPath": "microsoft.win32.registry.4.0.0.nupkg.sha512"
     },
@@ -874,7 +874,7 @@
     "System.Collections.NonGeneric/4.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-00tOaRBr5u4JsckEJfBw1eI4Frc5pOFM5gSdqr6oMYjXwQLLhV/LAl2Ty0BgELDvSuqBRBETTgNCMwRuUShk9Q==",
+      "sha512": "sha512-hMxFT2RhhlffyCdKLDXjx8WEC5JfCvNozAZxCablAuFRH74SCV4AgzE8yJCh/73bFnEoZgJ9MJmkjQ0dJmnKqA==",
       "path": "system.collections.nongeneric/4.0.1",
       "hashPath": "system.collections.nongeneric.4.0.1.nupkg.sha512"
     },
@@ -916,14 +916,14 @@
     "System.Diagnostics.Process/4.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-4dlFhzwmI3hl32P+8c9hnytYtV7Xldhsokm5i7Fvv5PmTS68TQCfsuJrREIyF9N1B8zlsSomp7AVrXLe45kKFQ==",
+      "sha512": "sha512-mpVZ5bnlSs3tTeJ6jYyDJEIa6tavhAd88lxq1zbYhkkCu0Pno2+gHXcvZcoygq2d8JxW3gojXqNJMTAshduqZA==",
       "path": "system.diagnostics.process/4.1.0",
       "hashPath": "system.diagnostics.process.4.1.0.nupkg.sha512"
     },
     "System.Diagnostics.TraceSource/4.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-bGUeY5wiCHYSWbYZS3QjbaQ1hNoJ1RQBQMB3E0Cgh6AH//4rXfXIOHKIW46HDOsTEDoNfvFNDXphL5W5B/XMwQ==",
+      "sha512": "sha512-6WVCczFZKXwpWpzd/iJkYnsmWTSFFiU24Xx/YdHXBcu+nFI/ehTgeqdJQFbtRPzbrO3KtRNjvkhtj4t5/WwWsA==",
       "path": "system.diagnostics.tracesource/4.0.0",
       "hashPath": "system.diagnostics.tracesource.4.0.0.nupkg.sha512"
     },

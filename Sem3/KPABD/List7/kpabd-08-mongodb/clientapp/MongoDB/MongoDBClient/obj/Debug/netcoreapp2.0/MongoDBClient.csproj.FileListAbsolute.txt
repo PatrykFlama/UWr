@@ -8,3 +8,16 @@ c:\Data\Dydaktyka\II\2019-2020\KursBD\przyklady\db-21-mongodb\clientapp\MongoDB\
 c:\Data\Dydaktyka\II\2019-2020\KursBD\przyklady\db-21-mongodb\clientapp\MongoDB\MongoDBClient\obj\Debug\netcoreapp2.0\MongoDBClient.AssemblyInfo.cs
 c:\Data\Dydaktyka\II\2019-2020\KursBD\przyklady\db-21-mongodb\clientapp\MongoDB\MongoDBClient\obj\Debug\netcoreapp2.0\MongoDBClient.dll
 c:\Data\Dydaktyka\II\2019-2020\KursBD\przyklady\db-21-mongodb\clientapp\MongoDB\MongoDBClient\obj\Debug\netcoreapp2.0\MongoDBClient.pdb
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\bin\Debug\netcoreapp2.0\MongoDBClient.deps.json
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\bin\Debug\netcoreapp2.0\MongoDBClient.runtimeconfig.json
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\bin\Debug\netcoreapp2.0\MongoDBClient.runtimeconfig.dev.json
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\bin\Debug\netcoreapp2.0\MongoDBClient.dll
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\bin\Debug\netcoreapp2.0\MongoDBClient.pdb
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\obj\Debug\netcoreapp2.0\MongoDBClient.csproj.AssemblyReference.cache
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\obj\Debug\netcoreapp2.0\MongoDBClient.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\obj\Debug\netcoreapp2.0\MongoDBClient.AssemblyInfoInputs.cache
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\obj\Debug\netcoreapp2.0\MongoDBClient.AssemblyInfo.cs
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\obj\Debug\netcoreapp2.0\MongoDBClient.csproj.CoreCompileInputs.cache
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\obj\Debug\netcoreapp2.0\MongoDBClient.dll
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\obj\Debug\netcoreapp2.0\MongoDBClient.pdb
+C:\Users\patry\Documents\Programming\UWr\Sem3\KPABD\List7\kpabd-08-mongodb\clientapp\MongoDB\MongoDBClient\obj\Debug\netcoreapp2.0\MongoDBClient.genruntimeconfig.cache

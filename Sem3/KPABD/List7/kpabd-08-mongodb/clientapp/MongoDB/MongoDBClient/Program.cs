@@ -14,7 +14,7 @@ using System;
 
 namespace MongoDBClient
 {
-    public class Author
+    public class Author 
     {
         [BsonElement("_id")]
         public object Id { get; set; }
@@ -22,18 +22,17 @@ namespace MongoDBClient
         [BsonElement("name")]
         public string Name { get; set; }
     }
+
     class Program
     {
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) {
             var client = new MongoClient();
             var library = client.GetDatabase("library");
             var authors = library.GetCollection<Author>("authors");
             var items = from b in authors.AsQueryable()
                         select b;
 
-            foreach (var e in items)
-            {
+            foreach (var e in items) {
                 Console.WriteLine(e.Name);
             }
         }

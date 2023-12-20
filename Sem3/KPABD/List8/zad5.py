@@ -54,7 +54,7 @@ with DataBase(URI, AUTH) as driver:
     print('with addition:')
     for person in actors:
         print(person.name)
-
+    
     driver.delete_person(Person('Person2'))
     actors = driver.get_people()
 

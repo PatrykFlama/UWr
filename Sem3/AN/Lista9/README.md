@@ -3,8 +3,10 @@
 # Lista 9
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 |---|---|---|---|---|---|---|---|---|
-| X | X | X | X | ~ | X | X | X | X |
+| X | X | X | X | X | X | X | X | X |
 
+## Zadanie 1
+![image](./zad1.png)
 
 ## Zadanie 2
 #### (a) $B^n_i$ jest nieujemny w przedziale [0, 1] i osiąga w nim dokładnie jedno maksimum
@@ -26,3 +28,21 @@ $$\sum_{k=0}^n \frac{k}{n}B^n_k(t) = x \sum_{k=0}^n B^{n-1}_{k-1}(t) = x[B^{-1}_
 #### (d) $B_i^n(u) = \frac{n+1-i}{n+1} B_i^{n+1}(u) + \frac{i+1}{n+1} B_{i+1}^{n+1}(u)$ dla $0 \leq i \leq n$
 $$B^n_i(u)=\binom{n}{i}u^i(1-u)^{n-i}(1-u+u)=\binom{n}{i}u^i(1-u)^{n+1-u} + \binom{n}{i}u^{i+1}(1-u)^{n-i}=$$
 $$=\frac{n+1-1}{n+1}\binom{n+1}{i}u^i(1-u)^{n+1-i}+\frac{i+1}{n+1}\binom{n+1}{i+1}u^{i+1}(1-u)^{n-i}=\frac{n+1-i}{n+1}B^{n+1}_i(u)+\frac{i+1}{n+1}B^{n+1}_{i+1}$$
+
+## Zadanie 3
+![image](./zad3.png)
+
+## Zadanie 4
+![image](./zad4.png)
+
+## Zadanie 5
+![image](./zad5.png)
+
+## Zadanie 6
+![image](./zad6.png)
+
+## Zadanie 7
+![image](./zad7.png)
+
+## Zadanie 8
+![image](./zad8.png)

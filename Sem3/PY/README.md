@@ -23,6 +23,11 @@
 ### [Lista 8](Lista8/)
 ### [Lista 9](Lista9/)
 ### [Lista 10](Lista10/)
+### [Lista 11](Lista11/)
+### [Lista 12](Lista12/)
+### [Lista 13](Lista13/)
+### [Lista 14](Lista14/)
+### [Lista 15](Lista15/)
 
 
 </details>

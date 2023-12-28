@@ -22,11 +22,13 @@ ___
 ### [Lista 7](./Lista7)
 ### [Lista 8](./Lista8)
 ### [Lista 9](./Lista9)
+___
 ### [Lista 10](./Lista10)
 ### [Lista 11](./Lista11)
 ### [Lista 12](./Lista12)
 ### [Lista 13](./Lista13)
-
+___
+### [Konkurs 1 - podrabianie napisu]()      <!-- TODO -->
 
 </details>
 

@@ -25,7 +25,8 @@ ___
 ___
 ### [Lista 10](./Lista10)
 ### [Lista 11](./Lista11)
-### [Lista 12](./Lista12)
+### [Lista 12a](./Lista12a)
+### [Lista 12b](./Lista12b)
 ### [Lista 13](./Lista13)
 ___
 ### [Konkurs 1 - podrabianie napisu](https://github.com/PatrykFlama/MiniProjects/tree/main/NIFS3)

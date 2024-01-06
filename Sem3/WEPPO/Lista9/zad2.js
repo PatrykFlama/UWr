@@ -111,7 +111,7 @@ async function updateData(id, col1, col2) {
     }
 }
 
-updateData(1, 'newVal1', 'newVal2');
+insertData().then(resID => updateData(resID, 'newVal1', 'newVal2'));
 fetchData();
 
 // ---------------------------------------------------------------------------------------------
@@ -137,5 +137,5 @@ async function deleteData(id) {
     }
 }
 
-deleteData(1);
+insertData().then(resID => deleteData(resID));
 fetchData();

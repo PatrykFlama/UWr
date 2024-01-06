@@ -28,7 +28,7 @@ ___
 ### [Lista 12](./Lista12)
 ### [Lista 13](./Lista13)
 ___
-### [Konkurs 1 - podrabianie napisu]()      <!-- TODO -->
+### [Konkurs 1 - podrabianie napisu](https://github.com/PatrykFlama/MiniProjects/tree/main/NIFS3)
 
 </details>
 

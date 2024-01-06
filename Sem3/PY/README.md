@@ -27,7 +27,6 @@
 ### [Lista 12](Lista12/)
 ### [Lista 13](Lista13/)
 ### [Lista 14](Lista14/)
-### [Lista 15](Lista15/)
 
 
 </details>

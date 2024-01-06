@@ -4,7 +4,7 @@ import numpy as np
 # plt.gca().set_aspect('equal', adjustable='box')
 
 file_data = []
-with open("punkty.csv", "r") as file:
+with open("data.csv", "r") as file:
     for line in file:
         x, y = line.strip().replace(' ', '').split(',')
         file_data.append((float(x), float(y)))

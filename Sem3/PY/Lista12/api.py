@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from secrets import username, password, host
 import DB
 
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{username}:{password}@{host}/pythoncourse'
 db = SQLAlchemy(app)

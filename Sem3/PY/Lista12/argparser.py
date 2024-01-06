@@ -1,4 +1,5 @@
 from DB import *
+import api
 
 # ------------------------------
 import argparse
@@ -33,11 +34,30 @@ search_parser.add_argument('table', help='Name of table to search in')
 search_parser.add_argument('--values', required=True, nargs='+', help='Pairs of column and value to search for')
 search_parser.add_argument('--columns', required=False, nargs='+', help='Columns to return')
 
+import requests
+add_parser.add_argument('--use_api', required=False, action='store_true', help='Use API instead of direct database access')
+delete_parser.add_argument('--use_api', required=False, action='store_true', help='Use API instead of direct database access')
+update_parser.add_argument('--use_api', required=False, action='store_true', help='Use API instead of direct database access')
+search_parser.add_argument('--use_api', required=False, action='store_true', help='Use API instead of direct database access')
+api_url = 'http://127.0.0.1:5000'
+# to use api simply add --use_api to the command
+#! API SUPPORTS ONLY EVENTS TABLE
 
 # ------------------------------
 args = parser.parse_args()
 
 if args.command == 'add':
+    if args.use_api and args.table == 'events':
+        event = {
+            'start_time': args.values[1],
+            'end_time': args.values[3],
+            'description': args.values[5],
+            'event_type_id': args.values[7]
+        }
+        r = requests.post(f'{api_url}/events', json=event)
+        print(r.json()['message'])
+        exit()
+
     new_entry = None
     if(args.table == 'events'):
         new_entry = Event()
@@ -61,6 +81,11 @@ if args.command == 'add':
     session.commit()
 
 elif args.command == 'delete':
+    if args.use_api and args.table == 'events':
+        r = requests.delete(f'{api_url}/events/{args.ids[0]}')
+        print(r.json()['message'])
+        exit()
+
     entries = []
     if(args.ids):
         if(args.table == 'events'):
@@ -97,6 +122,17 @@ elif args.command == 'delete':
     session.commit()
 
 elif args.command == 'update':
+    if args.use_api and args.table == 'events':
+        event = {
+            'start_time': args.values[1],
+            'end_time': args.values[3],
+            'description': args.values[5],
+            'event_type_id': args.values[7]
+        }
+        r = requests.put(f'{api_url}/events/{args.ids[0]}', json=event)
+        print(r.json()['message'])
+        exit()
+
     entries = []
     if(args.ids):
         if(args.table == 'events'):
@@ -137,6 +173,11 @@ elif args.command == 'update':
     session.commit()
 
 elif args.command == 'search':
+    if args.use_api and args.table == 'events':
+        r = requests.get(f'{api_url}/events/{args.ids[0]}')
+        print(r.json())
+        exit()
+
     entries = []
 
     if(args.values):

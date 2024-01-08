@@ -1,16 +1,34 @@
+
+
 from matplotlib import pyplot as plt
 import numpy as np
 
 # plt.gca().set_aspect('equal', adjustable='box')
 
 file_data = []
-with open("data.csv", "r") as file:
+# with open("liczba_aktywnych_przypadkow.csv", "r") as file:
+with open("punkty.csv", "r") as file:
     for line in file:
         x, y = line.strip().replace(' ', '').split(',')
         file_data.append((float(x), float(y)))
 
 def f(t):
     return (t-1.2)*(t+4.7)*(t-2.3)
+
+class Interpolation:
+    def __init__(self, x0=[], y0=[]):
+        self.x0 = x0
+        self.y0 = y0
+
+    def get_interpolation(self, step = 0.001):
+        res_x = []
+        res_y = []
+        T = self.x0[0]
+        while T <= self.x0[-1]:
+            res_x.append(T)
+            res_y.append(self.calc(T))
+            T += step
+        return res_x, res_y
 
 class NIFS3:
     def __init__(self, x0=[], y0=[]):

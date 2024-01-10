@@ -1,34 +1,14 @@
-
+from interpolation import get_w
+from approximation import Approx
 
 from matplotlib import pyplot as plt
 import numpy as np
 
 # plt.gca().set_aspect('equal', adjustable='box')
-
 file_data = []
-# with open("liczba_aktywnych_przypadkow.csv", "r") as file:
-with open("punkty.csv", "r") as file:
-    for line in file:
-        x, y = line.strip().replace(' ', '').split(',')
-        file_data.append((float(x), float(y)))
 
 def f(t):
     return (t-1.2)*(t+4.7)*(t-2.3)
-
-class Interpolation:
-    def __init__(self, x0=[], y0=[]):
-        self.x0 = x0
-        self.y0 = y0
-
-    def get_interpolation(self, step = 0.001):
-        res_x = []
-        res_y = []
-        T = self.x0[0]
-        while T <= self.x0[-1]:
-            res_x.append(T)
-            res_y.append(self.calc(T))
-            T += step
-        return res_x, res_y
 
 class NIFS3:
     def __init__(self, x0=[], y0=[]):
@@ -181,37 +161,78 @@ class LSF:
 def plot_f(from_x=-5, to=5, step=0.01):
     x = np.arange(from_x, to, step)
     y = f(x)
-    plt.plot(x, y, 'g')
+    plt.plot(x, y, 'g', label="f(x)")
 
-def plot_data_points():
+def plot_data_points(plotas_func = False):
     x = [x for x, y in file_data]
     y = [y for x, y in file_data]
-    plt.plot(x, y, 'ro')
+    if not plotas_func: plt.plot(x, y, 'ro', label="data points")
+    else: plt.plot(x, y, 'r', label="data function")
+
+def plot_interpolation(steps=100):
+    w = get_w(file_data)
+    xs = np.linspace(min(file_data)[0], max(file_data)[0], steps)
+    plt.plot(xs, [w(x) for x in xs], label="interpolation")
 
 def plot_nifs3(step=0.001):
     sorted_data = sorted(file_data, key=lambda x: x[0])
     nifs3 = NIFS3([x for x, y in sorted_data], [y for x, y in sorted_data])
     x, y = nifs3.get_nifs3(step)
-    plt.plot(x, y, 'b')
+    plt.plot(x, y, 'b', label="nifs3")
 
-def plot_lsf(pow = 15, from_x=-5, to=5, step=0.01):
-    lsf = LSF([x for x, y in file_data], [y for x, y in file_data], pow)
-    from_x = min([x for x, y in file_data])
-    to = max([x for x, y in file_data])
+def plot_lsf(pow = 15, from_x=-5, to=5, step=0.01, steps=100, erase_days=0):
+    local_file_data = file_data.copy()
+    if erase_days > 0:
+        local_file_data = local_file_data[:-erase_days]
+
+    lsf = LSF([x for x, y in local_file_data], [y for x, y in local_file_data], pow)
+    from_x = min([x for x, y in local_file_data])
+    to = max([x for x, y in local_file_data])
     x = np.arange(from_x, to, step)
-    plt.plot(x, [lsf.calc(X) for X in x], 'y')
+    # plt.plot(x, [lsf.calc(X) for X in x], 'y')
+    a = Approx(local_file_data)
+    xs = np.linspace(min(local_file_data)[0], max(local_file_data)[0]+erase_days, steps)
+    plt.plot(xs, [a(x, pow) for x in xs], label="lsf")
 
-deg = "1"
-while deg.isnumeric():
-    plt.cla()
-    # plot_f()
-    plot_data_points()
-    # plot_nifs3()
-    plot_lsf(int(deg))
-    # plt.legend(['f(x)', 'data points', 'NIFS3'])
-    plt.grid(True)
-    plt.show(block=False)
 
-    deg = input("Enter degree of polynomial: ")
+ZAD = 8
 
+if ZAD == 7:
+    with open("punkty.csv", "r") as file:
+        for line in file:
+            x, y = line.strip().replace(' ', '').split(',')
+            file_data.append((float(x), float(y)))
+
+    deg = "1"
+    while deg.isnumeric():
+        plt.cla()
+        # plot_f()
+        plot_data_points()
+        # plot_interpolation()
+        # plot_nifs3()
+        plot_lsf(int(deg)+1)
+        plt.legend()
+        plt.grid(True)
+        plt.show(block=False)
+
+        deg = input("Enter degree of polynomial: ")
+
+else:
+    erase_days = 0
+    with open("liczba_aktywnych_przypadkow.csv", "r") as file:
+        for line in file:
+            x, y = line.strip().replace(' ', '').split(',')
+            file_data.append((float(x), float(y)))
+    
+    deg = "30"
+    while deg.isnumeric():
+        plt.cla()
+        plot_data_points(plotas_func=True)
+        plot_lsf(int(deg)+1, steps=1000, erase_days=erase_days)
+        
+        plt.legend()
+        plt.grid(True)
+        plt.show(block=False)
+
+        deg = input("Enter degree of polynomial: ")
 

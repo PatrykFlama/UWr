@@ -3,6 +3,19 @@
 [\[English\]](README.en.md)
 
 
+## [Semestr 4](Sem4/)
+
+<details>
+    <summary> Plan </summary>
+
+</details>
+
+* **A**lgorytmy **i** **s**truktury **d**anych
+* **R**achunek **p**rawdopodobieństwa **i** **s**tatystyka
+* **Sy**stemy **K**omputerowe
+* Kurs: React
+
+
 ## [Semestr 3](Sem3/)
 
 <details>

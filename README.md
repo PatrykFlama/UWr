@@ -8,9 +8,36 @@
 <details>
     <summary> Plan </summary>
 
+```mermaid
+gantt
+    title Zimowy 23/24
+    dateFormat HH
+    axisFormat %H:%M
+
+    section Monday
+        AISD                            : 16, 19
+
+    section Tuesday
+        RPIS                            : 12, 14
+        AISD                            : active, 14, 16
+        RPIS                            : active, 16, 18
+
+    section Wednesday
+
+    section Thursday
+        SyK                             : 10, 12
+        React                           : active, 12, 14
+        SyK                             : active, 14, 16
+
+    section Friday
+        React                           : 08, 10
+        AISD                            : active, 10, 12
+        AISD                            : 17, 18
+```
+
 </details>
 
-* **A**lgorytmy **i** **s**truktury **d**anych
+* [**A**lgorytmy **i** **s**truktury **d**anych](Sem4/AISD/)
 * **R**achunek **p**rawdopodobieństwa **i** **s**tatystyka
 * **Sy**stemy **K**omputerowe
 * Kurs: React

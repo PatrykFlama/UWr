@@ -1,7 +1,13 @@
-<!-- courses translations from usos transcript -->
+<!-- courses translations from USOS transcript -->
 # UWr
 
 [\[Polish\]](README.md)
+
+## [Term 4](Sem4/)
+* [Algorithms and data structures](Sem4/AISD/)
+* Probability and statistics
+* Computer systems
+* React course
 
 ## [Term 3](Sem3/)
 * Algebra 1

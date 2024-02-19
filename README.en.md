@@ -11,12 +11,12 @@
 
 ## [Term 3](Sem3/)
 * Algebra 1
-* Discrete mathematics M
-* [Numerical analysis](Sem3/AN/)
-* [Selected elements of software design practice](Sem3/WEPPO/)
-* [Database application design course](Sem3/KPABD/)
-* [Python extended course](Sem3/PY/)
-* Economics and economy differently
+* Discrete Mathematics M
+* [Numerical Analysis](Sem3/AN/)
+* [Selected Aspects of Practical Software Development](Sem3/WEPPO/)
+* [Design of database applications](Sem3/KPABD/)
+* [Advanced Python Programming](Sem3/PY/)
+* Another View of Economy
 
 
 ## [Term 2](Sem2/)

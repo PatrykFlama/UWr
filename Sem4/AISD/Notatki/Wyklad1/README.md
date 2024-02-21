@@ -24,7 +24,9 @@ $$\sum_{i=1}^h i2^i = 2* \sum_{i=1}^h (\frac{d}{dx} x^i)(2) = 2*(\frac{d}{dx} \f
 ### Zastosoawnia
 #### Heapsort
 Tworzymy kopiec O(n). Następnie wyciągamy n elementów O(n), po każdym wyciągnięciu elementu naprawiamy kopiec - bierzemy ostatni liść i wstawiamy w miejsce korzenia (struktura drzewa zachowana), po czym naprawiamy $O(\log(n))$. Łącznie mamy czas $O(n\log(n))$.  
-Problem - zazwyczaj ostatni liść będzie bardzo małym elementem (wynika to ze struktury kopca), więc naprawa kopca zazwyczaj zajmnie $2*O(\log(n))$, dodatkowo każde porównanie będzie wymagać 2 operacji (rodzic i 2 dzieci). Możemy temu zapobiec nie wynosząc małego elementu na samą górę, a znosząc dziurę na sam dół (teraz 1 operacja porównania bo tylko 2 dzieci) $O(\log(n))$, po czym wstawiamy ostatni element z drzewa w miejsce dziury i ponownie go naprawiamy (teoretycznie $2*O(\log(n))$, ale w praktyce pójdziemy tylko kilka wierzchołków w górę).
+Problem - zazwyczaj ostatni liść będzie bardzo małym elementem (wynika to ze struktury kopca), więc naprawa kopca zazwyczaj zajmie $2O(\log(n))$, 
+dodatkowo każde porównanie będzie wymagać 2 operacji (rodzic i 2 dzieci). Możemy temu zapobiec nie wynosząc małego elementu na samą górę, a znosząc dziurę na sam dół (teraz 1 operacja porównania bo tylko 2 dzieci) $O(\log(n))$, 
+po czym wstawiamy ostatni element z drzewa w miejsce dziury i ponownie go naprawiamy (teoretycznie $2O(\log(n))$, ale w praktyce pójdziemy tylko kilka wierzchołków w górę).
 
 #### Kolejka priorytetowa
 Operacja czytania elementu - korzeń $O(1)$.

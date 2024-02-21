@@ -8,6 +8,7 @@
 * Probability and statistics
 * Computer systems
 * React course
+* [Programming course for Windows in .NET technology](Sem4/dotNET/)
 
 ## [Term 3](Sem3/)
 * Algebra 1

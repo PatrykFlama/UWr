@@ -18,6 +18,8 @@ gantt
         AISD                            : 16, 19
 
     section Tuesday
+        dotNET                          : active, 08, 10
+        dotNET                          : 12, 14
         RPIS                            : 12, 14
         AISD                            : active, 14, 16
         RPIS                            : active, 16, 18
@@ -41,6 +43,7 @@ gantt
 * **R**achunek **p**rawdopodobieństwa **i** **s**tatystyka
 * **Sy**stemy **K**omputerowe
 * Kurs: React
+* [Kurs programowania pod Windows w technologii .NET](Sem4/dotNET/)
 
 
 ## [Semestr 3](Sem3/)

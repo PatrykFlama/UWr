@@ -16,7 +16,6 @@ Sem3/WEPPO/Lista7/key.pem
 Sem3/WEPPO/Lista7/certificate.pfx
 
 
-# region DEFAULT
 # Prerequisites
 *.d
 
@@ -72,41 +71,3 @@ build/
 package-lock.json
 package.json
 node_modules/*
-# endregion
-
-
-# region dotNET
-*.swp
-*.*~
-project.lock.json
-.DS_Store
-*.pyc
-
-# Visual Studio Code
-.vscode
-
-# User-specific files
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-build/
-bld/
-[Bb]in/
-[Oo]bj/
-msbuild.log
-msbuild.err
-msbuild.wrn
-
-# Visual Studio 2015
-.vs/
-
-# endregion

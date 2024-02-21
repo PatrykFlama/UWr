@@ -1,37 +1,25 @@
-﻿Zad1 z = new Zad1();
-z.main();
+﻿using Libone;
+using Libduo;
 
-class Zad1
+Prog2 p = new();
+p.exec();
+
+class Prog2
 {
-    bool test_condition(int n)
+
+    public void exec()
     {
-        int m = n;
-        int sum = 0;
-        while (m > 0)
-        {
-            int d = m % 10;
-            m /= 10;
+        int n = 23493;
+        int a = 100;
+        int b = 123;
 
-            sum += d;
-            if (d != 0 && n % d != 0) return false;
-        }
+        Console.WriteLine(Textify.Exec(n));
+        Console.WriteLine(Textify.Exec(a));
+        Console.WriteLine(Textify.Exec(b));
 
-        if (n % sum != 0) return false;
-        return true;
-    }
-
-    public void main()
-    {
-        for (int i = 1; i <= 1e5; i++)
-        {
-            if (test_condition(i))
-            {
-                Console.WriteLine(i);
-            }
-        }
+        TheGreatAdder tga = new(a, b);
+        int c = tga.add();
+        Console.WriteLine(Textify.Exec(c));
     }
 }
-
-
-
 

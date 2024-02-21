@@ -29,7 +29,7 @@ dodatkowo każde porównanie będzie wymagać 2 operacji (rodzic i 2 dzieci). Mo
 po czym wstawiamy ostatni element z drzewa w miejsce dziury i ponownie go naprawiamy (teoretycznie $2O(\log(n))$, ale w praktyce pójdziemy tylko kilka wierzchołków w górę).
 
 #### Kolejka priorytetowa
-Operacja czytania elementu - korzeń $O(1)$.
+Operacja czytania elementu - korzeń $O(1)$.  
 Operacja dodawania elementu - wstawiamy jako ostatni i naprawiamy $O(\log(n))$.  
 Operacja usuwania elementu - jak w heapsort  $O(\log(n))$.
 
@@ -39,5 +39,7 @@ Kopce są 'sklejone' ze sobą liśćmi (puste liście przeskakujemy), nakładamy
 Dodawanie elementu polega na wybranie kopca, do którego dodajemy oraz dodaniu go do adekwatnego liścia, następnie sprawdzamy wynosimy element w górę kopca, po czym wynosimy element w tym liściu w górę kopca-sąsiada. $O(\log(n))$ 
 Aby usunąć wyrzucamy element min/max i wrzucamy na jego miejsce ostatni element tego kopca, jeżeli L i H równoliczne, albo nadmiarowy ostatni element. Następnie naprawiamy kopiec. $O(\log(n))$
 
-
-
+___
+### Ciekawe zadanie
+Niech k << n  
+uwtórz algorytm znajdujący k największych elementów (szyyyyybko).  

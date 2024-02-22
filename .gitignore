@@ -70,4 +70,4 @@ build/
 .eslintrc.js
 package-lock.json
 package.json
-node_modules/*
+node_modules

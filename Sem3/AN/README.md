@@ -3,7 +3,24 @@
 
 [(back)](../)
 # Numerical Analysis
-
+### [List 1](./Lista1)
+### [List 2](./Lista2)
+### [List 3](./Lista3)
+### [List 4](./Lista4)
+### [List 5](./Lista5)
+___
+### [List 6](./Lista6)
+### [List 7](./Lista7)
+### [List 8](./Lista8)
+### [List 9](./Lista9)
+___
+### [List 10](./Lista10)
+### [List 11](./Lista11)
+### [List 12a](./Lista12a)
+### [List 12b](./Lista12b)
+### [List 13](./Lista13)
+___
+### [Competition 1 - faking a string](https://github.com/PatrykFlama/MiniProjects/tree/main/NIFS3)
 
 </details>
 

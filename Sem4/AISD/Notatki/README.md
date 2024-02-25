@@ -1,5 +1,6 @@
 [(wróć)](../)
 
+## [Wykład 0](Wyklad0/)
 ## [Wykład 1](Wyklad1/)
 ## [Wykład 2](Wyklad2/)
 ## [Wykład 3](Wyklad3/)

@@ -18,8 +18,7 @@ Np po dodaniu jednego elementu, kopiec niekoniecznie nadal będzie spełniać sw
 #### Budowanie kopca
 Dostając tablicę elementów możemy stworzyć kopiec dodając elementy jeden po drugim $O(n\log(n))$. Słaby drań.  
 Sortowanie? też $O(n\log(n))$.  
-Istnieje rozwiązanie $O(n)$, traktujemy elementy jako ułożony już kopiec i ewaluujemy je od strony liści na każdym poziomie sprawdzając tylko raz czy są poprawnie uporządkowane (jeżeli tak to musimy też je naprawić). W najgorszym wypadku czas wynosi (h to wysokość od liści)  
-$$\sum_{i=1}^h i2^i = 2* \sum_{i=1}^h (\frac{d}{dx} x^i)(2) = 2*(\frac{d}{dx} \frac{x-x^{h+1}}{1-x})(2) = 2*(\frac{hx^{h+1}-(h+1)x^h+1}{(1-x)^2})(2) = 2* (2^{h} h) - 2^{h+1} + 2 = O(n)$$
+Istnieje rozwiązanie $O(n)$, traktujemy elementy jako ułożony już kopiec i ewaluujemy je od strony liści na każdym poziomie sprawdzając tylko raz czy są poprawnie uporządkowane (jeżeli tak to musimy też je naprawić).
 
 ### Zastosoawnia
 #### Heapsort

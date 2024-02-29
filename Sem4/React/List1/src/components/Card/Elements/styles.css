@@ -1,0 +1,36 @@
+.icon {
+  height: 20px;
+  margin: 0;
+  padding: 5px;
+}
+
+.contact-label {
+  display: flex;
+  align-items: center;
+  margin: 0px;
+}
+.contact-label img {
+  -webkit-filter: invert(1);
+  filter: invert(1);
+}
+
+.info-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 3px;
+}
+.info-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 3px;
+  border-radius: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  background: rgb(0, 212, 255);
+  background: radial-gradient(
+    circle,
+    rgb(85, 12, 169) 75%,
+    rgba(2, 0, 36, 0) 100%
+  );
+}

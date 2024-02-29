@@ -42,7 +42,7 @@ gantt
 * [**A**lgorytmy **i** **s**truktury **d**anych](Sem4/AISD/)
 * **R**achunek **p**rawdopodobieństwa **i** **s**tatystyka
 * **Sy**stemy **K**omputerowe
-* Kurs: React
+* [Kurs: React](Sem4/React/)
 * [Kurs programowania pod Windows w technologii .NET](Sem4/dotNET/)
 
 

@@ -7,7 +7,7 @@
 * [Algorithms and data structures](Sem4/AISD/)
 * Probability and statistics
 * Computer systems
-* React course
+* [React course](Sem4/React/)
 * [Programming course for Windows in .NET technology](Sem4/dotNET/)
 
 ## [Term 3](Sem3/)

@@ -6,7 +6,7 @@ export interface IPropsIntro {
   company: string;
 }
 
-export default function Intro({ name, position, company }: IProps) {
+export default function Intro({ name, position, company }: IPropsIntro) {
   return (
     <div className="intro">
       <h1>{name}</h1>

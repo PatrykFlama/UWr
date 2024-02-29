@@ -3,7 +3,7 @@ import { IPropsImage } from "./Image";
 import Image from "./Image";
 import { IPropsIntro } from "./Intro";
 import Intro from "./Intro";
-import { IProposContactInfo } from "./ContactInfo";
+import { IPropsContactInfo } from "./ContactInfo";
 import ContactInfo from "./ContactInfo";
 import { IPropsSection } from "./Section";
 import Section from "./Section";
@@ -13,7 +13,7 @@ import InfoTiles from "./Elements/InfoTiles";
 interface IPropsCard {
   intro: IPropsIntro;
   image: IPropsImage;
-  contactInfo: IProposContactInfo;
+  contactInfo: IPropsContactInfo;
   about: IPropsSection; // TODO create list of sections
   skills: IPropsSection;
 }

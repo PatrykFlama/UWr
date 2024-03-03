@@ -39,5 +39,13 @@ Mamy zbiór podzbiorów zbioru _X_ gdzie każdy podzbiór ma nadany koszt. Chcem
 * wybieranie podzbiorów o najmniejszym koszcie na niewybrane elementy
 
 ### Analiza strategii (4)
-<!-- TODO -->
+Jako przykład będziemy analizować ostatnią strategię zachłanną, chcemy pokazać że daje ona wyniki bliskie optymalnym (OPT).   
+O naszej strategii wiemy że:
+* _C_ - zbiór dotychczas pokrytych elementów
+* $S_i$ - podzbiór
+* $c(S_i)$ - koszt zbioru
+* $cne(S_i) = \frac{c(S_i)}{|S_i\backslash C|}$ - cena za pokrywany element  
+do rozwiązania wybieramy podzbiór z minimalnym _cne_
+
+obserwacja: z racji iż w każdym kroku dobieramy do rozwiązania co najmniej 1 element, to $cena(element_i) \leq \frac{OPT}{n-i+1}$
 

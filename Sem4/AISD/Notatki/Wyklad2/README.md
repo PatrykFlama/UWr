@@ -15,8 +15,19 @@ dla każdego wierzchołka wybieramy najkrótszą krawędź, następnie łączymy
 uwaga na szczególne przypadki, np. grafy z krawędziami o tej samej wadze  
 
 ## Szeregowanie zadań
-<!-- TODO -->
-na wykładzie poleciał skip
+#### Problem
+Mamy _n_ zadań z czasem wykonywania $t_i$, procesor jest jednowątkowy, chcemy zminimalizować sumę czasów zakończenia zadań. Zachłan, ez, teraz dowód **NW**:  
+**teza:** gdy uporządkujemy zadania rosnąco względem czasu to uzyskamy najlepszy czas  
+weźmy permutację zadań $\pi = (i_1, i_2, ..., i_n)$ i widzimy że koszt wynosi  
+$$T(\pi)=\sum_{k=1}^{n} (n-k+1) t_{i_k}$$  
+załóżmy **NW** że $\exist \pi$ tż $\pi$ jest najleszą permutacją (z najlepszym czasem) oraz że istnieje $\pi'$ taka że dla pewnych $x < y, t_{i_x} > t_{i_y}$ o koszcie  
+$$T(\pi')=(n-x+1)t_{i_y} (n-y+1) t_{i_x} + \sum_{k=1, k\neq xy}^{n} (n-k+1) t_{i_k}$$
+wtedy
+$$T(\pi)-T(\pi')=(n-x+1) t_{i_x} + (n-y+1) t_{i_y} - (n-x+1)t_{i_y} - (n-y+1) t_{i_x} = $$
+$$ = t{i_x} (n-x+1 - (n-y+1)) + t_{i_y} (n-y+1 - (n-x+1)) = (y-x)(t_{i_x}-t_{i_y}) > 0$$
+co prowadzi do sprzeczności bo znaleźliśy permutację z mniejszym kosztem od $\pi$.
+
+<!-- TODO szeregowanie z terminami ++ -->
 
 ## Problem pokrycia zbioru
 Mamy zbiór podzbiorów zbioru _X_ gdzie każdy podzbiór ma nadany koszt. Chcemy wybrać zbiór podzbiorów o minimalnym koszcie, tak aby ich suma była równa _X_.

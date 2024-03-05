@@ -1,5 +1,8 @@
 ﻿using System;
 
+/// <summary>
+/// Store person data
+/// </summary>
 public class Person
 {
     public string Name { get; set; }
@@ -11,6 +14,9 @@ public class Person
         Age = age;
     }
 
+    /// <summary>
+    /// Print info about person
+    /// </summary>
     public void PrintInfo()
     {
         Console.WriteLine($"Name: {Name}, Age: {Age}");
@@ -90,11 +96,19 @@ class Program
 
     enum Season { Spring, Summer, Autumn, Winter }
 
+    /// <summary>
+    /// Simple list implementation
+    /// </summary>
+    /// <typeparam name="T">type of stored items</typeparam>
     public class MyList<T>
     {
         private T[] array = new T[10];
         public int Count { get; private set; }
 
+        /// <summary>
+        /// add element to list
+        /// </summary>
+        /// <param name="item">element to add</param>
         public void Add(T item)
         {
             if (Count < array.Length)

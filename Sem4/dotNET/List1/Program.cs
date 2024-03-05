@@ -3,7 +3,12 @@
 
     class Zad1
     {
-        bool test_condition(int n)      // check wheather test condition fits given number
+        /// <summary>
+        /// Check whether test condition fits given number
+        /// </summary>
+        /// <param name="n">number to test</param>
+        /// <returns></returns>
+        bool test_condition(int n)
         {
         int m = n;
             int sum = 0;

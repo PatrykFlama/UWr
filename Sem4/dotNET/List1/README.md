@@ -6,7 +6,7 @@
 | X | X |   |   | X | X |
 
 ### Zadanie 6
-Przykład już gdzieś był, zwracany typ musi być taki sam  
+Przykład już gdzieś był, zwracany typ może być różny  
 przeciążona przeciążoną, wsm przykład jest w konstruktorach  
 no w skrócie to to jest dalej zwykła funkcja, więc wiele tam się może dziać, chyba obv  
 było

@@ -32,11 +32,17 @@ Operacja czytania elementu - korzeń $O(1)$.
 Operacja dodawania elementu - wstawiamy jako ostatni i naprawiamy $O(\log(n))$.  
 Operacja usuwania elementu - jak w heapsort  $O(\log(n))$.
 
-#### Kolejka priorytetowa dwustronna (podobno useless)
+#### Kolejka priorytetowa dwustronna
+##### Implementacja z dwoma kopcami
 Idea rozwiązania opiera się na dwóch kopcach L (min) i H (max), gdzie łącznie każdy element jest pamiętany dokładnie raz. Kopiec L pamięta $\lfloor{n/2}\rfloor$ elementów, a kopiec H $\lceil{n/2}\rceil$ elementów.  
 Kopce są 'sklejone' ze sobą liśćmi (puste liście przeskakujemy), nakładamy na taki sklejony kopiec warunek, że każda ścieżka (naturalnie zdefiniowana jako nie cofająca się w wysokości) między korzeniami jest uporządkowana monotonicznie.  
 Dodawanie elementu polega na wybranie kopca, do którego dodajemy oraz dodaniu go do adekwatnego liścia, następnie sprawdzamy wynosimy element w górę kopca, po czym wynosimy element w tym liściu w górę kopca-sąsiada. $O(\log(n))$ 
 Aby usunąć wyrzucamy element min/max i wrzucamy na jego miejsce ostatni element tego kopca, jeżeli L i H równoliczne, albo nadmiarowy ostatni element. Następnie naprawiamy kopiec. $O(\log(n))$
+
+##### Implementacja z jednym kopcem (imo lepsza)
+Trzymay jeden kopiec, różniący się od normalnego tym, że na przemian mamy warstwy min i max (dla przykładu wierzchołki na parzystych warstwach mają być minimalne względem dzieci, a wierzchołki na nieparzystych maksymalne).  
+Teraz aby pobrać minimalny lub maksymalny element, patrzymy na korzeń kopca lub jego dzieci _O(n)_    
+aktualizacja/naprawa wymaga teraz patrzenia 2 stopnie 'wgłąb' co nadal daje $O(\log(n))$.
 
 ___
 ### Ciekawe zadanie

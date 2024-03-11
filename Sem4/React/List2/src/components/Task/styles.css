@@ -8,13 +8,16 @@
   margin: 10px;
   border-radius: 10px;
   overflow: hidden;
+  box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.8);
 }
 
 .task h3 {
   padding: 10px 60px;
+  max-width: 250px;
+  overflow-wrap: break-word;
 }
 
-.done {
+.task.done {
   background: linear-gradient(
     to right,
     rgb(125, 250, 125),
@@ -22,8 +25,12 @@
   ); /* Gradient background */
 }
 
+.task.done h3 {
+  text-decoration: line-through;
+}
+
 /* BUTTON */
-.doneButton {
+.interactiveButton {
   background-color: #04aa6d00;
   border: none;
   font-family: consolas;
@@ -33,8 +40,19 @@
   transition: 0.2s;
 }
 
+.interactiveButton:hover {
+  box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.8);
+}
+
 .doneButton:hover {
   background-color: greenyellow;
+}
+.undoneButton:hover {
+  background-color: orange;
+}
+.deleteButton:hover {
+  background-color: red;
+  box-shadow: -2px 2px 4px 1000px rgba(0, 0, 0, 0.8);
 }
 
 .deleteButton {
@@ -46,8 +64,4 @@
   font-size: 16px;
   cursor: click;
   transition: 0.2s;
-}
-
-.deleteButton:hover {
-  background-color: red;
 }

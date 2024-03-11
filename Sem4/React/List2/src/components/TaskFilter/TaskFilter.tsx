@@ -19,6 +19,7 @@ export default function TaskFilter({ filterDone, onFilterName }: IProps) {
         }}
       >
         <input
+          placeholder="Name of tasks to filter"
           value={taskFilterName}
           onChange={(e) => setTaskFilterName(e.target.value)}
         />

@@ -17,7 +17,11 @@ export default function TaskAdder({ onAdd }: IProps) {
           setTaskName("");
         }}
       >
-        <input value={taskName} onChange={(e) => setTaskName(e.target.value)} />
+        <input
+          placeholder="Name of task to add"
+          value={taskName}
+          onChange={(e) => setTaskName(e.target.value)}
+        />
         <button type="submit">Add task</button>
       </form>
     </div>

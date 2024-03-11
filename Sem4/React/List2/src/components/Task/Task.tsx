@@ -4,11 +4,16 @@ import React, { useState } from "react";
 interface IProps {
   title: string;
   done?: boolean;
-  onTap: () => void;
+  onClick: () => void;
   onDelete: () => void;
 }
 
-export default function Task({ title, done = false, onTap, onDelete }: IProps) {
+export default function Task({
+  title,
+  done = false,
+  onClick,
+  onDelete,
+}: IProps) {
   const [insideDone, setInsideDone] = useState(done);
 
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -18,10 +23,14 @@ export default function Task({ title, done = false, onTap, onDelete }: IProps) {
 
   return (
     <div className={`task ${done ? "done" : ""}`}>
-      <button className="doneButton" onClick={onTap}>
+      <button
+        className={`interactiveButton ${done ? "doneButton" : "unodneButton"}`}
+        onClick={onClick}
+      >
         {done ? "UNDO" : "DONE"}
       </button>
       <h3>{title}</h3>
+
       <button className="deleteButton" onClick={handleDeleteClick}>
         DELETE
       </button>

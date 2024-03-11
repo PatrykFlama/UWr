@@ -14,7 +14,7 @@ interface IPropsCard {
   intro: IPropsIntro;
   image: IPropsImage;
   contactInfo: IPropsContactInfo;
-  about: IPropsSection; // TODO create list of sections
+  about: IPropsSection;
   skills: IPropsSection;
 }
 

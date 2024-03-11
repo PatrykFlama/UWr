@@ -5,12 +5,20 @@ body {
 }
 
 .App {
-  background: linear-gradient(to right, #f256f2, #7002a3);
+  background: linear-gradient(to right, greenyellow, green);
+  /* background: linear-gradient(to right, #f256f2, #7002a3); */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: up;
   min-height: 100vh;
+}
+
+.App:has(input[type="checkbox"]:checked) {
+  /* background: linear-gradient(to right, orange, red); */
+  background: linear-gradient(to right, #f256f2, #7002a3);
+}
+.App:has(input[type="checkbox"]) {
 }
 
 h1 {

@@ -12,42 +12,44 @@ const initialList = [
 
 export default function App() {
   const [list, setList] = React.useState(initialList);
-  const [filterDone, setFilterDone] = React.useState(true);
+  const [filterDone, setFilterDone] = React.useState(false);
   const [searchString, setSearchString] = React.useState("");
 
   return (
     <div className="App">
-      <h1>TODOLIST</h1>
+      <h1>{filterDone ? "TODO LIST" : "DONE LIST"}</h1>
       <TaskAdder
-        onAdd={(title: string) => setList([...list, { title, done: false }])}
+        onAdd={(title) => setList([...list, { title, done: false }])}
       />
       <TaskFilter
-        filterDone={(filter: boolean) => setFilterDone(filter)}
-        onFilterName={(str: string) => setSearchString(str)}
+        filterDone={(filter) => setFilterDone(filter)}
+        onFilterName={(str) => setSearchString(str)}
       />
 
-      {list
-        .filter((task) => task.title.includes(searchString))
-        .map((task, index) => {
-          if ((filterDone && !task.done) || (!filterDone && task.done))
-            return (
-              <Task
-                title={task.title}
-                done={task.done}
-                onTap={() => {
-                  //! to nie do końca jest ok
-                  const newList = [...list];
-                  newList[index].done = !newList[index].done;
-                  setList(newList);
-                }}
-                onDelete={() => {
-                  const newList = [...list];
-                  newList.splice(index, 1);
-                  setList(newList);
-                }}
-              />
-            );
-        })}
+      {list.map((task, index) => {
+        if (
+          task.title.includes(searchString) &&
+          ((filterDone && !task.done) || (!filterDone && task.done))
+        )
+          return (
+            <Task
+              title={task.title}
+              done={task.done}
+              onClick={() => {
+                //! to nie do końca jest ok
+                const newList = [...list];
+
+                newList[index].done = !newList[index].done;
+                setList(newList);
+              }}
+              onDelete={() => {
+                const newList = [...list];
+                newList.splice(index, 1);
+                setList(newList);
+              }}
+            />
+          );
+      })}
     </div>
   );
 }

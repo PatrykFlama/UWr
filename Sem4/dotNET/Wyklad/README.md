@@ -13,6 +13,7 @@
   - [Metody rozszerzające](#metody-rozszerzające)
     - [EnumerableExtensions](#enumerableextensions)
       - [GroupBy i var](#groupby-i-var)
+  - [Klasy anonimowe](#klasy-anonimowe)
 
 
 # Wykład 3
@@ -245,3 +246,30 @@ var res =
         .GroupBy(x => x.age)
         .GroupBy(x => x.name);
 ```
+
+kilka ciekawych przykładów
+```cs
+var res = 
+    list
+        .Where(x => x.age > 18)
+        .OrderByDescending(x => x.age)
+        .ThenBy(x => x.surname)
+        .ThenBy(x => x.name);
+```
+
+operacje te mają bardzo sql'owy charakter, co spowodowało wprowadzenie do cs takiej składni (która jest brzydka i nie daje żadnej przewagi - i to nas smuci)
+```cs
+List<int> t = new List<int> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+var res =
+    from e in t
+    where e > 5
+    orderby e descending
+    select e;
+```
+
+## Klasy anonimowe
+```cs
+blah blah blah 
+i => new {i = i, f = i+2}
+```
+

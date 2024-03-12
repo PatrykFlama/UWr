@@ -1,7 +1,8 @@
 [(wróć)](../)
 
 # Kurs programowania pod Windows w technologii .NET
-
+### [Wykład](Wyklad)
+___
 ### [Lista 1](List1)
 ### [Lista 2](List2)
 ### [Lista 3](List3)

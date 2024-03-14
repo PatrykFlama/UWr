@@ -1,11 +1,10 @@
 #include <bits/stdc++.h>
-using namespace std;        // TODO: just dont
+using namespace std;
 
 /**
  * Auto-generated code below aims at helping you parse
  * the standard input according to the problem statement.
  **/
-//TODO keep board as graph
 
 int main()
 {

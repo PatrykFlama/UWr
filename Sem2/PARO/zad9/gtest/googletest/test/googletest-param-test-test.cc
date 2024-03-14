@@ -64,7 +64,7 @@ using ::testing::internal::UnitTestOptions;
 
 // Prints a value to a string.
 //
-// FIXME: remove PrintValue() when we move matchers and
+// : remove PrintValue() when we move matchers and
 // EXPECT_THAT() from Google Mock to Google Test.  At that time, we
 // can write EXPECT_THAT(x, Eq(y)) to compare two tuples x and y, as
 // EXPECT_THAT() and the matchers know how to print tuples.

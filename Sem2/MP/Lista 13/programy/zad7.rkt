@@ -212,7 +212,7 @@
      (begin 
        (update-env! env x (eval e0 env))
        (voidV))]
-    [(whileE eCond eBody)   ; TODO error for econd not bool
+    [(whileE eCond eBody)   ; error for econd not bool
       (type-case  Value (eval eCond env)
         [(boolV v)
          (if v

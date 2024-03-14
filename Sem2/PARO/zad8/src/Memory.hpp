@@ -5,7 +5,7 @@ struct Memory final {
     using MemoryCell = unsigned char;
 
     MemoryCell get() const {
-        return *it_; // TODO
+        return *it_;
     }
 
     void set(MemoryCell const value) {

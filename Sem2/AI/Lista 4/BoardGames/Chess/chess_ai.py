@@ -82,12 +82,12 @@ class Chess:
                     mobility_res -= center_weights[move[2:4]]
         #endregion
 
-        #region pawn structure #TODO
+        #region pawn structure 
         # idea from github.com/lamesjim/Chess-AI
         
         #endregion
 
-        #region checkmate #TODO
+        #region checkmate 
 
         #endregion
 

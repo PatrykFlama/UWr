@@ -8,7 +8,7 @@ using Clock = std::chrono::high_resolution_clock;
 
 class Node{
 public:
-    vector<pair<int, pair<int, pair<int, int>>>> children;   // TODO - actually use it
+    vector<pair<int, pair<int, pair<int, int>>>> children;
     bool is_leaf = true;
     int times_sampled = 0;
     int avg_value = 0;

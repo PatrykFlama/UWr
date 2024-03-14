@@ -95,7 +95,7 @@ class LSF:
             for i in range(0, pow-self.pow()):
                 self.increase_degree()
             self.pow = pow
-        else:       # TODO in theory we could substract values to decrease power
+        else:       # in theory we could substract values to decrease power
             self.pow = pow
             self.reset()
 

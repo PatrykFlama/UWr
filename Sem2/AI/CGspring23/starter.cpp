@@ -63,7 +63,6 @@ int main() {
             cells[i].oppAnts = oppAnts;
         }
 
-        //TODO: choose actions to perform and add them into actions
         // To debug: cerr << "Debug messages..." << endl;
         // WAIT | LINE <sourceIdx> <targetIdx> <strength> | BEACON <cellIdx> <strength> | MESSAGE <text>
         if (actions.length() == 0){

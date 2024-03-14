@@ -20,7 +20,7 @@ But that creates another problem - opponent can be bluffing during the bidding o
 
 ## c)
 In such simulation we ignore a lot of small details, that are quite frequent in real life. For example bluffing, cheating, cooperation not provided for by the rules of the game, assuming that opponent is playing optimally, etc. Those factors can have significant impact on the game, but are hard to simulate.  
-Also poker has some stuff in it. <!-- TODO -->
+Also poker has some stuff in it. 
 
 # Exercise 4
 Agents for cheat game (better than random)  

@@ -52,7 +52,7 @@
     (pair (fst res) 
           (append
             (snd c)
-            (snd res)))))       ;; TODO to validate
+            (snd res)))))  
 
 (define (errorM [l : Symbol] [m : String]) : (M 'a)
   (error l m))

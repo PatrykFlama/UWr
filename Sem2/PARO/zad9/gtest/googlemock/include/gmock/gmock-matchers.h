@@ -2073,7 +2073,7 @@ class FieldMatcher {
 
   template <typename T>
   bool MatchAndExplain(const T& value, MatchResultListener* listener) const {
-    // FIXME: The dispatch on std::is_pointer was introduced as a workaround for
+    // The dispatch on std::is_pointer was introduced as a workaround for
     // a compiler bug, and can now be removed.
     return MatchAndExplainImpl(
         typename std::is_pointer<typename std::remove_const<T>::type>::type(),

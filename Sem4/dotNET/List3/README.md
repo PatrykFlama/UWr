@@ -5,6 +5,5 @@ w konstruktorze jak zrobić tak:
 public class A
 {
     int a;
-    A(int _a) : a(_a) {} 
-}
+    A(int _a) : a(_a) {}
 ```

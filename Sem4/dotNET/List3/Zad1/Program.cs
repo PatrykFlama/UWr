@@ -1,54 +1,54 @@
-﻿namespace Zad1 { 
-    class Program
+﻿using System.Xml.Linq;
+
+public class XMLGenerator
+{
+    public string GenerateXML(IClassInfo dataObject)
     {
-        static void Main(string[] args)
+        string[] fieldNames = dataObject.getFieldNames();
+        XElement xElement = new("Data");
+        foreach (string fieldName in fieldNames)
         {
-            Person person = new Person() {
-                    Name = "Jan",
-                    Surname = "Kowalski"
-                };
-            XMLGenerator generator = new XMLGenerator();
-            string xml = generator.GenerateXML(person);
+            xElement.Add(new XElement(fieldName, dataObject.getFieldValue(fieldName)));
         }
+        return xElement.ToString();
     }
+}
 
+public interface IClassInfo
+{
+    string[] getFieldNames();
+    object getFieldValue(string fieldName);
+}
 
-    public class XMLGenerator
+public class Person : IClassInfo
+{
+    public string Name { get; set; }
+    public string Surname { get; set; }
+    public string[] getFieldNames()
     {
-        public string GenerateXML(IClassInfo dataObject)
-        {
-            // uzupełnić implementację
+        return new string[] { "Name", "Surname" };
+    }
+    public object getFieldValue(string fieldName)
+    {
+        if (fieldName == "Name")
+            return Name;
+        else if (fieldName == "Surname")
+            return Surname;
+        else
             throw new NotImplementedException();
-        }
     }
+}
 
-    public interface IClassInfo
+
+public class Program
+{
+    public static void Main(string[] args)
     {
-        string[] GetFieldNames();
-        object GetFieldValue(string fieldName);
-    }
-
-
-    public class Person : IClassInfo
-    {
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public string[] GetFieldNames()
-        {
-            return new[] { "Name", "Surname" };
-        }
-        public object GetFieldValue(string fieldName)
-        {
-            switch (fieldName)
-            {
-                case "Name":
-                    return this.Name;
-                case "Surname":
-                    return this.Surname;
-                default:
-                    return null;
-            }
-            throw new NotImplementedException();
-        }
+        Person person = new Person();
+        person.Name = "John";
+        person.Surname = "Doe";
+        XMLGenerator xmlGenerator = new();
+        string xml = xmlGenerator.GenerateXML(person);
+        Console.WriteLine(xml);
     }
 }

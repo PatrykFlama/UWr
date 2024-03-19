@@ -18,3 +18,4 @@ C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List4\obj\Debug\net8.0\refi
 C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List4\obj\Debug\net8.0\Lista4.pdb
 C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List4\obj\Debug\net8.0\Lista4.genruntimeconfig.cache
 C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List4\obj\Debug\net8.0\ref\Lista4.dll
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List4\bin\Debug\net8.0\zad3.txt

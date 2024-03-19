@@ -3,7 +3,7 @@
     {
         public static void Main(string[] args)
         {
-            string[] names = File.ReadAllLines("C:\\Users\\patry\\Documents\\Programming\\UWr\\Sem4\\dotNET\\List4\\zad3.txt");
+            string[] names = File.ReadAllLines("./zad3.txt");
 
             var firstLetters = names.Where(name => !string.IsNullOrWhiteSpace(name))
                                     .GroupBy(name => name[0])

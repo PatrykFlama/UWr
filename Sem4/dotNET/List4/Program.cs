@@ -7,4 +7,4 @@ using Zad6;
 using Zad7;
 using Zad8;
 
-Program8.Main([]);
+Program4.Main([]);

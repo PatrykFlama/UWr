@@ -1,0 +1,67 @@
+.task {
+  display: flex;
+  background: linear-gradient(
+    to right,
+    rgb(193, 223, 255),
+    rgb(0, 123, 255)
+  ); /* Gradient background */
+  margin: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.8);
+}
+
+.task h3 {
+  padding: 10px 60px;
+  max-width: 250px;
+  overflow-wrap: break-word;
+}
+
+.task.done {
+  background: linear-gradient(
+    to right,
+    rgb(125, 250, 125),
+    rgb(0, 150, 0)
+  ); /* Gradient background */
+}
+
+.task.done h3 {
+  text-decoration: line-through;
+}
+
+/* BUTTON */
+.interactiveButton {
+  background-color: #04aa6d00;
+  border: none;
+  font-family: consolas;
+  font-weight: 1000;
+  font-size: 16px;
+  cursor: click;
+  transition: 0.2s;
+}
+
+.interactiveButton:hover {
+  box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.8);
+}
+
+.doneButton:hover {
+  background-color: greenyellow;
+}
+.undoneButton:hover {
+  background-color: orange;
+}
+.deleteButton:hover {
+  background-color: red;
+  box-shadow: -2px 2px 4px 1000px rgba(0, 0, 0, 0.8);
+}
+
+.deleteButton {
+  background-color: #04aa6d00;
+  border: none;
+  color: white;
+  font-family: consolas;
+  font-weight: 1000;
+  font-size: 16px;
+  cursor: click;
+  transition: 0.2s;
+}

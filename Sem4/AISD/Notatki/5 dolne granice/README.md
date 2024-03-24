@@ -5,11 +5,11 @@
 * zbiór niezależny
 
 ## Definicja problemu 3SAT
-3SAT = ${\phi : \phi -$formuła logiczna postaci $C_1 \and C_2 \and ... \and C_n$ gdzie $C_i$ jest postaci $x_{i_1} \or x_{i_2} \or ...$ gdzie każde $x_{ij}$ - zmienna logiczna lub jej negacja $}$
+3SAT = $\{\phi : \phi -$formuła logiczna postaci $C_1 \land C_2 \land ... \land C_n$ gdzie $C_i$ jest postaci $x_{i_1} \lor x_{i_2} \lor ...$ gdzie każde $x_{ij}$ - zmienna logiczna lub jej negacja$\}$
 ![image](image-2.png)
 
 ## Definicja problemu zbioru niezależnego
-Zbiór niezależny = ${G = (V, E) : G -$graf nieskierowany, $V -$zbiór wierzchołków, $E -$zbiór krawędzi, $I \subseteq V$ jest zbiorem niezależnym jeśli nie istnieje krawędź $e \in E$ taka, że oba końce $e$ należą do $I$}$
+Zbiór niezależny = $\{G = (V, E) : G -$graf nieskierowany, $V -$zbiór wierzchołków, $E -$zbiór krawędzi, $I \subseteq V$ jest zbiorem niezależnym jeśli nie istnieje krawędź $e \in E$ taka, że oba końce $e$ należą do $I\}$
 
 ##
 3SAT $\in$ NP-zupełny (Łatwo znaleźć świadka - przypisanie wartości zmiennym)  

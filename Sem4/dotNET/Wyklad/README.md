@@ -14,6 +14,11 @@
     - [EnumerableExtensions](#enumerableextensions)
       - [GroupBy i var](#groupby-i-var)
   - [Klasy anonimowe](#klasy-anonimowe)
+- [Wykład 6 - aplikacje okienkowe](#wykład-6---aplikacje-okienkowe)
+  - [Struktura plików - koncept designera](#struktura-plików---koncept-designera)
+  - [Właściwości i zdarzenia komponentów](#właściwości-i-zdarzenia-komponentów)
+  - [Konwencje nazw](#konwencje-nazw)
+  - [Rozmieszczanie elementów w formularzu](#rozmieszczanie-elementów-w-formularzu)
 
 
 # Wykład 3
@@ -272,4 +277,34 @@ var res =
 blah blah blah 
 i => new {i = i, f = i+2}
 ```
+
+# Wykład 6 - aplikacje okienkowe
+podczas tworzenia nowego projektu w VStudio możemy wybrać między aplikacją okienkową opartą o klasyczny framework .NET lub nowe środowisko .NET Core   
+
+główna pętla aplikacji jest ukryta pod wbudowaną funkcją `Application.Run` która może przyjąć formularz główny (wtedy obsłuży ona automatycznie podstawowe funkcje, np zamykanie) lub bez argumentu, wtedy musimy manualnie skończyć aplikację (np przez `Application.Exit`)   
+
+## Struktura plików - koncept designera
+w edytorze mamy 2 tryby - designera oraz kodu  
+w edytorze wizualnym możemy dodawać nowe elementy przeciągając je z toolboxa i ustawiając je w oknie aplikacji  
+główna klasa aplikacji jest rozbita na 2 pliki - jeden z kodem, drugi z opisem okna (designer) zawieracjący design aplikacji, strukturę klasy i podklasami  
+designer jest dwukierunkowy - generowany automatycznie z widoku kodu, ale zmiany w designerze są zapisywane w kodzie  
+efektem ubocznym jest ryzyko zepsucia designera, a w efekcie aplikacji  
+
+## Właściwości i zdarzenia komponentów
+zawiera ono 2 ważne zakładki - właściwości oraz zdarzenia  
+(po dwukliknięciu elementu tworzy się powiązane z nim zdarzenie, aby się go pozbyć musimy usunąć powiązaną z nim funkcję oraz w designerze przypisanie tej funkcji do elementu)  
+dwukliknięcie wybranego zdarzenia utworzy adekwatną funkcję w kodzie i nas do niej przeniesie, możemy też wybrać napisaną już funkcję do zdarzenia. Aby rozróżnić jaki komponent wywołał funkcję korzystamy z pierwszego argumentu przekazanego do funkcji (sender). Drugi argument to `EventArgs` - klasa zawierająca dodatkowe informacje o zdarzeniu (np. pozycja myszki)
+
+## Konwencje nazw
+typ obiektu na prefix, akcja na suffix  (buttonRefresh)  
+skrócenie nazwy typu obiektu na prefix, akcja na suffix (btnRefresh)  
+
+## Rozmieszczanie elementów w formularzu
+* umieszczane elementów w komponencie `group by`
+* w oknie `properties` elementu, sekcji `layout`
+dock, anchor, etc
+* element `panel`
+panel jest niewidocznym elementem, który pozwala na rozmieszczanie jego podelementów po analogiczny sposób (taki div w html)
+
+
 

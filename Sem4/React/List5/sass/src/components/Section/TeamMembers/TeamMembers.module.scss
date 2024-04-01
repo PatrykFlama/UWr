@@ -1,0 +1,35 @@
+@use "../../../variables";
+
+.team-members {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+  
+.team-member {
+    flex: 0 0 calc(33.33% - 20px);
+    padding: 20px;
+    margin: 10px;
+    text-align: center;
+}
+  
+.team-member img {
+    border-radius: 50%;
+    margin-bottom: 20px;
+}
+  
+.team-member h3 {
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+
+:global(.light-theme) .team-member {
+    background-color: variables.$light-theme-team-member-background-color;
+    color: variables.$light-theme-text-color;
+}
+    
+:global(.dark-theme) .team-member {
+    background-color: variables.$dark-theme-team-member-background-color;
+    color: variables.$light-theme-background-color;
+}

@@ -1,0 +1,92 @@
+@use "../../../variables";
+
+.contact {
+    margin-bottom: 40px;
+}
+  
+.contact-form {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+}
+  
+.contact .form-group {
+    margin-bottom: 20px;
+}
+
+.contact input[type="text"],
+.contact input[type="email"],
+.contact textarea {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    margin-top: 5px;
+}
+  
+.contact textarea {
+    resize: vertical;
+}
+  
+.contact button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+
+
+:global(.light-theme) .contact-form {
+    background-color: variables.$light-theme-contact-form-background-color;
+    color: variables.$light-theme-text-color;
+    border: 1px solid variables.$light-theme-contact-form-border-color;
+}
+
+:global(.dark-theme) .contact-form {
+    background-color: variables.$light-theme-text-color;
+    color: variables.$light-theme-background-color;
+    border: 1px solid variables.$light-theme-button-hover-color;
+}
+  
+
+
+:global(.light-theme) .contact input[type="text"],
+:global(.light-theme) .contact input[type="email"],
+:global(.light-theme) .contact textarea {
+  background-color: variables.$light-theme-background-color;
+  color: variables.$light-theme-text-color;
+  border: 1px solid variables.$light-theme-contact-form-textarea-color;
+}
+
+:global(.light-theme) .contact button {
+  background-color: variables.$light-theme-blog-post-button-background-color;
+  color: variables.$light-theme-background-color;
+}
+
+:global(.light-theme) .contact button:hover {
+  background-color: variables.$light-theme-blog-post-button-hover-background-color;
+}
+
+
+:global(.dark-theme) .contact input[type="text"],
+:global(.dark-theme) .contact input[type="email"],
+:global(.dark-theme) .contact textarea {
+    background-color: variables.$dark-theme-team-member-background-color;
+    color: variables.$light-theme-background-color;
+    border: 1px solid variables.$dark-theme-contact-form-textarea-color;
+}
+  
+:global(.dark-theme) .contact button {
+    background-color: variables.$light-theme-blog-post-button-background-color;
+    color: variables.$light-theme-background-color;
+}
+  
+:global(.dark-theme) .contact button:hover {
+    background-color: variables.$light-theme-blog-post-button-hover-background-color;
+}
+  

@@ -1,3 +1,4 @@
+import classes from "./TeamMembers.module.scss";
 import Section from "../Section";
 
 interface IProps {
@@ -14,9 +15,9 @@ export default function TeamMembers({ teamMembers }: IProps) {
     return (
         <Section id="team">
             <h2>Meet Our Team</h2>
-            <div className="team-members">
+            <div className={classes["team-members"]}>
                 {teamMembers.map((member) => (
-                    <div key={member.id} className="team-member">
+                    <div key={member.id} className={classes["team-member"]}>
                         <img src={member.image} alt={member.name} />
                         <div>
                             <h3>{member.name}</h3>

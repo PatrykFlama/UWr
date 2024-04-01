@@ -1,3 +1,5 @@
+import classes from './Section.module.scss';
+
 interface IProps {
     id: string;
     children: React.ReactNode;
@@ -5,8 +7,8 @@ interface IProps {
 
 export default function Section({ id, children }: IProps) {
     return (
-        <section id={id} className={`section ${id}`}>
-            <div className="section-content">
+        <section id={id} className={`${classes['section']} ${id}`}>
+            <div className={classes['section-content']}>
                 {children}
             </div>
         </section>

@@ -1,3 +1,4 @@
+import classes from "./Services.module.scss";
 import Section from "../Section";
 
 interface IProps {
@@ -10,7 +11,7 @@ interface IProps {
 
 export default function Services({ services }: IProps) {
     return (
-        <Section id="services">
+        <Section id={classes["services"]}>
             <h2>Our Services</h2>
             <ul>
                 {services.map((service) => (

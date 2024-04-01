@@ -1,3 +1,4 @@
+import classes from "./Contact.module.scss";
 import Section from "../Section";
 
 
@@ -7,16 +8,16 @@ interface IProps {
 
 export default function Contact({ handleSubmit }: IProps) {
     return (
-        <Section id="contact">
+        <Section id={classes["contact"]}>
             <h2>Contact Us</h2>
-            <form onSubmit={handleSubmit} className="contact-form">
-                <div className="form-group">
+            <form onSubmit={handleSubmit} className={classes["contact-form"]}>
+                <div className={classes["form-group"]}>
                     <input type="text" placeholder="Name" required />
                 </div>
-                <div className="form-group">
+                <div className={classes["form-group"]}>
                     <input type="email" placeholder="Email" required />
                 </div>
-                <div className="form-group">
+                <div className={classes["form-group"]}>
                     <textarea rows={5} placeholder="Message" required></textarea>
                 </div>
                 <button type="submit">Send Message</button>

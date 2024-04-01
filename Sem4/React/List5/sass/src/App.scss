@@ -42,60 +42,6 @@ body {
     margin: 20px 0;
   }
   
-  .section {
-    padding: 20px 0;
-  }
-  
-  .section-content {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .section h2 {
-    font-size: 2.5em;
-    margin-bottom: 20px;
-    display: inline-block;
-  }
-  
-  .services ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .services li {
-    margin-bottom: 20px;
-    text-align: left;
-  }
-  
-  .services h3 {
-    font-size: 1.8em;
-    margin-bottom: 10px;
-  }
-  
-  .team-members {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .team-member {
-    flex: 0 0 calc(33.33% - 20px);
-    padding: 20px;
-    margin: 10px;
-    text-align: center;
-  }
-  
-  .team-member img {
-    border-radius: 50%;
-    margin-bottom: 20px;
-  }
-  
-  .team-member h3 {
-    margin-bottom: 10px;
-    display: inline-block;
-  }
-  
   .blog-posts {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -126,45 +72,6 @@ body {
   
   .blog-post button:hover {
     background-color: variables.$light-theme-blog-post-button-hover-background-color;
-  }
-  
-  .contact {
-    margin-bottom: 40px;
-  }
-  
-  .contact-form {
-    max-width: 500px;
-    margin: 0 auto;
-    padding: 20px;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .contact .form-group {
-    margin-bottom: 20px;
-  }
-  
-  .contact input[type="text"],
-  .contact input[type="email"],
-  .contact textarea {
-    width: calc(100% - 20px);
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    margin-top: 5px;
-  }
-  
-  .contact textarea {
-    resize: vertical;
-  }
-  
-  .contact button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
   }
   
   .footer {
@@ -204,10 +111,7 @@ body {
     background-color: variables.$light-theme-content-card-background-color;
   }
   
-  .light-theme .team-member {
-    background-color: variables.$light-theme-team-member-background-color;
-    color: variables.$light-theme-text-color;
-  }
+
   
   .light-theme .blog-post {
     background-color: variables.$light-theme-blog-post-background-color;
@@ -222,37 +126,12 @@ body {
   .light-theme .blog-post button:hover {
     background-color: variables.$light-theme-blog-post-button-hover-background-color;
   }
-  
-  .light-theme .section:nth-child(even) {
-    background-color: variables.$light-theme-team-member-background-color;
-  }
+
   
   .light-theme .navbar {
     background-color: variables.$light-theme-blog-post-background-color;
   }
   
-  .light-theme .contact-form {
-    background-color: variables.$light-theme-contact-form-background-color;
-    color: variables.$light-theme-text-color;
-    border: 1px solid variables.$light-theme-contact-form-border-color;
-  }
-  
-  .light-theme .contact input[type="text"],
-  .light-theme .contact input[type="email"],
-  .light-theme .contact textarea {
-    background-color: variables.$light-theme-background-color;
-    color: variables.$light-theme-text-color;
-    border: 1px solid variables.$light-theme-contact-form-textarea-color;
-  }
-  
-  .light-theme .contact button {
-    background-color: variables.$light-theme-blog-post-button-background-color;
-    color: variables.$light-theme-background-color;
-  }
-  
-  .light-theme .contact button:hover {
-    background-color: variables.$light-theme-blog-post-button-hover-background-color;
-  }
   
   /* Dark theme */
   .dark-theme {
@@ -279,11 +158,7 @@ body {
   .dark-theme .content-card {
     background-color: variables.$light-theme-text-color;
   }
-  
-  .dark-theme .team-member {
-    background-color: variables.$dark-theme-team-member-background-color;
-    color: variables.$light-theme-background-color;
-  }
+
   
   .dark-theme .blog-post {
     background-color: variables.$dark-theme-blog-post-background-color;
@@ -299,34 +174,9 @@ body {
     background-color: variables.$light-theme-blog-post-button-hover-background-color;
   }
   
-  .dark-theme .section:nth-child(even) {
-    background-color: variables.$dark-theme-team-member-background-color;
-  }
-  
   .dark-theme .navbar {
     background-color: variables.$dark-theme-blog-post-background-color;
   }
   
-  .dark-theme .contact-form {
-    background-color: variables.$light-theme-text-color;
-    color: variables.$light-theme-background-color;
-    border: 1px solid variables.$light-theme-button-hover-color;
-  }
-  
-  .dark-theme .contact input[type="text"],
-  .dark-theme .contact input[type="email"],
-  .dark-theme .contact textarea {
-    background-color: variables.$dark-theme-team-member-background-color;
-    color: variables.$light-theme-background-color;
-    border: 1px solid variables.$dark-theme-contact-form-textarea-color;
-  }
-  
-  .dark-theme .contact button {
-    background-color: variables.$light-theme-blog-post-button-background-color;
-    color: variables.$light-theme-background-color;
-  }
-  
-  .dark-theme .contact button:hover {
-    background-color: variables.$light-theme-blog-post-button-hover-background-color;
-  }
+
   

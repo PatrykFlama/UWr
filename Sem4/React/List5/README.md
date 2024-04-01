@@ -1,4 +1,4 @@
-# Pracownia 5: Refactoring (10p)
+# Pracownia 5: Refactoring (13p)
 
 Twoim zadaniem na tej pracowni będzie poprawienie kodu wygenerowanego za pomocą sztucznej inteligencji, znajdującego się [tutaj](https://codesandbox.io/p/sandbox/new-wind-4k58gm).
 

@@ -1,3 +1,4 @@
+import classes from "./Navbar.module.scss";
 import { useTheme } from "../../providers/Theme";
 
 
@@ -5,12 +6,12 @@ export default function Navbar({ elements }: { elements: string[] }) {
     const { theme, toggleTheme } = useTheme();
 
     return (
-        <div className="navbar">
+        <div className={classes["navbar"]}>
             {elements.map((element) => (
                 <a href={`#${element.toLowerCase()}`}>{element}</a>
             ))}
 
-            <button onClick={toggleTheme} className="theme-toggle-button">
+            <button onClick={toggleTheme} className={classes["theme-toggle-button"]}>
                 {theme === 'light' ? "Light Mode" : "Dark Mode"}
             </button>
         </div>

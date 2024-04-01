@@ -1,0 +1,67 @@
+@use "../../../variables";
+
+
+.blog-posts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-gap: 20px;
+}
+  
+.blog-post {
+    border-radius: 10px;
+    padding: 20px;
+    text-align: left;
+}
+  
+.blog-post h3 {
+    margin-bottom: 10px;
+}
+  
+.blog-post p {
+    margin-bottom: 10px;
+}
+  
+.blog-post button {
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: background-color 0.3s ease;
+}
+  
+.blog-post button:hover {
+    background-color: variables.$light-theme-blog-post-button-hover-background-color;
+}
+
+
+
+:global(.light-theme) .blog-post {
+    background-color: variables.$light-theme-blog-post-background-color;
+    color: variables.$light-theme-text-color;
+}
+  
+:global(.light-theme) .blog-post button {
+    background-color: variables.$light-theme-blog-post-button-background-color;
+    color: variables.$light-theme-background-color;
+}
+  
+:global(.light-theme) .blog-post button:hover {
+    background-color: variables.$light-theme-blog-post-button-hover-background-color;
+}
+
+  
+  
+:global(.dark-theme) .blog-post {
+    background-color: variables.$dark-theme-blog-post-background-color;
+    color: variables.$light-theme-background-color;
+}
+  
+:global(.dark-theme) .blog-post button {
+    background-color: variables.$light-theme-blog-post-button-background-color;
+    color: variables.$light-theme-background-color;
+}
+  
+:global(.dark-theme) .blog-post button:hover {
+    background-color: variables.$light-theme-blog-post-button-hover-background-color;
+}
+  

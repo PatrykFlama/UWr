@@ -1,0 +1,16 @@
+@use "../../variables";
+
+.portfolio {
+    margin: 0 auto;
+}
+
+.dark-theme {
+    background-color: variables.$dark-theme-background-color;
+    color: variables.$light-theme-background-color; /* Text color for dark theme */
+}
+
+.light-theme {
+    background-color: variables.$light-theme-background-color;
+    color: variables.$light-theme-text-color; /* Text color for light theme */
+}
+  

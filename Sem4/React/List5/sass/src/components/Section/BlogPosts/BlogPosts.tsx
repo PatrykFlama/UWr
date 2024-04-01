@@ -1,3 +1,4 @@
+import classes from "./BlogPosts.module.scss";
 import Section from "../Section";
 
 interface IProps {
@@ -11,11 +12,11 @@ interface IProps {
 
 export default function BlogPosts({ blogPosts }: IProps) {
     return (
-        <Section id="blog">
+        <Section id={classes["blog"]}>
             <h2>Latest Blog Posts</h2>
-            <div className="blog-posts">
+            <div className={classes["blog-posts"]}>
                 {blogPosts.map((post) => (
-                    <div key={post.id} className="blog-post">
+                    <div key={post.id} className={classes["blog-post"]}>
                         <h3>{post.title}</h3>
                         <p>{post.date}</p>
                         <p>{post.content}</p>

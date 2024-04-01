@@ -1,3 +1,4 @@
+import "./ThemeWrapper.scss";
 import React from "react";
 import { useTheme } from "../../providers/Theme";
 

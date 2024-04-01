@@ -1,0 +1,21 @@
+@use "variables";
+
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+  
+.content-card {
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+:global(.dark-theme) .content-card {
+    background-color: variables.$light-theme-text-color;
+}
+
+:global(.light-theme) .content-card {
+    background-color: variables.$light-theme-content-card-background-color;
+}
+  

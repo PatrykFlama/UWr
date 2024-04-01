@@ -1,0 +1,66 @@
+@use "../../variables";
+
+.navbar {
+    position: sticky;
+    top: 0;
+    padding: 10px 0;
+    text-align: center;
+    z-index: 1000;
+}
+  
+.navbar a {
+    text-decoration: none;
+    padding: 0 20px;
+}
+
+
+:global(.dark-theme) .navbar a {
+    color: variables.$light-theme-background-color; /* Link color for dark theme */
+}
+
+:global(.dark-theme) .navbar {
+    background-color: variables.$dark-theme-blog-post-background-color;
+}
+
+:global(.light-theme) .navbar a {
+    color: variables.$light-theme-text-color; /* Link color for light theme */
+}
+
+:global(.light-theme) .navbar {
+    background-color: variables.$light-theme-blog-post-background-color;
+}
+
+
+
+.theme-toggle-button {
+    cursor: pointer;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease;
+}
+
+
+:global(.light-theme) .theme-toggle-button {
+    background-color: variables.$light-theme-text-color;
+    color: variables.$light-theme-background-color;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+  
+:global(.light-theme) .theme-toggle-button:hover {
+    background-color: variables.$light-theme-button-hover-color;
+}
+
+
+:global(.dark-theme) .theme-toggle-button {
+    background-color: variables.$light-theme-contact-form-border-color;
+    color: variables.$light-theme-text-color;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+  
+:global(.dark-theme) .theme-toggle-button:hover {
+    background-color: variables.$light-theme-contact-form-textarea-color;
+}
+  

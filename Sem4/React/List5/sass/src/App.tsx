@@ -1,4 +1,4 @@
-import "./App.scss";
+import classes from "./App.module.scss";
 import React from "react";
 import { ThemeProvider } from './providers/Theme';
 
@@ -119,7 +119,7 @@ export default function App() {
       <Navbar elements={['Home', 'About', 'Services', 'Team', 'Blog', 'Contact']} />
       <Header name={companyData.name} slogan={companyData.slogan} />
 
-      <div className="content-card">
+      <div className={classes["content-card"]}>
         <About companyData={companyData.about} />
         <Services services={companyData.services} />
         <TeamMembers teamMembers={companyData.teamMembers} />

@@ -15,7 +15,7 @@
 
 
 :global(.dark-theme) .navbar a {
-    color: variables.$light-theme-background-color; /* Link color for dark theme */
+    color: variables.$light-theme-background-color;
 }
 
 :global(.dark-theme) .navbar {
@@ -23,7 +23,7 @@
 }
 
 :global(.light-theme) .navbar a {
-    color: variables.$light-theme-text-color; /* Link color for light theme */
+    color: variables.$light-theme-text-color;
 }
 
 :global(.light-theme) .navbar {

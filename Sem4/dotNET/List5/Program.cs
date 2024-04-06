@@ -1,5 +1,6 @@
 ﻿using Zad1;
 using Zad2;
+using Zad3;
 
 
-Program1.Main([]);
+Program3.Main([]);

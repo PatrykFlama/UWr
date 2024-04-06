@@ -8,7 +8,9 @@ AMD Ryzen 5 5600U with Radeon Graphics, 1 CPU, 12 logical and 6 physical cores
 
 
 ```
-| Method             | Mean       | Error     | StdDev    |
-|------------------- |-----------:|----------:|----------:|
-| Benchmark_Concrete |  0.0895 ns | 0.0272 ns | 0.0530 ns |
-| Benchmark_Dynamic  | 17.6808 ns | 0.3456 ns | 0.8147 ns |
+| Method                     | Mean        | Error     | StdDev    | Median      |
+|--------------------------- |------------:|----------:|----------:|------------:|
+| Benchmark_Concrete_Simple  |   0.0165 ns | 0.0142 ns | 0.0133 ns |   0.0168 ns |
+| Benchmark_Dynamic_Simple   |  14.8442 ns | 0.3487 ns | 0.8355 ns |  14.8632 ns |
+| Benchmark_Concrete_Complex |   0.4909 ns | 0.0151 ns | 0.0134 ns |   0.4879 ns |
+| Benchmark_Dynamic_Complex  | 113.3088 ns | 2.3285 ns | 6.8657 ns | 111.4343 ns |

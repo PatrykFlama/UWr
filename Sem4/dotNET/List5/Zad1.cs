@@ -3,37 +3,35 @@ using BenchmarkDotNet.Running;
 
 namespace Zad1
 {
-    public class Calculate
+    public class Worker
     {
-        public int statical(int x, int y)
+        public int Concrete(int x, int y)
         {
             return x + y;
         }
 
-        public dynamic dynamical(dynamic x, dynamic y)
+        public dynamic Dynamic(dynamic x, dynamic y)
         {
             return x + y;
         }
-    }
-    
-    public class Benchmark
-    {
-        public int N;
-        public int x, y;
     }
 
     public class ComparisonBenchmark
     {
+        public int N;
+        public int x, y;
+        Worker worker = new Worker();
+
         [Benchmark]
-        public int DoWork1_Concrete(int x, int y)
+        public int Benchmark_Concrete()
         {
-            return x + y;
+            return worker.Concrete(x, y);
         }
 
         [Benchmark]
-        public dynamic DoWork2_Dynamic(dynamic x, dynamic y)
+        public dynamic Benchmark_Dynamic()
         {
-            return x + y;
+            return worker.Dynamic(x, y);
         }
     }
 

@@ -2,4 +2,4 @@
 using Zad2;
 
 
-Program2.Main([]);
+Program1.Main([]);

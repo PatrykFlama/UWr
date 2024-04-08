@@ -1,0 +1,7 @@
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List6\obj\Debug\net8.0\Zad1.WyborUczelni.resources
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List6\obj\Debug\net8.0\List6.csproj.GenerateResource.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List6\obj\Debug\net8.0\List6.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List6\obj\Debug\net8.0\List6.AssemblyInfoInputs.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List6\obj\Debug\net8.0\List6.AssemblyInfo.cs
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List6\obj\Debug\net8.0\List6.csproj.CoreCompileInputs.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List6\obj\Debug\net8.0\List6.sourcelink.json

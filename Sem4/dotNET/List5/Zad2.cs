@@ -347,9 +347,11 @@
     {
         public static void Main(string[] args)
         {
+            // If you try to get/set a value of a property
+            // not defined in the class, this method is called.
             Test1();        // Member
             Test2();        // Index
-            Test3();        // TryInvoke
+            Test3();        // TryInvoke (object)
             Test4();        // TryInvokeMember
             Test5();        // TryUnaryOperation
             Test6();        // TryBinaryOperation

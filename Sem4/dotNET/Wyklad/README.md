@@ -19,6 +19,16 @@
   - [Właściwości i zdarzenia komponentów](#właściwości-i-zdarzenia-komponentów)
   - [Konwencje nazw](#konwencje-nazw)
   - [Rozmieszczanie elementów w formularzu](#rozmieszczanie-elementów-w-formularzu)
+- [Wykład 7](#wykład-7)
+  - [Plik konfiguracyjny aplikacji dotnet - App config](#plik-konfiguracyjny-aplikacji-dotnet---app-config)
+    - [App settings](#app-settings)
+    - [App manifest](#app-manifest)
+  - [Multiple Document Interface](#multiple-document-interface)
+    - [Jak uzyskać architekturę MDI](#jak-uzyskać-architekturę-mdi)
+  - [Komponenty do prezentacji zbiorów danych](#komponenty-do-prezentacji-zbiorów-danych)
+    - [ComboBox](#combobox)
+  - [GDI](#gdi)
+    - [Custom Control](#custom-control)
 
 
 # Wykład 3
@@ -306,5 +316,148 @@ dock, anchor, etc
 * element `panel`
 panel jest niewidocznym elementem, który pozwala na rozmieszczanie jego podelementów po analogiczny sposób (taki div w html)
 
+# Wykład 7
+## Plik konfiguracyjny aplikacji dotnet - App config
+w tym pliku mamy np wersję framworku  
+Po zbudowaniu aplikacji plik konfiguracyjny ma nazwę odpowiadającą kompilatowi z dodatkowym rozszrzeniem .config  
+> Nazwę kompilatu możemy zmienić w ustawieniach projektu (prawym na projekt -> ustawienia)  
+
+### App settings
+Aby korzystać z niego w kodzie, do referencji (bibliotek) musimy dodać System.Configuration  
+
+klucze:
+```xml
+<appSettings>
+  <add key="k1" value="v1"/>
+  <add key="k2" value="v2"/>
+</appSettings>
+```
+```cs
+MessageBox.Show(ConfigurationManager.AppSettings["k1"])
+```
+
+Możemy tworzyć nowe pliki konfiguracyjne: 
+w głównym pliku konfiguracyjnym:
+```xml
+<appSettinggs configSource="./path" />
+```
+tworzymy nowy (zaznaczamy że ma on być przenoszony do kompilatu):
+```xml
+version...
+
+<appSettings>
+  <add key="k1" value="v1"/>
+  <add key="k2" value="v2"/>
+</appSettings>
+```
+
+### App manifest
+linia `requestedExecutionLevel` mamy poziom uprawnień aplikacji (jak w systemie)  `asInvoker`/`requireAdministrator`  
+jako użytkownik możemy np wymusić uruchomienie jako administrator - po to m.in. jest ten plik  
+
+## Multiple Document Interface 
+Nasza aplikacja może mieć różne architektury: główne okno to dostarczyciel funkcji / dodatkowe okna pełnią główne funkcje lub MDI  
+Komponenty typu menuStrip lub timer są o tyle specjalne że nie będą wyświetlane w samej aplikacji, więc sposób ich edycji się trochę różni  
+### Jak uzyskać architekturę MDI
+w samym formularzu możemy zmienić właściwość `isMdiContainer`   
+stwórzmy nowy formularz `var frmChild = new frmMdiChild()` i ustawmy mu właściwość `frmChild.MdiParent(oknoGlowne)`   
+
+> Jak teraz przykazywać informacje między formularzami?
+
+stworzymy 'globalny' event do którego wszystkie formularze będą publikować, nawet lepiej - powołamy jakąś (naszą) klasę jako kanał komunikacyjny (będziemy suffixować klasy 'EventArgs')
+
+```cs
+public class DataStore {
+    // dokładnie jedno wystąpienie - tworzymy teraz jedyną instancję
+    public static DataStore Instance = new DataStore();
+
+    public event DataStoreChangeDelegate DataStoreChangeEvent;
+
+    // metoda służąca do emisji zdarzeń nazwa od Emit/Raise
+    public void RaiseDataStoreChange(object sender, DataStoreChangeEventArgs e) {
+        if(this.DataStoreChangeEvent != null) {
+            this.DataStoreChangeEvent();
+        }
+    }
+}
+
+public delegate void DataStoreChangeDelegate(object sender ,DataStoreChangeEventArgs);
+
+
+public class DataStoreChangeEventArgs : EventArgs {
+  public string Data {get; set; }
+}
+```
+
+w frmChild
+```cs
+private void frmMdiCgild_Load(object sender, EventArgs e) {
+    DataStore.Instance.DataStoreCgangeEvent += Instance_DataStoreChangeEvent;
+}
+
+// emitujemy zdarzenie
+private void Instance_DataStoreChangeEvent (object sender, EventArgs e) {
+    if(sender != this) {
+        this.textBox.Text = e.Data;
+    }
+}
+
+private void frmMdiChild_FormClosing(object sender, FormClosingEventArgs e) {
+    // e.Cancel = true;     // aby anulować zamknięcie
+}
+
+```
+
+
+## Komponenty do prezentacji zbiorów danych
+ComboBox, ListView, TreeView  
+### ComboBox
+dropdownStyle: dropdownList => użytkownik nie może dodać własnej pozycji  
+`SelectedIndex` (index wybranego elementu), `SelectedText` (text na wybraneym elemencie)  
+model który wspiera tekst i odpowiadającą wartość nie jest domyślnie zaimplementowany  
+tworzymy więc własną implementację klasy `ComboItem`, która ma przeciążoną metodę `toString` (bo metoda toString jest ustawiana na tekst elementu) oraz jakieś ID 
+teraz możemy skorzystać z `SelectedItem` (zwraca wybrany element), rzutujemy, wyciągamy ID
+
+## GDI
+czasem chcemy manualnie narysować coś na naszym oknie, służzy do tego właściwość Apparance->Paint
+
+możemy tworzyć własne szczotki którymi będziemy rysować `Brush b = new SolidBrush(Color.Black / SystemColors...)` 
+rysowanie: `e.Graphics.DrawString("abc", this.Font, b, new Point(10, 10));`
+
+uwaga - obiekt ten będzie zajmował jeden ze skończonej liczby slotów, trzeba go więc sprzątnąć za pomocą using i scopami
+
+```cs
+using(Brush b)
+using(Font f)
+{
+    e.Graphics.DrawString("abc", f, b, new Point(10, 10));
+}
+```
+
+aby manualnie strować częstotliwością rysowania korzystamy z `this.Invalidate();`, które wywołujemy względem własnych ticków
+
+### Custom Control
+możemy tworzyć własne elementy do wrzucenia na formularz, np custombutton
+```cs
+public class CustomButton : Button {
+    protected override void onClick(EventArgs e) {
+        MessageBoxShow("abc");
+        base.OnClick(e);        // wywołanie funkcji z klasy dziedziczonej
+    }
+}
+```
+
+nasz custombutton powininen się po kompilacji pojawić w toolboxie, w pp musimy manualnie dopisać formant
+
+aby nie dziedziczyć po żadnym obiekcie, możemy dziedziczyć po klasie `Control`
+
+na wykłądzie był jeszcze przykład komponentu combo z przyciskiem i combo box, rozmiary i pozycje podkomponentów ustawialiśmy w kodzie w zależności od rozmiarów combo (za pomocą zdarzenia `Resize`)  
+dodatkowo żeby z poziomu naszego customowego combo mieć dostęp do combo box w środku
+```cs
+public ComboBox.ObjectCollection Items {
+    get ...
+    set ...
+}
+```
 
 

@@ -6,15 +6,13 @@ namespace Zad4
 {
     public static class StringExtensions
     {
+        public static HttpClient client = new HttpClient();
         public static async Task<string> DownloadContentAsync(string url)
         {
-            using (HttpClient client = new HttpClient())
-            {
-                HttpResponseMessage response = await client.GetAsync(url);
-                response.EnsureSuccessStatusCode();
+            HttpResponseMessage response = await client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
 
-                return await response.Content.ReadAsStringAsync();
-            }
+            return await response.Content.ReadAsStringAsync();
         }
 
         public static TaskAwaiter<string> GetAwaiter(this string url)

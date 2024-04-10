@@ -14,6 +14,8 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
+    Checkbox,
+    FormControlLabel,
 } from "@mui/material";
 import {
     DataGrid,
@@ -27,21 +29,126 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import NoAccountsIcon from "@mui/icons-material/NoAccounts";
 
 const initialRows = [
-    { id: 1, type: "Type1", price: 100, accessibility: true, pcs: 10 },
-    { id: 2, type: "Type2", price: 200, accessibility: false, pcs: 20 },
-    { id: 3, type: "Type3", price: 300, accessibility: true, pcs: 30 },
-    { id: 4, type: "Type4", price: 400, accessibility: false, pcs: 40 },
-    { id: 5, type: "Type5", price: 500, accessibility: true, pcs: 50 },
-    { id: 6, type: "Type6", price: 600, accessibility: true, pcs: 60 },
-    { id: 7, type: "Type7", price: 700, accessibility: false, pcs: 70 },
-    { id: 8, type: "Type8", price: 800, accessibility: true, pcs: 80 },
-    { id: 9, type: "Type9", price: 900, accessibility: false, pcs: 90 },
-    { id: 10, type: "Type10", price: 1000, accessibility: true, pcs: 100 },
-    { id: 11, type: "Type11", price: 1100, accessibility: true, pcs: 110 },
-    { id: 12, type: "Type12", price: 1200, accessibility: false, pcs: 120 },
-    { id: 13, type: "Type13", price: 1300, accessibility: true, pcs: 130 },
-    { id: 14, type: "Type14", price: 1400, accessibility: false, pcs: 140 },
-    { id: 15, type: "Type15", price: 1500, accessibility: true, pcs: 150 },
+    {
+        id: 1,
+        name: "Name1",
+        type: "Type1",
+        price: 100,
+        accessibility: true,
+        pcs: 10,
+    },
+    {
+        id: 2,
+        name: "Name2",
+        type: "Type2",
+        price: 200,
+        accessibility: false,
+        pcs: 20,
+    },
+    {
+        id: 3,
+        name: "Name3",
+        type: "Type3",
+        price: 300,
+        accessibility: true,
+        pcs: 30,
+    },
+    {
+        id: 4,
+        name: "Name4",
+        type: "Type4",
+        price: 400,
+        accessibility: false,
+        pcs: 40,
+    },
+    {
+        id: 5,
+        name: "Name5",
+        type: "Type5",
+        price: 500,
+        accessibility: true,
+        pcs: 50,
+    },
+    {
+        id: 6,
+        name: "Name6",
+        type: "Type6",
+        price: 600,
+        accessibility: true,
+        pcs: 60,
+    },
+    {
+        id: 7,
+        name: "Name7",
+        type: "Type7",
+        price: 700,
+        accessibility: false,
+        pcs: 70,
+    },
+    {
+        id: 8,
+        name: "Name8",
+        type: "Type8",
+        price: 800,
+        accessibility: true,
+        pcs: 80,
+    },
+    {
+        id: 9,
+        name: "Name9",
+        type: "Type9",
+        price: 900,
+        accessibility: false,
+        pcs: 90,
+    },
+    {
+        id: 10,
+        name: "Name10",
+        type: "Type10",
+        price: 1000,
+        accessibility: true,
+        pcs: 100,
+    },
+    {
+        id: 11,
+        name: "Name11",
+        type: "Type11",
+        price: 1100,
+        accessibility: true,
+        pcs: 110,
+    },
+    {
+        id: 12,
+        name: "Name12",
+        type: "Type12",
+        price: 1200,
+        accessibility: false,
+        pcs: 120,
+    },
+    {
+        id: 13,
+        name: "Name13",
+        type: "Type13",
+        price: 1300,
+        accessibility: true,
+        pcs: 130,
+    },
+    {
+        id: 14,
+        name: "Name14",
+        type: "Type14",
+        price: 1400,
+        accessibility: false,
+        pcs: 140,
+    },
+    {
+        id: 15,
+        name: "Name15",
+        type: "Type15",
+        price: 1500,
+        accessibility: true,
+        pcs: 150,
+    },
 ];
 
 export default function App() {
@@ -103,6 +210,41 @@ export default function App() {
         setOpen(false);
     };
 
+    const handleSubmitForm = (event: React.FormEvent) => {
+        event.preventDefault();
+
+        const form = event.currentTarget as HTMLFormElement;
+        const name =
+            (form.elements.namedItem("name") as HTMLInputElement).value ||
+            "Default Name";
+        const type =
+            (form.elements.namedItem("type") as HTMLInputElement).value ||
+            "Default Type";
+        const price =
+            parseInt(
+                (form.elements.namedItem("price") as HTMLInputElement).value,
+                10
+            ) || 0;
+        const accessibility = (
+            form.elements.namedItem("accessibility") as HTMLInputElement
+        ).checked;
+        const pcs =
+            parseInt(
+                (form.elements.namedItem("pcs") as HTMLInputElement).value,
+                10
+            ) || 0;
+
+        // debug
+        console.log(name, type, price, accessibility, pcs);
+
+        setRows([
+            ...rows,
+            { id: rows.length, name, type, price, accessibility, pcs },
+        ]);
+
+        handleCloseForm();
+    };
+
     return (
         <>
             <CssBaseline />
@@ -126,8 +268,7 @@ export default function App() {
                                 onClick={() => setAuth(!auth)}
                                 color="inherit"
                             >
-                                {auth && <AccountCircle />}
-                                {!auth && <NoAccountsIcon />}
+                                {auth ? <AccountCircle /> : <NoAccountsIcon />}
                             </IconButton>
                         </div>
                     </Toolbar>
@@ -142,7 +283,6 @@ export default function App() {
                         },
                     }}
                     pageSizeOptions={[5, 10]}
-                    checkboxSelection
                     sx={{
                         height: 400,
                         maxWidth: "60%",
@@ -158,9 +298,11 @@ export default function App() {
                     <AddIcon />
                 </Fab>
 
+
                 <Dialog
                     open={open}
                     onClose={handleCloseForm}
+                    onSubmit={handleSubmitForm}
                     PaperProps={{
                         component: "form",
                         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
@@ -175,23 +317,45 @@ export default function App() {
                         },
                     }}
                 >
-                    <DialogTitle>Subscribe</DialogTitle>
+                    <DialogTitle>Dodaj produkt</DialogTitle>
                     <DialogContent>
-                        <DialogContentText>
-                            To subscribe to this website, please enter your
-                            email address here. We will send updates
-                            occasionally.
-                        </DialogContentText>
                         <TextField
-                            autoFocus
-                            required
                             margin="dense"
                             id="name"
-                            name="email"
-                            label="Email Address"
-                            type="email"
+                            label="Nazwa"
+                            type="text"
                             fullWidth
-                            variant="standard"
+                        />
+
+                        <TextField
+                            margin="dense"
+                            id="type"
+                            label="Typ"
+                            type="text"
+                            fullWidth
+                        />
+
+                        <TextField
+                            margin="dense"
+                            id="price"
+                            label="Cena"
+                            type="number"
+                            fullWidth
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Checkbox id="accessibility" color="primary" />
+                            }
+                            label="Dostępność"
+                        />
+
+                        <TextField
+                            margin="dense"
+                            id="pcs"
+                            label="Pieces"
+                            type="number"
+                            fullWidth
                         />
                     </DialogContent>
                     <DialogActions>

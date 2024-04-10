@@ -1,68 +1,96 @@
 import * as React from "react";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import { CssBaseline, Fab } from "@mui/material";
-import AccountCircle from "@mui/icons-material/AccountCircle";
-import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import {
+    Box,
+    Button,
+    AppBar,
+    Toolbar,
+    Typography,
+    IconButton,
+    CssBaseline,
+    Fab,
+    TextField,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+} from "@mui/material";
+import {
+    DataGrid,
+    GridColDef,
+    GridActionsCellItem,
+    GridRowId,
+} from "@mui/x-data-grid";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import AddIcon from "@mui/icons-material/Add";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import AccountCircle from "@mui/icons-material/AccountCircle";
+import NoAccountsIcon from "@mui/icons-material/NoAccounts";
 
-/* #region --------------------------- */
-const columns: GridColDef[] = [
-    { field: "id", headerName: "ID", width: 70 },
-    { field: "firstName", headerName: "First name", width: 130 },
-    { field: "lastName", headerName: "Last name", width: 130 },
-    {
-        field: "age",
-        headerName: "Age",
-        type: "number",
-        width: 90,
-    },
-    {
-        field: "fullName",
-        headerName: "Full name",
-        description: "This column has a value getter and is not sortable.",
-        sortable: false,
-        width: 160,
-        valueGetter: (value, row) =>
-            `${row.firstName || ""} ${row.lastName || ""}`,
-    },
+const initialRows = [
+    { id: 1, type: "Type1", price: 100, accessibility: true, pcs: 10 },
+    { id: 2, type: "Type2", price: 200, accessibility: false, pcs: 20 },
+    { id: 3, type: "Type3", price: 300, accessibility: true, pcs: 30 },
+    { id: 4, type: "Type4", price: 400, accessibility: false, pcs: 40 },
+    { id: 5, type: "Type5", price: 500, accessibility: true, pcs: 50 },
+    { id: 6, type: "Type6", price: 600, accessibility: true, pcs: 60 },
+    { id: 7, type: "Type7", price: 700, accessibility: false, pcs: 70 },
+    { id: 8, type: "Type8", price: 800, accessibility: true, pcs: 80 },
+    { id: 9, type: "Type9", price: 900, accessibility: false, pcs: 90 },
+    { id: 10, type: "Type10", price: 1000, accessibility: true, pcs: 100 },
+    { id: 11, type: "Type11", price: 1100, accessibility: true, pcs: 110 },
+    { id: 12, type: "Type12", price: 1200, accessibility: false, pcs: 120 },
+    { id: 13, type: "Type13", price: 1300, accessibility: true, pcs: 130 },
+    { id: 14, type: "Type14", price: 1400, accessibility: false, pcs: 140 },
+    { id: 15, type: "Type15", price: 1500, accessibility: true, pcs: 150 },
 ];
-
-const rows = [
-    { id: 1, lastName: "Snow", firstName: "Jon", age: 35 },
-    { id: 2, lastName: "Lannister", firstName: "Cersei", age: 42 },
-    { id: 3, lastName: "Lannister", firstName: "Jaime", age: 45 },
-    { id: 4, lastName: "Stark", firstName: "Arya", age: 16 },
-    { id: 5, lastName: "Targaryen", firstName: "Daenerys", age: null },
-    { id: 6, lastName: "Melisandre", firstName: null, age: 150 },
-    { id: 7, lastName: "Clifford", firstName: "Ferrara", age: 44 },
-    { id: 8, lastName: "Frances", firstName: "Rossini", age: 36 },
-    { id: 9, lastName: "Roxie", firstName: "Harvey", age: 65 },
-];
-/* #endregion */
 
 export default function App() {
+    const columns: GridColDef[] = [
+        { field: "name", headerName: "Nazwa", width: 130 },
+        { field: "type", headerName: "Typ", width: 70 },
+        {
+            field: "price",
+            headerName: "Cena (PLN)",
+            type: "number",
+            width: 100,
+        },
+        {
+            field: "accessibility",
+            headerName: "Dostępność",
+            type: "boolean",
+            width: 100,
+        },
+        {
+            field: "pcs",
+            headerName: "Sztuki",
+            type: "number",
+            width: 100,
+        },
+        {
+            field: "deleter",
+            type: "actions",
+            headerName: "Usuń",
+            width: 70,
+            cellClassName: "actions",
+            sortable: false,
+            getActions: ({ id }) => {
+                return [
+                    <GridActionsCellItem
+                        icon={<DeleteIcon />}
+                        label="Delete"
+                        onClick={handleDeleteClick(id)}
+                        color="inherit"
+                    />,
+                ];
+            },
+        },
+    ];
+
     const [auth, setAuth] = React.useState(true);
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [rows, setRows] = React.useState(initialRows);
 
-    const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
+    const handleDeleteClick = (id: GridRowId) => () => {
+        setRows(rows.filter((row) => row.id !== id));
     };
 
     const [open, setOpen] = React.useState(false);
@@ -89,42 +117,19 @@ export default function App() {
                             Sklep
                         </Typography>
 
-                        {auth && (
-                            <div>
-                                <IconButton
-                                    size="large"
-                                    aria-label="account of current user"
-                                    aria-controls="menu-appbar"
-                                    aria-haspopup="true"
-                                    onClick={handleMenu}
-                                    color="inherit"
-                                >
-                                    <AccountCircle />
-                                </IconButton>
-                                <Menu
-                                    id="menu-appbar"
-                                    anchorEl={anchorEl}
-                                    anchorOrigin={{
-                                        vertical: "top",
-                                        horizontal: "right",
-                                    }}
-                                    keepMounted
-                                    transformOrigin={{
-                                        vertical: "top",
-                                        horizontal: "right",
-                                    }}
-                                    open={Boolean(anchorEl)}
-                                    onClose={handleClose}
-                                >
-                                    <MenuItem onClick={handleClose}>
-                                        Profile
-                                    </MenuItem>
-                                    <MenuItem onClick={handleClose}>
-                                        My account
-                                    </MenuItem>
-                                </Menu>
-                            </div>
-                        )}
+                        <div>
+                            <IconButton
+                                size="large"
+                                aria-label="account of current user"
+                                aria-controls="menu-appbar"
+                                aria-haspopup="true"
+                                onClick={() => setAuth(!auth)}
+                                color="inherit"
+                            >
+                                {auth && <AccountCircle />}
+                                {!auth && <NoAccountsIcon />}
+                            </IconButton>
+                        </div>
                     </Toolbar>
                 </AppBar>
 
@@ -152,48 +157,49 @@ export default function App() {
                 >
                     <AddIcon />
                 </Fab>
-            </Box>
 
-            <Dialog
-                open={open}
-                onClose={handleCloseForm}
-                PaperProps={{
-                    component: "form",
-                    onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-                        event.preventDefault();
-                        const formData = new FormData(event.currentTarget);
-                        const formJson = Object.fromEntries(
-                            (formData as any).entries()
-                        );
-                        const email = formJson.email;
-                        console.log(email);
-                        handleClose();
-                    },
-                }}
-            >
-                <DialogTitle>Subscribe</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        To subscribe to this website, please enter your email
-                        address here. We will send updates occasionally.
-                    </DialogContentText>
-                    <TextField
-                        autoFocus
-                        required
-                        margin="dense"
-                        id="name"
-                        name="email"
-                        label="Email Address"
-                        type="email"
-                        fullWidth
-                        variant="standard"
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseForm}>Cancel</Button>
-                    <Button type="submit">Subscribe</Button>
-                </DialogActions>
-            </Dialog>
+                <Dialog
+                    open={open}
+                    onClose={handleCloseForm}
+                    PaperProps={{
+                        component: "form",
+                        onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+                            event.preventDefault();
+                            const formData = new FormData(event.currentTarget);
+                            const formJson = Object.fromEntries(
+                                (formData as any).entries()
+                            );
+                            const email = formJson.email;
+                            console.log(email);
+                            handleCloseForm();
+                        },
+                    }}
+                >
+                    <DialogTitle>Subscribe</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            To subscribe to this website, please enter your
+                            email address here. We will send updates
+                            occasionally.
+                        </DialogContentText>
+                        <TextField
+                            autoFocus
+                            required
+                            margin="dense"
+                            id="name"
+                            name="email"
+                            label="Email Address"
+                            type="email"
+                            fullWidth
+                            variant="standard"
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseForm}>Cancel</Button>
+                        <Button type="submit">Subscribe</Button>
+                    </DialogActions>
+                </Dialog>
+            </Box>
         </>
     );
 }

@@ -239,7 +239,7 @@ export default function App() {
 
         setRows([
             ...rows,
-            { id: rows.length, name, type, price, accessibility, pcs },
+            { id: Math.random(), name, type, price, accessibility, pcs },
         ]);
 
         handleCloseForm();

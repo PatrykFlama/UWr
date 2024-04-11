@@ -3,6 +3,7 @@ import {
     Box,
     CssBaseline,
     Fab,
+    ThemeProvider,
 } from "@mui/material";
 import {
     DataGrid,
@@ -18,6 +19,7 @@ import AddForm from "./components/AddForm/AddForm";
 import { initialRows } from "./components/DataTable/initialRows";
 import Header from "./components/Header/Header";
 import { Notify } from "./components/Notify/Notify";
+import theme from "./components/Theme/Theme";
 
 export default function App() {
     const [auth, setAuth] = React.useState(true);
@@ -51,20 +53,17 @@ export default function App() {
         };
 
         // validate
-        if(newRow.name == "" || newRow.type == "") {
+        if (newRow.name == "" || newRow.type == "") {
             setTextNotify("Name and type cant be empty!");
             setOpenNotify(true);
-            return
+            return;
         }
 
-        setRows([
-            ...rows,
-            newRow,
-        ]);
-        
+        setRows([...rows, newRow]);
+
         handleCloseForm();
 
-        setTextNotify("Success!");  
+        setTextNotify("Success!");
         setOpenNotify(true);
     };
 
@@ -92,7 +91,7 @@ export default function App() {
             width: 100,
             renderCell: (params) => {
                 return params.value + " PLN";
-            }
+            },
         },
         {
             field: "accessibility",
@@ -142,55 +141,61 @@ export default function App() {
     return (
         <>
             <CssBaseline />
-            <Box sx={{ flexGrow: 1 }}>
-                <Header auth={auth} setAuth={setAuth} />
+            <ThemeProvider theme={theme}>
+                <Box sx={{ flexGrow: 1 }}>
+                    <Header auth={auth} setAuth={setAuth} />
 
-                <DataGrid
-                    rows={rows}
-                    columns={columns}
-                    initialState={{
-                        pagination: {
-                            paginationModel: { page: 0, pageSize: 5 },
-                        },
-                    }}
-                    pageSizeOptions={[5, 10]}
-                    sx={{
-                        height: 400,
-                        maxWidth: "60%",
-                    }}
-                />
+                    <DataGrid
+                        rows={rows}
+                        columns={columns}
+                        initialState={{
+                            pagination: {
+                                paginationModel: { page: 0, pageSize: 5 },
+                            },
+                        }}
+                        pageSizeOptions={[5, 10]}
+                        sx={{
+                            height: 400,
+                            maxWidth: "60%",
+                        }}
+                    />
 
-                <Fab
-                    color="primary"
-                    aria-label="add"
-                    onClick={handleOpenForm}
-                    sx={{ position: "absolute", bottom: "20px", right: "20px" }}
-                >
-                    <AddIcon />
-                </Fab>
+                    <Fab
+                        color="primary"
+                        aria-label="add"
+                        onClick={handleOpenForm}
+                        sx={{
+                            position: "absolute",
+                            bottom: "20px",
+                            right: "20px",
+                        }}
+                    >
+                        <AddIcon />
+                    </Fab>
 
-                <AddForm
-                    open={openForm}
-                    onClose={handleCloseForm}
-                    onAdd={handleSubmitForm}
-                />
+                    <AddForm
+                        open={openForm}
+                        onClose={handleCloseForm}
+                        onAdd={handleSubmitForm}
+                    />
 
-                <DeleteAlert
-                    open={openDeleteAlert}
-                    onDelete={(event: React.FormEvent<HTMLFormElement>) => {
-                        event.preventDefault();
-                        setRows(rows.filter((row) => row.id !== deleteId));
-                        handleCloseDeleteWarning();
-                    }}
-                    onClose={handleCloseDeleteWarning}
-                />
+                    <DeleteAlert
+                        open={openDeleteAlert}
+                        onDelete={(event: React.FormEvent<HTMLFormElement>) => {
+                            event.preventDefault();
+                            setRows(rows.filter((row) => row.id !== deleteId));
+                            handleCloseDeleteWarning();
+                        }}
+                        onClose={handleCloseDeleteWarning}
+                    />
 
-                <Notify 
-                    open={openNotify}
-                    setOpen={setOpenNotify}
-                    text={textNotify}
-                />
-            </Box>
+                    <Notify
+                        open={openNotify}
+                        setOpen={setOpenNotify}
+                        text={textNotify}
+                    />
+                </Box>
+            </ThemeProvider>
         </>
     );
 }

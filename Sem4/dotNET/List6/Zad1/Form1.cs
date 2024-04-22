@@ -39,7 +39,7 @@ namespace Zad1
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
-
+            DzienneCheck.Checked = !UzupelniajaceCheck.Checked;
         }
 
         private void AnulujButton_Click(object sender, EventArgs e)
@@ -49,10 +49,19 @@ namespace Zad1
 
         private void AkceptujButton_Click(object sender, EventArgs e)
         {
-            Result resForm = new Result();
-            resForm.FormClosed += (s, args) => this.Show();
-            this.Hide();
-            resForm.Show();
+            //Result resForm = new Result();
+            //resForm.FormClosed += (s, args) => this.Show();
+            //this.Hide();
+            //resForm.Show();
+
+            MessageBox.Show(NazwaText.Text + "\n" + AdresText.Text + "\n" + CyklNaukiCombo.Text + "\n" + (DzienneCheck.Checked == true ? "\nDzienne" : (UzupelniajaceCheck.Checked == true? "\nUzupe³niaj¹ce" : "")), "Uczelnia");
+
+            this.Close();
+        }
+
+        private void DzienneCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            UzupelniajaceCheck.Checked = !DzienneCheck.Checked;
         }
     }
 }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+	
+    <configuration>
+        <appSettings>
+            <add key="StringParam" value="Hello, World!" />
+            <add key="IntParam" value="123" />
+            <add key="BoolParam" value="true" />
+        </appSettings>
+    </configuration>
+
+</Project>

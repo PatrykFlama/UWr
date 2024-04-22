@@ -1,0 +1,1 @@
+* jak przekazywać informacje do osobnego formularza?

@@ -318,7 +318,7 @@ panel jest niewidocznym elementem, który pozwala na rozmieszczanie jego podelem
 
 # Wykład 7
 ## Plik konfiguracyjny aplikacji dotnet - App config
-w tym pliku mamy np wersję framworku  
+w tym pliku mamy np wersję framworku (jeżeli nie mamy pliku to tworzymy App.config)  
 Po zbudowaniu aplikacji plik konfiguracyjny ma nazwę odpowiadającą kompilatowi z dodatkowym rozszrzeniem .config  
 > Nazwę kompilatu możemy zmienić w ustawieniach projektu (prawym na projekt -> ustawienia)  
 

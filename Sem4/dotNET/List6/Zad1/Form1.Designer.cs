@@ -135,6 +135,7 @@
             DzienneCheck.TabIndex = 1;
             DzienneCheck.Text = "Dzienne";
             DzienneCheck.UseVisualStyleBackColor = true;
+            DzienneCheck.CheckedChanged += DzienneCheck_CheckedChanged;
             // 
             // CyklNaukiCombo
             // 
@@ -189,17 +190,17 @@
 
         #endregion
 
-        private GroupBox UczelniaBox;
-        private GroupBox RodzajStudiowBox;
-        private TextBox AdresText;
-        private TextBox NazwaText;
-        private CheckBox UzupelniajaceCheck;
-        private CheckBox DzienneCheck;
-        private ComboBox CyklNaukiCombo;
-        private Label AdresLabel;
-        private Label NazwaLabel;
-        private Label label3;
-        private Button AkceptujButton;
-        private Button AnulujButton;
+        public GroupBox UczelniaBox;
+        public GroupBox RodzajStudiowBox;
+        public TextBox AdresText;
+        public TextBox NazwaText;
+        public CheckBox UzupelniajaceCheck;
+        public CheckBox DzienneCheck;
+        public ComboBox CyklNaukiCombo;
+        public Label AdresLabel;
+        public Label NazwaLabel;
+        public Label label3;
+        public Button AkceptujButton;
+        public Button AnulujButton;
     }
 }

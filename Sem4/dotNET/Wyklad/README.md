@@ -29,6 +29,9 @@
     - [ComboBox](#combobox)
   - [GDI](#gdi)
     - [Custom Control](#custom-control)
+- [WPF .NET (Windows Presentation Foundation)](#wpf-net-windows-presentation-foundation)
+  - [WPF](#wpf)
+    - [Binding](#binding)
 
 
 # Wykład 3
@@ -460,4 +463,87 @@ public ComboBox.ObjectCollection Items {
 }
 ```
 
+# WPF .NET (Windows Presentation Foundation)
+microsoft stworzył jeszcze WCF i WWF  
+WPF nie jest super wygodny w użytkowaniu (design piszemy w microsoftowej modyfikacji XML - XAML), a do tworzenia aplikacji na Windows mamy oprócz WinForms też **Electron** (np VScode), **Tauri**; więc WPF nie jest polecany do aplikacji desktopowych i nikt go zbytnio nie chce używać   
+Nowym wymysłem microsoft było **UWP** (universal windows platform), które pozwalało na pisanie aplikacji zarówno na windowsa jak i xboxa
 
+> Xamarin
+Framework do tworzenia aplikacji mobilnych, pozwala pisać w C#, korzysta z WPF. Też był dość problematyczny, aż microsoft wchłonął go do siebie i zrobił z niego **MAUI** (multi-platform app UI), które pozwala na pisanie aplikacji na platformy (windows, mac, linux, android, ios)  
+
+> Avalonia
+**Avalonia** UI to framework do tworzenia aplikacji na windows, mac, linux, android, ios, *webassembly*  
+wydaje się być bardzo przyszłościowa (ale nie wiadomo co się z nią stanie)
+
+## WPF
+zamiast pliku głównego Main.cs mamy App.xaml  
+masakracja - wszystkie właściwości podajemy jak string, nie wiadomo jaki więc jest oczekiwany typ/zawartość stringa (np 4 liczyby po przecinku)  
+WPF rozróżnia kontenery i elementy (każdy element musi mieć jakiś kontener):  
+* StackPanel (rozkłada elementy w pionie)
+* Canvas (pozwala na rysowanie elementów w dowolnym miejscu, za pomocą np `Canvas.Left="80"`)
+* Grid (posiada właściwość `ShowGridLines`)
+  * do definicji kolumn i wierszy korzsytamy z <Grid.ColumnDefinition> a w środku dla każdej kolmnt <ColumnDefinition Width="*"> gdzie `*` to równomierny rozkład (możemy dać `2*`) 
+  * do elementów mamy udostępnione właściwości `Grid.Column="0"` i `Grid.Row="0"`
+ciekawą własnością WPF jest atrybut `Content` dla każdego elementu, który pozwala wrzucić do niego inne elementy jako zawartość, np elipsa w przycisku:  
+
+```xml
+<Button Name="Button1" Click="Button_Click">
+    <Button.ContentTemplate>
+        <DataTemplate>
+            <StackPanel>
+                <Ellipse Fill="Red" Width="100" Height="100"/>
+            </StackPanel>
+        </DataTemplate>
+    </Button.ContentTemplate>
+</Button>
+```
+
+do elemtów możemy dodać content <ELEMENT.LayoutTransform>  
+mamy też animacja, które mogą być wywołane triggerem i modyfikowane timerem `Storyboard`
+
+### Binding
+> tworzymy nowy model (osobny plik nowa klasa), z właściwością Name
+w głównym pliku:
+```cs
+this._model = new Klasa();
+this._model.Name = "abc";
+this.DataContext = this._model;
+```
+
+teraz mamy dostęp do pól wewnątrz tej klasy w XAMLu (np `Text="{Binding Path=Imie}"`)  
+za pomocą binding przypisujemy wartość poprzez refleksę (referencję)
+
+problem: jeżeli w kodzie, już po utworzeniu obiektu w interfejsie użytkownika, zmienimy wartość pola, to nie zostanie ona zaktualizowana w interfejsie użytkownika (nie ma odświeżania)  
+naprawiamy to za pomocą modelu zdarzeń `INotifyPropertyChanged`  
+```cs
+public class Klasa : INotifyPropertyChanged {
+    private string _name;
+    public string Name {
+        get { return this._name; }
+        set {
+            this._name = value;
+            this.OnPropertyChanged1("Name");            // staryszy sposób
+            this.OnPropertyChanged1(nameof(Name));      // start sposób
+            this.OnPropertyChanged2();                  // najlepiej
+        }
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    protected void OnPropertyChanged1(string propertyName) {
+        if(this.PropertyChanged != null) {
+            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    protected void OnPropertyChanged2(
+        [CallerMemberName]
+        string propertyName
+    ) {
+        
+        if(this.PropertyChanged != null) {
+            this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}
+```

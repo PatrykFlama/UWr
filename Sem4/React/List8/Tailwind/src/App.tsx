@@ -116,7 +116,7 @@ export default function App() {
       <Navbar elements={['Home', 'About', 'Services', 'Team', 'Blog', 'Contact']} />
       <Header name={companyData.name} slogan={companyData.slogan} />
 
-      <div className={`rounded-lg my-5 bg-text dark:bg-contentCardBackground even:bg-red dark:even:bg-red`}>
+      <div className={`rounded-lg my-5 bg-text dark:bg-contentCardBackground`}>
         <About companyData={companyData.about} />
         <Services services={companyData.services} />
         <TeamMembers teamMembers={companyData.teamMembers} />

@@ -1,0 +1,17 @@
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\bin\Debug\net8.0-windows\Zad4.exe
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\bin\Debug\net8.0-windows\Zad4.deps.json
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\bin\Debug\net8.0-windows\Zad4.runtimeconfig.json
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\bin\Debug\net8.0-windows\Zad4.dll
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\bin\Debug\net8.0-windows\Zad4.pdb
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\Zad4.Form1.resources
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\Zad4.csproj.GenerateResource.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\Zad4.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\Zad4.AssemblyInfoInputs.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\Zad4.AssemblyInfo.cs
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\Zad4.csproj.CoreCompileInputs.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\Zad4.sourcelink.json
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\Zad4.dll
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\refint\Zad4.dll
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\Zad4.pdb
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\Zad4.genruntimeconfig.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List7\Zad4\obj\Debug\net8.0-windows\ref\Zad4.dll

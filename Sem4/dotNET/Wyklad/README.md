@@ -468,15 +468,15 @@ microsoft stworzył jeszcze WCF i WWF
 WPF nie jest super wygodny w użytkowaniu (design piszemy w microsoftowej modyfikacji XML - XAML), a do tworzenia aplikacji na Windows mamy oprócz WinForms też **Electron** (np VScode), **Tauri**; więc WPF nie jest polecany do aplikacji desktopowych i nikt go zbytnio nie chce używać   
 Nowym wymysłem microsoft było **UWP** (universal windows platform), które pozwalało na pisanie aplikacji zarówno na windowsa jak i xboxa
 
-> Xamarin
+> Xamarin  
 Framework do tworzenia aplikacji mobilnych, pozwala pisać w C#, korzysta z WPF. Też był dość problematyczny, aż microsoft wchłonął go do siebie i zrobił z niego **MAUI** (multi-platform app UI), które pozwala na pisanie aplikacji na platformy (windows, mac, linux, android, ios)  
 
-> Avalonia
+> Avalonia  
 **Avalonia** UI to framework do tworzenia aplikacji na windows, mac, linux, android, ios, *webassembly*  
 wydaje się być bardzo przyszłościowa (ale nie wiadomo co się z nią stanie)
 
 ## WPF
-zamiast pliku głównego Main.cs mamy App.xaml  
+zamiast pliku głównego Main.cs mamy App.xaml   
 masakracja - wszystkie właściwości podajemy jak string, nie wiadomo jaki więc jest oczekiwany typ/zawartość stringa (np 4 liczyby po przecinku)  
 WPF rozróżnia kontenery i elementy (każdy element musi mieć jakiś kontener):  
 * StackPanel (rozkłada elementy w pionie)

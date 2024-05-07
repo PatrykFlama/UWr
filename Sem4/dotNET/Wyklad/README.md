@@ -32,6 +32,10 @@
 - [WPF .NET (Windows Presentation Foundation)](#wpf-net-windows-presentation-foundation)
   - [WPF](#wpf)
     - [Binding](#binding)
+- [SQL Server](#sql-server)
+  - [SQL Server Management Studio](#sql-server-management-studio)
+    - [tworzenie nowej tabeli](#tworzenie-nowej-tabeli)
+    - [Przykład](#przykład)
 
 
 # Wykład 3
@@ -546,4 +550,103 @@ public class Klasa : INotifyPropertyChanged {
         }
     }
 }
+```
+
+
+
+# SQL Server
+[dokumentacja](https://learn.microsoft.com/en-us/sql/sql-server/editions-and-components-of-sql-server-2019?view=sql-server-ver16#sql-server-editions)  
+SQL Server Developer edition - darmowa wersja do celów testowych i developerskich (z tego będziemy korzystać)  
+SQL Server Express - darmowa wersja do małych aplikacji, do 10GB bazy danych  
+SQL Server Management Studio - narzędzie do zarządzania bazą danych (z tego będziemy korzytać)
+
+## SQL Server Management Studio  
+-> W trakcie tworzenia bazy danych możemy wybrać:
+* różne typy baz danych (które możemy wybrać tworząd nową db w SSMS) 
+* wersję localdb, która sama zatrzyma naszą bazę danych przy dłuższym braku aktywności (nie zżera zasobów)  
+* sposób uwierzytelniania
+  * Windows Authentication - korzystamy z konta windowsowego (system kerberos)  
+  
+-> Właściwości instalacji samego serwera (zakładka properties, po zmianie ustawień trzeba zerstartować serwer)
+
+> 'pliki' bazy danych  
+server->logins - użytkownicy
+databases->system databases - domyślne serwerowe bazy danych (domyślnie łączymy się z bazą danych master)
+databases->[ nazwa ]->tables - zbiory danych
+databases->[ nazwa ]->security->users - użytkownicy przypisani do bazy danych (możemy nimi zarządzać w oknie properties)
+
+> wyróżniamy 2 typy kwerend: administracyjne oraz zapytania (np `SELECT * FROM sys.tables`)  
+
+### tworzenie nowej tabeli
+typy danych:
+* char(n) - stała długość n znaków, zapisana bezpośrednio we wierszu (zawsze zajmuje dokładnie n znaków)
+* varchar(n) - zmienna długość n znaków, zapisana w osobnym miejscu, przez referencję
+
+typy dla identyfikatorów:
+* int - 4 bajty
+* long - 8 bajtów
+* uniqueidentifier - GUID (128 bitów)  
+w zakładce properties możemy nadać automatyczne tworzenie identyfikatora
+
+pułapka: dla identyfikatora _int_ - za mało np dla tranzakcji bankowych (bodajże allegro miało z tym problem); więc _long_ brzmi sensownie, ale gdybyśmy mieli dwie bazy danych A i B, które korzystają z _long_ i byśmy chcieli je zmergeować, istnieje spore prawdopodobieństwo że identyfikatory będą się powtarzać, i trzebaby przejść przez trudny proces remapowania identyfikatorów, które kolidują; wtedy _GUID_ brzmi tym sensowniej  
+
+identyfikatory są klastrowane - na dysku leżą wszystkie koło siebie  
+
+klucze obce (foreign keys) ustawiamy w databases->[ baza danych ]->tables->[ tabela ]->keys  
+
+
+### Przykład
+tworzymy nowy projekt _console app (.net framework)_   
+[strona zbierająca referencje ciągów połączeń do baz danych](https://www.connectionstrings.com/)
+nawiązanie połączenia z bazą danych:  
+
+```cs
+try {
+    // korzystamy z using, aby nasze połączenie zostało zamknięte po wyjściu z bloku
+    using ( SqlConnection conn = new SqlConnection (
+        @"server=.\sql2019;database=dbname;integrated security=true;trust_server_certificate=true;")
+    ) {
+        conn.Open();
+        Console.WriteLine("Connected to database");
+    }
+} catch (Exception e) {
+    Console.WriteLine(e.Message);
+}
+```
+
+jednak wielokrotne łączenie się z bazą danych jest niewydajne (wielokrotne uwierzytelniane, etc)  
+więc jest wbudowany proces _pooling_, który zapamiętuje ostatnie połączenie i je wykorzystuje (jeżeli nie jest zbyt stare)  
+nie zawsze warto zadawać pytania do baz danych asynchronicznie, więc udostępnione są 2 typy metod zadawania zapytań  
+
+```cs
+try {
+    List<Person> people = new List<Person>();
+
+    using ( SqlConnection conn = new SqlConnection (
+        @"server=.\sql2019;database=dbname;integrated security=true;trust_server_certificate=true;")
+    ) {
+        conn.Open();
+
+        using (var command = new SqlCommand("..."))
+        using (var reader = command.ExecuteReader()) {
+            while (reader.Read()) {
+                Console.WriteLine(reader.GetString(0)); // indeks kolumny
+                Console.WriteLine(reader["column_name"]);
+
+                Person person = new Person();
+                person.Name = reader["name"];       // już skonwertowane na typy platformy dotnet
+                person.Surname = reader["surname"];
+                person.ID = reader["ID"];
+                people.Add(person);
+            }
+        }
+
+        // tutaj mamy gotowe List<Person>
+    }
+} catch (Exception e) {
+    Console.WriteLine(e.Message);
+}
+
+// .......
+class Person {...}
 ```

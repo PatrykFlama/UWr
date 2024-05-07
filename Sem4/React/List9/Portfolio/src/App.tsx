@@ -1,25 +1,62 @@
-import modules from './App.module.scss'
-import { Header } from './components/Header/Header'
+import "./App.scss";
+import { ThemeProvider } from "./providers/Theme";
+import ThemeWrapper from "./components/ThemeWrapper/ThemeWrapper";
+// import { createTheme, ThemeProvider as MuiThemeProvider } from "@mui/material";
+
+import {
+    RouterProvider,
+    createBrowserRouter,
+} from "react-router-dom";
+
+import RootLayout from "./layouts/RootLayout/RootLayout";
+import About from "./routes/About/About";
+import Projects from "./routes/Projects/Projects";
+import Contact from "./routes/Contact/Contact";
+
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <RootLayout />,
+        children: [
+            {
+                path: "/",
+                element: <About />,
+            },
+            {
+                path: "/about",
+                element: <About />,
+            },
+            {
+                path: "/projects",
+                element: <Projects />,
+            },
+            {
+                path: "/contact",
+                element: <Contact />,
+            },
+        ],
+    },
+]);
+
+// import { grey } from '@mui/material/colors';
+// const muitheme = createTheme({
+//     palette: {
+//         primary: {
+//             main: grey[900],
+//         },
+//     },
+// });
 
 function App() {
-  return (
-    <>
-        <Header 
-          title='Patryk Flama'
-          content={[
-            { title: 'Home', ref: '#home' },
-            {
-                title: 'About',
-                ref: '#about',
-                subMenu: [
-                    { title: 'Me', ref: '#me' },
-                    { title: 'You', ref: '#you' },
-                ],
-            },
-            { title: 'Contact', ref: '#contact' },
-        ]} />
-    </>
-  )
+    return (
+        <ThemeProvider>
+            <ThemeWrapper>
+                {/* <MuiThemeProvider theme={muitheme}> */}
+                    <RouterProvider router={router} />
+                {/* </MuiThemeProvider> */}
+            </ThemeWrapper>
+        </ThemeProvider>
+    );
 }
 
-export default App
+export default App;

@@ -6,7 +6,7 @@ import { Switch } from "@mui/material";
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 
 interface IHeader {
-    navigation: any[];
+    navigation: INavbar["content"];
 }
 
 export function Header({ navigation }: IHeader) {

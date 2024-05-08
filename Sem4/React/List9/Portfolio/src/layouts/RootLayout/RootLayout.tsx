@@ -13,8 +13,9 @@ export default function RootLayout() {
             <Header 
                 navigation={[
                     { label: "About", ref: "/about" },
-                    { label: "Contact", ref: "/contact" },
                     { label: "Projects", ref: "/projects" },
+                    { label: "Experience", ref: "/experience" },
+                    { label: "Contact", ref: "/contact" },
                 ]}
             />
 

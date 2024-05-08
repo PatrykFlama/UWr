@@ -8,3 +8,8 @@
 
 ## plan of work
 no work
+
+## TODO
+* langs in projects
+* links to media
+* 'contact' sounds... bad

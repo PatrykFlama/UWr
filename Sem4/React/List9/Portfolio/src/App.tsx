@@ -1,7 +1,6 @@
 import "./App.scss";
 import { ThemeProvider } from "./providers/Theme";
 import ThemeWrapper from "./components/ThemeWrapper/ThemeWrapper";
-// import { createTheme, ThemeProvider as MuiThemeProvider } from "@mui/material";
 
 import {
     RouterProvider,
@@ -12,6 +11,7 @@ import RootLayout from "./layouts/RootLayout/RootLayout";
 import About from "./routes/About/About";
 import Projects from "./routes/Projects/Projects";
 import Contact from "./routes/Contact/Contact";
+import Experience from "./routes/Experience/Experience";
 
 const router = createBrowserRouter([
     {
@@ -31,6 +31,10 @@ const router = createBrowserRouter([
                 element: <Projects />,
             },
             {
+                path: "/experience",
+                element: <Experience />,
+            },
+            {
                 path: "/contact",
                 element: <Contact />,
             },
@@ -38,22 +42,11 @@ const router = createBrowserRouter([
     },
 ]);
 
-// import { grey } from '@mui/material/colors';
-// const muitheme = createTheme({
-//     palette: {
-//         primary: {
-//             main: grey[900],
-//         },
-//     },
-// });
-
 function App() {
     return (
         <ThemeProvider>
             <ThemeWrapper>
-                {/* <MuiThemeProvider theme={muitheme}> */}
-                    <RouterProvider router={router} />
-                {/* </MuiThemeProvider> */}
+                <RouterProvider router={router} />
             </ThemeWrapper>
         </ThemeProvider>
     );

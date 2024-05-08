@@ -1,5 +1,6 @@
 import modules from './About.module.scss';
-import { Typography, Container } from '@mui/material';
+import { Typography } from '@mui/material';
+import totallyme from '../../assets/hehe.jpg';
 
 function About() {
     return (
@@ -16,7 +17,7 @@ function About() {
                 </Typography>
             </div>
             <div className={modules.right}>
-                <img src="https://i.pinimg.com/736x/31/e2/a1/31e2a17fc75dd7d332086446d8ebb40d.jpg" alt="To sem jo" />
+                <img src={totallyme} alt="To sem jo" />
             </div>
         </div>
     );

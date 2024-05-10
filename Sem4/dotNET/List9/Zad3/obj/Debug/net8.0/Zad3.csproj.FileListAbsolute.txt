@@ -1,0 +1,15 @@
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\bin\Debug\net8.0\Zad3.exe
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\bin\Debug\net8.0\Zad3.deps.json
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\bin\Debug\net8.0\Zad3.runtimeconfig.json
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\bin\Debug\net8.0\Zad3.dll
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\bin\Debug\net8.0\Zad3.pdb
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\obj\Debug\net8.0\Zad3.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\obj\Debug\net8.0\Zad3.AssemblyInfoInputs.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\obj\Debug\net8.0\Zad3.AssemblyInfo.cs
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\obj\Debug\net8.0\Zad3.csproj.CoreCompileInputs.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\obj\Debug\net8.0\Zad3.sourcelink.json
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\obj\Debug\net8.0\Zad3.dll
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\obj\Debug\net8.0\refint\Zad3.dll
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\obj\Debug\net8.0\Zad3.pdb
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\obj\Debug\net8.0\Zad3.genruntimeconfig.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad3\obj\Debug\net8.0\ref\Zad3.dll

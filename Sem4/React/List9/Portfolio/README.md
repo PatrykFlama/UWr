@@ -1,15 +1,13 @@
 # Portfolio
-## nice websites
-* https://safetpojskic.com
-* https://om-sp.netlify.app
+ya betta visit [my portfolio](https://www.patrykflama.com) to see the final result.
 
-## libs
-* shadcn
+# Pytania
+* jak dzielić na pliki:
+funkcję zwracającą routy podpinamy w głównym pliku, np app, a trzymamy ją w jakimś osobnym folderze routes/funkcja - gdzie lepiej podawać parametry do ścieżki?  
+zadasa podawania wszystkich danych w jednym pliku trochę traci tutaj sens, i raczje lepiej to wygląda w dedykowanym pliku dla ścieżki?
 
-## plan of work
-no work
+* jak ładować strony w lazy sposób
+samo `const Componene = React.lazy(() => import('./routes/Componene/Componene'));` tworzy błąd ładowania przy pierwszym załadowaniu
 
-## TODO
-* langs in projects
-* links to media
-* 'contact' sounds... bad
+* jak lepiej importować cały folder zdjęć
+ 

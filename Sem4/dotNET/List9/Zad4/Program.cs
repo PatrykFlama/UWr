@@ -23,13 +23,14 @@ foreach (string culture in cultures)
                             $"dni którtkie: {daysShort}\n" +
                             $"bieżąca data: {currentDate}";
 
-    // Sprawdzenie, czy używać MessageBox czy Console.WriteLine
-    if (culture == "ar" || culture == "ru")
-    {
-        MessageBox.Show(infoMessage, "Informacje o dacie", MessageBoxButtons.OK, MessageBoxIcon.Information);
-    }
-    else
-    {
-        Console.WriteLine(infoMessage);
-    }
+    //if (culture == "ar" || culture == "ru")
+    //{
+    //    MessageBox.Show(infoMessage, "Informacje o dacie", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    //}
+    //else
+    //{
+    //    Console.WriteLine(infoMessage);
+    //}
+
+    Console.WriteLine(infoMessage);
 }

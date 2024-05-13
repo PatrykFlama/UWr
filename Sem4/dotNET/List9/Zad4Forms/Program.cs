@@ -42,7 +42,6 @@ namespace Zad4Forms
                                         $"dni którtkie: {daysShort}\n" +
                                         $"bie¿¹ca data: {currentDate}";
 
-                // Sprawdzenie, czy u¿ywaæ MessageBox czy Console.WriteLine
                 if (culture == "ar" || culture == "ru")
                 {
                     MessageBox.Show(infoMessage, "Informacje o dacie", MessageBoxButtons.OK, MessageBoxIcon.Information);

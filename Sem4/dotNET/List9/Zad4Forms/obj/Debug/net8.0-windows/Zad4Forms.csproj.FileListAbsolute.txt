@@ -1,0 +1,17 @@
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\bin\Debug\net8.0-windows\Zad4Forms.exe
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\bin\Debug\net8.0-windows\Zad4Forms.deps.json
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\bin\Debug\net8.0-windows\Zad4Forms.runtimeconfig.json
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\bin\Debug\net8.0-windows\Zad4Forms.dll
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\bin\Debug\net8.0-windows\Zad4Forms.pdb
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\Zad4Forms.Form1.resources
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\Zad4Forms.csproj.GenerateResource.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\Zad4Forms.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\Zad4Forms.AssemblyInfoInputs.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\Zad4Forms.AssemblyInfo.cs
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\Zad4Forms.csproj.CoreCompileInputs.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\Zad4Forms.sourcelink.json
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\Zad4Forms.dll
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\refint\Zad4Forms.dll
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\Zad4Forms.pdb
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\Zad4Forms.genruntimeconfig.cache
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad4Forms\obj\Debug\net8.0-windows\ref\Zad4Forms.dll

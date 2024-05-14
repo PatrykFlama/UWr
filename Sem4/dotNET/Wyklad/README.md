@@ -34,8 +34,18 @@
     - [Binding](#binding)
 - [SQL Server](#sql-server)
   - [SQL Server Management Studio](#sql-server-management-studio)
+  - [SQL Server Profiler](#sql-server-profiler)
     - [tworzenie nowej tabeli](#tworzenie-nowej-tabeli)
     - [Przykład](#przykład)
+    - [Zagrożenie SQL Injection](#zagrożenie-sql-injection)
+  - [ORMy](#ormy)
+    - [Linq2SQL](#linq2sql)
+      - [Read](#read)
+      - [Create](#create)
+      - [Update](#update)
+      - [Delete](#delete)
+      - [Relacje](#relacje)
+    - [Entity Framework](#entity-framework)
 
 
 # Wykład 3
@@ -574,8 +584,12 @@ server->logins - użytkownicy
 databases->system databases - domyślne serwerowe bazy danych (domyślnie łączymy się z bazą danych master)
 databases->[ nazwa ]->tables - zbiory danych
 databases->[ nazwa ]->security->users - użytkownicy przypisani do bazy danych (możemy nimi zarządzać w oknie properties)
+databases->[ nazwa ]->diagrams - diagramy bazy danych
 
 > wyróżniamy 2 typy kwerend: administracyjne oraz zapytania (np `SELECT * FROM sys.tables`)  
+
+## SQL Server Profiler
+narzędzie do monitorowania zapytań do bazy danych (np do debugowania)
 
 ### tworzenie nowej tabeli
 typy danych:
@@ -649,4 +663,219 @@ try {
 
 // .......
 class Person {...}
+```
+(tak, kod zawsze jest tak rozległy - wielokrotnie zagnieżdżony)  
+
+
+ciąg połączenia powinien być przechowywany w pliku konfiguracyjnym, a nie w kodzie (właściwość `App.config` w `<appSettings>` lub `<connecctionStrings>` wraz z _providerName_ (np SqlConnection))  
+
+### Zagrożenie SQL Injection
+![Exploits of a Mom](images/sqlinjectionxkcd.png)
+niebezpieczne zapytanie:
+```cs
+string query = "SELECT * FROM table WHERE name = '" + name + "'";
+```
+bezpieczne zapytanie:
+```cs
+string query = "SELECT * FROM table WHERE name = @name";
+using (var command = new SqlCommand(query, conn)) {
+    command.Parameters.Add(new SqlParameter("@name", name));
+    command.Parameters.AddWithValue("@name", name);
+}
+```
+
+... w praktyce nie korzysta się z takiego interfejsu niskopoziomowego
+
+## ORMy
+* linq2sql - starsza wersja, nie jest już rozwijana
+* Entity Framework - ORM (Object-Relational Mapping) - mapowanie obiektów na bazy danych
+* dapper - bardzo szybkie mapowanie obiektów na bazy danych, ale nie jest ORMem (nie ma relacji między tabelami)
+
+upraszczają one kod, ale tłumaczenie zapytań kosztuje nas czas - i ten kosz może być bardzo duży
+
+### Linq2SQL
+narzędzie commandlinowe: `sqlmetal.exe`  
+add new item->c#items->data->linq2sql (trzeba doinstalować)  
+tworzy się plik `.dbml` (data base markup language); nowe okno z kótrego będziemy korzystać to **Server Explorer**. aby połączyć się z bazą danych, klikamy prawym na _Data Connections_ i _Add Connection_; teraz możemy dodać nasze tabele do linqu2sql (przeciągamy je z _Server Explorer_ do okna _linq2sql_)  
+teraz możemy korzystać z naszych tabel jak z klas, np `db.Persons`, w naszym kodzie
+
+#### Read
+```cs
+using (var context = new DBNameDataContext) {
+    // context udostępnia intefejsy IQueryable i IEnumerable
+    var people = from p in context.Persons
+                 where p.Name == "abc"
+                 select p;
+    // --------------------
+    var people = context.Persons.Where(p => p.Name == "abc");
+
+    foreach (var p in people) {
+        Console.WriteLine(p.Name);
+    }
+}
+```
+
+jak dodamy breakpoint w linii zapytania do naszej bazy i odpalimy debugger, to po naciśnięciu _F10_ zobaczymy zapytanie SQL, które zostało wygenerowane przez nasz kod   
+
+jakie są ograniczenia linq2sql? jak skorzystamy z funkcji która nie jest obsługiwana przez linq2sql, to nasz kod nie zadziała (np `context.Persons.Where(p => p.Name.Normalize.Contains("abc"))`) - zapytanie nie zostanie przetłumaczone
+
+#### Create
+```cs
+using (var context = new DBNameDataContext) {
+    Person p = new Person();
+    p.Name = "abc";
+    p.Surname = "def";
+    context.Persons.InsertOnSubmit(p);
+    context.SubmitChanges();
+}
+```
+
+#### Update
+```cs
+using (var context = new DBNameDataContext) {
+    Person p = context.Persons.First(x => x.Name == "abc");
+    Person p = context.Persons.FirstOrDefault(x => x.Name == "abc");
+    p.Name = "xyz";
+    context.SubmitChanges();
+}
+```
+
+#### Delete
+```cs
+using (var context = new DBNameDataContext) {
+    Person p = context.Persons.First(x => x.Name == "abc");
+    context.Persons.DeleteOnSubmit(p);
+    context.SubmitChanges();
+}
+```
+
+#### Relacje
+```cs
+using (var context = new DBNameDataContext) {
+    var addresses = context.Addresses;
+
+    // n+1 problem
+    foreach (var a in addresses) {
+        Console.WriteLine($"{a.City} {a.Person.Name}");
+    }
+}
+```
+jak to działa: wstępnie `a.Person` jest `null`, ale po zapytaniu do bazy danych zostanie on zmapowany na obiekt Person, który jest powiązany z danym adresem - zcache'owany 
+**n+1 problem** - zapytanie do bazy danych za każdym razem, kiedy chcemy uzyskać powiązany obiekt (np `foreach (var a in addresses) { Console.WriteLine($"{a.City} {a.Person.Name}"); }`) <=> w tym zapytaniu mamy n zapytań o powiązane obiekty n oraz 1 zapytanie o adresy, tego problemu nie da się naprawić w linq2sql
+
+
+### Entity Framework
+2 wersje: 
+* EF6 - starsza, nie jest już zbytnio rozwijana, możemy jej używać w aplikacjach klasycznych dotnet oraz w dotnet core
+* EF Core - nowsza, aktywnie rozwijana, możemy jej używać tylko w dotnet core
+
+nie jest to część biblioteki standardowej, więc musimy ją zainstalować za pomocą NuGet  
+Entity Framework potrzebuje pustej bazy danych, którą sam sobie zainicjalizuje (tworzy tabele, klucze, etc)
+
+tworzymy własne klasy `Person` i `Address` (które będą mapowane na tabele w bazie danych)  
+korzystamy z właściowści nawigacyjnych, pytanie jak rozwiązuje się problem n+1?  
+entity framework sam wygeneruje podklasy już w trakcie działania programu
+```cs
+class Person {
+    public int ID { get; set; }
+    public string Name { get; set; }
+    public string Surname { get; set; }
+
+    public virtual ICollection<Address> Addresses { get; set; }
+}
+
+class Address {
+    public int ID { get; set; }
+    public string City { get; set; }
+    public int ID_PERSON { get; set; }
+    public Person Person { get; set; }
+}
+
+class DBNameContext : DbContext {
+    public DBNameContext() {}
+    public DBNameContext(string connectionString) : base(connectionString) {}
+    
+    public IDbSet<Person> Persons { get; set; }
+    public IDbSet<Address> Addresses { get; set; }
+}
+```
+
+przykład zastosowania
+```cs
+using (var context = new DBNameContext) {
+    var people = context.Persons.Where(p => p.Name == "abc");
+    context.Person.Add(new Person { Name = "abc", Surname = "def" });
+
+    foreach (var p in people) {
+        Console.WriteLine(p.Name);
+    }
+}
+
+// inicjalizacja bazy danych
+Database.SetInitializer<DBNameContext>(new DropCreateDatabaseIfModelChanges<DBNameContext>());
+
+// dodawanie nowych tabel
+using (var context = new DBNameContext) {
+    context.Database.CreateIfNotExists();
+}
+```
+
+po dodaniu tabeli widizmy że 1. klasa Person została zamieniona na tabelę People 2. dodane zostały konwencje dla relacji między tabelami (np `ID_PERSON` w tabeli Address)  
+
+konfiguracja relacji między tabelami (odpala się tylko raz, przy odpalaniu programu)
+```cs
+protected overrdie void OnModerCreating(
+    DBModelBuilder modelBuilder
+) {
+    modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();      // usuwa konwencję dla nazw tabel
+    
+    modelBuilder.Entity<Address>
+        .Property(a => a.City)
+        .HasMaxLength(50);
+
+    modelBuilder.Entity<Address>()
+        .HasRequired(a => a.Person)     // każdy adres ma swoją osobę
+        .WithMany(p => p.Addresses)     // każda osoba ma wiele adresów
+        .HasForeignKey(a => a.ID_PERSON);   // klucz obcy
+}
+```
+
+
+> Rozwiązanie problemu n+1:  
+```cs
+var addresses = context.Addresses
+    .Include(a => a.Person)     // ściąga od razu wszystkie powiązane obiekty
+    .ToList();  // konwertuje od razu na listę, żeby zamknąć jestno połączenie i nie iterować się w pętli po nim
+
+foreach (var a in addresses) {
+    Console.WriteLine($"{a.City} {a.Person.Name}");
+}
+```
+więc zadaliśmy jedno zapytanie do bazy danych, które ściągnęło wszystkie powiązane obiekty
+
+kolejny problem: aktualizacja bazy danych, np chcemy dodać nową kolumną `bool isStudent` do tabeli `Person`    
+(normalnie musielibyśmy wstrzymać aplikację i odpalić jakiś srypt sql który by zmodyfikował naszą bazę)  
+natomiast w EF 
+
+```cs
+Database.SetInitializer<DBNameContext>(new MigrateDatabaseToLatestVersion<DBNameContext, Configuration>());
+
+// ----------------------------
+internal sealed class Configuration : DbMigrationsConfiguration<DBNameContext> {
+    public Configuration() {
+        AutomaticMigrationsEnabled = false;
+    }
+}
+```
+w konsoli PackageManager (powershell z exekami od naszych bibliotek) piszemy `enable-migrations`, `add-migration InitialMigration`, (jest też `update-database`)  
+generują się pliki w folderze `Migrations` - klasa `InitialMigration` udostępniająca metody `Up` i `Down` (do aktualizacji i cofania zmian)  
+
+> co jak wygenerowany kod migracji jest logicznie nieprawidłowy (np dodawanie nowej nienullowalnej kolumny bez domyślnej wartości)
+możemy ten automatycznie wygenerowany kod poprawić, np  
+wygeneruj nullowalną kolumnę, a następnie zamień null na domyślną wartość, i zamień ją na nienullowalną  
+
+```cs
+AddColumn("dbo.Persons", "isStudent", c => c.Boolean());
+Sql("UPDATE dbo.Persons SET isStudent = 0 WHERE isStudent IS NULL");
+AlterColumn("dbo.Persons", "isStudent", c => c.Boolean(nullable: false));
 ```

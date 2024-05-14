@@ -7,3 +7,4 @@ C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\obj\Debug\Zad5.c
 C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\obj\Debug\Zad5.csproj.CoreCompileInputs.cache
 C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\obj\Debug\Zad5.exe
 C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\obj\Debug\Zad5.pdb
+C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\obj\Debug\Zad5.ProjectInstaller.resources

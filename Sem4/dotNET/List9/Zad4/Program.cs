@@ -1,5 +1,5 @@
 ﻿using System.Globalization;
-
+using System.Windows.Forms;
 
 string[] cultures = { "en", "de", "fr", "ru", "ar", "cs", "pl" };
 
@@ -23,14 +23,14 @@ foreach (string culture in cultures)
                             $"dni którtkie: {daysShort}\n" +
                             $"bieżąca data: {currentDate}";
 
-    //if (culture == "ar" || culture == "ru")
-    //{
-    //    MessageBox.Show(infoMessage, "Informacje o dacie", MessageBoxButtons.OK, MessageBoxIcon.Information);
-    //}
-    //else
-    //{
-    //    Console.WriteLine(infoMessage);
-    //}
+    if (culture == "ar" || culture == "ru")
+    {
+        MessageBox.Show(infoMessage, "Informacje o dacie", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+    else
+    {
+        Console.WriteLine(infoMessage);
+    }
 
-    Console.WriteLine(infoMessage);
+    //Console.WriteLine(infoMessage);
 }

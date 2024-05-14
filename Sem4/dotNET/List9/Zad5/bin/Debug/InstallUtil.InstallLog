@@ -40,3 +40,58 @@ See the contents of the log file for the C:\Users\patry\Documents\Programming\UW
 The file is located at C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.InstallLog.
 
 The uninstall has completed.
+
+Running a transacted installation.
+
+Beginning the Install phase of the installation.
+See the contents of the log file for the C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.exe assembly's progress.
+The file is located at C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.InstallLog.
+
+An exception occurred during the Install phase.
+System.ComponentModel.Win32Exception: Access is denied
+
+The Rollback phase of the installation is beginning.
+See the contents of the log file for the C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.exe assembly's progress.
+The file is located at C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.InstallLog.
+
+The Rollback phase completed successfully.
+
+The transacted install has completed.
+
+Running a transacted installation.
+
+Beginning the Install phase of the installation.
+See the contents of the log file for the C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.exe assembly's progress.
+The file is located at C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.InstallLog.
+
+An exception occurred during the Install phase.
+System.Security.SecurityException: The source was not found, but some or all event logs could not be searched.  Inaccessible logs: Security.
+
+The Rollback phase of the installation is beginning.
+See the contents of the log file for the C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.exe assembly's progress.
+The file is located at C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.InstallLog.
+
+The Rollback phase completed successfully.
+
+The transacted install has completed.
+
+Running a transacted installation.
+
+Beginning the Install phase of the installation.
+See the contents of the log file for the C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.exe assembly's progress.
+The file is located at C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.InstallLog.
+
+The Install phase completed successfully, and the Commit phase is beginning.
+See the contents of the log file for the C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.exe assembly's progress.
+The file is located at C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.InstallLog.
+
+The Commit phase completed successfully.
+
+The transacted install has completed.
+
+
+The uninstall is beginning.
+See the contents of the log file for the C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.exe assembly's progress.
+The file is located at C:\Users\patry\Documents\Programming\UWr\Sem4\dotNET\List9\Zad5\bin\Debug\Zad5.InstallLog.
+
+The uninstall has completed.

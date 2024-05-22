@@ -11,4 +11,4 @@ samo `const Componene = React.lazy(() => import('./routes/Componene/Componene'))
 
 * jak lepiej importować cały folder zdjęć
  
- * jak ten tan stack
+* jak ten tan stack

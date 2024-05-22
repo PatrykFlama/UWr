@@ -1,5 +1,8 @@
 
 
+|1|2|3|4|5|6|7|8|9|10|
+|-|-|-|-|-|-|-|-|-|--|
+|x|x|x|x|x| | | | |  |
 
 ## Zad1
 Developer udostępnia wszystkie funkcjonalności z enterprize, ale licencja pozwala na wykorzystanie jej tylko do rozwoju oprogramowania
@@ -52,5 +55,45 @@ create table StudentAddress (
 );
 GO
 
+
+```
+
+
+## Zad4
+Problem pojawia się przy wielowątkowości, gdy to samo (lub podobne) zapytanie wywołamy w tym samym czasie, więc oba wywołania stwierdzą że rekordu brakuje w bazie danych i go dodadzą (podwójnie)  
+Aby temu zapobiegać możemy zastosować interfejs serializable do naszej tranzakcji
+
+```sql
+using (var scope = new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
+{
+    -- // ...
+    transaction.Commit();
+}
+```
+
+dodatkowo można wprowadzać różne zabezpieczenia na poziomie bazy danych, np słowa kluczowe `unique`, które mogą zmniejszyć prawdopodobieństwo duplikatów (im więcej rekordów musi być unikatowych, tym ciężej dodać duplikat)
+
+## Zad5
+```sql
+using (SqlConnection conn = new SqlConnection(connectionString))
+{
+    conn.Open();
+
+    // rozpoczynamy tranzakcję - w tym momencie stawiamy punkt powrotu
+    SqlTransaction transaction = conn.BeginTransaction();
+    
+    try
+    {
+        // operujemy na bazie danych
+
+        // commit zatwierdza tranzakcję
+        transaction.Commit();
+    }
+    catch (Exception ex)
+    {
+        // rollback cofa tranzakcję - cofa wszystkie zmiany w niej dokonane (od momentu rozpoczęcia)
+        transaction.Rollback();
+    }
+}
 
 ```

@@ -2,7 +2,12 @@
 
 |1|2|3|4|5|6|7|8|9|10|
 |-|-|-|-|-|-|-|-|-|--|
-|x|x|x|x|x| | | | |  |
+|x|x|x|x|x|X|X|X|X|~ |
+
+* zad 7 problem z tworzeniem dbml
+* EF problem ze stringiem łączącym do bazy danych (inicjalizacja)
+* w dapper simple crud jak korzystać z tranzakcji
+* dapper simplecrud problem z foreign key
 
 ## Zad1
 Developer udostępnia wszystkie funkcjonalności z enterprize, ale licencja pozwala na wykorzystanie jej tylko do rozwoju oprogramowania

@@ -46,6 +46,9 @@
       - [Delete](#delete)
       - [Relacje](#relacje)
     - [Entity Framework](#entity-framework)
+- [Win32API](#win32api)
+  - [Podstawy](#podstawy)
+  - [Obsługa komunikatów](#obsługa-komunikatów)
 
 
 # Wykład 3
@@ -879,3 +882,77 @@ AddColumn("dbo.Persons", "isStudent", c => c.Boolean());
 Sql("UPDATE dbo.Persons SET isStudent = 0 WHERE isStudent IS NULL");
 AlterColumn("dbo.Persons", "isStudent", c => c.Boolean(nullable: false));
 ```
+
+# Win32API
+archaiczny interfejs  
+wszystko oparte o funkcje C, które są wywoływane przez nasz program  
+windows posiada 2 systemy referencyjne c oraz rust (rust polecony)  
+
+wszystko jest oknem, kominikacja z systemem za pomocą komunikatów, korzystanie z uchwytów (pointerów)  
+
+jak korzystać z Win32API w visual studio? trzeba zaistalować pakiety do c/c++  
+filtrujemy c++ windows i bierzemy `[empty project "start from scratch with c++ for windows"]` albo `[windows desktop wizard (tutaj wyskoczy okienko wizardowe i tam wybieramy desktop application oraz empty project)] `  
+jak w pierwszej opcji osiągnąć ten sam efekt? - w ustawieniach->linker->system->sybsystem wybieramy windows  
+## Podstawy 
+> przykładowa aplikacja z podręcznika (przekopiowana bo długa)
+
+w niej mamy 2 błędy do naprawienia:
+* literały domyślnie są ustawione na _16 bitowe_
+configuration manger -> advnced -> character set -> use unicode character set zmieniamy na _no set_ 
+* kompilatory c/c++ ciągle się zmieniają i coś co kiedyś mogło być warningiem teraz może być errorem
+
+mamay tutaj też nowe **typy** (windowsowe) oraz pojawia się **konwencja wywołania funkcji**.
+np `int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)`;
+mamy co najmniej 4 różne konwencje wywoływanie funkcji: kolejnosć przekazywania argumentów (prawo-lewo lub lewo-prawo) oraz kto zapisuje dane z rejestrów, aby zwolnić miejsce dla wywoływanej funkcji (wywołująca albo wywoływana).   
+
+typowanie tak na prawdę jest luźne, bo wszystkie windowsowe typy to pointery na inta lub inty (32/64 bity)  
+
+nie ma przeciążania więc konwencją jest dodanie sufiksu _Ex_  
+`CreateWindowEx` - funkcja tworząca okno  
+najważniejszą wartością w trakcie tworzenia nowego okna jest funkcja obsługująca komunikaty (wielki switch-case). klasa okna jest pseudoobiektowa.  
+główną funkcją okna jest jednowątkowa pętla komunikatów. bierze komunikat z kolejki dokonuje translacji (dla niektórych języków) znajduje okno do którego skierowany jest komnunikat i do niego go wysyła. pętla kończy się gdy wyciągnie z kolejki komunikat `WM_QUIT` (takiej pętli nie zoabczymy w winformsie, bo jest ona ukryta i korzystamy z systemu zdarzeń)  
+
+## Obsługa komunikatów
+
+przykład obsługi komunikatu `WM_MOVE`, sprawdzamy w dokumentacji jak odczytać  
+okazuje się że musimy skorzystać z makkr 
+
+```c
+const int S = 80;
+char buf[S];
+//...
+case WM_MOVE:
+    x = LOWORD(lParam);
+    y = HIWORD(lParam);
+
+    sprintf_s(buf, S, "x = %d, y = %d", x, y);
+
+    SetWindowText(hwnd, buf);
+    break;
+```
+
+> bierzemy kolejny przykładowy program z podręcznika  
+> pojawi się kilka błędów, wystarczy zrzutować stałe na (TCHAR*)  
+
+w tym przykładzie iterujemy się po tablicy i tworzymy na jej podstawie podokna aplikacji
+
+> kolejny przykład
+
+systemowe klasy (np button) po wychwyceniu typowych komunikatów (np click) emitują z siebie komunikat do swojego rodzica, w któym wpada on jako `WM_COMMAND` (o czym musimy doczytać w dokumentacji)  
+
+> kolejny przykład
+
+okno macierzyste może wysłać komunikat do okna potomnego za pomocą `SendMessage`  
+okazuje się że okna potomne obsługują dużo funkcjonalności (np `rich edit` udostępnia ~100 komunikatów)  
+z tego łatwo zobaczyć że programowanie w WIN32 to tak na prawdę była **praca z dokumentacją**  
+
+> kolejny przykład
+> (dużo kodu)
+> w 110 zamieniamy na (int)(-4) oraz w 111 rzutujemy na (LONG), etc patrzymy co jest po lewej i na to rzutujemy
+
+mamy pole tekstowe w które można coś wpisać i ono na to reaguje, teraz programosta zamarzył sobie żeby móc kliknąć prawym przyciskiem na pole tekstowe, okazuje się że (wg dokumentacji) nie ma takiej funkcjonalności, więc dochodzi do **subklasowania**: pobieramy wskaźnik na funkcję obsługującą komunikaty, zapisujemy ją, a następnie podmieniamy na naszą funkcję  
+
+> kolejny przykład
+
+komunikat `WM_PAINT` - rysowanie okna, w którym mamy `BeginPaint` i `EndPaint` (które zwracają uchwyt do kontekstu rysowania) aby narysować coś na oknie  
+jak już mamy kontekst rysowania to możemy korzystać z funkcji rysujących podsystemu GDI (ciekawostka: istniały drukarki które drukowały za pomocą systemu GDI, przez co działały tylko na windowsie)  

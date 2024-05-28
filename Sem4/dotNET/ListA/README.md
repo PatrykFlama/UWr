@@ -102,3 +102,8 @@ using (SqlConnection conn = new SqlConnection(connectionString))
 }
 
 ```
+
+## Zad10
+w konsoli PackageManager (powershell z exekami od naszych bibliotek) piszemy `enable-migrations`, `add-migration InitialMigration`, (jest też `update-database` / `database update`)  
+
+generują się pliki w folderze `Migrations` - klasa `InitialMigration` udostępniająca metody `Up` i `Down` (do aktualizacji i cofania zmian)

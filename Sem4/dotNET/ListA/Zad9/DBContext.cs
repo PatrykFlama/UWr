@@ -44,8 +44,11 @@ namespace DBContextNS
     public class DotnetCourseDataContext : DbContext
     {
         public DotnetCourseDataContext() { }
+        /*
         public DotnetCourseDataContext(string connectionString) : base(@"data source=LAPTOP-GLATSD9;initial catalog=master;database=dotnetCourseEF;trusted_connection=true") { }
+        */
 
+        public DotnetCourseDataContext(DbContextOptions o) : base(o) { }
 
         public DbSet<Student> Students { get; set; }
         public DbSet<Address> Addresses { get; set; }

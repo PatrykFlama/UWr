@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using DBContextNS;
+using Microsoft.EntityFrameworkCore;
 
 
 
@@ -17,7 +18,11 @@ class Program
     {
         try
         {
-            using (var context = new DotnetCourseDataContext())
+            var builder = new DbContextOptionsBuilder<DotnetCourseDataContext>();
+
+            builder.UseSqlServer(@"data source=LAPTOP-GLATSD9;initial catalog=master;database=dotnetCourseEF;trusted_connection=true");
+
+            using (var context = new DotnetCourseDataContext(builder.Options))
             {
                 var existingStudent = context.Students.FirstOrDefault(s => s.Name == name && s.Surname == surname && s.BirthDate == birthDate);
                 if (existingStudent != null)

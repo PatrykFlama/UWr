@@ -49,6 +49,15 @@
 - [Win32API](#win32api)
   - [Podstawy](#podstawy)
   - [Obsługa komunikatów](#obsługa-komunikatów)
+- [Wytwarzanie bibliotek](#wytwarzanie-bibliotek)
+    - [Skąd system wie gdzie jest nasza biblioteka?](#skąd-system-wie-gdzie-jest-nasza-biblioteka)
+    - [Technologia Component Object Model (COM)](#technologia-component-object-model-com)
+      - [Pliki rejestru systemu Windows](#pliki-rejestru-systemu-windows)
+      - [Czy rozwiązano ten problem?](#czy-rozwiązano-ten-problem)
+      - [Jak tworzyć biblioteki COM](#jak-tworzyć-biblioteki-com)
+    - [HPA](#hpa)
+      - [przykład wykorzystania naszej biblioteki com](#przykład-wykorzystania-naszej-biblioteki-com)
+    - [Rust](#rust)
 
 
 # Wykład 3
@@ -884,7 +893,7 @@ AlterColumn("dbo.Persons", "isStudent", c => c.Boolean(nullable: false));
 ```
 
 # Win32API
-archaiczny interfejs  
+**archaiczny interfejs**  
 wszystko oparte o funkcje C, które są wywoływane przez nasz program  
 windows posiada 2 systemy referencyjne c oraz rust (rust polecony)  
 
@@ -955,4 +964,86 @@ mamy pole tekstowe w które można coś wpisać i ono na to reaguje, teraz progr
 > kolejny przykład
 
 komunikat `WM_PAINT` - rysowanie okna, w którym mamy `BeginPaint` i `EndPaint` (które zwracają uchwyt do kontekstu rysowania) aby narysować coś na oknie  
-jak już mamy kontekst rysowania to możemy korzystać z funkcji rysujących podsystemu GDI (ciekawostka: istniały drukarki które drukowały za pomocą systemu GDI, przez co działały tylko na windowsie)  
+jak już mamy kontekst rysowania to możemy korzystać z funkcji rysujących podsystemu GDI (ciekawostka: istniały drukarki które drukowały za pomocą systemu GDI, przez co działały tylko na windowsie) 
+
+# Wytwarzanie bibliotek
+Do tej pory wytwarzaliśmy biblioteki do platformy dotnet. Teraz chcielibyśmy łączyć kody napisane w różnych technologiach.  
+żeby stworzyć bibliotekę natywną: tworzymy nowy projekt > (ponownie) c++ windows desktop wizard > empty project + applicaction type konsolidacja biblioteki wzpółdzielonej  
+tworzymy pusty plik z kodem źródłowym  
+> przykładowy kod z podręcznika  
+
+```cpp
+EXPORT int MojaFunkcja();   // eksportujemy naszą wynikową funkcję
+
+BOOL WINAPI DllMain(...) {  // ta funkcja jest wywoływana tylko raz, w trakcie ładowania biblioteki
+    return 1;
+}
+
+int MojaFunckja() {
+    return 1;
+}
+
+```
+
+> ciekawostka - system jest oparty na takich bibliotekach
+> są one ładowane raz do pamięci np w trakcie startu systemu
+> biblioteka dostaje swój kawałek wirtualnej pamięci (co zwiększa bezpieczeństwo)
+
+
+co jeżeli chcemy przeciążyć naszą funkcję (język "zewnętrzny" może tego nie wspierać)?  
+mamy słowo kluczowe `extern`, które aby rozwiązać takie konflikty liczy hash funkcji i dokleja go do nazwy zewnętrzej (unika w ten sposób konfliktów nazw)  
+
+> "napiszmy teraz aplikację kliencką" - kod z podręcznika
+
+### Skąd system wie gdzie jest nasza biblioteka?
+na platformie dotnet nasze biblioteki zawsze leżały 'obok'  
+teraz możemy zrobić podobnie - przenieść naszą bibliotekę do tego samego folderu co plik wykonwyalny,
+funkcja ładująca naszą bibliotekę `LoadLibrary` znajdzie ją i program zadziała  
+istnieją też inne sposoby: https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order
+
+np. istnieje windowsowy folder który daje globalny dostęp do bibliotek (WindowsSystem32), z czego kiedyś korzystały aplikacje i prowadziło tp do jego zaśmiecenia  
+
+powstał więc nowy 3-ci typ tworzenia i dołączania bibliotek, która miała stowrzyć reużywalny format .dll do którego można skompilować z różnych języków programowania  
+
+### Technologia Component Object Model (COM)
+#### Pliki rejestru systemu Windows
+jak znajdować i ładować biblioteki (nie System32)? Jednym współdzielonym mechanizmem jest rejestr systemu windows. Jest to prosta struktura drzewiasta (implementowana w postaci chronionego pliku, prawdopodobnie format starożystej bazy danych). Mamy jakieś klucze stałe (np ROOT) i dynamiczne (USERS).  
+Postanowiono że w kluczach HKEY_CLASSES_ROOT będą informacje odnośnie typów, w konstrukcji dwusegmentowej: [nazwa aplikacji].[nazwa klasy]  
+Aplikacja, żeby znaleźć sobie taką klasę, idzie sobie do rejestru do konkretnego folderu i szuka odpowiedniej klasy.  
+Teraz: klasa którą znaleźliśmy ma zapisany swój GUID (z tego korzysta już program), w tym samym 'folderze' są też 'pliki' o nazwie [ GUID ] pod którymi jest zapisana ścieżka na dysku, pod którym dana biblioteka się znajduje. 
+
+stworzono w ten sposób nowy problem: wszystkie biblioteki muszą być zarejestrowane w systemie rejestru  
+rejestr jest zawsze w pamięci operacyjnej, ma on kilka megabajtów i zżera pamięć RAM (której nie mamy dużo)  
+i ponownie warto było co jakiś czas zreinstalować system żeby go odśmiecić i działał on szybiej  
+
+#### Czy rozwiązano ten problem?
+na platformie dotnet tak, teraz w rejestrze zapisany jest tylko jeden global assembly cache gdzie są nasze biblioteki (zapisane w jakimś konkretnym folderze i to hierarchicznie)  
+
+#### Jak tworzyć biblioteki COM
+teraz zobaczymy jak wytworzyć takie biblioteki (COM)  
+w trakcie kompilacji biblioteka będzie rejestrowana (typy przenoszone do rejestrów), do tego musimy odpalić Visual Studio w **trybie administratora** (żeby można było je zarejestrować)  
+warto się upewnić że w ustawieniach projektu zaznaczona jest opcja "zarejestruj jako com"  
+i tworzymy projekt ClassLibrary
+
+### HPA
+pliki z rozszerzeniem HPA to pliki HTML, tylko system windows automatycznie otwiera te pliki jako natywne aplikacje używając do tego jakiegoś hosta (domyślnego dla systemu)  
+kiedyś tak tworzono aplikacje - frontend w html/hpa javascript jako logika obsługi zdarzeń, odpalający biblioteki cpp które zarządzały resztą logiki  
+
+#### przykład wykorzystania naszej biblioteki com 
+w aplikacji `word` (i innych office) alt+f11 i odpala się środowisko programistyczne, w którym w języku Visual Basic można napisać makra  
+w tym środowisku możemy dodawać referencje do bibliotek com i z poziomu makra w VB możemy z niej korzystać  
+
+
+### Rust
+rust został niedawno dodany jako język natywny windows: 
+* https://github.com/microsoft/windows-rs
+* https://learn.microsoft.com/en-us/windows/dev-environment/rust/rust-for-windows
+* https://doc.rust-lang.org/book/ch01-01-installation.html
+* https://crates.io/crates/windows
+
+zaletą rust'a jest to że jest on znacznie silniej typowany (w c++ był ten problem, że wszystkie typy mogły przejść na siebie, bo w zasadzie były tym samym typem)  
+> wydaje mi się że jest to jakaś przyszłość programowania systemowego ~WZ
+
+
+
+

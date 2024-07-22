@@ -15,7 +15,7 @@ gantt
     axisFormat %H:%M
 
     section Monday
-        AISD                            : 16, 19
+        AISD                            : 12, 15
 
     section Tuesday
         dotNET                          : active, 08, 10

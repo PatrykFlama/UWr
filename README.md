@@ -2,6 +2,43 @@
 
 [\[English\]](README.en.md)
 
+## [Semestr 5](Sem5/)
+
+<details>
+    <summary>Plan</summary>
+
+```mermaid
+gantt
+    title Zimowy 24/25
+    dateFormat HH
+    axisFormat %H:%M
+
+    section Monday
+        OWI : 13, 14
+
+    section Tuesday
+        ASP.NET (p) : 10, 12
+        ML (w) : 12, 14
+        ML (ć) : 14, 16
+        ASP.NET (w) : 16, 18
+
+    section Wednesday
+        ZAISD (w) : 10, 12
+        ZAISD (ć) : 12, 14
+        AI2 (w) : 14, 16
+        AI2 (p) : 16, 18
+```
+
+</details>
+
+
+* **Z**aawansowane **a**lgorytmy **i** **s**truktury **d**anych
+* [**M**achine **L**earning](Sem5/ML/)
+* [**A**rtificial **i**ntelligence **2**: Games](Sem5/AI2/)
+* [Kurs projektowania aplikacji **ASP.NET**](Sem5/ASP/)
+* **O**chrona **w**łasności **i**ntelektualnej
+
+
 
 ## [Semestr 4](Sem4/)
 
@@ -10,7 +47,7 @@
 
 ```mermaid
 gantt
-    title Zimowy 23/24
+    title Letni 23/24
     dateFormat HH
     axisFormat %H:%M
 
@@ -39,7 +76,7 @@ gantt
 
 </details>
 
-* [**A**lgorytmy **i** **s**truktury **d**anych](Sem4/AISD/)
+* [**A**lgorytmy **i** **s**truktury **d**anych M](Sem4/AISD/)
 * **R**achunek **p**rawdopodobieństwa **i** **s**tatystyka
 * **Sy**stemy **K**omputerowe
 * [Kurs: React](Sem4/React/)

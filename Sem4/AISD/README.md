@@ -1,6 +1,6 @@
 [(wróć)](../)
 
-# **A**lgorytmy **I** **S**truktury **D**anych
+# **A**lgorytmy **I** **S**truktury **D**anych M
 [strona](https://aisd.ii.uni.wroc.pl/app/)  
 
 

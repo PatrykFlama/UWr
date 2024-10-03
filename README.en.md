@@ -3,8 +3,16 @@
 
 [\[Polish\]](README.md)
 
+
+## [Term 5](Sem5/)
+* Advanced algorithms and data structures
+* [Machine Learning](Sem5/ML/)
+* [Artificial Intelligence 2: Games](Sem5/AI2/)
+* [ASP.NET application design course](Sem5/ASP/)
+* Intellectual Property Protection
+
 ## [Term 4](Sem4/)
-* [Algorithms and data structures](Sem4/AISD/)
+* [Algorithms and data structures M](Sem4/AISD/)
 * Probability and statistics
 * Computer systems
 * [React course](Sem4/React/)

@@ -427,7 +427,7 @@ public:
 
                     if(resources < COSTS[POD]) break;
                     moves.push_back({POD, {int(pods.size()), pad.id, closest_building_id}});
-                    pods[int(pods.size())] = {int(pods.size()), {pad.id, closest_building_id}};
+                    pods[int(pods.size())] = {int(pods.size()), {pad.id, closest_building_id, pad.id}};
                 }
             }
         }
@@ -435,9 +435,29 @@ public:
         return moves;
     }
 
-    vector<Move> greedy_upgrade() {
-        // TODO
-        return {};
+    vector<Move> refill_pods() {
+        // since (somehow) resources are not calculated accurately
+        vector<Move> moves;
+
+        for(auto& [id, tube] : tubes) {
+            if(resources < COSTS[POD]) break;
+
+            // ensure that pod does not exists already
+            bool pod_exists = false;
+            for(auto& [id, pod] : pods) {
+                if(pod.stops[0] == tube.building1 && pod.stops[1] == tube.building2) {
+                    pod_exists = true;
+                    break;
+                }
+            }
+            if(pod_exists) continue;
+
+            resources -= COSTS[POD];
+            moves.push_back({POD, {int(pods.size()), tube.building1, tube.building2}});
+            pods[int(pods.size())] = {int(pods.size()), {tube.building1, tube.building2, tube.building1}};
+        }
+
+        return moves;
     }
 };
 
@@ -525,6 +545,16 @@ int main() {
         parse_input(sol);
 
         vector<Move> moves;
+
+        // greedy refill
+        moves = sol.refill_pods();
+        for(Move& move : moves) {
+            cout << MOVE_NAMES[move.type] << " ";
+            for(int arg : move.args) {
+                cout << arg << " ";
+            }
+            cout << ";";
+        }
 
         // greedy tubes
         moves = sol.greedy_tubes();

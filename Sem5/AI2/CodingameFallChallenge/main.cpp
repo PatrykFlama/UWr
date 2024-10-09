@@ -173,11 +173,21 @@ public:
     unordered_map<int, Destination> buildings;
     unordered_map<int, LandingPad> pads;
 
+    vector<int> useful_destinations;  // destination type -> usefulness
+    int total_astronauts = 0;
+    int usefullnes_threshold() {
+        return total_astronauts / 40;
+    }
+
     // unordered_map<int, vector<pii>> graph;  // {fromBuildingID, [{toBuildingID, cost}]}
     // vector<vector<int>> dist;  // dist[from][to] = cost
 
-    Solution() {}
+    Solution() {
+        useful_destinations = vector<int>(25, 0);
+    }
     Solution(int resources, vector<Tube> &tubes, vector<Teleporter> &teleporters, vector<Pod> &pods, vector<Destination> &buildings, vector<LandingPad> &pads) {
+        useful_destinations = vector<int>(25, 0);
+
         recreate_info(resources, tubes, teleporters, pods);
         add_buildings(buildings, pads);
     }
@@ -207,6 +217,11 @@ public:
         }
         for(LandingPad& pad : pads) {
             this->pads[pad.id] = pad;
+
+            for(pii& astronaut : pad.astronauts) {
+                useful_destinations[astronaut.first] += astronaut.second;
+                total_astronauts += astronaut.second;
+            }
         }
     }
 
@@ -236,7 +251,7 @@ public:
         for(const auto& [id, pad] : sol.pads) {
             os << pad.id << " " << pad.pos.x << " " << pad.pos.y << ": ";
             for(const pii& astronaut : pad.astronauts) {
-                os << astronaut.first << " " << astronaut.second << "";
+                os << astronaut.first << " " << astronaut.second << ",";
             }
             os << "\n";
         }
@@ -274,7 +289,22 @@ public:
 
             for(pii& astronaut : pad.astronauts) {
                 bool has_building = false;
-                for(auto& [id, building] : buildings) {
+
+                // buildings should be sorted by the number of ways to get to
+                vector<pair<int, Destination>> buildings;
+                for(auto& [id, building] : this->buildings) {
+                    buildings.push_back({0, building});
+                    for(auto& tube : tubes) {
+                        if(tube.second.building1 == building.id || tube.second.building2 == building.id) {
+                            buildings.back().first++;
+                        }
+                    }
+                }
+                sort(buildings.begin(), buildings.end(), [](pair<int, Destination>& a, pair<int, Destination>& b) {
+                    return a.first < b.first;
+                });
+
+                for(auto& [trash, building] : buildings) {
                     if(building.type != astronaut.first) 
                         continue;
 
@@ -293,7 +323,7 @@ public:
                     resources -= COSTS[TELEPORT];
                     has_building = true;
 
-                    //! TODO KINDA STINKY TRICK
+                    //! KINDA STINKY TRICK
                     astronaut.second = INT_MIN;
                     sort(pad.astronauts.begin(), pad.astronauts.end(), [](pii& a, pii& b) {
                         return a.second > b.second;
@@ -309,6 +339,7 @@ public:
     }
 
 
+    // returns visiting order sorted by astronaut amount in descending order
     vector<pair<int, pii>> get_visiting_order() {
         vector<pair<int, pii>> visiting_order;      // {astronauts, {pad id, astronautType}}
         for(auto& [id, pad] : pads) {
@@ -324,7 +355,7 @@ public:
         return visiting_order;
     }
 
-    bool is_pad_overloaded(int pad_id) {
+    bool is_pad_overloaded(int pad_id, int overload_treshold = 5) {
         // any building can fit up to 5 tubes
         int occupancy = 0;
         for(auto& tube : tubes) {
@@ -332,7 +363,7 @@ public:
                 occupancy++;
             }
         }
-        return occupancy > 4;
+        return occupancy > overload_treshold-1;
     }
 
     bool has_existing_connection(int pad_id, int astronaut_type) {
@@ -372,11 +403,17 @@ public:
         return false;
     }
 
-    int find_closest_building(int pad_id, int astronaut_type) {
+    int find_closest_building(int pad_id, int astronaut_type, 
+                              int max_building_occupation=5, int min_building_occupation=0) {     //? -1 for any type
         int closest_building_id = -1;
         for(auto& [id, building] : buildings) {
-            if(building.type != astronaut_type) 
-                continue;
+            if(building.type != astronaut_type) {
+                if(astronaut_type != -1)
+                    continue;
+
+                if(useful_destinations[building.type] < usefullnes_threshold())
+                    continue;
+            } 
 
             int occupation = 0;
             for(auto& tube : tubes) {
@@ -387,7 +424,8 @@ public:
                     occupation++;
                 }
             }
-            if(occupation > 4) continue;
+            if(occupation > max_building_occupation-1) continue;
+            if(occupation < min_building_occupation) continue;
 
             if(closest_building_id != -1 && 
                 pads[pad_id].pos.dist(building.pos) > pads[pad_id].pos.dist(buildings[closest_building_id].pos)) 
@@ -401,6 +439,7 @@ public:
         }
         return closest_building_id;
     }
+
 
     vector<Move> greedy_tubes() {
         vector<Move> moves;
@@ -431,7 +470,6 @@ public:
         return moves;
     }
 
-
     vector<Move> refill_pods() {
         // since (somehow) resources are not calculated accurately
         vector<Move> moves;
@@ -457,8 +495,33 @@ public:
         return moves;
     }
 
-    vector<Move> greedy_connect_pads(double max_budget_percent = 0.5) {
+
+    vector<Move> greedy_random_connect_to_destionation(double max_budget = -1) {
+        if(max_budget == -1) max_budget = resources;
+        // concept: if we have spare resources, try to create a mesh
         vector<Move> moves;
+
+        vector<pair<int, pii>> visiting_order = get_visiting_order();
+        for(auto& [trash, info] : visiting_order) {
+            const auto [pad_id, astronaut_type] = info;
+            LandingPad& pad = pads[pad_id];
+
+            if(has_existing_connection(pad.id, astronaut_type)) continue;
+            if(is_pad_overloaded(pad.id)) continue;
+
+            int closest_building_id = find_closest_building(pad.id, -1);
+            if(closest_building_id == -1) continue;
+
+            int total_cost = COSTS[TUBE] * pad.pos.dist(buildings[closest_building_id].pos) + COSTS[POD];
+            if(total_cost > max_budget) break;
+            max_budget -= total_cost;
+
+            moves.push_back({TUBE, {pad.id, closest_building_id}});
+            tubes[tubes.size() * 10] = {tubes.size() * 10, pad.id, closest_building_id};
+
+            moves.push_back({POD, {int(pods.size()), pad.id, closest_building_id, pad.id}});
+            pods[int(pods.size())] = {int(pods.size()), {pad.id, closest_building_id, pad.id}};
+        }
 
         return moves;
     }
@@ -576,7 +639,19 @@ int main() {
             cout << move.args[0] << " " << move.args[1] << ';';
         }
 
-        // with spare resources lets connect all landing pads or smth
+        // with spare resources connect to some destination
+        if(sol.resources > double(COSTS[TELEPORT])*1.) {
+            moves = sol.greedy_random_connect_to_destionation(double(sol.resources) * 1.);
+            for(Move& move : moves) {
+                cout << MOVE_NAMES[move.type] << " ";
+                for(int arg : move.args) {
+                    cout << arg << " ";
+                }
+                cout << ";";
+            }
+        }
+
+        cerr << "sol after:\n" << sol;
 
         cout << "WAIT" << endl;
     }

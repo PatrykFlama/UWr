@@ -308,9 +308,27 @@ public:
         return moves;
     }
 
+
     vector<Move> greedy_tubes() {
-        vector<Move> moves;
+        // get the visiting order
+        vector<pair<int, pii>> visiting_order; // {astronaut amt, {pad_id, astronaut_type}}
         for(auto& [id, pad] : pads) {
+            for(pii& astronaut : pad.astronauts) {
+                visiting_order.push_back({astronaut.second, {pad.id, astronaut.first}});
+            }
+        }
+
+        // sort by astronaut amount in descending order
+        sort(visiting_order.begin(), visiting_order.end(), [](pair<int, pii>& a, pair<int, pii>& b) {
+            return a.first > b.first;
+        });
+
+        // build possible tubes
+        vector<Move> moves;
+        for(auto& [trash, info] : visiting_order) {
+            const auto [pad_id, astronaut_type] = info;
+            LandingPad& pad = pads[pad_id];
+
             // check if pad has > 4 tubes
             {
                 int occupancy = 0;
@@ -322,113 +340,100 @@ public:
                 if(occupancy > 4) continue;
             }
 
-            for(pii& astronaut : pad.astronauts) {
-                if(resources < COSTS[POD]) break;
+            // check if pad already has connection to astronaut's destination
+            bool has_connection = false;
+            for(auto& [id, tube] : tubes) {
+                if((tube.building1 == pad.id && buildings[tube.building2].type == astronaut_type) ||
+                    (tube.building2 == pad.id && buildings[tube.building1].type == astronaut_type)) {
+                    has_connection = true;
+                    break;
+                }
+            }
+            if(has_connection) continue;
 
-                // check if pad already has connection to astronaut's destination
-                bool has_connection = false;
+            // find closest possible building of astronaut's type
+            int closest_building_id = -1;
+            for(auto& [id, building] : buildings) {
+                if(building.type != astronaut_type) 
+                    continue;
+
+                // check if building is occupied <=> has more than 4 tubes
+                int occupation = 0;
+                for(auto& tube : tubes) {
+                    if(tube.second.building2 == building.id || tube.second.building1 == building.id) {
+                        // tube already exists
+                        if(tube.second.building1 == pad.id || tube.second.building2 == pad.id) {
+                            occupation = 5;
+                        }
+                        occupation++;
+                    }
+                }
+                if(occupation > 4) continue;
+
+                // check if building is closer than the current closest
+                if(closest_building_id != -1 && 
+                pad.pos.dist(building.pos) > pad.pos.dist(buildings[closest_building_id].pos))
+                    continue;
+
+                // check if tube collides with some other tube
+                bool collides = false;
+                Segment new_tube_segment = {pad.pos, building.pos};
                 for(auto& [id, tube] : tubes) {
-                    if((tube.building1 == pad.id && buildings[tube.building2].type == astronaut.first) ||
-                        (tube.building2 == pad.id && buildings[tube.building1].type == astronaut.first)) {
-                        has_connection = true;
+                    // if tube ends in same place (only one side) then it wont collide
+                    if(tube.building1 == pad.id || tube.building2 == building.id)
+                        continue;
+
+                    //! TODO very not nice: assumes that pad is first building in any tube
+                    Segment tube_segment = {pads[tube.building1].pos, buildings[tube.building2].pos};
+
+
+                    if(tube_segment.intersects_segment(new_tube_segment)) {
+                        collides = true;
                         break;
                     }
                 }
-                if(has_connection) continue;
-                for(auto& [id, teleporter] : teleporters) {
-                    if(teleporter.building_from == pad.id && buildings[teleporter.building_to].type == astronaut.first) {
-                        has_connection = true;
-                        break;
-                    }
-                }
-                if(has_connection) continue;
+                if(collides) continue;
 
+                // check if tube collides with some other building
+                collides = false;
+                for(auto& [id, building2] : buildings) {
+                    if(building2.id == building.id) continue;
 
-                // find closest building of astronaut's type
-                int closest_building_id = -1;
-                for(auto& [id, building] : buildings) {
-                    if(building.type != astronaut.first) 
-                        continue;
-
-                    // check if building is occupied <=> has more than 4 tubes
-                    int occupation = 0;
-                    for(auto& tube : tubes) {
-                        if(tube.second.building2 == building.id || tube.second.building1 == building.id) {
-                            // tube already exists
-                            if(tube.second.building1 == pad.id || tube.second.building2 == pad.id) {
-                                occupation = 5;
-                            }
-                            occupation++;
-                        }
-                    }
-                    if(occupation > 4) continue;
-
-                    // check if building is closer than the current closest
-                    if(closest_building_id != -1 && 
-                    pad.pos.dist(building.pos) > pad.pos.dist(buildings[closest_building_id].pos))
-                        continue;
-
-                    // check if tube collides with some other tube
-                    bool collides = false;
                     Segment new_tube_segment = {pad.pos, building.pos};
-                    for(auto& [id, tube] : tubes) {
-                        // if tube ends in same place (only one side) then it wont collide
-                        if(tube.building1 == pad.id || tube.building2 == building.id)
-                            continue;
-
-                        //! TODO very not nice: assumes that pad is first building in any tube
-                        Segment tube_segment = {pads[tube.building1].pos, buildings[tube.building2].pos};
 
 
-                        if(tube_segment.intersects_segment(new_tube_segment)) {
-                            collides = true;
-                            break;
-                        }
+                    if(new_tube_segment.is_point_on_segment(building2.pos)) {
+                        collides = true;
+                        break;
                     }
-                    if(collides) continue;
-
-                    // check if tube collides with some other building
-                    collides = false;
-                    for(auto& [id, building2] : buildings) {
-                        if(building2.id == building.id) continue;
-
-                        Segment new_tube_segment = {pad.pos, building.pos};
-
-
-                        if(new_tube_segment.is_point_on_segment(building2.pos)) {
-                            collides = true;
-                            break;
-                        }
-                    }
-                    if(collides) continue;
-                    for(auto& [id, pad2] : pads) {
-                        if(pad2.id == pad.id) continue;
-
-                        Segment new_tube_segment = {pad.pos, building.pos};
-
-                        if(new_tube_segment.is_point_on_segment(pad2.pos)) {
-                            collides = true;
-                            break;
-                        }
-                    }
-                    if(collides) continue;
-
-                    closest_building_id = building.id;
                 }
+                if(collides) continue;
+                for(auto& [id, pad2] : pads) {
+                    if(pad2.id == pad.id) continue;
 
+                    Segment new_tube_segment = {pad.pos, building.pos};
 
-                if(closest_building_id != -1) {
-                    int total_cost = COSTS[TUBE]*pad.pos.dist(buildings[closest_building_id].pos) + COSTS[POD];
-                    if(total_cost > resources) break;
-                    resources -= total_cost;
-                    
-                    moves.push_back({TUBE, {pad.id, closest_building_id}});
-                    tubes[tubes.size()*10] = {tubes.size()*10, pad.id, closest_building_id};
-
-                    if(resources < COSTS[POD]) break;
-                    moves.push_back({POD, {int(pods.size()), pad.id, closest_building_id}});
-                    pods[int(pods.size())] = {int(pods.size()), {pad.id, closest_building_id, pad.id}};
+                    if(new_tube_segment.is_point_on_segment(pad2.pos)) {
+                        collides = true;
+                        break;
+                    }
                 }
+                if(collides) continue;
+
+                closest_building_id = building.id;
+            }
+
+
+            if(closest_building_id != -1) {
+                int total_cost = COSTS[TUBE]*pad.pos.dist(buildings[closest_building_id].pos) + COSTS[POD];
+                if(total_cost > resources) break;
+                resources -= total_cost;
+                
+                moves.push_back({TUBE, {pad.id, closest_building_id}});
+                tubes[tubes.size()*10] = {tubes.size()*10, pad.id, closest_building_id};
+
+                moves.push_back({POD, {int(pods.size()), pad.id, closest_building_id, pad.id}});
+                pods[int(pods.size())] = {int(pods.size()), {pad.id, closest_building_id, pad.id}};
             }
         }
 
@@ -453,9 +458,15 @@ public:
             if(pod_exists) continue;
 
             resources -= COSTS[POD];
-            moves.push_back({POD, {int(pods.size()), tube.building1, tube.building2}});
+            moves.push_back({POD, {int(pods.size()), tube.building1, tube.building2, tube.building1}});
             pods[int(pods.size())] = {int(pods.size()), {tube.building1, tube.building2, tube.building1}};
         }
+
+        return moves;
+    }
+
+    vector<Move> greedy_connect_pads(double max_budget_percent = 0.5) {
+        vector<Move> moves;
 
         return moves;
     }
@@ -572,6 +583,8 @@ int main() {
             cout << MOVE_NAMES[move.type] << " ";
             cout << move.args[0] << " " << move.args[1] << ';';
         }
+
+        // with spare resources lets connect all landing pads or smth
 
         cout << "WAIT" << endl;
     }

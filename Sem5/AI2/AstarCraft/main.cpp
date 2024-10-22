@@ -1,6 +1,16 @@
+// #pragma GCC optimize("Ofast","unroll-loops","omit-frame-pointer","inline")  //Optimization flags
+// #pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
+// #pragma GCC target("avx2")                                                  //Enable AVX
+// #include <x86intrin.h>                                                      //AVX/SSE Extensions
+
+
 #include <bits/stdc++.h>
 #include <chrono>
 using namespace std;
+
+#define cerr if(1) cerr
+
+
 /* #region --- HELPERS ---- */
 // cout pair
 template <typename T, typename U>
@@ -172,8 +182,7 @@ public:
 
     // ------- simulation -------
     int eval() {
-        State temp(*this);
-        return simulate(temp);
+        return simulate(*this);
     }
 
     int simulate_single_step(State &s) {
@@ -182,16 +191,18 @@ public:
             if(!r.working) continue;   // robot does not work anymore
             score++;
 
-            char robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
-            if(robot_tile != PLATFORM && robot_tile != VOID) {
-                r.pos.dir = CHAR_TO_DIR[robot_tile];
-            }
+            // char robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
+            // if(robot_tile != PLATFORM && robot_tile != VOID) {
+            //     r.pos.dir = CHAR_TO_DIR[robot_tile];
+            // }
             
             r.move();
 
-            robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
+            const char robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
             if(robot_tile == VOID) {
                 r.working = false;
+            } else if(robot_tile != PLATFORM) {
+                r.pos.dir = CHAR_TO_DIR[robot_tile];
             }
         }
 
@@ -199,6 +210,13 @@ public:
     }
 
     int simulate(State &s) {
+        for(Robot &r : s.robots) {
+            const char robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
+            if(robot_tile != VOID && robot_tile != PLATFORM) {
+                r.pos.dir = CHAR_TO_DIR[robot_tile];
+            }
+        }
+
         int score, total = 0;
         while((score = simulate_single_step(s)) != 0) { // while some robots are still working
             total += score;
@@ -270,12 +288,17 @@ public:
     }
 
     // ------- solve -------
-    vector<PositionState> solve_random(int T = 300, float place_prob = 0.5) {
+    vector<PositionState> solve_random(int T = 500, float place_prob = 0.5) {
         Timer timer;
         vector<PositionState> best_solution;
         int best_score = 0;
 
+        // debug
+        int states_analyzed = 0;
+
         while(timer.elapsed() < T) {
+            states_analyzed++;
+
             State temp(s);
             vector<PositionState> solution;
 
@@ -297,7 +320,14 @@ public:
             }
         }
 
+        cerr << "States analyzed: " << states_analyzed << '\n';
+
         return best_solution;
+    }
+
+
+    vector<PositionState> solve_simulated_annealing(int T = 500) {
+        return solve_random(300, 0.5);
     }
 };
 

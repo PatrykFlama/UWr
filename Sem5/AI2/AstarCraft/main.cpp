@@ -165,10 +165,13 @@ public:
 
 /* #region --- MAIN CLASSES ------- */
 class State {
+    //TODO
+    vector<vector<char>> backup_grid;
+    vector<Robot> backup_robots;
 public:
     vector<vector<char>> grid;      // 0 0 in top left
     vector<Robot> robots;
-    vector<Point> platforms;
+    vector<Point> modifiable;
 
     // ------- constructor -------
     State() {
@@ -181,20 +184,32 @@ public:
 
     // ------- update data -------
     void update_grid(vector<string> &lines) {
-        platforms.clear();
+        modifiable.clear();
 
         for (int y = 0; y < ROWS; y++) {
             for (int x = 0; x < COLS; x++) {
                 grid[y][x] = lines[y][x];
 
                 if(grid[y][x] == PLATFORM) 
-                    platforms.push_back(Point(x, y));
+                    modifiable.push_back(Point(x, y));
             }
         }
     }
 
     void update_robots(vector<Robot> &r) {
         robots = r;
+    }
+
+    // ------- data preservation -------
+    void backup() {
+        for(Point &p : modifiable)
+            backup_grid[p.x][p.y] = grid[p.x][p.y];
+        backup_robots = robots;
+    }
+    void restore_backup() {
+        for(Point &p : modifiable)
+            grid[p.x][p.y] = backup_grid[p.x][p.y];
+        robots = backup_robots;
     }
 
     // ------- helpers -------
@@ -211,10 +226,10 @@ public:
     }
 
     bool mutate() {     //? returns true if mutation was possible
-        if(platforms.empty()) return false;
+        if(modifiable.empty()) return false;
 
-        Point p = platforms[rand() % platforms.size()];
-        platforms.erase(remove(platforms.begin(), platforms.end(), p), platforms.end());
+        Point p = modifiable[rand() % modifiable.size()];
+        // modifiable.erase(remove(modifiable.begin(), modifiable.end(), p), modifiable.end()); //TODO: dont remove, spaw existance
         int d = rand() % 4;
 
         // ensure that arrow is not pointing into void
@@ -237,22 +252,9 @@ public:
     }
 
     // ------- simulation -------
-    int eval() {
+    int eval() {    //? evaluates score without modifying state
         State temp(*this);
         return temp.simulate();
-    }
-
-    int simulate_single_step(State &s) {    //* depreceated
-        int score = 0;
-        for(Robot &r : s.robots) {
-            if(!r.working) continue;   // robot does not work anymore
-            score++;
-            
-            r.move();
-            r.update_tile(grid[r.pos.pos.y][r.pos.pos.x]);
-        }
-
-        return score;
     }
 
     int simulate_all_robots(State& s) {
@@ -267,7 +269,7 @@ public:
         return score;
     }
 
-    int simulate() {
+    int simulate() {    //? simulates while overwriting solution
         for(Robot &r : this->robots) {
             const char robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
             if(robot_tile != VOID && robot_tile != PLATFORM) {
@@ -381,8 +383,8 @@ public:
 
             float place_prob = rand() % 1000 / 1000.0;
 
-            for(int y = 0; y < temp.grid.size(); y++) {
-                for(int x = 0; x < temp.grid[y].size(); x++) {
+            for(int y = 0; y < s.grid.size(); y++) {
+                for(int x = 0; x < s.grid[y].size(); x++) {
                     if(temp.grid[y][x] != PLATFORM) continue;
                     if(rand() % 1000 > place_prob * 1000) continue;
 

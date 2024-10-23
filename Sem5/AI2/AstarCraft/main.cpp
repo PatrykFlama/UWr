@@ -3,9 +3,11 @@
 // #pragma GCC target("avx2")                                                  //Enable AVX
 // #include <x86intrin.h>                                                      //AVX/SSE Extensions
 
+//TODO arrows facing each other
 
 #include <bits/stdc++.h>
 #include <chrono>
+#include <thread>
 using namespace std;
 
 #define cerr if(1) cerr
@@ -28,8 +30,16 @@ namespace std {
         }
     };
 }
+/* #endregion */
 
-// time
+// ------- CONSTANTS -------
+const int ROWS = 10, COLS = 19;
+const char VOID = '#', PLATFORM = '.';
+enum DIR {UP, RIGHT, DOWN, LEFT};
+const char DIR_TO_CHAR[] = {'U', 'R', 'D', 'L'};
+unordered_map<char, DIR> CHAR_TO_DIR = {{'U', UP}, {'R', RIGHT}, {'D', DOWN}, {'L', LEFT}};
+
+/* #region --- HELPER CLASSES------- */
 class Timer {
 public:
     chrono::time_point<chrono::high_resolution_clock> start_time;
@@ -44,16 +54,7 @@ public:
     }
 };
 
-/* #endregion */
 
-// ------- CONSTANTS -------
-const int ROWS = 10, COLS = 19;
-const char VOID = '#', PLATFORM = '.';
-enum DIR {UP, RIGHT, DOWN, LEFT};
-const char DIR_TO_CHAR[] = {'U', 'R', 'D', 'L'};
-unordered_map<char, DIR> CHAR_TO_DIR = {{'U', UP}, {'R', RIGHT}, {'D', DOWN}, {'L', LEFT}};
-
-/* #region --- HELPER CLASSES------- */
 class Point {
 public:
     int x, y;
@@ -86,7 +87,6 @@ public:
 
 const Point DIR_TO_POINT[] = {Point(0, -1), Point(1, 0), Point(0, 1), Point(-1, 0)};
 
-
 // hash Point
 namespace std {
     template <>
@@ -96,6 +96,7 @@ namespace std {
         }
     };
 }
+
 
 class PositionState {
 public:
@@ -157,6 +158,7 @@ class State {
 public:
     vector<vector<char>> grid;      // 0 0 in top left
     vector<Robot> robots;
+    vector<Point> platforms;
 
     // ------- constructor -------
     State() {
@@ -169,9 +171,14 @@ public:
 
     // ------- update data -------
     void update_grid(vector<string> &lines) {
+        platforms.clear();
+
         for (int y = 0; y < ROWS; y++) {
             for (int x = 0; x < COLS; x++) {
                 grid[y][x] = lines[y][x];
+
+                if(grid[y][x] == PLATFORM) 
+                    platforms.push_back(Point(x, y));
             }
         }
     }
@@ -180,9 +187,49 @@ public:
         robots = r;
     }
 
+    // ------- helpers -------
+    vector<PositionState> gen_diff(const State &s) {
+        vector<PositionState> diff;
+        for (int y = 0; y < ROWS; y++) {
+            for (int x = 0; x < COLS; x++) {
+                if(grid[y][x] != s.grid[y][x]) {
+                    diff.push_back(PositionState(x, y, CHAR_TO_DIR[s.grid[y][x]]));
+                }
+            }
+        }
+        return diff;
+    }
+
+    bool mutate() {     //? returns true if mutation was possible
+        if(platforms.empty()) return false;
+
+        Point p = platforms[rand() % platforms.size()];
+        platforms.erase(remove(platforms.begin(), platforms.end(), p), platforms.end());
+        int d = rand() % 4;
+
+        // ensure that arrow is not pointing into void
+        int nx = (p.x + DIR_TO_POINT[d].x + COLS) % COLS;
+        int ny = (p.y + DIR_TO_POINT[d].y + ROWS) % ROWS;
+        while(grid[ny][nx] == VOID) {
+            d = rand() % 4;
+            nx = (p.x + DIR_TO_POINT[d].x + COLS) % COLS;
+            ny = (p.y + DIR_TO_POINT[d].y + ROWS) % ROWS;
+
+            if(grid[ny][nx] != VOID) {
+                break;
+            }
+        }
+
+        cerr << "Mutating: " << p << " " << DIR_TO_CHAR[d] << '\n';
+        
+        grid[p.y][p.x] = DIR_TO_CHAR[d];
+        return true;
+    }
+
     // ------- simulation -------
     int eval() {
-        return simulate(*this);
+        State temp(*this);
+        return temp.simulate();
     }
 
     int simulate_single_step(State &s) {
@@ -209,8 +256,8 @@ public:
         return score;
     }
 
-    int simulate(State &s) {
-        for(Robot &r : s.robots) {
+    int simulate() {
+        for(Robot &r : this->robots) {
             const char robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
             if(robot_tile != VOID && robot_tile != PLATFORM) {
                 r.pos.dir = CHAR_TO_DIR[robot_tile];
@@ -218,7 +265,7 @@ public:
         }
 
         int score, total = 0;
-        while((score = simulate_single_step(s)) != 0) { // while some robots are still working
+        while((score = simulate_single_step(*this)) != 0) { // while some robots are still working
             total += score;
         }
         return total;
@@ -287,11 +334,12 @@ public:
         s.update_robots(robots);
     }
 
-    // ------- solve -------
-    vector<PositionState> solve_random(int T = 500, float place_prob = 0.5) {
+    // ======== SOLVE ========
+    // ------- random -------
+    vector<PositionState> solve_random(int T = 500) {
         Timer timer;
         vector<PositionState> best_solution;
-        int best_score = 0;
+        int best_score = s.eval();
 
         // debug
         int states_analyzed = 0;
@@ -302,18 +350,33 @@ public:
             State temp(s);
             vector<PositionState> solution;
 
+            float place_prob = rand() % 1000 / 1000.0;
+
             for(int y = 0; y < temp.grid.size(); y++) {
                 for(int x = 0; x < temp.grid[y].size(); x++) {
                     if(temp.grid[y][x] != PLATFORM) continue;
                     if(rand() % 1000 > place_prob * 1000) continue;
 
-                    const int d = rand() % 4;
+                    int d = rand() % 4;
+
+                    // ensure that arrow is not pointing into void
+                    int nx = (x + DIR_TO_POINT[d].x + COLS) % COLS;
+                    int ny = (y + DIR_TO_POINT[d].y + ROWS) % ROWS;
+                    while(temp.grid[ny][nx] == VOID) {
+                        d = rand() % 4;
+                        nx = (x + DIR_TO_POINT[d].x + COLS) % COLS;
+                        ny = (y + DIR_TO_POINT[d].y + ROWS) % ROWS;
+                        if(temp.grid[ny][nx] != VOID) {
+                            break;
+                        }
+                    }
+                    
                     temp.grid[y][x] = DIR_TO_CHAR[d];
                     solution.push_back(PositionState(x, y, (DIR)d));
                 }
             }
 
-            int temp_score = temp.eval();
+            int temp_score = temp.simulate();
             if(temp_score > best_score) {
                 best_solution = solution;
                 best_score = temp_score;
@@ -325,18 +388,58 @@ public:
         return best_solution;
     }
 
-
+    // ------- simulated annealing -------
     vector<PositionState> solve_simulated_annealing(int T = 500) {
-        return solve_random(300, 0.5);
+        Timer timer;
+        double temp_start = 10.0;
+        double temp_end = 0.001;
+        double temp = temp_start;
+        const int N = 1000;
+
+        State best(s);
+        int best_score = best.eval();
+        State current(s);
+        int current_score = best_score;
+
+        while(true) {
+            auto elapsed = timer.elapsed();
+            if(elapsed > T) break;
+
+            auto time_frac = (double)elapsed / T;
+            auto temp = temp_start * pow((temp_end/temp_start), time_frac); 
+
+            for(int i = 0; i < N; i++) {
+                State candidate(current);
+                if(!candidate.mutate()) break;
+
+                int candidate_score = candidate.eval();
+                int diff = candidate_score - current_score;
+                if(diff > 0 || rand() < exp(-diff/temp)) {
+                    current = candidate;
+                    current_score = candidate_score;
+
+                    if(candidate_score > best_score) {
+                        best = candidate;
+                        best_score = candidate_score;
+                    }
+                }
+            }
+        }
+
+
+        return s.gen_diff(best);
     }
 };
 
 int main() {
+    // std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
     srand(time(NULL));
 
     Solution solver;
 
-    vector<PositionState> solution = solver.solve_random(900, rand() % 1000 / 1000.0);
+    // vector<PositionState> solution = solver.solve_random(900);
+    vector<PositionState> solution = solver.solve_simulated_annealing(900);
     for(PositionState &p : solution) {
         cout << p.pos.x << " " << p.pos.y << " " << DIR_TO_CHAR[p.dir] << ' ';
     }

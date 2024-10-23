@@ -3,7 +3,9 @@
 // #pragma GCC target("avx2")                                                  //Enable AVX
 // #include <x86intrin.h>                                                      //AVX/SSE Extensions
 
-//TODO arrows facing each other
+//TODO opt for robots pathfinding:
+// analyze each robot path separately
+// analyze only if cell on robot path changed
 
 #include <bits/stdc++.h>
 #include <chrono>
@@ -145,6 +147,14 @@ public:
         visited[pos] = true;
     }
 
+    void update_tile(const char tile) {
+        if(tile == VOID) {
+            working = false;
+        } else if(tile != PLATFORM) {
+            pos.dir = CHAR_TO_DIR[tile];
+        }
+    }
+
     friend ostream& operator<<(ostream& os, const Robot &r) {
         os << r.pos.pos << " " << DIR_TO_CHAR[r.pos.dir];
         return os;
@@ -232,27 +242,28 @@ public:
         return temp.simulate();
     }
 
-    int simulate_single_step(State &s) {
+    int simulate_single_step(State &s) {    //* depreceated
         int score = 0;
-        for (Robot &r : s.robots) {
+        for(Robot &r : s.robots) {
             if(!r.working) continue;   // robot does not work anymore
             score++;
-
-            // char robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
-            // if(robot_tile != PLATFORM && robot_tile != VOID) {
-            //     r.pos.dir = CHAR_TO_DIR[robot_tile];
-            // }
             
             r.move();
-
-            const char robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
-            if(robot_tile == VOID) {
-                r.working = false;
-            } else if(robot_tile != PLATFORM) {
-                r.pos.dir = CHAR_TO_DIR[robot_tile];
-            }
+            r.update_tile(grid[r.pos.pos.y][r.pos.pos.x]);
         }
 
+        return score;
+    }
+
+    int simulate_all_robots(State& s) {
+        int score = 0;
+        for(Robot &r : s.robots) {
+            while(r.working) {
+                score++;
+                r.move();
+                r.update_tile(grid[r.pos.pos.y][r.pos.pos.x]);
+            }
+        }
         return score;
     }
 
@@ -264,11 +275,7 @@ public:
             }
         }
 
-        int score, total = 0;
-        while((score = simulate_single_step(*this)) != 0) { // while some robots are still working
-            total += score;
-        }
-        return total;
+        return simulate_all_robots(*this);
     }
 
     // ------- print -------
@@ -336,6 +343,28 @@ public:
 
     // ======== SOLVE ========
     // ------- random -------
+    int gen_random_dir(State &s, int x, int y) {
+        int d = rand() % 4;
+
+        // ensure that arrow is not pointing into void
+        // nor into reversed arrow
+        short int draws = 0;
+        int nx = (x + DIR_TO_POINT[d].x + COLS) % COLS;
+        int ny = (y + DIR_TO_POINT[d].y + ROWS) % ROWS;
+        while(s.grid[ny][nx] == VOID || 
+              CHAR_TO_DIR[s.grid[ny][nx]] == (d+2)%4) {
+
+            d = rand() % 4;
+            nx = (x + DIR_TO_POINT[d].x + COLS) % COLS;
+            ny = (y + DIR_TO_POINT[d].y + ROWS) % ROWS;
+
+            draws++;
+            if(draws > 12) return -1;  //! no good ans's, probably should be as exception
+        }
+        
+        return d;
+    }
+
     vector<PositionState> solve_random(int T = 500) {
         Timer timer;
         vector<PositionState> best_solution;
@@ -357,20 +386,9 @@ public:
                     if(temp.grid[y][x] != PLATFORM) continue;
                     if(rand() % 1000 > place_prob * 1000) continue;
 
-                    int d = rand() % 4;
+                    auto d = gen_random_dir(temp, x, y);
+                    if(d == -1) continue;
 
-                    // ensure that arrow is not pointing into void
-                    int nx = (x + DIR_TO_POINT[d].x + COLS) % COLS;
-                    int ny = (y + DIR_TO_POINT[d].y + ROWS) % ROWS;
-                    while(temp.grid[ny][nx] == VOID) {
-                        d = rand() % 4;
-                        nx = (x + DIR_TO_POINT[d].x + COLS) % COLS;
-                        ny = (y + DIR_TO_POINT[d].y + ROWS) % ROWS;
-                        if(temp.grid[ny][nx] != VOID) {
-                            break;
-                        }
-                    }
-                    
                     temp.grid[y][x] = DIR_TO_CHAR[d];
                     solution.push_back(PositionState(x, y, (DIR)d));
                 }
@@ -426,7 +444,6 @@ public:
             }
         }
 
-
         return s.gen_diff(best);
     }
 };
@@ -438,8 +455,8 @@ int main() {
 
     Solution solver;
 
-    // vector<PositionState> solution = solver.solve_random(900);
-    vector<PositionState> solution = solver.solve_simulated_annealing(900);
+    vector<PositionState> solution = solver.solve_random(900);
+    // vector<PositionState> solution = solver.solve_simulated_annealing(900);
     for(PositionState &p : solution) {
         cout << p.pos.x << " " << p.pos.y << " " << DIR_TO_CHAR[p.dir] << ' ';
     }

@@ -1,7 +1,7 @@
-// #pragma GCC optimize("Ofast","unroll-loops","omit-frame-pointer","inline")  //Optimization flags
-// #pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
-// #pragma GCC target("avx2")                                                  //Enable AVX
-// #include <x86intrin.h>                                                      //AVX/SSE Extensions
+#pragma GCC optimize("Ofast","unroll-loops","omit-frame-pointer","inline")  //Optimization flags
+#pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
+#pragma GCC target("avx2")                                                  //Enable AVX
+#include <x86intrin.h>                                                      //AVX/SSE Extensions
 
 //TODO opt for robots pathfinding:
 // analyze each robot path separately
@@ -14,7 +14,7 @@
 #include <thread>
 using namespace std;
 
-#define cerr if(1) cerr
+#define cerr if(0) cerr
 
 
 /* #region --- HELPERS ---- */
@@ -211,6 +211,12 @@ public:
     void update_grid(Point &p, char c) {
         grid[p.y][p.x] = c;
         backup_grid[p.y][p.x] = c;
+    }
+
+    void update_grid() {
+        for(Point &p : modifiable) {
+            backup_grid[p.y][p.x] = grid[p.y][p.x];
+        }
     }
 
     void update_robots(vector<Robot> &r) {
@@ -419,17 +425,19 @@ public:
         if(s.grid[p.y][p.x] != PLATFORM)
             return {p, PLATFORM};
 
-        int d = gen_random_dir(s, p.x, p.y);
+        const int d = gen_random_dir(s, p.x, p.y);
 
-        
-        return {p, DIR_TO_CHAR[d]};
+        if(d != -1)
+            return {p, DIR_TO_CHAR[d]};
+        return {p, DIR_TO_CHAR[rand()%4]};
     }
 
     vector<PositionState> solve_simulated_annealing(int T = 900) {
         Timer timer;
-        double temp_start = 10.0;
-        double temp_end = 0.001;
+        double temp_start = 20.0;
+        double temp_end = 1.;
         double temp = temp_start;
+        int mutations = 20;
         const int N = 1000;
 
         int states_analyzed = 0;
@@ -449,21 +457,28 @@ public:
             for(int i = 0; i < N; i++) {
                 states_analyzed++;
 
-                auto [p, c] = mutate(current);
-                current.grid[p.y][p.x] = c;
+                for(int j = 0; j < mutations; j++) {
+                    auto [p, c] = mutate(current);
+                    current.grid[p.y][p.x] = c;
+                }
 
-                int candidate_score = current.eval();
+                int candidate_score = current.simulate();
                 int diff = candidate_score - current_score;
-                if(diff >= 0 || rand() < exp(-diff/temp)) {
-                    current.update_grid(p, c);
+                if(diff >= 0 || rand() < exp(diff/temp)) {
+                    // current.update_grid(p, c);
+                    current.update_grid();
                     current_score = candidate_score;
 
                     if(candidate_score > best_score) {
                         best = current;
                         best_score = candidate_score;
                     }
+                } else {
+                    current.restore_backup();
                 }
             }
+
+            mutations = max(1, mutations-1);
         }
 
         cerr << "States analyzed: " << states_analyzed << '\n';

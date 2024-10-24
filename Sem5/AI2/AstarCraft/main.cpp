@@ -7,6 +7,8 @@
 // analyze each robot path separately
 // analyze only if cell on robot path changed
 
+// TODO test if inlines are helping
+
 #include <bits/stdc++.h>
 #include <chrono>
 #include <thread>
@@ -31,6 +33,11 @@ namespace std {
             return hash<T>()(p.first) ^ hash<U>()(p.second);
         }
     };
+}
+
+// random
+inline double random_uniform() {
+    return static_cast<double>(rand()) / RAND_MAX;
 }
 /* #endregion */
 
@@ -181,6 +188,8 @@ public:
         grid = s.grid;
         backup_grid.resize(ROWS, vector<char>(COLS, VOID));
         robots = s.robots;
+        modifiable = s.modifiable;
+        backup();
     }
 
     // ------- update data -------
@@ -195,6 +204,13 @@ public:
                     modifiable.push_back(Point(x, y));
             }
         }
+
+        backup();
+    }
+
+    void update_grid(Point &p, char c) {
+        grid[p.y][p.x] = c;
+        backup_grid[p.y][p.x] = c;
     }
 
     void update_robots(vector<Robot> &r) {
@@ -216,45 +232,19 @@ public:
     // ------- helpers -------
     vector<PositionState> gen_diff(const State &s) {
         vector<PositionState> diff;
-        for (int y = 0; y < ROWS; y++) {
-            for (int x = 0; x < COLS; x++) {
-                if(grid[y][x] != s.grid[y][x]) {
-                    diff.push_back(PositionState(x, y, CHAR_TO_DIR[s.grid[y][x]]));
-                }
-            }
-        }
-        return diff;
-    }
-
-    bool mutate() {     //? returns true if mutation was possible
-        if(modifiable.empty()) return false;
-
-        Point p = modifiable[rand() % modifiable.size()];
-        // modifiable.erase(remove(modifiable.begin(), modifiable.end(), p), modifiable.end()); //TODO: dont remove, spaw existance
-        int d = rand() % 4;
-
-        // ensure that arrow is not pointing into void
-        int nx = (p.x + DIR_TO_POINT[d].x + COLS) % COLS;
-        int ny = (p.y + DIR_TO_POINT[d].y + ROWS) % ROWS;
-        while(grid[ny][nx] == VOID) {
-            d = rand() % 4;
-            nx = (p.x + DIR_TO_POINT[d].x + COLS) % COLS;
-            ny = (p.y + DIR_TO_POINT[d].y + ROWS) % ROWS;
-
-            if(grid[ny][nx] != VOID) {
-                break;
-            }
-        }
-
-        cerr << "Mutating: " << p << " " << DIR_TO_CHAR[d] << '\n';
         
-        grid[p.y][p.x] = DIR_TO_CHAR[d];
-        return true;
+        for(Point &p : modifiable) {
+            if(grid[p.y][p.x] != s.grid[p.y][p.x]) {
+                diff.push_back(PositionState(p.x, p.y, CHAR_TO_DIR[s.grid[p.y][p.x]]));
+            }
+        }
+
+        return diff;
     }
 
     // ------- simulation -------
     int eval() {    //? evaluates score and calls restore_backup
-        int res = simulate();
+        const int res = simulate();
         restore_backup();
         return res;
     }
@@ -308,29 +298,13 @@ class Solution {
 public:
     State s;
     // ------- constructor -------
-    Solution() : s() {}
+    Solution() : s() {
+        parse_input();
+    }
 
     // ------- input -------
-    Point parse_input_dirty_start() {
-        parse_grid();
-        parse_robots(1);
-
-        Point p;
-        cin >> p.x >> p.y;
-        return p;
-    }
-    void parse_input_dirty_end(Point p) {
-        string direction;
-        cin >> direction; cin.ignore();
-        s.robots.push_back({p.x, p.y, CHAR_TO_DIR[direction[0]]});
-    }
-
     void parse_input() {
-        parse_grid();
-        parse_robots();
-    }
-
-    void parse_grid() {
+        // parse grid
         vector<string> lines;
         for (int i = 0; i < 10; i++) {
             string line;
@@ -338,13 +312,12 @@ public:
             lines.push_back(line);
         }
         s.update_grid(lines);
-    }
 
-    void parse_robots(int offset = 0) {
+        // parse robots
         vector<Robot> robots;
         int robot_count;
         cin >> robot_count; cin.ignore();
-        for (int i = 0; i < robot_count - offset; i++) {
+        for (int i = 0; i < robot_count; i++) {
             int x;
             int y;
             string direction;
@@ -360,13 +333,12 @@ public:
 
             robots.push_back(Robot(x, y, d));
         }
-
         s.update_robots(robots);
     }
 
     // ======== SOLVE ========
     // ------- random -------
-    int gen_random_dir(State &s, int x, int y) {
+    inline int gen_random_dir(State &s, int x, int y) {    //! returns -1 when no good direction found
         int d = rand() % 4;
 
         // ensure that arrow is not pointing into void
@@ -382,7 +354,7 @@ public:
             ny = (y + DIR_TO_POINT[d].y + ROWS) % ROWS;
 
             draws++;
-            if(draws > 12) return -1;  //! no good ans's, probably should be as exception
+            if(draws > 12) return -1;
         }
 
         return d;
@@ -398,7 +370,7 @@ public:
         // debug
         int states_analyzed = 0;
 
-        while(timer.elapsed() < T) {
+        while(timer.elapsed() < T) {    // TODO check time every 1000 iterations
             states_analyzed++;
 
             s.restore_backup();
@@ -433,12 +405,27 @@ public:
     }
 
     // ------- simulated annealing -------
-    vector<PositionState> solve_simulated_annealing(int T = 500) {
+    inline pair<Point, char> mutate(State &s) {
+        const int rand_idx = rand() % s.modifiable.size();
+        const Point p = s.modifiable[rand_idx];
+
+        if(s.grid[p.y][p.x] != PLATFORM)
+            return {p, PLATFORM};
+
+        int d = gen_random_dir(s, p.x, p.y);
+
+        
+        return {p, DIR_TO_CHAR[d]};
+    }
+
+    vector<PositionState> solve_simulated_annealing(int T = 900) {
         Timer timer;
         double temp_start = 10.0;
         double temp_end = 0.001;
         double temp = temp_start;
         const int N = 1000;
+
+        int states_analyzed = 0;
 
         State best(s);
         int best_score = best.eval();
@@ -453,22 +440,27 @@ public:
             auto temp = temp_start * pow((temp_end/temp_start), time_frac); 
 
             for(int i = 0; i < N; i++) {
-                State candidate(current);
-                if(!candidate.mutate()) break;
+                states_analyzed++;
 
-                int candidate_score = candidate.eval();
+                auto [p, c] = mutate(current);
+                current.grid[p.y][p.x] = c;
+
+                int candidate_score = current.eval();
                 int diff = candidate_score - current_score;
-                if(diff > 0 || rand() < exp(-diff/temp)) {
-                    current = candidate;
+                if(diff >= 0 || random_uniform() < exp(-diff/temp)) {
+                    current.update_grid(p, c);
                     current_score = candidate_score;
 
                     if(candidate_score > best_score) {
-                        best = candidate;
+                        best = current;
                         best_score = candidate_score;
+                        cerr << "Best: " << best_score << '\n';
                     }
                 }
             }
         }
+
+        cerr << "States analyzed: " << states_analyzed << '\n';
 
         return s.gen_diff(best);
     }
@@ -478,10 +470,9 @@ int main() {
     srand(time(NULL));
 
     Solution solver;
-    solver.parse_input();
 
-    vector<PositionState> solution = solver.solve_random(990);
-    // vector<PositionState> solution = solver.solve_simulated_annealing(900);
+    // vector<PositionState> solution = solver.solve_random(990);
+    vector<PositionState> solution = solver.solve_simulated_annealing(900);
     for(PositionState &p : solution) {
         cout << p.pos.x << " " << p.pos.y << " " << DIR_TO_CHAR[p.dir] << ' ';
     }

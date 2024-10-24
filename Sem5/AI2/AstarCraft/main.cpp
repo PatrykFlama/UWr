@@ -36,8 +36,8 @@ namespace std {
 }
 
 // random
-inline double random_uniform() {
-    return static_cast<double>(rand()) / RAND_MAX;
+inline double random_uniform() {        //? returns random number from 0 to 1
+    return static_cast<double>(rand()) / (double)RAND_MAX;
 }
 /* #endregion */
 
@@ -223,10 +223,17 @@ public:
             backup_grid[p.y][p.x] = grid[p.y][p.x];
         backup_robots = robots;
     }
+
     void restore_backup() {
         for(Point &p : modifiable)
             grid[p.y][p.x] = backup_grid[p.y][p.x];
         robots = backup_robots;
+    }
+
+    void soft_copy(State &s) {
+        for(Point &p : modifiable)
+            grid[p.y][p.x] = s.grid[p.y][p.x];
+        robots = s.robots;
     }
 
     // ------- helpers -------
@@ -406,24 +413,25 @@ public:
 
     // ------- simulated annealing -------
     inline pair<Point, char> mutate(State &s) {
-        const int rand_idx = rand() % s.modifiable.size();
-        const Point p = s.modifiable[rand_idx];
+        while(1) {  //! i know that it aint looking well :/
+            const int rand_idx = rand() % s.modifiable.size();
+            const Point p = s.modifiable[rand_idx];
 
-        if(s.grid[p.y][p.x] != PLATFORM)
-            return {p, PLATFORM};
+            if(s.grid[p.y][p.x] != PLATFORM)
+                return {p, PLATFORM};
 
-        int d = gen_random_dir(s, p.x, p.y);
+            const int d = gen_random_dir(s, p.x, p.y);
 
-        
-        return {p, DIR_TO_CHAR[d]};
+            if(d != -1)
+                return {p, DIR_TO_CHAR[d]};
+        }
     }
 
     vector<PositionState> solve_simulated_annealing(int T = 900) {
         Timer timer;
         double temp_start = 10.0;
         double temp_end = 0.001;
-        double temp = temp_start;
-        const int N = 1000;
+        const int N = 500;
 
         int states_analyzed = 0;
 
@@ -433,11 +441,14 @@ public:
         int current_score = best_score;
 
         while(true) {
-            auto elapsed = timer.elapsed();
+            if(!(states_analyzed % (N*4))) 
+                current.soft_copy(s);
+
+            const auto elapsed = timer.elapsed();
             if(elapsed > T) break;
 
-            auto time_frac = (double)elapsed / T;
-            auto temp = temp_start * pow((temp_end/temp_start), time_frac); 
+            const auto time_frac = (double)elapsed / T;
+            const auto temp = temp_start * pow((temp_end/temp_start), time_frac); 
 
             for(int i = 0; i < N; i++) {
                 states_analyzed++;
@@ -447,14 +458,13 @@ public:
 
                 int candidate_score = current.eval();
                 int diff = candidate_score - current_score;
-                if(diff >= 0 || random_uniform() < exp(-diff/temp)) {
+                if(diff >= 0 || random_uniform() < exp(-((double)(diff))/temp)) {
                     current.update_grid(p, c);
                     current_score = candidate_score;
 
                     if(candidate_score > best_score) {
                         best = current;
                         best_score = candidate_score;
-                        cerr << "Best: " << best_score << '\n';
                     }
                 }
             }
@@ -472,7 +482,7 @@ int main() {
     Solution solver;
 
     // vector<PositionState> solution = solver.solve_random(990);
-    vector<PositionState> solution = solver.solve_simulated_annealing(900);
+    vector<PositionState> solution = solver.solve_simulated_annealing(950);
     for(PositionState &p : solution) {
         cout << p.pos.x << " " << p.pos.y << " " << DIR_TO_CHAR[p.dir] << ' ';
     }

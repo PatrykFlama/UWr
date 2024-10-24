@@ -35,8 +35,8 @@ namespace std {
     };
 }
 
-// random
-inline double random_uniform() {        //? returns random number from 0 to 1
+//? returns random number from 0 to 1
+inline double random_uniform() {
     return static_cast<double>(rand()) / (double)RAND_MAX;
 }
 /* #endregion */
@@ -413,25 +413,24 @@ public:
 
     // ------- simulated annealing -------
     inline pair<Point, char> mutate(State &s) {
-        while(1) {  //! i know that it aint looking well :/
-            const int rand_idx = rand() % s.modifiable.size();
-            const Point p = s.modifiable[rand_idx];
+        const int rand_idx = rand() % s.modifiable.size();
+        const Point p = s.modifiable[rand_idx];
 
-            if(s.grid[p.y][p.x] != PLATFORM)
-                return {p, PLATFORM};
+        if(s.grid[p.y][p.x] != PLATFORM)
+            return {p, PLATFORM};
 
-            const int d = gen_random_dir(s, p.x, p.y);
+        int d = gen_random_dir(s, p.x, p.y);
 
-            if(d != -1)
-                return {p, DIR_TO_CHAR[d]};
-        }
+        
+        return {p, DIR_TO_CHAR[d]};
     }
 
     vector<PositionState> solve_simulated_annealing(int T = 900) {
         Timer timer;
         double temp_start = 10.0;
         double temp_end = 0.001;
-        const int N = 500;
+        double temp = temp_start;
+        const int N = 1000;
 
         int states_analyzed = 0;
 
@@ -441,14 +440,11 @@ public:
         int current_score = best_score;
 
         while(true) {
-            if(!(states_analyzed % (N*4))) 
-                current.soft_copy(s);
-
-            const auto elapsed = timer.elapsed();
+            auto elapsed = timer.elapsed();
             if(elapsed > T) break;
 
-            const auto time_frac = (double)elapsed / T;
-            const auto temp = temp_start * pow((temp_end/temp_start), time_frac); 
+            auto time_frac = (double)elapsed / T;
+            auto temp = temp_start * pow((temp_end/temp_start), time_frac); 
 
             for(int i = 0; i < N; i++) {
                 states_analyzed++;
@@ -458,7 +454,7 @@ public:
 
                 int candidate_score = current.eval();
                 int diff = candidate_score - current_score;
-                if(diff >= 0 || random_uniform() < exp(-((double)(diff))/temp)) {
+                if(diff >= 0 || rand() < exp(-diff/temp)) {
                     current.update_grid(p, c);
                     current_score = candidate_score;
 
@@ -482,7 +478,7 @@ int main() {
     Solution solver;
 
     // vector<PositionState> solution = solver.solve_random(990);
-    vector<PositionState> solution = solver.solve_simulated_annealing(950);
+    vector<PositionState> solution = solver.solve_simulated_annealing(900);
     for(PositionState &p : solution) {
         cout << p.pos.x << " " << p.pos.y << " " << DIR_TO_CHAR[p.dir] << ' ';
     }

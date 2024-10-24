@@ -138,6 +138,8 @@ public:
     PositionState pos;
     bool working = true;
     unordered_map<PositionState, bool> visited;
+    unordered_map<Point, short> visited_points;
+    const vector<short> DIR_TO_SHORT_MASK = {0b0001, 0b0010, 0b0100, 0b1000};
 
     Robot(int x, int y, DIR d) : pos(x, y, d) {}
 
@@ -147,7 +149,7 @@ public:
         pos.pos.x = (pos.pos.x + COLS) % COLS;
         pos.pos.y = (pos.pos.y + ROWS) % ROWS;
 
-        if (visited[pos]) {
+        if(visited[pos]) {
             working = false;
         }
         
@@ -213,7 +215,7 @@ public:
         backup_grid[p.y][p.x] = c;
     }
 
-    void update_grid() {
+    void update_grid_backup() {
         for(Point &p : modifiable) {
             backup_grid[p.y][p.x] = grid[p.y][p.x];
         }
@@ -262,9 +264,18 @@ public:
         return res;
     }
 
+    int simulate() {    //? simulates while overwriting solution
+        return simulate_all_robots(*this);
+    }
+
     int simulate_all_robots(State& s) {
         int score = 0;
         for(Robot &r : s.robots) {
+            const char robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
+            if(robot_tile != VOID && robot_tile != PLATFORM) {
+                r.pos.dir = CHAR_TO_DIR[robot_tile];
+            }
+
             while(r.working) {
                 score++;
                 r.move();
@@ -272,17 +283,6 @@ public:
             }
         }
         return score;
-    }
-
-    int simulate() {    //? simulates while overwriting solution
-        for(Robot &r : this->robots) {
-            const char robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
-            if(robot_tile != VOID && robot_tile != PLATFORM) {
-                r.pos.dir = CHAR_TO_DIR[robot_tile];
-            }
-        }
-
-        return simulate_all_robots(*this);
     }
 
     // ------- print -------
@@ -434,10 +434,10 @@ public:
 
     vector<PositionState> solve_simulated_annealing(int T = 900) {
         Timer timer;
-        double temp_start = 20.0;
-        double temp_end = 1.;
+        double temp_start = 1000.0;
+        double temp_end = 100.;
         double temp = temp_start;
-        int mutations = 20;
+        int mutations = 10;
         const int N = 1000;
 
         int states_analyzed = 0;
@@ -457,16 +457,19 @@ public:
             for(int i = 0; i < N; i++) {
                 states_analyzed++;
 
+                auto [p, c] = mutate(current);
+                current.grid[p.y][p.x] = c;
                 for(int j = 0; j < mutations; j++) {
-                    auto [p, c] = mutate(current);
-                    current.grid[p.y][p.x] = c;
+                    auto temp = mutate(current);
+                    current.grid[temp.first.y][temp.first.x] = temp.second;
                 }
 
                 int candidate_score = current.simulate();
                 int diff = candidate_score - current_score;
                 if(diff >= 0 || rand() < exp(diff/temp)) {
-                    // current.update_grid(p, c);
-                    current.update_grid();
+                    if(mutations) current.update_grid_backup();
+                    else current.update_grid(p, c);
+
                     current_score = candidate_score;
 
                     if(candidate_score > best_score) {
@@ -478,7 +481,7 @@ public:
                 }
             }
 
-            mutations = max(1, mutations-1);
+            mutations = max(0, mutations-1);
         }
 
         cerr << "States analyzed: " << states_analyzed << '\n';

@@ -382,50 +382,6 @@ public:
         return d;
     }
 
-    vector<PositionState> solve_random(int T = 500) {
-        Timer timer;
-        vector<PositionState> best_solution;
-        s.backup();
-        int best_score = s.simulate();
-        s.restore_backup();
-
-        // debug
-        int states_analyzed = 0;
-
-        while(timer.elapsed() < T) {    // TODO check time every 1000 iterations
-            states_analyzed++;
-
-            s.restore_backup();
-            vector<PositionState> solution;
-
-            float place_prob = rand() % 1000 / 1000.0;
-
-            for(int y = 0; y < s.grid.size(); y++) {
-                for(int x = 0; x < s.grid[y].size(); x++) {
-                    if(s.grid[y][x] != PLATFORM) continue;
-                    if(rand() % 1000 > place_prob * 1000) continue;
-
-                    auto d = gen_random_dir(s, x, y);
-                    if(d == -1) continue;
-
-                    s.grid[y][x] = DIR_TO_CHAR[d];
-                    solution.push_back(PositionState(x, y, (DIR)d));
-                }
-            }
-
-            int temp_score = s.simulate();
-            if(temp_score > best_score) {
-                best_solution = solution;
-                best_score = temp_score;
-            }
-        }
-
-        cerr << "States analyzed: " << states_analyzed << '\n';
-
-        s.restore_backup();
-        return best_solution;
-    }
-
     // ------- simulated annealing -------
     pair<Point, char> mutate(State &s) {
         const int rand_idx = rand() % s.modifiable.size();
@@ -506,7 +462,6 @@ int main() {
 
     Solution solver;
 
-    // vector<PositionState> solution = solver.solve_random(990);
     vector<PositionState> solution = solver.solve_simulated_annealing(985);
     for(PositionState &p : solution) {
         cout << p.pos.x << " " << p.pos.y << " " << DIR_TO_CHAR[p.dir] << ' ';

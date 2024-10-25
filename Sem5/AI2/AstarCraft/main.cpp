@@ -7,8 +7,6 @@
 // analyze each robot path separately
 // analyze only if cell on robot path changed
 
-// TODO test if inlines are helping
-
 #include <bits/stdc++.h>
 #include <chrono>
 #include <thread>
@@ -138,17 +136,22 @@ class Robot {
     PositionState backup_pos;
 public:
     PositionState pos;
+    vector<vector<short>> visited_points_grid;
     bool working = true;
-    unordered_map<Point, short> visited_points;
 
     Robot(int x, int y, DIR d) : pos(x, y, d) {
         backup_pos = pos;
+        visited_points_grid.resize(ROWS, vector<short>(COLS, 0));
     }
 
     void reset() {
         pos = backup_pos;
         working = true;
-        visited_points.clear();
+        for(int y = 0; y < ROWS; y++) {
+            for(int x = 0; x < COLS; x++) {
+                visited_points_grid[y][x] = 0;
+            }
+        }
     }
 
     void move() {
@@ -157,11 +160,11 @@ public:
         pos.pos.x = (pos.pos.x + COLS) % COLS;
         pos.pos.y = (pos.pos.y + ROWS) % ROWS;
 
-        if(visited_points[pos.pos] & DIR_TO_SHORT_MASK[pos.dir]) {
+        if(visited_points_grid[pos.pos.y][pos.pos.x] & DIR_TO_SHORT_MASK[pos.dir]) {
             working = false;
         }
         
-        visited_points[pos.pos] |= DIR_TO_SHORT_MASK[pos.dir];
+        visited_points_grid[pos.pos.y][pos.pos.x] |= DIR_TO_SHORT_MASK[pos.dir];
     }
 
     void update_tile(const char tile) {
@@ -183,7 +186,6 @@ public:
 /* #region --- MAIN CLASSES ------- */
 class State {
     vector<vector<char>> backup_grid;
-    // vector<Robot> backup_robots;
 public:
     vector<vector<char>> grid;      // 0 0 in top left     
     vector<Robot> robots;
@@ -209,13 +211,12 @@ public:
         for (int y = 0; y < ROWS; y++) {
             for (int x = 0; x < COLS; x++) {
                 grid[y][x] = lines[y][x];
+                backup_grid[y][x] = lines[y][x];
 
                 if(grid[y][x] == PLATFORM) 
                     modifiable.push_back(Point(x, y));
             }
         }
-
-        backup();
     }
 
     void update_grid(Point &p, char c) {
@@ -229,22 +230,18 @@ public:
         }
     }
 
-    void update_robots(vector<Robot> &r) {
-        robots = r;
-    }
-
     // ------- data preservation -------
     void backup() {
         for(Point &p : modifiable)
             backup_grid[p.y][p.x] = grid[p.y][p.x];
-        // backup_robots = robots;
     }
 
     void restore_backup() {
         for(Point &p : modifiable)
             grid[p.y][p.x] = backup_grid[p.y][p.x];
-        // robots = backup_robots;
-        for(Robot &r : robots) r.reset();
+        for(Robot &r : robots) {
+            r.reset();
+        }
     }
 
     void soft_copy(State &s) {
@@ -355,7 +352,7 @@ public:
 
             robots.push_back(Robot(x, y, d));
         }
-        s.update_robots(robots);
+        s.robots = robots;
     }
 
     // ======== SOLVE ========
@@ -403,7 +400,7 @@ public:
         double temp_end = 10.;
         double temp = temp_start;
         // int mutations = 10;
-        const int N = 500;
+        const int N = 1000;
 
         int states_analyzed = 0;
 

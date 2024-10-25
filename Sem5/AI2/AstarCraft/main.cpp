@@ -36,7 +36,7 @@ namespace std {
 }
 
 //? returns random number from 0 to 1
-inline double random_uniform() {
+double random_uniform() {
     return static_cast<double>(rand()) / (double)RAND_MAX;
 }
 /* #endregion */
@@ -47,6 +47,7 @@ const char VOID = '#', PLATFORM = '.';
 enum DIR {UP, RIGHT, DOWN, LEFT};
 const char DIR_TO_CHAR[] = {'U', 'R', 'D', 'L'};
 unordered_map<char, DIR> CHAR_TO_DIR = {{'U', UP}, {'R', RIGHT}, {'D', DOWN}, {'L', LEFT}};
+const vector<short> DIR_TO_SHORT_MASK = {0b0001, 0b0010, 0b0100, 0b1000};
 
 /* #region --- HELPER CLASSES------- */
 class Timer {
@@ -134,14 +135,21 @@ namespace std {
 }
 
 class Robot {
+    PositionState backup_pos;
 public:
     PositionState pos;
     bool working = true;
-    unordered_map<PositionState, bool> visited;
     unordered_map<Point, short> visited_points;
-    const vector<short> DIR_TO_SHORT_MASK = {0b0001, 0b0010, 0b0100, 0b1000};
 
-    Robot(int x, int y, DIR d) : pos(x, y, d) {}
+    Robot(int x, int y, DIR d) : pos(x, y, d) {
+        backup_pos = pos;
+    }
+
+    void reset() {
+        pos = backup_pos;
+        working = true;
+        visited_points.clear();
+    }
 
     void move() {
         pos.pos = pos.pos + DIR_TO_POINT[pos.dir];
@@ -149,11 +157,11 @@ public:
         pos.pos.x = (pos.pos.x + COLS) % COLS;
         pos.pos.y = (pos.pos.y + ROWS) % ROWS;
 
-        if(visited[pos]) {
+        if(visited_points[pos.pos] & DIR_TO_SHORT_MASK[pos.dir]) {
             working = false;
         }
         
-        visited[pos] = true;
+        visited_points[pos.pos] |= DIR_TO_SHORT_MASK[pos.dir];
     }
 
     void update_tile(const char tile) {
@@ -175,9 +183,9 @@ public:
 /* #region --- MAIN CLASSES ------- */
 class State {
     vector<vector<char>> backup_grid;
-    vector<Robot> backup_robots;
+    // vector<Robot> backup_robots;
 public:
-    vector<vector<char>> grid;      // 0 0 in top left
+    vector<vector<char>> grid;      // 0 0 in top left     
     vector<Robot> robots;
     vector<Point> modifiable;
 
@@ -229,13 +237,14 @@ public:
     void backup() {
         for(Point &p : modifiable)
             backup_grid[p.y][p.x] = grid[p.y][p.x];
-        backup_robots = robots;
+        // backup_robots = robots;
     }
 
     void restore_backup() {
         for(Point &p : modifiable)
             grid[p.y][p.x] = backup_grid[p.y][p.x];
-        robots = backup_robots;
+        // robots = backup_robots;
+        for(Robot &r : robots) r.reset();
     }
 
     void soft_copy(State &s) {
@@ -351,7 +360,7 @@ public:
 
     // ======== SOLVE ========
     // ------- random -------
-    inline int gen_random_dir(State &s, int x, int y) {    //! returns -1 when no good direction found
+    int gen_random_dir(State &s, int x, int y) {    //! returns -1 when no good direction found
         int d = rand() % 4;
 
         // ensure that arrow is not pointing into void
@@ -418,7 +427,7 @@ public:
     }
 
     // ------- simulated annealing -------
-    inline pair<Point, char> mutate(State &s) {
+    pair<Point, char> mutate(State &s) {
         const int rand_idx = rand() % s.modifiable.size();
         const Point p = s.modifiable[rand_idx];
 
@@ -434,11 +443,11 @@ public:
 
     vector<PositionState> solve_simulated_annealing(int T = 900) {
         Timer timer;
-        double temp_start = 1000.0;
-        double temp_end = 100.;
+        double temp_start = 300.0;
+        double temp_end = 10.;
         double temp = temp_start;
-        int mutations = 10;
-        const int N = 1000;
+        // int mutations = 10;
+        const int N = 500;
 
         int states_analyzed = 0;
 
@@ -453,6 +462,8 @@ public:
 
             auto time_frac = (double)elapsed / T;
             auto temp = temp_start * pow((temp_end/temp_start), time_frac); 
+
+            int mutations = max(0, (int)(10 * temp / temp_start));
 
             for(int i = 0; i < N; i++) {
                 states_analyzed++;
@@ -476,12 +487,12 @@ public:
                         best = current;
                         best_score = candidate_score;
                     }
-                } else {
-                    current.restore_backup();
                 }
+                
+                current.restore_backup();
             }
 
-            mutations = max(0, mutations-1);
+            // mutations = max(0, mutations-1);
         }
 
         cerr << "States analyzed: " << states_analyzed << '\n';
@@ -496,7 +507,7 @@ int main() {
     Solution solver;
 
     // vector<PositionState> solution = solver.solve_random(990);
-    vector<PositionState> solution = solver.solve_simulated_annealing(900);
+    vector<PositionState> solution = solver.solve_simulated_annealing(985);
     for(PositionState &p : solution) {
         cout << p.pos.x << " " << p.pos.y << " " << DIR_TO_CHAR[p.dir] << ' ';
     }

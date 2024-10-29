@@ -1,11 +1,10 @@
-#pragma GCC optimize("Ofast","unroll-loops","omit-frame-pointer","inline")  //Optimization flags
+#pragma GCC optimize("Ofast,inline,tracer")
+#pragma GCC optimize("unroll-loops,vpt,split-loops,unswitch-loops,omit-frame-pointer,inline")
 #pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
-#pragma GCC target("avx2")                                                  //Enable AVX
+#pragma GCC target("arch=haswell,tune=haswell")
+#pragma GCC target("aes,abm,align-stringops,avx,avx2,bmi,bmi2,crc32,cx16,f16c,fma,fsgsbase,fxsr,hle,ieee-fp,lzcnt,mmx,movbe,mwait,pclmul,popcnt,rdrnd,sahf,sse,sse2,sse3,sse4,sse4.1,sse4.2,ssse3,xsave,xsaveopt")
 #include <x86intrin.h>                                                      //AVX/SSE Extensions
 
-//TODO opt for robots pathfinding:
-// analyze each robot path separately
-// analyze only if cell on robot path changed
 
 #include <bits/stdc++.h>
 #include <chrono>
@@ -44,8 +43,9 @@ const int ROWS = 10, COLS = 19;
 const char VOID = '#', PLATFORM = '.';
 enum DIR {UP, RIGHT, DOWN, LEFT};
 const char DIR_TO_CHAR[] = {'U', 'R', 'D', 'L'};
-unordered_map<char, DIR> CHAR_TO_DIR = {{'U', UP}, {'R', RIGHT}, {'D', DOWN}, {'L', LEFT}};
-const vector<short> DIR_TO_SHORT_MASK = {0b0001, 0b0010, 0b0100, 0b1000};
+const short DIR_TO_SHORT_MASK[] = {0b0001, 0b0010, 0b0100, 0b1000};
+// unordered_map<char, DIR> CHAR_TO_DIR = {{'U', UP}, {'R', RIGHT}, {'D', DOWN}, {'L', LEFT}};      // too slow
+DIR CHAR_TO_DIR[CHAR_MAX];
 
 /* #region --- HELPER CLASSES------- */
 class Timer {
@@ -133,15 +133,21 @@ namespace std {
 }
 
 class Robot {
-    PositionState backup_pos;
 public:
+    PositionState backup_pos;
     PositionState pos;
-    vector<vector<short>> visited_points_grid;
+    // vector<vector<short>> visited_points_grid;
+    short visited_points_grid[ROWS][COLS];
     bool working = true;
 
     Robot(int x, int y, DIR d) : pos(x, y, d) {
         backup_pos = pos;
-        visited_points_grid.resize(ROWS, vector<short>(COLS, 0));
+        // visited_points_grid.resize(ROWS, vector<short>(COLS, 0));
+        for(int y = 0; y < ROWS; y++) {
+            for(int x = 0; x < COLS; x++) {
+                visited_points_grid[y][x] = 0;
+            }
+        }
     }
 
     void reset() {
@@ -162,6 +168,7 @@ public:
 
         if(visited_points_grid[pos.pos.y][pos.pos.x] & DIR_TO_SHORT_MASK[pos.dir]) {
             working = false;
+            return;
         }
         
         visited_points_grid[pos.pos.y][pos.pos.x] |= DIR_TO_SHORT_MASK[pos.dir];
@@ -185,27 +192,34 @@ public:
 
 /* #region --- MAIN CLASSES ------- */
 class State {
-    vector<vector<char>> backup_grid;
+    // vector<vector<char>> backup_grid;
+    char backup_grid[ROWS][COLS];
 public:
-    vector<vector<char>> grid;      // 0 0 in top left     
+    // vector<vector<char>> grid;      // 0 0 in top left     
+    char grid[ROWS][COLS];      // 0 0 in top left
     vector<Robot> robots;
     vector<Point> modifiable;
 
     // ------- constructor -------
     State() {
-        grid.resize(ROWS, vector<char>(COLS, VOID));
-        backup_grid.resize(ROWS, vector<char>(COLS, VOID));
+        // grid.resize(ROWS, vector<char>(COLS, VOID));
+        // backup_grid.resize(ROWS, vector<char>(COLS, VOID));
     }
     State(const State &s) {
-        grid = s.grid;
-        backup_grid.resize(ROWS, vector<char>(COLS, VOID));
+        // grid = s.grid;
+        // backup_grid.resize(ROWS, vector<char>(COLS, VOID));
+        for (int y = 0; y < ROWS; y++) {
+            for (int x = 0; x < COLS; x++) {
+                grid[y][x] = s.grid[y][x];
+            }
+        }
         robots = s.robots;
         modifiable = s.modifiable;
         backup();
     }
 
     // ------- update data -------
-    void update_grid(vector<string> &lines) {
+    void update_grid(const vector<string> &lines) {
         modifiable.clear();
 
         for (int y = 0; y < ROWS; y++) {
@@ -219,7 +233,7 @@ public:
         }
     }
 
-    void update_grid(Point &p, char c) {
+    void update_grid(const Point &p, const char c) {
         grid[p.y][p.x] = c;
         backup_grid[p.y][p.x] = c;
     }
@@ -237,14 +251,15 @@ public:
     }
 
     void restore_backup() {
-        for(Point &p : modifiable)
+        for(Point &p : modifiable) {
             grid[p.y][p.x] = backup_grid[p.y][p.x];
+        }
         for(Robot &r : robots) {
             r.reset();
         }
     }
 
-    void soft_copy(State &s) {
+    void soft_copy(const State &s) {
         for(Point &p : modifiable)
             grid[p.y][p.x] = s.grid[p.y][p.x];
         robots = s.robots;
@@ -271,21 +286,17 @@ public:
     }
 
     int simulate() {    //? simulates while overwriting solution
-        return simulate_all_robots(*this);
+        return simulate_all_robots();
     }
 
-    int simulate_all_robots(State& s) {
+    int simulate_all_robots() {
         int score = 0;
-        for(Robot &r : s.robots) {
-            const char robot_tile = grid[r.pos.pos.y][r.pos.pos.x];
-            if(robot_tile != VOID && robot_tile != PLATFORM) {
-                r.pos.dir = CHAR_TO_DIR[robot_tile];
-            }
-
-            while(r.working) {
-                score++;
-                r.move();
+        for(Robot &r : robots) {
+            while(true) {
                 r.update_tile(grid[r.pos.pos.y][r.pos.pos.x]);
+                if(!r.working) break;
+                r.move();
+                score++;
             }
         }
         return score;
@@ -357,23 +368,30 @@ public:
 
     // ======== SOLVE ========
     // ------- random -------
-    int gen_random_dir(State &s, int x, int y) {    //! returns -1 when no good direction found
+    int gen_random_dir(State &s, int x, int y) {
         int d = rand() % 4;
 
-        // ensure that arrow is not pointing into void
-        // nor into reversed arrow
-        short int draws = 0;
         int nx = (x + DIR_TO_POINT[d].x + COLS) % COLS;
         int ny = (y + DIR_TO_POINT[d].y + ROWS) % ROWS;
-        while(s.grid[ny][nx] == VOID || 
-              CHAR_TO_DIR[s.grid[ny][nx]] == (d+2)%4) {
+        
+        if(s.grid[ny][nx] != VOID && CHAR_TO_DIR[s.grid[ny][nx]] != (d+2)%4) {
+            return d;
+        }
 
+        bool tested[4] = {0,0,0,0};
+        tested[d] = true;
+
+        for(int i = 0; i < 3; i++) {
             d = rand() % 4;
+            while(tested[d]) d = (d+1)%4;
+            tested[d] = true;
+
             nx = (x + DIR_TO_POINT[d].x + COLS) % COLS;
             ny = (y + DIR_TO_POINT[d].y + ROWS) % ROWS;
-
-            draws++;
-            if(draws > 12) return -1;
+            
+            if(s.grid[ny][nx] != VOID && CHAR_TO_DIR[s.grid[ny][nx]] != (d+2)%4) {
+                return d;
+            }
         }
 
         return d;
@@ -384,22 +402,19 @@ public:
         const int rand_idx = rand() % s.modifiable.size();
         const Point p = s.modifiable[rand_idx];
 
-        if(s.grid[p.y][p.x] != PLATFORM)
+        if(s.grid[p.y][p.x] != PLATFORM && random_uniform() < 0.5)
             return {p, PLATFORM};
 
         const int d = gen_random_dir(s, p.x, p.y);
 
-        if(d != -1)
-            return {p, DIR_TO_CHAR[d]};
-        return {p, DIR_TO_CHAR[rand()%4]};
+        return {p, DIR_TO_CHAR[d]};
     }
 
     vector<PositionState> solve_simulated_annealing(int T = 900) {
         Timer timer;
-        double temp_start = 300.0;
+        double temp_start = 500.;
         double temp_end = 10.;
         double temp = temp_start;
-        // int mutations = 10;
         const int N = 1000;
 
         int states_analyzed = 0;
@@ -413,10 +428,11 @@ public:
             auto elapsed = timer.elapsed();
             if(elapsed > T) break;
 
-            auto time_frac = (double)elapsed / T;
-            auto temp = temp_start * pow((temp_end/temp_start), time_frac); 
+            const auto time_frac = (double)elapsed / T;
+            const auto temp = temp_start * pow((temp_end/temp_start), time_frac); 
+            // const auto temp = temp_start + (temp_end - temp_start) * time_frac;
 
-            int mutations = max(0, (int)(10 * temp / temp_start));
+            const int mutations = max(0, (int)(10 * temp / temp_start));
 
             for(int i = 0; i < N; i++) {
                 states_analyzed++;
@@ -444,8 +460,6 @@ public:
                 
                 current.restore_backup();
             }
-
-            // mutations = max(0, mutations-1);
         }
 
         cerr << "States analyzed: " << states_analyzed << '\n';
@@ -455,6 +469,7 @@ public:
 };
 
 int main() {
+    CHAR_TO_DIR['U']=UP,CHAR_TO_DIR['R']=RIGHT,CHAR_TO_DIR['D']=DOWN,CHAR_TO_DIR['L']=LEFT;
     srand(time(NULL));
 
     Solution solver;

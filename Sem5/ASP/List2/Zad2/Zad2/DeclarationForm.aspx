@@ -9,6 +9,9 @@
 <body>
     <form id="form1" runat="server">
         <div>
+            <asp:PlaceHolder ID="phError" runat="server"></asp:PlaceHolder>
+            <br />
+
             <h2>Enter Exercise Details</h2>
 
             <!-- name -->
@@ -21,21 +24,24 @@
             <asp:TextBox ID="txtDate" runat="server" TextMode="Date"></asp:TextBox>
             <br /><br />
 
-            <!-- number of exercises -->
-            <label for="numExercises">Number of Exercises:</label>
-            <asp:TextBox ID="numExercises" runat="server" Text = "1" TextMode="Number" AutoPostBack="true" OnTextChanged="numExercises_SelectedIndexChanged"></asp:TextBox>
+            <!-- list details -->
+            <label for="txtCourseName">Course:</label>
+            <asp:TextBox ID="txtCourseName" runat="server"></asp:TextBox>
+            <br /><br />
+
+            <label for="txtListNumber">List number:</label>
+            <asp:TextBox ID="txtListNumber" runat="server" TextMode="Number"></asp:TextBox>
             <br /><br />
 
             <!-- points for each exercise -->
-            <!-- <asp:PlaceHolder ID="phExercises" runat="server"></asp:PlaceHolder>
-            <!-- <br /> -->
-
-            <div id="exercises" runat="server">
-
-            </div>
+            <asp:PlaceHolder ID="phExercises" runat="server"></asp:PlaceHolder>
+            <br />
 
             <!-- submit -->
             <asp:Button ID="btnCalculate" runat="server" Text="Calculate Total Points" AutoPostBack="true" OnClick="btnCalculate_Click" />
+            <br /><br />
+
+            <asp:Button ID="btnSubmit" runat="server" Text="Generate table" AutoPostBack="true" OnClick="btnSubmit_Click" />
             <br /><br />
 
             <!-- sum -->

@@ -43,7 +43,7 @@ const int ROWS = 10, COLS = 19;
 const char VOID = '#', PLATFORM = '.';
 enum DIR {UP, RIGHT, DOWN, LEFT};
 const char DIR_TO_CHAR[] = {'U', 'R', 'D', 'L'};
-const short DIR_TO_SHORT_MASK[] = {0b0001, 0b0010, 0b0100, 0b1000};
+const int DIR_TO_MASK[] = {0b0001, 0b0010, 0b0100, 0b1000};
 // unordered_map<char, DIR> CHAR_TO_DIR = {{'U', UP}, {'R', RIGHT}, {'D', DOWN}, {'L', LEFT}};      // too slow
 DIR CHAR_TO_DIR[CHAR_MAX];
 
@@ -136,13 +136,11 @@ class Robot {
 public:
     PositionState backup_pos;
     PositionState pos;
-    // vector<vector<short>> visited_points_grid;
-    short visited_points_grid[ROWS][COLS];
+    int visited_points_grid[ROWS][COLS];
     bool working = true;
 
     Robot(int x, int y, DIR d) : pos(x, y, d) {
         backup_pos = pos;
-        // visited_points_grid.resize(ROWS, vector<short>(COLS, 0));
         for(int y = 0; y < ROWS; y++) {
             for(int x = 0; x < COLS; x++) {
                 visited_points_grid[y][x] = 0;
@@ -166,12 +164,12 @@ public:
         pos.pos.x = (pos.pos.x + COLS) % COLS;
         pos.pos.y = (pos.pos.y + ROWS) % ROWS;
 
-        if(visited_points_grid[pos.pos.y][pos.pos.x] & DIR_TO_SHORT_MASK[pos.dir]) {
+        if(visited_points_grid[pos.pos.y][pos.pos.x] & DIR_TO_MASK[pos.dir]) {
             working = false;
             return;
         }
         
-        visited_points_grid[pos.pos.y][pos.pos.x] |= DIR_TO_SHORT_MASK[pos.dir];
+        visited_points_grid[pos.pos.y][pos.pos.x] |= DIR_TO_MASK[pos.dir];
     }
 
     void update_tile(const char tile) {

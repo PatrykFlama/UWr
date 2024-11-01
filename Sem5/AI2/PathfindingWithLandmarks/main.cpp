@@ -1,9 +1,9 @@
-// #pragma GCC optimize("Ofast,inline,tracer")
-// #pragma GCC optimize("unroll-loops,vpt,split-loops,unswitch-loops,omit-frame-pointer,inline")
-// #pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
-// #pragma GCC target("arch=haswell,tune=haswell")
-// #pragma GCC target("aes,abm,align-stringops,avx,avx2,bmi,bmi2,crc32,cx16,f16c,fma,fsgsbase,fxsr,hle,ieee-fp,lzcnt,mmx,movbe,mwait,pclmul,popcnt,rdrnd,sahf,sse,sse2,sse3,sse4,sse4.1,sse4.2,ssse3,xsave,xsaveopt")
-// #include <x86intrin.h>                                                      //AVX/SSE Extensions
+#pragma GCC optimize("Ofast,inline,tracer")
+#pragma GCC optimize("unroll-loops,vpt,split-loops,unswitch-loops,omit-frame-pointer,inline")
+#pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
+#pragma GCC target("arch=haswell,tune=haswell")
+#pragma GCC target("aes,abm,align-stringops,avx,avx2,bmi,bmi2,crc32,cx16,f16c,fma,fsgsbase,fxsr,hle,ieee-fp,lzcnt,mmx,movbe,mwait,pclmul,popcnt,rdrnd,sahf,sse,sse2,sse3,sse4,sse4.1,sse4.2,ssse3,xsave,xsaveopt")
+#include <x86intrin.h>                                                      //AVX/SSE Extensions
 
 
 #include <bits/stdc++.h>
@@ -112,10 +112,10 @@ float efficiency;
 int width;
 int height;
 
-int avg_pairs_tested = 0;
 
 inline bool point_safe(const Point& p) {
-    return p.x >= 0 && p.x < width && p.y >= 0 && p.y < height;
+    return true;    // it seems that all levels are surrounded with wall
+    // return p.x >= 0 && p.x < width && p.y >= 0 && p.y < height;
 }
 
 
@@ -165,20 +165,23 @@ public:
     vector<string> grid;
     vector<vector<Point>> tiles_in_cc;  //? [connected component][tile]
 
+    vector<int> cc_weight;    //? cc_weight of component
+    vector<double> cc_prob;    //? probability of using connected component
+    int total_weight;
+
     Map() {
         grid.resize(height);
         parse_grid();
         find_tiles_in_cc();
+        setup_random();
         // debug();
     }
 
     void debug() {
         cerr << "Map found tiles in CC::\n";
         for (int i = 0; i < tiles_in_cc.size(); i++) {
-            cerr << "CC " << i << " (" << tiles_in_cc[i].size() << "): ";
-            for (const Point& p : tiles_in_cc[i]) {
-                cerr << p << ", ";
-            }
+            cerr << "CC " << i << " (" << tiles_in_cc[i].size() << ") (" << cc_weight[i] << ") ";
+            cerr << "Prob: " << cc_prob[i];
             cerr << '\n';
         }
         cerr << '\n';
@@ -231,9 +234,32 @@ public:
         }
     }
 
+    void setup_random() {
+        // improves efficiency
+        sort(tiles_in_cc.begin(), tiles_in_cc.end(), [](const vector<Point>& a, const vector<Point>& b) {
+            return a.size() > b.size();
+        });
+
+        total_weight = 0;
+        cc_weight.resize(tiles_in_cc.size());
+        cc_prob.resize(tiles_in_cc.size());
+        for (int i = 0; i < tiles_in_cc.size(); i++) {
+            cc_weight[i] = tiles_in_cc[i].size();
+            total_weight += tiles_in_cc[i].size();
+        }
+
+        for (int i = 0; i < tiles_in_cc.size(); i++) {
+            cc_prob[i] = cc_weight[i] / (double)total_weight;
+        }
+    }
+
     // ---- random tile functions ----
+    inline int random_cc() const {
+        return rand() % tiles_in_cc.size();
+    }
+
     inline Point random_tile() const {
-        const int cc = rand() % tiles_in_cc.size();
+        const int cc = random_cc();
         const int tile = rand() % tiles_in_cc[cc].size();
         return tiles_in_cc[cc][tile];
     }
@@ -243,8 +269,38 @@ public:
         return tiles_in_cc[cc][tile];
     }
 
-    inline int random_cc() const {
-        return rand() % tiles_in_cc.size();
+    inline int weighted_random_cc() const { //? probability of component depends on its size
+        int rnd = rand() % total_weight;
+
+        for (int i = 0; i < tiles_in_cc.size(); i++) {
+            if (rnd < cc_weight[i]) {
+                return i;
+            }
+            rnd -= cc_weight[i];
+        }
+
+        return tiles_in_cc.size() - 1;
+    }
+
+    inline Point weighted_random_tile() const {
+        const int cc = weighted_random_cc();
+        const int tile = rand() % tiles_in_cc[cc].size();
+        return tiles_in_cc[cc][tile];
+    }
+
+    inline Point furthest_tile_from_cc(int cc, const Point &p) const {
+        double max_dist = -1;
+        Point far_tile;
+
+        for (const auto& tile : tiles_in_cc[cc]) {
+            double dist = p.int_dist(tile);
+            if (dist > max_dist) {
+                max_dist = dist;
+                far_tile = tile;
+            }
+        }
+
+        return far_tile;
     }
 };
 
@@ -272,19 +328,18 @@ public:
         Timer timer;
 
         int pairs_tested = 0;
-        // int debug_lines = 10;
-        double efficiency = 1e9;
+        double avg_efficiency = 0;
 
         while (timer.elapsed() < t) {
             pairs_tested++;
 
-            const int cc = map.random_cc();
+            const int cc = map.weighted_random_cc();
             const Point start = map.random_tile_from_cc(cc);
             const Point end = map.random_tile_from_cc(cc);
 
             // find path using A* with landmarks
             int n_visited = 0;
-            double path_length = 0;
+            double path_length = 1e9;
 
             auto comp = [](const pair<pair<double, double>, Point>& a, const pair<pair<double, double>, Point>& b) {
                 return a.first.first > b.first.first;
@@ -316,9 +371,6 @@ public:
                 for (int i = 0; i < 8; i++) {
                     const Point new_p = p + DIR[i];
 
-                    if(point_safe(new_p) == false)
-                        continue;
-
                     if (map.grid[new_p.y][new_p.x] == WALL || visited[new_p.y][new_p.x] == vis_cnt)
                         continue;
 
@@ -328,23 +380,18 @@ public:
                 }
             }
 
-            efficiency = min(efficiency, path_length / (double)n_visited);
+            const double efficiency = path_length / (double)n_visited;
+            if(!avg_efficiency) avg_efficiency = efficiency;
+            avg_efficiency = (avg_efficiency + efficiency) / 2;
         }
 
-        if(!avg_pairs_tested) avg_pairs_tested = pairs_tested;
-        pairs_tested = (pairs_tested + avg_pairs_tested) / 2;
 
-        return efficiency;
+        return avg_efficiency;
     }
 
     // ------ solvers ------
-    int active_landmarks_function = 0;
     inline vector<Landmark>* active_random_landmarks_function() {
-        active_landmarks_function++;
-
-        if(active_landmarks_function%4)
-            return gen_landmarks_furthest();
-        return gen_landmarks_random();
+        return gen_landmarks_furthest_cc_weighted();
     }
 
     vector<Landmark>* gen_landmarks_random() {
@@ -389,10 +436,45 @@ public:
         return lms;
     }
 
+    //? probability of placing landmark in cc is based on its size
+    vector<Landmark>* gen_landmarks_furthest_cc_weighted() {
+        double minimal_area_percentage = random_uniform()/5 + 0.001;  // 0.001 - 0.2
+
+        vector<Landmark> *lms = new vector<Landmark>();
+
+        Point first_landmark = map.weighted_random_tile();
+        lms->emplace_back(first_landmark);
+        lms->back().calculate_distances(map.grid);
+
+        for (int i = 1; i < landmarks_num; i++) {
+            Point furthest_point;
+            double max_dist = -1;
+
+            for (int cc = 0; cc < map.tiles_in_cc.size(); cc++) {
+                const auto& row = map.tiles_in_cc[cc];
+
+                for (const auto& tile : row) {
+                    double min_dist = INT_MAX;
+                    for (const auto& lm : *lms) {
+                        min_dist = min(min_dist, lm.distances[tile.y][tile.x]);
+                    }
+                    if (min_dist > max_dist && map.cc_prob[cc] > minimal_area_percentage) {
+                        max_dist = min_dist;
+                        furthest_point = tile;
+                    }
+                }
+            }
+
+            lms->emplace_back(furthest_point);
+            lms->back().calculate_distances(map.grid);
+        }
+
+        return lms;
+    }
+
     // tests random landmarks and returns the estimated best set of landmarks
     vector<Landmark>* solve(int t = TIME_LIMIT_MS, int solution_testing_time = 100) {
         Timer timer;
-        cerr << "Do i even care?\n"; 
 
         int landmarks_tested = 0;
 
@@ -417,7 +499,6 @@ public:
 
         cerr << "Tested " << landmarks_tested << " sets of landmarks\n";
         cerr << "Estimated efficiency: " << best_efficiency << '\n';
-        cerr << "Average pairs tested per set: " << avg_pairs_tested << '\n';
 
         return best_lms;
     }
@@ -429,10 +510,10 @@ int main() {
 
     Solution s;
 
-    vector<Landmark> *lms = s.solve(9000, 30);
+    const int testing_time = 100;
+    vector<Landmark> *lms = s.solve(TIME_LIMIT_MS-testing_time-5, testing_time);
 
     for (int i = 0; i < landmarks_num; i++) {
-        // cout << (*lms)[i].pos.y << ' ' << (*lms)[i].pos.x << '\n';
         cout << (*lms)[i].pos.x << ' ' << (*lms)[i].pos.y << '\n';
     }
     cout << endl;

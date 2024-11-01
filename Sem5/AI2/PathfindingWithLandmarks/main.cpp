@@ -335,30 +335,32 @@ public:
 
             const int cc = map.weighted_random_cc();
             const Point start = map.random_tile_from_cc(cc);
-            const Point end = map.random_tile_from_cc(cc);
+            const Point end = map.furthest_tile_from_cc(cc, start);
+            // const Point end = map.random_tile_from_cc(cc);
 
             // find path using A* with landmarks
-            int n_visited = 0;
-            double path_length = 1e9;
-
-            auto comp = [](const pair<pair<double, double>, Point>& a, const pair<pair<double, double>, Point>& b) {
+            auto comp = [](const pair<pair<double, pair<double, int>>, Point>& a, const pair<pair<double, pair<double, int>>, Point>& b) {
                 return a.first.first > b.first.first;
             };
 
-            priority_queue<pair<pair<double, double>, Point>, 
-                            vector<pair<pair<double, double>, Point>>, 
-                            decltype(comp)> pq(comp);     // {{heuristic value, real_cost}, point}
+            priority_queue<pair<pair<double, pair<double, int>>, Point>, 
+                            vector<pair<pair<double, pair<double, int>>, Point>>, 
+                            decltype(comp)> pq(comp);     // {{heuristic {value, nodes cnt}, real_cost}, point}
 
-            pq.push({{0, 0}, start});
+            int n_visited = 1;
+            double path_length = 1e9;
+
+            pq.push({{0, {0, 0}}, start});
             vis_cnt++;
 
             while (!pq.empty()) {
                 Point p = pq.top().second;
-                auto [h_cost, cost] = pq.top().first;
+                auto [h_cost, pr] = pq.top().first;
+                auto [cost, nodes] = pr;
                 pq.pop();
 
                 if (p == end) {
-                    path_length = cost;
+                    path_length = nodes;
                     break;
                 }
 
@@ -376,12 +378,12 @@ public:
 
                     const double new_cost = cost + DIR_COST[i];
                     const double h = heuristic(new_p, end, lms);
-                    pq.push({{new_cost + h, new_cost}, new_p});
+                    pq.push({{new_cost + h, {new_cost, nodes+1}}, new_p});
                 }
             }
 
             const double efficiency = path_length / (double)n_visited;
-            if(!avg_efficiency) avg_efficiency = efficiency;
+            if(avg_efficiency == 0) avg_efficiency = efficiency;
             avg_efficiency = (avg_efficiency + efficiency) / 2;
         }
 
@@ -390,8 +392,12 @@ public:
     }
 
     // ------ solvers ------
-    inline vector<Landmark>* active_random_landmarks_function() {
-        return gen_landmarks_furthest_cc_weighted();
+    int active_random_landmarks = 0;
+    vector<Landmark>* active_random_landmarks_function() {
+        active_random_landmarks++;
+        if (active_random_landmarks % 5)
+            return gen_landmarks_furthest_cc_weighted();
+        return gen_landmarks_random_cc_weighted();
     }
 
     vector<Landmark>* gen_landmarks_random() {
@@ -399,6 +405,17 @@ public:
 
         for (int i = 0; i < landmarks_num; i++) {
             lms->emplace_back(map.random_tile());
+            lms->back().calculate_distances(map.grid);
+        }
+
+        return lms;
+    }
+
+    vector<Landmark>* gen_landmarks_random_cc_weighted() {
+        vector<Landmark> *lms = new vector<Landmark>();
+
+        for (int i = 0; i < landmarks_num; i++) {
+            lms->emplace_back(map.weighted_random_tile());
             lms->back().calculate_distances(map.grid);
         }
 
@@ -505,12 +522,15 @@ public:
 };
 
 int main() {
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+
     cin >> landmarks_num >> efficiency; cin.ignore();
     cin >> width >> height; cin.ignore();
 
     Solution s;
 
-    const int testing_time = 100;
+    const int testing_time = 75;
     vector<Landmark> *lms = s.solve(TIME_LIMIT_MS-testing_time-5, testing_time);
 
     for (int i = 0; i < landmarks_num; i++) {

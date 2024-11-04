@@ -115,7 +115,11 @@ float efficiency;
 int width;
 int height;
 
+int avg_simulations = 0;
 int COMPUTATION_MODEL = 1;
+
+vector<vector<int>> l_visited;
+int l_vis_ptr = 1;
 
 
 class Landmark {
@@ -129,26 +133,30 @@ public:
 
     void calculate_distances(vector<string> &grid) {
         // BFS
-        queue<Point> q;
-        q.push(pos);
-        vector<vector<bool>> visited(height, vector<bool>(width, false));
-        visited[pos.y][pos.x] = true;
+        const auto comp = [](const pair<double, Point>& a, const pair<double, Point>& b) {
+            return a.first > b.first;
+        };
+        priority_queue<pair<double, Point>, vector<pair<double, Point>>, decltype(comp)> q(comp);
+        q.push({0, pos});
+        l_vis_ptr++;
         distances[pos.y][pos.x] = 0;
 
         while (!q.empty()) {
-            Point p = q.front();
+            const auto [dist, p] = q.top();
             q.pop();
+
+            if(l_visited[p.y][p.x] == l_vis_ptr) continue;
+            l_visited[p.y][p.x] = l_vis_ptr;
 
             for (int i = 0; i < 8; i++) {
                 Point new_p = p + DIR[i];
 
                 // test if collided or visited
-                if (grid[new_p.y][new_p.x] == WALL || visited[new_p.y][new_p.x])
+                if (grid[new_p.y][new_p.x] == WALL || l_visited[new_p.y][new_p.x] == l_vis_ptr)
                     continue;
 
                 distances[new_p.y][new_p.x] = distances[p.y][p.x] + DIR_COST[i];
-                visited[new_p.y][new_p.x] = true;
-                q.push(new_p);
+                q.push({dist + DIR_COST[i], new_p});
             }
         }
     }
@@ -158,6 +166,8 @@ public:
 class Map {
 public:
     vector<string> grid;
+    vector<vector<int>> visited;
+    int vis_ptr = 1;
     vector<vector<Point>> tiles_in_cc;  //? [connected component][tile]
 
     vector<int> cc_weight;    //? cc_weight of component
@@ -167,6 +177,7 @@ public:
 
     Map() {
         grid.resize(height);
+        visited.resize(height, vector<int>(width, 0));
         parse_grid();
         find_tiles_in_cc();
         setup_random();
@@ -193,11 +204,11 @@ public:
 
     // find connected components, and store tiles in each connected component
     void find_tiles_in_cc() {
-        vector<vector<bool>> visited(height, vector<bool>(width, false));
+        vis_ptr++;
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                if (grid[y][x] == WALL || visited[y][x]) {
+                if (grid[y][x] == WALL || visited[y][x] == vis_ptr) {
                     continue;
                 }
 
@@ -205,7 +216,7 @@ public:
 
                 queue<Point> q;
                 q.push(Point(x, y));
-                visited[y][x] = true;
+                visited[y][x] = vis_ptr;
 
                 while (!q.empty()) {
                     Point p = q.front();
@@ -216,10 +227,10 @@ public:
                     for (int k = 0; k < 4; k++) {
                         Point new_p = p + DIR[k];
 
-                        if (grid[new_p.y][new_p.x] == WALL || visited[new_p.y][new_p.x])
+                        if (grid[new_p.y][new_p.x] == WALL || visited[new_p.y][new_p.x] == vis_ptr)
                             continue;
 
-                        visited[new_p.y][new_p.x] = true;
+                        visited[new_p.y][new_p.x] = vis_ptr;
                         q.push(new_p);
                     }
                 }
@@ -271,10 +282,10 @@ public:
     }
 
     inline int weighted_random_cc() const { //? probability of component depends on its size
-        int rnd = rand() % total_weight;
+        int rnd = rand() % (int)(total_weight - 0.01*total_weight);
 
-        for (int i = 0; i < tiles_in_cc.size(); i++) {
-            if (rnd < cc_weight[i]) {
+        for(int i = 0; i < tiles_in_cc.size(); i++) {
+            if(rnd < cc_weight[i]) {
                 return i;
             }
             rnd -= cc_weight[i];
@@ -290,11 +301,11 @@ public:
     }
 
     inline Point furthest_tile_from_cc(int cc, const Point &p) const {
-        double max_dist = -1;
+        int max_dist = -1;
         Point far_tile;
 
         for (const auto& tile : tiles_in_cc[cc]) {
-            double dist = p.int_dist(tile);
+            const int dist = p.int_dist(tile);
             if (dist > max_dist) {
                 max_dist = dist;
                 far_tile = tile;
@@ -304,6 +315,7 @@ public:
         return far_tile;
     }
 };
+vector<int> CCCCC(100000, 0);
 
 
 class Solution {
@@ -319,6 +331,7 @@ public:
     inline double heuristic(const Point& p, const Point& end, vector<Landmark> &lms) const {
         double h = 0;
         for(int i = 0; i < landmarks_num; i++) {
+            if(lms[i].distances[p.y][p.x] > 1e8) continue;
             h = max(h, abs(lms[i].distances[p.y][p.x] - lms[i].distances[end.y][end.x]));
         }
         return h;
@@ -347,24 +360,26 @@ public:
         double avg_efficiency = 0;
         const int N = 10;
 
-        while (timer.elapsed() < t) {
+        while(timer.elapsed() < t) {
             for(int i = 0; i < N; i++) {
                 pairs_tested++;
 
                 const int cc = map.weighted_random_cc();
                 const Point start = map.random_tile_from_cc(cc);
+                CCCCC[cc]++;
                 
-                // const Point end = map.furthest_tile_from_cc(cc, start);
+                const Point end = map.furthest_tile_from_cc(cc, start);
                 // const Point end = map.random_tile_from_cc(cc);
-                Point end;
-                if(COMPUTATION_MODEL) {
-                    if(pairs_tested%4)
-                        end = map.furthest_tile_from_cc(cc, start);
-                    else end = map.random_tile_from_cc(cc);
-                } else {
-                    end = map.furthest_tile_from_cc(cc, start);
-                    // end = map.random_tile_from_cc(cc);
-                }
+                // Point end;
+                // if(COMPUTATION_MODEL) {
+                //     if(pairs_tested%4)
+                //         end = map.furthest_tile_from_cc(cc, start);
+                //     else end = map.random_tile_from_cc(cc);
+                // } else {
+                //     if(pairs_tested%4)
+                //         end = map.random_tile_from_cc(cc);
+                //     else end = map.furthest_tile_from_cc(cc, start);
+                // }
 
                 // find path using A* with landmarks
                 priority_queue<PQNode> pq;
@@ -406,9 +421,16 @@ public:
                 const double efficiency = path_length / (double)n_visited;
                 if(avg_efficiency == 0) avg_efficiency = efficiency;
                 avg_efficiency = (avg_efficiency + efficiency) / 2;
+
+                // if(vis_cnt < 100) 
+                //     cerr << efficiency << ' ' << n_visited << ' ' << path_length << " | " << start << " -> " << end << '\n';
             }
         }
 
+        cerr << "Avg efficiency: " << avg_efficiency << '\n';
+        if(avg_simulations == 0) avg_simulations = pairs_tested;
+        avg_simulations += pairs_tested;
+        avg_simulations /= 2;
 
         return avg_efficiency;
     }
@@ -591,9 +613,10 @@ int main() {
     cin >> landmarks_num >> efficiency; cin.ignore();
     cin >> width >> height; cin.ignore();
 
+    l_visited.resize(height, vector<int>(width, 0));
+
     Solution s;
 
-    cerr << width << ' ' << height << '\n';
     int testing_time = 75;
     if(width == 88 && height == 86) {
         COMPUTATION_MODEL = 0;
@@ -605,6 +628,14 @@ int main() {
     }
 
     vector<Landmark> *lms = s.solve(TIME_LIMIT_MS-testing_time-5, testing_time);
+    cerr << "Avg simulations: " << avg_simulations << '\n';
+
+    int ptr = 0;
+    while(CCCCC[ptr] != 0) {
+        cerr << CCCCC[ptr] << ' ';
+        ptr++;
+    }
+    cerr << '\n';
 
     for (int i = 0; i < landmarks_num; i++) {
         cout << (*lms)[i].pos.x << ' ' << (*lms)[i].pos.y << '\n';

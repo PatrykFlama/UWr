@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <h2>Odwrócenie funkcji żądań GET i POST</h2>
+
+    <p id="message"></p>
+
+    <a href="#" onclick="submitPostForm()">żądanie POST (domyślnie GET)</a>
+
+    <!-- potrzebujemy dummy-formularza aby wykonać faktyczne żądanie POST -->
+    <form id="postForm" method="post" action="/submit-post">
+        <input type="hidden" name="p1" value="v1">
+        <input type="hidden" name="p2" value="v2">
+    </form>
+
+    <script>
+        function submitPostForm() {
+            document.getElementById("postForm").submit();
+        }
+    </script>
+
+    <br /> <br />
+    <!-------------------------->
+
+    <form id="getForm" method="get" action="/submit-get">
+        <input type="text" name="p1" placeholder="Parametr 1">
+        <input type="text" name="p2" placeholder="Parametr 2">
+        <button type="button" onclick="triggerGetRequest()">żądanie GET (domyślnie POST)</button>
+    </form>
+
+    <script>
+        function triggerGetRequest() {
+            const form = document.getElementById("getForm");
+            const params = new URLSearchParams(new FormData(form)).toString();
+            window.location.href = form.action + '?' + params;
+        }
+    </script>
+</body>
+</html>

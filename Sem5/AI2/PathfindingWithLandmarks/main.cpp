@@ -163,6 +163,7 @@ public:
 
     vector<int> cc_weight;    //? cc_weight of component
     vector<double> cc_prob;    //? probability of using connected component
+    vector<int> cc_landmarks;  //? number of landmarks in connected component
     int total_weight;
 
     Map() {
@@ -236,10 +237,16 @@ public:
         total_weight = 0;
         cc_weight.resize(tiles_in_cc.size());
         cc_prob.resize(tiles_in_cc.size());
+        cc_landmarks.resize(tiles_in_cc.size());
+        int lms_used = 0;
         for (int i = 0; i < tiles_in_cc.size(); i++) {
             cc_weight[i] = tiles_in_cc[i].size();
             total_weight += tiles_in_cc[i].size();
+
+            cc_landmarks[i] = landmarks_num * cc_weight[i] / (double)total_weight;
+            lms_used += cc_landmarks[i];
         }
+        cc_landmarks[0] += landmarks_num - lms_used;
 
         for (int i = 0; i < tiles_in_cc.size(); i++) {
             cc_prob[i] = cc_weight[i] / (double)total_weight;
@@ -399,18 +406,20 @@ public:
     }
 
     // ------ solvers ------
-    int active_random_landmarks = 0;
+    // int active_random_landmarks = 0;
     vector<Landmark>* active_random_landmarks_function() {
-        active_random_landmarks++;
-        if(RANDOM_FUNCTION_VERSION == 1) {
-            if (active_random_landmarks % 5)
-                return gen_landmarks_furthest_cc_weighted();
-            return gen_landmarks_random_cc_weighted();
-        }
+        return gen_landmarks_furthest_cc_separated();
 
-        if(active_random_landmarks%4)
-            return gen_landmarks_furthest();
-        return gen_landmarks_random();
+        // active_random_landmarks++;
+        // if(RANDOM_FUNCTION_VERSION == 1) {
+        //     if (active_random_landmarks % 5)
+        //         return gen_landmarks_furthest_cc_weighted();
+        //     return gen_landmarks_random_cc_weighted();
+        // }
+
+        // if(active_random_landmarks%4)
+        //     return gen_landmarks_furthest();
+        // return gen_landmarks_random();
     }
 
     vector<Landmark>* gen_landmarks_random() {
@@ -476,19 +485,19 @@ public:
         lms->emplace_back(first_landmark);
         lms->back().calculate_distances(map.grid);
 
-        for (int i = 1; i < landmarks_num; i++) {
+        for(int i = 1; i < landmarks_num; i++) {
             Point furthest_point;
             double max_dist = -1;
 
-            for (int cc = 0; cc < map.tiles_in_cc.size(); cc++) {
+            for(int cc = 0; cc < map.tiles_in_cc.size(); cc++) {
                 const auto& row = map.tiles_in_cc[cc];
 
-                for (const auto& tile : row) {
+                for(const auto& tile : row) {
                     double min_dist = INT_MAX;
-                    for (const auto& lm : *lms) {
+                    for(const auto& lm : *lms) {
                         min_dist = min(min_dist, lm.distances[tile.y][tile.x]);
                     }
-                    if (min_dist > max_dist && map.cc_prob[cc] > minimal_area_percentage) {
+                    if(min_dist > max_dist && map.cc_prob[cc] > minimal_area_percentage) {
                         max_dist = min_dist;
                         furthest_point = tile;
                     }
@@ -501,6 +510,45 @@ public:
 
         return lms;
     }
+
+
+    vector<Landmark>* gen_landmarks_furthest_cc_separated() {
+        vector<Landmark> *lms = new vector<Landmark>();
+        
+        for(int cc = 0; cc < map.tiles_in_cc.size(); cc++) {
+            gen_lms_in_cc(lms, cc);
+        }
+
+        return lms;
+    }
+
+    inline void gen_lms_in_cc(vector<Landmark> *lms, int cc) {
+        Point first_landmark = map.furthest_tile_from_cc(cc, map.random_tile_from_cc(cc));
+        lms->emplace_back(first_landmark);
+        lms->back().calculate_distances(map.grid);
+
+        for(int i = 1; i < map.cc_landmarks[cc]; i++) {
+            Point furthest_point;
+            double max_dist = -1;
+
+            for(const auto& tile : map.tiles_in_cc[cc]) {
+                double min_dist = INT_MAX;
+                for(const auto& lm : *lms) {
+                    min_dist = min(min_dist, lm.distances[tile.y][tile.x]);
+                }
+                if(min_dist > max_dist) {
+                    max_dist = min_dist;
+                    furthest_point = tile;
+                }
+            }
+
+            lms->emplace_back(furthest_point);
+            lms->back().calculate_distances(map.grid);
+        }
+
+        //todo opt: keep grid of distances to landmarks, and update only new landmarks, to find furthest point just iterate over grid
+    }
+
 
     // tests random landmarks and returns the estimated best set of landmarks
     vector<Landmark>* solve(int t = TIME_LIMIT_MS, int solution_testing_time = 100) {

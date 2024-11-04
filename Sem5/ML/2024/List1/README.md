@@ -31,3 +31,12 @@ for example, if we divide the data into 5 groups, we will train the model on 4 g
 in the extreme case we can use one sample as testing data and the rest as training data - this is called **leave-one-out cross validation**
 
 note: instead of comparing models, we can compare one mode that needs some tuning parameter - this way we can compare each parameter and choose the best one  
+
+
+# Data dimension reduction
+## PCA
+<!-- TODO -->
+
+## t-SNE
+rough idea: each data point is attracted to other close data points and repelled by data points that are far away - we do this to every point in multiple iterations and we end up with clustered data where similar data points are close to each other and dissimilar data points are far away from each other  
+the t-sne name comes from probability distribution that is used to model the attraction to other data points  

@@ -114,11 +114,6 @@ int width;
 int height;
 
 
-// parameters
-int testing_time = 75;
-int RANDOM_FUNCTION_VERSION = 1;  // 1 = weighted mix, 2 = full random
-
-
 class Landmark {
 public:
     Point pos;
@@ -353,8 +348,10 @@ public:
                 const int cc = map.weighted_random_cc();
                 const Point start = map.random_tile_from_cc(cc);
                 
+                // const Point end = map.furthest_tile_from_cc(cc, start);
+                // const Point end = map.random_tile_from_cc(cc);
                 Point end;
-                if(RANDOM_FUNCTION_VERSION == 1)
+                if(pairs_tested%4)
                     end = map.furthest_tile_from_cc(cc, start);
                 else Point end = map.random_tile_from_cc(cc);
 
@@ -406,20 +403,8 @@ public:
     }
 
     // ------ solvers ------
-    // int active_random_landmarks = 0;
     vector<Landmark>* active_random_landmarks_function() {
         return gen_landmarks_furthest_cc_separated();
-
-        // active_random_landmarks++;
-        // if(RANDOM_FUNCTION_VERSION == 1) {
-        //     if (active_random_landmarks % 5)
-        //         return gen_landmarks_furthest_cc_weighted();
-        //     return gen_landmarks_random_cc_weighted();
-        // }
-
-        // if(active_random_landmarks%4)
-        //     return gen_landmarks_furthest();
-        // return gen_landmarks_random();
     }
 
     vector<Landmark>* gen_landmarks_random() {
@@ -527,26 +512,31 @@ public:
         lms->emplace_back(first_landmark);
         lms->back().calculate_distances(map.grid);
 
+        vector<double> distances(map.tiles_in_cc[cc].size());
+        for(int i = 0; i < map.tiles_in_cc[cc].size(); i++) {
+            const auto& tile = map.tiles_in_cc[cc][i];
+            distances[i] = lms->back().distances[tile.y][tile.x];
+        }
+
         for(int i = 1; i < map.cc_landmarks[cc]; i++) {
             Point furthest_point;
             double max_dist = -1;
 
-            for(const auto& tile : map.tiles_in_cc[cc]) {
-                double min_dist = INT_MAX;
-                for(const auto& lm : *lms) {
-                    min_dist = min(min_dist, lm.distances[tile.y][tile.x]);
-                }
-                if(min_dist > max_dist) {
-                    max_dist = min_dist;
-                    furthest_point = tile;
+            for(int i = 0; i < map.tiles_in_cc[cc].size(); i++) {
+                if(distances[i] > max_dist) {
+                    max_dist = distances[i];
+                    furthest_point = map.tiles_in_cc[cc][i];
                 }
             }
 
             lms->emplace_back(furthest_point);
             lms->back().calculate_distances(map.grid);
-        }
 
-        //todo opt: keep grid of distances to landmarks, and update only new landmarks, to find furthest point just iterate over grid
+            for(int i = 0; i < map.tiles_in_cc[cc].size(); i++) {
+                const auto& tile = map.tiles_in_cc[cc][i];
+                distances[i] = min(distances[i], lms->back().distances[tile.y][tile.x]);
+            }
+        }
     }
 
 
@@ -591,14 +581,7 @@ int main() {
 
     Solution s;
 
-    if((width > 150 && height > 150) || s.map.tiles_in_cc.size() > landmarks_num) {
-        testing_time = 20;
-        RANDOM_FUNCTION_VERSION = 2;
-    } else {
-        testing_time = 75;
-        RANDOM_FUNCTION_VERSION = 1;
-    }
-
+    const int testing_time = 75;
     vector<Landmark> *lms = s.solve(TIME_LIMIT_MS-testing_time-5, testing_time);
 
     for (int i = 0; i < landmarks_num; i++) {

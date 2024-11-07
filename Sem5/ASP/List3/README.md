@@ -13,7 +13,7 @@ elementy z aplikacji muszą być zabezpieczone przed wielowątkowością - wielu
 elementy z sesji mogą wymagać dodatkowych zabezpieczeń (ale najczęściej nie wymagają)  
 elementy z items nie wymagają zabezpieczenia przed wielowątkowością
 
-kontenera items mogłoby nie być w interfejsie programistycznym, ponieważ działa on analogicznie do lokalnych zmiennych 
+kontenera application mogłoby nie być w interfejsie programistycznym, ponieważ odpowiada on statycznym zmiennym
 
 ## Zadanie 5
 powinniśmy skorzystać z kontenera `Items` ponieważ odpowiadałby onn zakresowi jednego żądania  
@@ -41,3 +41,14 @@ Response.AddHeader("Content-Disposition", $"attachment; filename*=UTF-8''{Uri.Es
 `Uri.EscapeDataString(filename)` koduje nazwę pliku
 
 * jeżeli przeglądarka nie wspiera RFC5987 możemy to sprwadzić i wysłać inną wersję nazwy pliku takim przeglądarkom
+
+
+
+# Pytania
+* zad 2:
+	* to jak wygląda wersja naiwna?
+
+* Zad 4:
+	* tak to powinno wyglądać?
+	* dlaczego nie można lockować innych kontenerów
+	* to po co ten kontener items

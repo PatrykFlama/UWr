@@ -9,6 +9,7 @@
     - [Global Application Class](#global-application-class)
     - [Abstract Base Page](#abstract-base-page)
   - [Contener Dependency Injection](#contener-dependency-injection)
+- [Wykład 5 - MVC](#wykład-5---mvc)
 
 
 
@@ -180,3 +181,11 @@ connection string możemy dodać w appsettings.json
 ```
 
 tutaj już nie musimy dodawać manualnie Dispose, bo kontener sam zadba o to przy końcu requesta
+
+
+
+# Wykład 5 - MVC
+widoki **muszą** być w folderze `Views`, natomiast modele i kontrolery mogą być w dowolnym miejscu (aczkolwiek wg konwencji w odpowiednich folderach)  
+
+
+

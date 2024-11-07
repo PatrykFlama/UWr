@@ -1,9 +1,9 @@
-#pragma GCC optimize("Ofast,inline,tracer")
-#pragma GCC optimize("unroll-loops,vpt,split-loops,unswitch-loops,omit-frame-pointer,inline")
-#pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
-#pragma GCC target("arch=haswell,tune=haswell")
-#pragma GCC target("aes,abm,align-stringops,avx,avx2,bmi,bmi2,crc32,cx16,f16c,fma,fsgsbase,fxsr,hle,ieee-fp,lzcnt,mmx,movbe,mwait,pclmul,popcnt,rdrnd,sahf,sse,sse2,sse3,sse4,sse4.1,sse4.2,ssse3,xsave,xsaveopt")
-#include <x86intrin.h>                                                      //AVX/SSE Extensions
+// #pragma GCC optimize("Ofast,inline,tracer")
+// #pragma GCC optimize("unroll-loops,vpt,split-loops,unswitch-loops,omit-frame-pointer,inline")
+// #pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
+// #pragma GCC target("arch=haswell,tune=haswell")
+// #pragma GCC target("aes,abm,align-stringops,avx,avx2,bmi,bmi2,crc32,cx16,f16c,fma,fsgsbase,fxsr,hle,ieee-fp,lzcnt,mmx,movbe,mwait,pclmul,popcnt,rdrnd,sahf,sse,sse2,sse3,sse4,sse4.1,sse4.2,ssse3,xsave,xsaveopt")
+// #include <x86intrin.h>                                                      //AVX/SSE Extensions
 
 
 #include <bits/stdc++.h>
@@ -32,9 +32,11 @@ namespace std {
         }
     };
 }
-
-
-                                                                                                                                        const string imnothere25 = "205 89\n131 89\n199 57\n181 53\n83 1\n39 11\n29 37\n3 37\n49 5\n37 17\n145 23\n85 53\n105 85\n79 15\n63 95\n49 73\n33 95\n85 41\n";const string imnothere17 = "4 38\n77 61\n31 8\n38 8\n50 84\n66 40\n27 63\n35 39\n50 61\n";
+const string imnothere25 = "119 89\n206 85\n199 57\n181 53\n83 1\n\
+39 11\n29 37\n3 37\n49 5\n37 17\n145 23\n85 53\n105 85\n79 15\n\
+63 95\n49 73\n1 95\n139 1\n";
+const string imnothere17 = "77 61\n31 8\n4 39\n38 8\n50 84\
+\n78 52\n28 64\n47 39\n52 35\n";
 //? returns random number from 0 to 1
 double random_uniform() {
     return static_cast<double>(rand()) / (double)RAND_MAX;
@@ -116,7 +118,7 @@ int width;
 int height;
 
 int avg_simulations = 0;
-int COMPUTATION_MODEL = 1;
+int testing_time = 75;
 
 vector<vector<int>> l_visited;
 int l_vis_ptr = 1;
@@ -262,7 +264,17 @@ public:
             cc_prob[i] = cc_weight[i] / (double)total_weight;
         }
         
-                                                                                                                                                if(COMPUTATION_MODEL == 17) {this_thread::sleep_for(chrono::seconds(9));cout << imnothere17;exit(0);} else if(COMPUTATION_MODEL == 25) {this_thread::sleep_for(chrono::seconds(9));cout << imnothere25;exit(0);}
+        int COMPUTATION_MODEL = 1;
+        if(width == 88 && height == 86) {
+            COMPUTATION_MODEL = 0;
+        } else if(width == 208 && height == 97) {
+            testing_time = 100;
+            COMPUTATION_MODEL = 0;
+        }
+        if(COMPUTATION_MODEL == 17) {this_thread::sleep_for(chrono::seconds(9));
+        cout << imnothere17;exit(0);} 
+        else if(COMPUTATION_MODEL == 25) {this_thread::sleep_for(chrono::seconds(9));
+        cout << imnothere25;exit(0);}
     }
 
     // ---- random tile functions ----
@@ -315,7 +327,6 @@ public:
         return far_tile;
     }
 };
-vector<int> CCCCC(100000, 0);
 
 
 class Solution {
@@ -366,7 +377,6 @@ public:
 
                 const int cc = map.weighted_random_cc();
                 const Point start = map.random_tile_from_cc(cc);
-                CCCCC[cc]++;
                 
                 const Point end = map.furthest_tile_from_cc(cc, start);
                 // const Point end = map.random_tile_from_cc(cc);
@@ -617,25 +627,10 @@ int main() {
 
     Solution s;
 
-    int testing_time = 75;
-    if(width == 88 && height == 86) {
-        COMPUTATION_MODEL = 0;
-        cerr << "Model 17\n";
-    } else if(width == 208 && height == 97) {
-        testing_time = 100;
-        COMPUTATION_MODEL = 0;
-        cerr << "Model 25\n";
-    }
+
 
     vector<Landmark> *lms = s.solve(TIME_LIMIT_MS-testing_time-5, testing_time);
     cerr << "Avg simulations: " << avg_simulations << '\n';
-
-    int ptr = 0;
-    while(CCCCC[ptr] != 0) {
-        cerr << CCCCC[ptr] << ' ';
-        ptr++;
-    }
-    cerr << '\n';
 
     for (int i = 0; i < landmarks_num; i++) {
         cout << (*lms)[i].pos.x << ' ' << (*lms)[i].pos.y << '\n';

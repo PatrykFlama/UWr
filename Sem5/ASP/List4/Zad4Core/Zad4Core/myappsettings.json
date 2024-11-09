@@ -1,0 +1,13 @@
+{
+  "AppSettingsKey": "AppSettingsVal",
+  "ConnectionStrings": {
+    "MyDatabase": "MyDatabaseConnectionString"
+  },
+  "Section": {
+    "SubKey": "SubVal"
+  },
+
+  "TypedSettings": {
+    "TypedAppSettingKey": "TypedAppSettingValue"
+  }
+}

@@ -1,0 +1,131 @@
+// domains
+domain Piece = empty | x | o
+domain Player = x | o
+
+// domain LocalPosition = P(LocalX, LocalY) where LocalX in 0..2, LocalY in 0..2
+domain GlobalPosition = null | G(GX, GY) where GX in 0..2, GY in 0..2
+domain Position = P(GX, GY, X, Y) where
+    GX in 0..2, GY in 0..2, X in 0..2, Y in 0..2
+
+domain BoardState = active | tied | x | o
+
+// variables
+board : Position -> Piece = { P(GX, GY, X, Y) = empty }
+global_board : GlobalPosition -> BoardState = { G(GX, GY) = active }
+active_local_board : GlobalPosition = null
+
+// helper 'functions'
+local_next_d1 : Position -> Position
+local_next_d1(P(GX, GY, X, Y)) = if X == Y then P(GX, GY, (X + 1) % 3, (Y + 1) % 3) else P(GX, GY, X, Y)
+
+local_next_d2 : Position -> Position
+local_next_d2(P(GX, GY, X, Y)) = if X + Y == 2 then P(GX, GY, (X + 1) % 3, (Y - 1) % 3) else P(GX, GY, X, Y)
+
+local_next_h : Position -> Position
+local_next_h(P(GX, GY, X, Y)) = P(GX, GY, X, (Y + 1) % 3)
+
+local_next_v : Position -> Position
+local_next_v(P(GX, GY, X, Y)) = P(GX, GY, (X + 1) % 3, Y)
+
+
+global_next_d1 : Position -> Position
+global_next_d1(G(GX, GY)) = if GX == GY then G((GX + 1) % 3, (GY + 1) % 3) else G(GX, GY)
+
+global_next_d2 : Position -> Position
+global_next_d2(G(GX, GY)) = if GX + GY == 2 then G((GX + 1) % 3, (GY - 1) % 3) else G(GX, GY)
+
+global_next_h : Position -> Position
+global_next_h(G(GX, GY)) = G(GX, (GY + 1) % 3)
+
+global_next_v : Position -> Position
+global_next_v(G(GX, GY)) = G((GX + 1) % 3, GY)
+
+
+op : Player -> Player
+op(x) = o
+op(o) = x
+
+
+global_position : Position -> GlobalPosition
+global_position(P(GX, GY, X, Y)) = G(GX, GY)
+
+// helper functions
+graph findNonempty() {  // checks if there exists board to play on
+  forall p:GlobalPosition {
+    check(global_board[p] == active)
+  }
+}
+
+graph globalWin(position: GlobalPosition) { //! assuming that position is not null, and on it is player
+  branch {
+    check(position != global_next_d1(position))
+    check(global_board[position] == global_board[global_next_d1(position)])
+    check(global_board[position] == global_board[global_next_d1(global_next_d1(position))])
+  } or {
+    check(position != global_next_d2(position))
+    check(global_board[position] == global_board[global_next_d2(position)])
+    check(global_board[position] == global_board[global_next_d2(global_next_d2(position))])
+  } or {
+    check(global_board[position] == global_board[global_next_h(position)])
+    check(global_board[position] == global_board[global_next_h(global_next_h(position))])
+  } or {
+    check(global_board[position] == global_board[global_next_v(position)])
+    check(global_board[position] == global_board[global_next_v(global_next_v(position))])
+  }
+}
+
+graph localWin(position: Position) {
+  branch {
+    check(position != local_next_d1(position))
+    check(board[position] == board[local_next_d1(position)])
+    check(board[position] == board[local_next_d1(local_next_d1(position))])
+  } or {
+    check(position != local_next_d2(position))
+    check(board[position] == board[local_next_d2(position)])
+    check(board[position] == board[local_next_d2(local_next_d2(position))])
+  } or {
+    check(board[position] == board[local_next_h(position)])
+    check(board[position] == board[local_next_h(local_next_h(position))])
+  } or {
+    check(board[position] == board[local_next_v(position)])
+    check(board[position] == board[local_next_v(local_next_v(position))])
+  }
+}
+
+// TODO it aint lookig good
+graph turn(me: Player) {
+  player = me
+
+  if active_local_board == null {
+    forall gp : GlobalPosition {
+      check(global_board[gp] == active)
+      chosen = gp
+      turn(me)
+      $ gp
+
+    }
+  }
+
+  player = keeper
+  if reachable(globalWin(global_position[position])) {
+    goals[me] = 100
+    goals[op[me]] = 0
+    end()
+  }
+
+  if reachable(localWin(position)) {
+    global_board[global_position[position]] = me
+  }
+
+  if not(reachable(findNonempty())) {
+    end()
+  }
+}
+
+// main loop
+graph rules() {
+  loop {
+    turn(x)
+    turn(o)
+  }
+}

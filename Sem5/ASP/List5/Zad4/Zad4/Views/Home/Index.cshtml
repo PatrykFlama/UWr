@@ -1,0 +1,57 @@
+﻿@model Zad4.Models.User
+
+@{
+    ViewData["Title"] = "HTML Helpers Example";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Submit" method="post">
+    <div>
+        <label for="Username">Username:</label>
+        @Html.TextBoxFor(m => m.Username)
+    </div>
+
+    <div>
+        <label for="Password">Password:</label>
+        @Html.PasswordFor(m => m.Password)
+    </div>
+
+    <div>
+        <label for="IsActive">Active:</label>
+        @Html.CheckBoxFor(m => m.IsActive)
+    </div>
+
+    <div>
+        <label for="Gender">Gender:</label>
+        @Html.RadioButtonFor(m => m.Gender, "Male") Male
+        @Html.RadioButtonFor(m => m.Gender, "Female") Female
+    </div>
+
+    <div>
+        <label for="Bio">Bio:</label>
+        @Html.TextAreaFor(m => m.Bio)
+    </div>
+
+    <div>
+        <label for="Country">Country:</label>
+        @Html.DropDownListFor(m => m.Country, new SelectList(Model.CountryList, "Value", "Text"))
+    </div>
+
+    <div>
+        <button type="submit">Submit</button>
+    </div>
+</form>
+
+@if(ViewBag.Message != null)
+{
+    <p>@ViewBag.Message</p>
+}
+
+<p>
+    @Html.ActionLink("Go to Home", "Index", "Home")
+</p>
+
+<p>
+    @Html.Raw("<strong>This is a bold message.</strong>")
+</p>

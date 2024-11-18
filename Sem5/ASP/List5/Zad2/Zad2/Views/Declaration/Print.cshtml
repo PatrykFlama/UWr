@@ -1,0 +1,30 @@
+﻿@model Zad2.Models.DeclarationModel
+
+<h2>PrintView</h2>
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Dane do Wydruku</h2>
+
+    <ul class="list-group">
+        <li class="list-group-item">
+            <strong>Imię:</strong> @Model.Name
+        </li>
+        <li class="list-group-item">
+            <strong>Kurs:</strong> @Model.Course
+        </li>
+        <li class="list-group-item">
+            <strong>Lista zadań:</strong> @Model.List
+        </li>
+    </ul>
+
+    <h4 class="mt-4">Punkty dla zadań:</h4>
+    <ul class="list-group">
+        @for(int i = 0; i < Model.Points.Length; i++)
+        {
+            <li class="list-group-item">
+                <strong>Zadanie @i:</strong> @(Model.Points[i] ?? 0)
+            </li>
+        }
+    </ul>
+</div>
+

@@ -1,0 +1,30 @@
+﻿@model IEnumerable<Zad6.Models.PersonModel>
+
+<h2>Person List</h2>
+
+<p>
+    <a href="@Url.Action("Create", "Person")">Add New Person</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Surname</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var person in Model)
+        {
+                <tr>
+                    <td>@person.Name</td>
+                    <td>@person.Surname</td>
+                    <td>
+                        <a href="@Url.Action("Edit", "Person", new { id = person.ID })">Edit</a> |
+                        <a href="@Url.Action("Delete", "Person", new { id = person.ID })">Delete</a>
+                    </td>
+                </tr>
+        }
+    </tbody>
+</table>

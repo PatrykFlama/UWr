@@ -10,6 +10,11 @@
     - [Abstract Base Page](#abstract-base-page)
   - [Contener Dependency Injection](#contener-dependency-injection)
 - [Wykład 5 - MVC](#wykład-5---mvc)
+- [Wykład 6 - autentykacja i autoryzacja](#wykład-6---autentykacja-i-autoryzacja)
+  - [Przykład autentykacji opartej o 302](#przykład-autentykacji-opartej-o-302)
+    - [Wersja w .NET Framework, WebForms](#wersja-w-net-framework-webforms)
+    - [Wersja w MVC](#wersja-w-mvc)
+    - [Wersja w .NET Core](#wersja-w-net-core)
 
 
 
@@ -189,3 +194,88 @@ widoki **muszą** być w folderze `Views`, natomiast modele i kontrolery mogą b
 
 
 
+# Wykład 6 - autentykacja i autoryzacja
+Typt autentykacji:  
+* oparta o status HTTP 401 (odpowiedź typu "użytkownik musi się uwierzytelnić")  
+* oparta o status HTTP 302  
+
+można podmienić w tym statusie sposób autentykacji, np na opartą o protokół Cerberos - w samym Windowsie wbudowane są różne funkcje (typu daj token użytkownika, daj nazwę tego użytkownika)  
+
+Wtedy w samym C# będziemy mieli `Request.User` z metodami dla już zalogowanego użytkownika. pytanie jak się ten użytkownik uwierzytelnia?
+
+> dlaczego token JWT (doklejony do nagłówka zapytania) jest lepszy od ciastka?  
+> bo ciastka nie są cross-domenowe, jeżeli zapytania będą wysyłane na różne serwery, to token z automatu będzie przenoszony do dowolnego serwera (np.: nasza jedna strona ma jakieś podaplikacje, chcemy aby użytkownik był uwierzytelniony we wszystkich, nie musząc się logować dla każdej z osobna)  
+
+
+## Przykład autentykacji opartej o 302
+### Wersja w .NET Framework, WebForms 
+
+`this.User` przychodzi standarwo wraz z .NET
+
+```cs
+PageLoad {
+    this.Label1.Text = $"username: {this.User.Identity.Name}, isauthenticated: {this.User.Identity.IsAuthenticated}";
+}
+```
+
+Aby upewnić się, że użytkownik jest zalogowany, w MVC będziemy pisali atrybut. W webformsaach musimy w web.config dodać:
+```xml
+<system.web>
+    <authetincation mode="Forms">
+        <forms name="foo" loginUrl="/Login.aspx" />
+    </authentication>
+    <authorization>
+        <deny users="?" />  <!-- odmawiaj niezalogowanym -->
+        <allow users="*" /> <!-- zezwalaj zalogownym -->
+    </authorization>
+</system.web>
+```
+
+możliwe tryby: `Forms` - 302  
+loginUrl to strona logowania, na którą będzie przekierowany użytkownik  
+
+jeżeli chcemy inne reguły np dla admina to tworzymy dla niego osobny folder, np ForAdmin, i tam tworzymy kolejny web.config gdzie ustawiamy dla niego zsady autentykacji  
+
+> co wykonuje przekierowania z web.config? jakiś wbudowany moduł odpowiedzialny za autentykację  
+
+
+teraz możemy napisać stronę logowania, skorzystamy do niej z modułu `forms authentication`:  
+```cs
+PaleLoad() {
+
+}
+
+Button_Click() {
+    if(hasło jest dobre) {
+        var ticket = new FormAuthenticationTicket(TextBoxName.Text, false, 20);  // drugie pole to pytanie o utrwalenie ciastka - zapisanie go na jakiś czas (nie jest to to samo co ważność ciastka, jest to po stronie serwera)
+        var cookieValue = FormsAuthentication.Encrypt(ticket);
+        var cookie = new HttpCookie(FormsAuthentication.FormsCookieName, cookieValue);
+        this.Response.AppendCookie(cookie);
+
+        var redirectUrl = this.Request.QueyString["returnUrl"];
+        this.Response.Redirect(redirectUrl);
+    }
+}
+
+```
+
+
+możemy dodać opcję slidingExpiration, która gdy minie połowa czasu ważności ciastka, przedłuża jego ważność (również po stronie serwera), wtedy tak długo jak użytkownik jest aktywny pozostanie on zalogowany, a po zamknięciu przeglądarki zostanie wylogowany  
+```xml
+<authentication mode>
+  <forms name="foo" loginurl="" slidingExpiration="true" />
+</authentication>
+```
+
+> Skąd wiedzieć kiedy pokazać użytkownikowi CAPTCHA? (bo chcemy tylko takiemu, który ma jakieś nieudane próby logowania)  
+> robimy 2-krokowe logowanie - najpierw pokazujemy tylko login, potem pytamy serwer o ten login i on nam odpowiada czy wyświetlić mu CAPTCHA przy wpisywaniu hasła  
+
+### Wersja w MVC
+w notatkach powinna być
+
+### Wersja w .NET Core
+żeby wymusić autentykację używamy atrybutu `[Authorize]`  lub `[Autrize(schemat)]`  
+
+w Main dodajemy do buildera autentykację (z notatek) (tutaj możemy tez np dodać własny cookie builder, albo cookie manager)  
+w app dodajemy middleware (z notatek)  
+reszta jest analogicznie jak wcześniej  

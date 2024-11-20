@@ -1,0 +1,27 @@
+﻿@model UserModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+
+@using (var form = Html.BeginForm())
+{
+    @Html.LabelFor(m => m.FullName)
+    @Html.TextBoxFor(m => m.FullName)
+    @Html.ValidationMessageFor(m => m.FullName)
+
+    <br />
+
+    @Html.LabelFor(m => m.Pesel)
+    @Html.TextBoxFor(m => m.Pesel)
+    @Html.ValidationMessageFor(m => m.Pesel)
+
+    <br />
+
+    <button>Submit</button>
+}

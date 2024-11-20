@@ -1,0 +1,39 @@
+﻿@model UserModel
+
+@{
+    Layout = Model.IsAdmin
+        ? "~/Views/Shared/_AdminLayout.cshtml" 
+        : "~/Views/Shared/_Layout.cshtml";
+
+    ViewData["Title"] = "Home Page";
+}
+
+<!-- wyświetli się tylko dla nieadmina -->
+@section Sidebar
+{
+    <p>(Nie jesteś administratorem)</p>
+}
+
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+@using(var form = Html.BeginForm()) {
+    @Html.LabelFor(m => m.IsAdmin)
+    @Html.CheckBoxFor(m => m.IsAdmin)
+
+    <br />
+
+    @Html.LabelFor(m => m.UserName)
+    @Html.TextBoxFor(m => m.UserName)
+
+    <br />
+
+    <button>Submit</button>
+}
+
+
+<h1>Profil użytkownika</h1>
+@Html.Partial("_UserInfo", Model)

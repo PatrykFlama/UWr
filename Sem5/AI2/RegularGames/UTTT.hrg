@@ -1,44 +1,41 @@
-// domains
-domain Piece = empty | x | o
+// set domains
 domain Player = x | o
+domain Score = 50 | 0 | 100
+domain Boolean = true | false
 
-// domain LocalPosition = P(LocalX, LocalY) where LocalX in 0..2, LocalY in 0..2
-domain GlobalPosition = null | G(GX, GY) where GX in 0..2, GY in 0..2
-domain Position = P(GX, GY, X, Y) where
-    GX in 0..2, GY in 0..2, X in 0..2, Y in 0..2
+domain Position = P(X, Y) where X in 0..2, Y in 0..2
+// big board
+domain GlobalPiece = empty | x | o | tie
+// small boards
+domain LocalPiece = empty | x | o
 
-domain BoardState = active | tied | x | o
 
-// variables
-board : Position -> Piece = { P(GX, GY, X, Y) = empty }
-global_board : GlobalPosition -> BoardState = { G(GX, GY) = active }
-active_local_board : GlobalPosition = null
+// set all local boards to empty
+game_board : Position -> Position -> LocalPiece = {
+  P(GX, GY) = {
+    P(X, Y) = empty
+    where X in 0..2, Y in 0..2
+  }
+  where GX in 0..2, GY in 0..2, X in 0..2, Y in 0..2 
+}
+
+global_board : Position -> GlobalPiece = { 
+  P(GX, GY) = empty 
+  where GX in 0..2, GY in 0..2
+}
 
 // helper 'functions'
-local_next_d1 : Position -> Position
-local_next_d1(P(GX, GY, X, Y)) = if X == Y then P(GX, GY, (X + 1) % 3, (Y + 1) % 3) else P(GX, GY, X, Y)
+next_d1 : Position -> Position
+next_d1(P(X, Y)) = if X == Y then P((X + 1) % 3, (Y + 1) % 3) else P(X, Y)
 
-local_next_d2 : Position -> Position
-local_next_d2(P(GX, GY, X, Y)) = if X + Y == 2 then P(GX, GY, (X + 1) % 3, (Y - 1) % 3) else P(GX, GY, X, Y)
+next_d2 : Position -> Position
+next_d2(P(X, Y)) = if X + Y == 2 then P((X + 1) % 3, (Y - 1) % 3) else P(X, Y)
 
-local_next_h : Position -> Position
-local_next_h(P(GX, GY, X, Y)) = P(GX, GY, X, (Y + 1) % 3)
+next_h : Position -> Position
+next_h(P(X, Y)) = P(X, (Y + 1) % 3)
 
-local_next_v : Position -> Position
-local_next_v(P(GX, GY, X, Y)) = P(GX, GY, (X + 1) % 3, Y)
-
-
-global_next_d1 : Position -> Position
-global_next_d1(G(GX, GY)) = if GX == GY then G((GX + 1) % 3, (GY + 1) % 3) else G(GX, GY)
-
-global_next_d2 : Position -> Position
-global_next_d2(G(GX, GY)) = if GX + GY == 2 then G((GX + 1) % 3, (GY - 1) % 3) else G(GX, GY)
-
-global_next_h : Position -> Position
-global_next_h(G(GX, GY)) = G(GX, (GY + 1) % 3)
-
-global_next_v : Position -> Position
-global_next_v(G(GX, GY)) = G((GX + 1) % 3, GY)
+next_v : Position -> Position
+next_v(P(X, Y)) = P((X + 1) % 3, Y)
 
 
 op : Player -> Player
@@ -46,83 +43,113 @@ op(x) = o
 op(o) = x
 
 
-global_position : Position -> GlobalPosition
-global_position(P(GX, GY, X, Y)) = G(GX, GY)
+position_global_active : Boolean
+position_global : Position
+position_local : Position
 
-// helper functions
-graph findNonempty() {  // checks if there exists board to play on
-  forall p:GlobalPosition {
-    check(global_board[p] == active)
+graph local_findNonempty() {
+  forall p:Position {
+    check(game_board[position_global][p] == empty)
+  }
+}
+graph global_findNonempty() {
+  forall p:Position {
+    check(global_board[position_global] == empty)
   }
 }
 
-graph globalWin(position: GlobalPosition) { //! assuming that position is not null, and on it is player
+graph global_win() {
   branch {
-    check(position != global_next_d1(position))
-    check(global_board[position] == global_board[global_next_d1(position)])
-    check(global_board[position] == global_board[global_next_d1(global_next_d1(position))])
+    check(position_global != next_d1(position_global))
+    check(global_board[position_global] == global_board[next_d1(position_global)])
+    check(global_board[position_global] == global_board[next_d1(next_d1(position_global))])
   } or {
-    check(position != global_next_d2(position))
-    check(global_board[position] == global_board[global_next_d2(position)])
-    check(global_board[position] == global_board[global_next_d2(global_next_d2(position))])
+    check(position_global != next_d2(position_global))
+    check(global_board[position_global] == global_board[next_d2(position_global)])
+    check(global_board[position_global] == global_board[next_d2(next_d2(position_global))])
   } or {
-    check(global_board[position] == global_board[global_next_h(position)])
-    check(global_board[position] == global_board[global_next_h(global_next_h(position))])
+    check(global_board[position_global] == global_board[next_h(position_global)])
+    check(global_board[position_global] == global_board[next_h(next_h(position_global))])
   } or {
-    check(global_board[position] == global_board[global_next_v(position)])
-    check(global_board[position] == global_board[global_next_v(global_next_v(position))])
+    check(global_board[position_global] == global_board[next_v(position_global)])
+    check(global_board[position_global] == global_board[next_v(next_v(position_global))])
   }
 }
-
-graph localWin(position: Position) {
+graph local_win() {
   branch {
-    check(position != local_next_d1(position))
-    check(board[position] == board[local_next_d1(position)])
-    check(board[position] == board[local_next_d1(local_next_d1(position))])
+    check(position_local != next_d1(position_local))
+    check(game_board[position_local] == game_board[next_d1(position_local)])
+    check(game_board[position_local] == game_board[next_d1(next_d1(position_local))])
   } or {
-    check(position != local_next_d2(position))
-    check(board[position] == board[local_next_d2(position)])
-    check(board[position] == board[local_next_d2(local_next_d2(position))])
+    check(position_local != next_d2(position_local))
+    check(game_board[position_local] == game_board[next_d2(position_local)])
+    check(game_board[position_local] == game_board[next_d2(next_d2(position_local))])
   } or {
-    check(board[position] == board[local_next_h(position)])
-    check(board[position] == board[local_next_h(local_next_h(position))])
+    check(game_board[position_local] == game_board[next_h(position_local)])
+    check(game_board[position_local] == game_board[next_h(next_h(position_local))])
   } or {
-    check(board[position] == board[local_next_v(position)])
-    check(board[position] == board[local_next_v(local_next_v(position))])
+    check(game_board[position_local] == game_board[next_v(position_local)])
+    check(game_board[position_local] == game_board[next_v(next_v(position_local))])
   }
 }
 
-// TODO it aint lookig good
 graph turn(me: Player) {
   player = me
+  
+  if position_global_active == false {
+    forall gp:Position {
+      check(global_board[gp] == empty)
+      
+      forall p:Position {
+        check(game_board[gp][p] == empty)
+        // update board
+        game_board[gp][p] = me
+        position_global = gp  // not sure how this works, so...
+        position_local = p
+        position_global_active = true
 
-  if active_local_board == null {
-    forall gp : GlobalPosition {
-      check(global_board[gp] == active)
-      chosen = gp
-      turn(me)
+        // branch? or do something
+        $ p
+      }
+
       $ gp
-
+    }
+  } 
+  if position_global_active == true {
+    forall p:Position {
+      check(game_board[gp][p] == empty)
+      game_board[gp][p] = me
+      position_local = p
+      $ p
     }
   }
 
+
   player = keeper
-  if reachable(globalWin(global_position[position])) {
+  
+  if reachable(local_win()) {
+    global_board[position_global] = me
+    position_global = position_local
+  }
+  if reachable(global_win()) {
     goals[me] = 100
     goals[op[me]] = 0
     end()
   }
 
-  if reachable(localWin(position)) {
-    global_board[global_position[position]] = me
+  if not(reachable(local_findNonempty())) {
+    global_board[position_global] = tie
   }
-
-  if not(reachable(findNonempty())) {
+  if not(reachable(global_findNonempty())) {
     end()
+  }
+ 
+  position_global = position_local
+  if global_board[position_global] != empty {
+    position_global_active = false
   }
 }
 
-// main loop
 graph rules() {
   loop {
     turn(x)

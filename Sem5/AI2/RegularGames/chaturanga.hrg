@@ -1,0 +1,192 @@
+// Game rules:
+// chess-like
+// pawn - can only move 1 forward and attack on diagonals, player-dependant
+// horse - JUMP like in chess
+// elephant - JUMP to +2 orthogonal
+// chariot - any diagonal
+// counselor - 1 diagonal
+// king - 1 any direction
+// 
+// black on top, white on bottom of the board
+
+// ----- Domains -----
+domain Boolean = true | false
+domain PieceType = pawn | horse | elephant | chariot | counselor | king
+domain Player = black | white
+domain Piece = empty | P(C, PT) 
+  where C in {black, white}, PT in {pawn, horse, elephant, chariot, counselor, king}
+domain Score = 0 | 100
+domain Position = null | V(X, Y) where X in 0..7, Y in 0..7
+domain DirIndex = upleft | up | upright | left | right | downleft | down | downright
+
+
+// ----- Helpers ------
+// dirs
+leftdir : Position -> Position
+leftdir(null) = null
+leftdir(V(X, Y)) = if X == 0 then null else V(X - 1, Y)
+
+rightdir : Position -> Position
+rightdir(null) = null
+rightdir(V(X, Y)) = if X == 7 then null else V(X + 1, Y)
+
+updir : Position -> Position
+updir(null) = null
+updir(V(_, 0)) = null
+updir(V(X, Y)) = V(X, Y - 1)
+
+downdir : Position -> Position
+downdir(null) = null
+downdir(V(_, 7)) = null
+downdir(V(X, Y)) = V(X, Y + 1)
+
+
+upleftdir : Position -> Position
+upleftdir(V(X, Y)) = if X == 0 || Y == 0 then null else V(X-1,Y-1)
+upleftdir(_) = null
+
+uprightdir : Position -> Position
+uprightdir(V(X, Y)) = if X == 9 || Y == 0 then null else V(X+1,Y-1)
+uprightdir(_) = null
+
+downleftdir : Position -> Position
+downleftdir(V(X, Y)) = if X == 0 || Y == 9 then null else V(X-1,Y+1)
+downleftdir(_) = null
+
+downrightdir : Position -> Position
+downrightdir(V(X, Y)) = if X == 9 || Y == 9 then null else V(X+1,Y+1)
+downrightdir(_) = null
+
+direction: DirIndex -> Position -> Position
+direction(upleft) = upleftdir
+direction(up) = updir
+direction(upright) = uprightdir
+direction(left) = leftdir
+direction(right) = rightdir
+direction(downleft) = downleftdir
+direction(down) = downdir
+direction(downright) = downrightdir
+
+// opponent
+opponent : Player -> Player
+opponent(white) = black
+opponent(_) = white
+
+// decomposing Piece
+extract_player : Piece -> Player
+extract_player(P(C, PT)) = C
+
+extract_piecetype : Piece -> PieceType
+extract_piecetype(P(C, PT)) = PT
+
+// ------ piece-specific settings ------
+// pawn
+domain PawnDirections = down | downright | downleft
+pawn_direction : Player -> PawnDirections -> DirIndex
+pawn_direction(white, down) = up
+pawn_direction(white, downright) = upright
+pawn_direction(white, downleft) = upleft
+pawn_direction(black, down) = down
+pawn_direction(black, downright) = downright
+pawn_direction(black, downleft) = downleft
+
+pawn_attacking : PawnDirections -> Boolean
+pawn_attacking(down) = false
+pawn_attacking(downright) = true
+pawn_attacking(downleft) = true
+
+// ------- main variables -------
+board : Position -> Piece = {
+  V(X, Y) = 
+    if Y == 1 
+    then P(black, pawn)
+    else if Y == 6
+    then P(white, pawn)
+
+    else if Y == 0 && (X == 0 || X == 7) then P(black, chariot)
+    else if Y == 0 && (X == 1 || X == 6) then P(black, horse)
+    else if Y == 0 && (X == 2 || X == 5) then P(black, elephant)
+    else if Y == 0 && X == 3 then P(black, king)
+    else if Y == 0 && X == 4 then P(black, counselor)
+
+    else if Y == 7 && (X == 0 || X == 7) then P(white, chariot)
+    else if Y == 7 && (X == 1 || X == 6) then P(white, horse)
+    else if Y == 7 && (X == 2 || X == 5) then P(white, elephant)
+    else if Y == 7 && X == 4 then P(white, king)
+    else if Y == 7 && X == 3 then P(white, counselor)
+
+    else empty
+  where X in 0..7, Y in 0..7
+}
+
+me : Player = white
+position : Position
+taken_piece_type : PieceType
+
+// ------ pieces moving functions -----
+graph movePawn(me: Player) {
+  // for each move that pawn can make
+  forall pdi : PawnDirections {
+    branch { // if move forward - non attacking
+      check(pawn_attacking(pdi) == false)
+
+      position = direction(pawn_direction(me, pdi))(position) // move pawn
+      check(position != null) // ensure position on board
+      check(board[position] == empty) // ensure position not taken
+    } or { // if move diagonal - attacking
+      check(pawn_attacking(pdi) == true)
+
+      position = direction(pawn_direction(me, pdi))(position)
+      check(position != null)
+      check(board[position] != empty) // ensure position not empty
+      check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
+    }
+  }
+}
+
+// ------ main functions ------
+graph move(me: Player) {
+  forall p:Position { // find players pieces and move them
+    check(p != null && board[p] != empty && 
+          extract_player(board[p]) == me)
+    position = p
+    $ p
+  }
+
+  taken_piece_type = extract_piecetype(board[position])
+  board[position] = empty // take piece
+
+  // make all possible moves, accordingly to taken piece type
+  branch {
+    check(taken_piece_type == pawn)
+    movePawn(me)
+  }
+
+  // emit chosen destination position
+  forall p:Position {// An experimental way to emit the chosen position
+    check(p == position)
+    $ p
+  }
+
+  // place piece on destionation
+  board[position] = P(me, taken_piece_type) 
+
+}
+
+graph turn() {
+  player = me
+  move(me)
+  player = keeper
+  if not(reachable(move(opponent(me)))) {
+    goals[me] = 100
+    goals[opponent(me)] = 0
+    end()
+  }
+  me = opponent(me)
+}
+
+graph rules() {
+  loop {
+    turn()
+  }
+}

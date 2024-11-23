@@ -81,22 +81,6 @@ extract_piecetype : Piece -> PieceType
 extract_piecetype(P(C, PT)) = PT
 extract_piecetype(empty) = pawn //! we should never ask for that!
 
-// ------ piece-specific settings ------
-// pawn
-domain PawnDirections = down | downright | downleft
-pawn_direction : Player -> PawnDirections -> DirIndex
-pawn_direction(white, down) = up
-pawn_direction(white, downright) = upright
-pawn_direction(white, downleft) = upleft
-pawn_direction(black, down) = down
-pawn_direction(black, downright) = downright
-pawn_direction(black, downleft) = downleft
-
-pawn_attacking : PawnDirections -> Boolean
-pawn_attacking(down) = false
-pawn_attacking(downright) = true
-pawn_attacking(downleft) = true
-
 // ------- main variables -------
 board : Position -> Piece = {
   V(X, Y) = 
@@ -126,6 +110,23 @@ position : Position
 taken_piece : Piece
 taken_piece_type : PieceType
 
+// ------ piece-specific settings ------
+// pawn
+domain PawnDirections = down | downright | downleft
+pawn_direction : Player -> PawnDirections -> DirIndex
+pawn_direction(white, down) = up
+pawn_direction(white, downright) = upright
+pawn_direction(white, downleft) = upleft
+pawn_direction(black, down) = down
+pawn_direction(black, downright) = downright
+pawn_direction(black, downleft) = downleft
+
+pawn_attacking : PawnDirections -> Boolean
+pawn_attacking(down) = false
+pawn_attacking(downright) = true
+pawn_attacking(downleft) = true
+
+
 // ------ pieces moving functions -----
 graph movePawn(me: Player) {
   // for each move that pawn can make
@@ -147,6 +148,50 @@ graph movePawn(me: Player) {
   }
 }
 
+// horse
+domain OrtogonalDirections = up | down | left | right
+
+perpendicular_direction : OrtogonalDirections -> OrtogonalDirections
+perpendicular_direction(up) = left
+perpendicular_direction(down) = right
+perpendicular_direction(left) = down
+perpendicular_direction(right) = up
+
+reversed_direction : OrtogonalDirections -> OrtogonalDirections
+reversed_direction(up) = down
+reversed_direction(down) = up
+reversed_direction(left) = right
+reversed_direction(right) = left
+
+graph moveHorse(me : Player) {
+  // choose horse 2 jumps direction and 1 last jump direction
+  forall pdi : OrtogonalDirections {
+    forall negate : Boolean {
+      // execute 2 jumps
+      position = direction(pdi)(position)
+      position = direction(pdi)(position)
+
+      // decide where is last jump
+      branch {
+        check(negate == false)
+        position = direction(perpendicular_direction(pdi))(position)
+      } or {
+        check(negate == true)
+        position = direction(reversed_direction(perpendicular_direction(pdi)))(position)
+      }
+
+      check(position != null)
+      // cant jump onto own pieces
+      branch {
+        check(board[position] == empty)
+      } or {
+        check(board[position] != empty) 
+        check(extract_player(board[position]) == opponent(me))
+      }
+    }
+  }
+}
+
 // ------ main functions ------
 graph move(me: Player) {
   forall p:Position { // find players pieces and move them
@@ -161,10 +206,13 @@ graph move(me: Player) {
   board[position] = empty // take piece
 
   // make all possible moves, accordingly to taken piece type
-  // branch {
+  branch {
     check(taken_piece_type == pawn)
     movePawn(me)
-  // }
+  } or {
+    check(taken_piece_type == horse)
+    moveHorse(me)
+  }
 
   // emit chosen destination position
   forall p:Position {// An experimental way to emit the chosen position

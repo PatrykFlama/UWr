@@ -17,7 +17,7 @@ domain Piece = empty | P(C, PT)
   where C in {black, white}, PT in {pawn, horse, elephant, chariot, counselor, king}
 domain Score = 0 | 100
 domain Position = null | V(X, Y) where X in 0..7, Y in 0..7
-domain DirIndex = upleft | up | upright | left | right | downleft | down | downright
+domain Directions = upleft | up | upright | left | right | downleft | down | downright
 
 domain OrtogonalDirections = up | down | left | right
 domain DiagonalDirections = upleft | upright | downleft | downright
@@ -59,7 +59,7 @@ downrightdir : Position -> Position
 downrightdir(V(X, Y)) = if X == 7 || Y == 7 then null else V(X+1,Y+1)
 downrightdir(_) = null
 
-direction: DirIndex -> Position -> Position
+direction: Directions -> Position -> Position
 direction(upleft) = upleftdir
 direction(up) = updir
 direction(upright) = uprightdir
@@ -111,11 +111,12 @@ me : Player = white
 position : Position
 taken_piece : Piece
 taken_piece_type : PieceType
+attackKing : Boolean
 
 // ------ piece-specific settings ------
 // pawn
 domain PawnDirections = down | downright | downleft
-pawn_direction : Player -> PawnDirections -> DirIndex
+pawn_direction : Player -> PawnDirections -> Directions
 pawn_direction(white, down) = up
 pawn_direction(white, downright) = upright
 pawn_direction(white, downleft) = upleft
@@ -142,6 +143,20 @@ reversed_direction(left) = right
 reversed_direction(right) = left
 
 
+// ----- functions -----
+graph canAttack(me : Player) {
+  check(board[position] != empty) // ensure position not empty
+  check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
+
+  branch {
+    check(attackKing == false)  // if testing for attacking normal pieces
+    check(extract_piecetype(board[position]) != king) // but we cant attack kings  
+  } or {
+    check(attackKing == true) // if testing for attacking king
+    check(extract_piecetype(board[position]) == king)
+  }
+}
+
 // ------ pieces moving functions -----
 graph movePawn(me: Player) {
   // for each move that pawn can make
@@ -157,8 +172,7 @@ graph movePawn(me: Player) {
 
       position = direction(pawn_direction(me, pdi))(position)
       check(position != null)
-      check(board[position] != empty) // ensure position not empty
-      check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
+      canAttack(me)
     }
   }
 }
@@ -185,8 +199,7 @@ graph moveHorse(me : Player) {
       branch {
         check(board[position] == empty)
       } or {
-        check(board[position] != empty) 
-        check(extract_player(board[position]) == opponent(me))
+        canAttack(me)
       }
     }
   }
@@ -204,35 +217,102 @@ graph moveElephant(me : Player) {
     branch {
       check(board[position] == empty)
     } or {
-      check(board[position] != empty) 
-      check(extract_player(board[position]) == opponent(me))
+      canAttack(me)
     }
   }
 }
 
-
 graph moveChariot(me : Player) {
+  // goes any amt of diagonal, but without jumping
   forall ddi : DiagonalDirections {
-    // 7 times try to move diagonal
-    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    // 7 times try to move diagonal and check if possible
+    // if opponent hit stop going diagonal
+
+    // move to next position
+    position = direction(ddi)(position) check(position != null)
+    // check if can attack on position -> ok, but no more moves
+    //       if position empty -> ok, you can branch{} or make next move
+    branch { canAttack(me) } 
+      or { check(board[position] == empty)
     branch {} or {
-    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    position = direction(ddi)(position) check(position != null)
+    branch { canAttack(me) } 
+      or { check(board[position] == empty)
     branch {} or {
-    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    position = direction(ddi)(position) check(position != null)
+    branch { canAttack(me) }
+      or { check(board[position] == empty)
     branch {} or {
-    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    position = direction(ddi)(position) check(position != null)
+    branch { canAttack(me) } 
+      or { check(board[position] == empty)
     branch {} or {
-    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    position = direction(ddi)(position) check(position != null)
+    branch { canAttack(me) } 
+      or { check(board[position] == empty)
     branch {} or {
-    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    position = direction(ddi)(position) check(position != null)
+    branch { canAttack(me) } 
+      or { check(board[position] == empty)
     branch {} or {
-    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
-    }}}}}}
+    position = direction(ddi)(position) check(position != null)
+    branch { canAttack(me) } 
+      or { check(board[position] == empty)
+    }}}}}}}}}}}}}
   }
 }
 
+graph moveCounselor(me : Player) {
+  // moves 1 diagonal
+  forall ddi : DiagonalDirections {
+    position = direction(ddi)(position)
+    check(position != null)
+
+    branch {
+      check(board[position] == empty)
+    } or {
+      canAttack(me)
+    }
+  }
+}
+
+graph moveKing(me : Player) {
+  // moves 1 in any direction
+  forall di : Directions {
+    position = direction(di)(position)
+    check(position != null)
+
+    branch {
+      check(board[position] == empty) 
+    } or {
+      canAttack(me)
+    }
+  }
+}
 
 // ------ main functions ------
+graph move_piece(me : Player) {
+  branch {
+    check(taken_piece_type == pawn)
+    movePawn(me)
+  } or {
+    check(taken_piece_type == horse)
+    moveHorse(me)
+  } or {
+    check(taken_piece_type == elephant)
+    moveElephant(me)
+  } or {
+    check(taken_piece_type == chariot)
+    moveChariot(me)
+  } or {
+    check(taken_piece_type == counselor)
+    moveCounselor(me)
+  } or {
+    check(taken_piece_type == king)
+    moveKing(me)
+  }
+}
+
 graph move(me: Player) {
   forall p:Position { // find players pieces and move them
     check(p != null && board[p] != empty && 
@@ -243,24 +323,11 @@ graph move(me: Player) {
 
   taken_piece = board[position]
   taken_piece_type = extract_piecetype(taken_piece)
+  attackKing = false
   board[position] = empty // take piece
 
   // make all possible moves, accordingly to taken piece type
-  branch {
-    check(taken_piece_type == pawn)
-    movePawn(me)
-  } or {
-    check(taken_piece_type == horse)
-    moveHorse(me)
-  } 
-  or { // tends to get stuck
-    check(taken_piece_type == elephant)
-    moveElephant(me)
-  }
-  or {  // tends to get stuck (but less)
-    check(taken_piece_type == chariot)
-    moveChariot(me)
-  }
+  move_piece(me)
 
   // emit chosen destination position
   forall p:Position {// An experimental way to emit the chosen position
@@ -272,15 +339,20 @@ graph move(me: Player) {
   board[position] = taken_piece 
 }
 
+graph win() {
+  check(true == false)
+}
+
 graph turn() {
-  player = me
-  move(me)
-  player = keeper
-  if not(reachable(move(opponent(me)))) {
+  if reachable(win()) {
     goals[me] = 100
     goals[opponent(me)] = 0
     end()
   }
+
+  player = me
+  move(me)
+  player = keeper
   me = opponent(me)
 }
 

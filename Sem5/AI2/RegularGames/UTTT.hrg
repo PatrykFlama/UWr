@@ -4,15 +4,14 @@ domain Score = 50 | 0 | 100
 domain Boolean = true | false
 
 domain Position = P(X, Y) where X in 0..2, Y in 0..2
-// big board (that contains smaller boards in its cells)
+// big board that contains smaller local boards in its cells
 domain GlobalPiece = empty | x | o | tie
-// small boards
 domain LocalPiece = empty | x | o
 // for double loop
 domain DoublePosition = DP(X1, Y1, X2, Y2) 
   where X1 in 0..2, Y1 in 0..2, X2 in 0..2, Y2 in 0..2 
 
-
+// ---- game variables -----
 // set all local boards to empty
 game_board : Position -> Position -> LocalPiece = {
   P(GX, GY) = {
@@ -27,7 +26,15 @@ global_board : Position -> GlobalPiece = {
   where GX in 0..2, GY in 0..2
 }
 
-// helper 'functions'
+// if player has to play in position_global 
+position_global_active : Boolean
+// board in which player has to play / is playing
+position_global : Position
+// cell in which player is playing
+position_local : Position
+
+
+// ---- helper 'functions' ----
 next_d1 : Position -> Position
 next_d1(P(X, Y)) = if X == Y then P((X + 1) % 3, (Y + 1) % 3) else P(X, Y)
 
@@ -40,28 +47,28 @@ next_h(P(X, Y)) = P(X, (Y + 1) % 3)
 next_v : Position -> Position
 next_v(P(X, Y)) = P((X + 1) % 3, Y)
 
-
+// calculate opponent of player
 op : Player -> Player
 op(x) = o
 op(o) = x
 
-
+// to extract values from double loop
+// we can extract either first coordinates or second
 dp_extract : Boolean -> DoublePosition -> Position
 dp_extract(FIRST, DP(X1, Y1, X2, Y2)) = 
   if FIRST == true then P(X1, Y1)
   else P(X2, Y2)
 
 
-position_global_active : Boolean
-position_global : Position
-position_local : Position
-
+// ---- game logic ----
+// check if there is non-empty cell in board
 graph findNonempty(board: Position -> GlobalPiece) {
   forall p:Position {
     check(board[p] == empty)
   }
 }
 
+// check if current board is winning, given changed position
 graph win(board: Position -> GlobalPiece, position: Position) {
   branch {
     check(position != next_d1(position))
@@ -80,14 +87,16 @@ graph win(board: Position -> GlobalPiece, position: Position) {
   }
 }
 
-
 graph turn(me: Player) {
   player = me
   
-  branch {  // player has to play in specific board
+  branch {  // if player has to play in specific board
     check(position_global_active == false)
 
+    // iterate over all boards (positions in global board)
+    // and over all cell in local board
     forall dp:DoublePosition {
+      // extract positions
       position_global = dp_extract(true, dp)
       position_local = dp_extract(false, dp)
 
@@ -119,10 +128,12 @@ graph turn(me: Player) {
 
   player = keeper
 
+  // check if player won in this local board
   if reachable(win(game_board[position_global], position_local)) {
     global_board[position_global] = me
     position_global = position_local
 
+    // if he did, then check if he did win in global board
     if reachable(win(global_board, position_global)) {
       goals[me] = 100
       goals[op[me]] = 0
@@ -130,10 +141,12 @@ graph turn(me: Player) {
     }
   }
 
-
+  // check if there is any cell to play in
   if not(reachable(findNonempty(game_board[position_global]))) {
     global_board[position_global] = tie
   }
+
+  // if there are no other boards to play in, then game over with tie
   if not(reachable(findNonempty(global_board))) {
     end()
   }
@@ -148,7 +161,7 @@ graph turn(me: Player) {
 
 graph rules() {
   loop {
-    turn(x)
+    turn(x) // x always starts the game
     turn(o)
   }
 }

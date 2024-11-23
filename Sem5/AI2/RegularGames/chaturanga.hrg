@@ -19,6 +19,8 @@ domain Score = 0 | 100
 domain Position = null | V(X, Y) where X in 0..7, Y in 0..7
 domain DirIndex = upleft | up | upright | left | right | downleft | down | downright
 
+domain OrtogonalDirections = up | down | left | right
+domain DiagonalDirections = upleft | upright | downleft | downright
 
 // ----- Helpers ------
 // dirs
@@ -126,6 +128,19 @@ pawn_attacking(down) = false
 pawn_attacking(downright) = true
 pawn_attacking(downleft) = true
 
+// horse
+perpendicular_direction : OrtogonalDirections -> OrtogonalDirections
+perpendicular_direction(up) = left
+perpendicular_direction(down) = right
+perpendicular_direction(left) = down
+perpendicular_direction(right) = up
+
+reversed_direction : OrtogonalDirections -> OrtogonalDirections
+reversed_direction(up) = down
+reversed_direction(down) = up
+reversed_direction(left) = right
+reversed_direction(right) = left
+
 
 // ------ pieces moving functions -----
 graph movePawn(me: Player) {
@@ -148,36 +163,21 @@ graph movePawn(me: Player) {
   }
 }
 
-// horse
-domain OrtogonalDirections = up | down | left | right
-
-perpendicular_direction : OrtogonalDirections -> OrtogonalDirections
-perpendicular_direction(up) = left
-perpendicular_direction(down) = right
-perpendicular_direction(left) = down
-perpendicular_direction(right) = up
-
-reversed_direction : OrtogonalDirections -> OrtogonalDirections
-reversed_direction(up) = down
-reversed_direction(down) = up
-reversed_direction(left) = right
-reversed_direction(right) = left
-
 graph moveHorse(me : Player) {
   // choose horse 2 jumps direction and 1 last jump direction
-  forall pdi : OrtogonalDirections {
+  forall odi : OrtogonalDirections {
     forall negate : Boolean {
       // execute 2 jumps
-      position = direction(pdi)(position)
-      position = direction(pdi)(position)
+      position = direction(odi)(position)
+      position = direction(odi)(position)
 
       // decide where is last jump
       branch {
         check(negate == false)
-        position = direction(perpendicular_direction(pdi))(position)
+        position = direction(perpendicular_direction(odi))(position)
       } or {
         check(negate == true)
-        position = direction(reversed_direction(perpendicular_direction(pdi)))(position)
+        position = direction(reversed_direction(perpendicular_direction(odi)))(position)
       }
 
       check(position != null)
@@ -192,14 +192,12 @@ graph moveHorse(me : Player) {
   }
 }
 
-// elephant
-// TODO: faulty?
 graph moveElephant(me : Player) {
   // choose elephant 2 jump direction
-  forall pdi : OrtogonalDirections {
+  forall odi : OrtogonalDirections {
     // execute 2 jumps
-    position = direction(pdi)(position)
-    position = direction(pdi)(position)
+    position = direction(odi)(position)
+    position = direction(odi)(position)
 
     check(position != null)
     // cant jump onto own pieces
@@ -212,6 +210,26 @@ graph moveElephant(me : Player) {
   }
 }
 
+
+graph moveChariot(me : Player) {
+  forall ddi : DiagonalDirections {
+    // 7 times try to move diagonal
+    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    branch {} or {
+    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    branch {} or {
+    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    branch {} or {
+    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    branch {} or {
+    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    branch {} or {
+    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    branch {} or {
+    position = direction(ddi)(position) check(position != null) check(board[position] == empty)
+    }}}}}}
+  }
+}
 
 
 // ------ main functions ------
@@ -234,9 +252,14 @@ graph move(me: Player) {
   } or {
     check(taken_piece_type == horse)
     moveHorse(me)
-  } or {
+  } 
+  or { // tends to get stuck
     check(taken_piece_type == elephant)
     moveElephant(me)
+  }
+  or {  // tends to get stuck (but less)
+    check(taken_piece_type == chariot)
+    moveChariot(me)
   }
 
   // emit chosen destination position

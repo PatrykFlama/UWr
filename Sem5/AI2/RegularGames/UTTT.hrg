@@ -4,7 +4,7 @@ domain Score = 50 | 0 | 100
 domain Boolean = true | false
 
 domain Position = P(X, Y) where X in 0..2, Y in 0..2
-// big board
+// big board (that contains smaller boards in its cells)
 domain GlobalPiece = empty | x | o | tie
 // small boards
 domain LocalPiece = empty | x | o
@@ -84,37 +84,36 @@ graph win(board: Position -> GlobalPiece, position: Position) {
 graph turn(me: Player) {
   player = me
   
-  // forall gp:Position {      // TODO adding this loop breaks everything
-  //   check(global_board[gp] == empty)
+  branch {  // player has to play in specific board
+    check(position_global_active == false)
 
-    // forall p:Position {
-    //   check(game_board[gp][p] == empty)
-    //   // update board
-    //   game_board[gp][p] = me
-    //   position_global = gp
-    //   position_local = p
-    //   position_global_active = true
+    forall dp:DoublePosition {
+      position_global = dp_extract(true, dp)
+      position_local = dp_extract(false, dp)
 
-    //   $ p
-    // }
+      // ensure we can play in given board
+      check(global_board[position_global] == empty)
+      // ensure that chosen cell is empty
+      check(game_board[position_global][position_local] == empty)
 
-  //   $ gp
-  // }
-  
-  // TODO: use position_global_active
-  forall dp:DoublePosition {
-    // ensure we can play in given board
-    check(global_board[dp_extract(true, dp)] == empty)
-    // ensure that chosen cell is empty
-    check(game_board[dp_extract(true, dp)][dp_extract(false, dp)] == empty)
+      position_global_active = true
+      game_board[position_global][position_local] = me
 
-    // TODO: can i assign this before checks?
-    position_global = dp_extract(true, dp)
-    position_local = dp_extract(false, dp)
-    position_global_active = true
-    game_board[position_global][position_local] = me
+      $ dp
+    }
+  } or {  // if player can play in any board
+    check(position_global_active == true)
 
-    $ dp
+    forall p:Position {
+      position_local = p
+
+      // ensure that chosen cell is empty
+      check(game_board[position_global][position_local] == empty)
+
+      game_board[position_global][position_local] = me
+
+      $ p
+    }
   }
 
 
@@ -129,20 +128,19 @@ graph turn(me: Player) {
       goals[op[me]] = 0
       end()
     }
-
-    end() //DEB
   }
 
 
   if not(reachable(findNonempty(game_board[position_global]))) {
     global_board[position_global] = tie
-    end() //DEB
   }
   if not(reachable(findNonempty(global_board))) {
     end()
   }
 
+  // next player has to play in adequete board
   position_global = position_local
+  // unless it impossible - then he can play in any
   if global_board[position_global] != empty {
     position_global_active = false
   }

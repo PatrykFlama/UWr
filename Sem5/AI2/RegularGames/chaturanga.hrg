@@ -46,15 +46,15 @@ upleftdir(V(X, Y)) = if X == 0 || Y == 0 then null else V(X-1,Y-1)
 upleftdir(_) = null
 
 uprightdir : Position -> Position
-uprightdir(V(X, Y)) = if X == 9 || Y == 0 then null else V(X+1,Y-1)
+uprightdir(V(X, Y)) = if X == 7 || Y == 0 then null else V(X+1,Y-1)
 uprightdir(_) = null
 
 downleftdir : Position -> Position
-downleftdir(V(X, Y)) = if X == 0 || Y == 9 then null else V(X-1,Y+1)
+downleftdir(V(X, Y)) = if X == 0 || Y == 7 then null else V(X-1,Y+1)
 downleftdir(_) = null
 
 downrightdir : Position -> Position
-downrightdir(V(X, Y)) = if X == 9 || Y == 9 then null else V(X+1,Y+1)
+downrightdir(V(X, Y)) = if X == 7 || Y == 7 then null else V(X+1,Y+1)
 downrightdir(_) = null
 
 direction: DirIndex -> Position -> Position
@@ -75,9 +75,11 @@ opponent(_) = white
 // decomposing Piece
 extract_player : Piece -> Player
 extract_player(P(C, PT)) = C
+extract_player(empty) = white //! we should never ask for that!
 
 extract_piecetype : Piece -> PieceType
 extract_piecetype(P(C, PT)) = PT
+extract_piecetype(empty) = pawn //! we should never ask for that!
 
 // ------ piece-specific settings ------
 // pawn
@@ -121,6 +123,7 @@ board : Position -> Piece = {
 
 me : Player = white
 position : Position
+taken_piece : Piece
 taken_piece_type : PieceType
 
 // ------ pieces moving functions -----
@@ -153,14 +156,15 @@ graph move(me: Player) {
     $ p
   }
 
-  taken_piece_type = extract_piecetype(board[position])
+  taken_piece = board[position]
+  taken_piece_type = extract_piecetype(taken_piece)
   board[position] = empty // take piece
 
   // make all possible moves, accordingly to taken piece type
-  branch {
+  // branch {
     check(taken_piece_type == pawn)
     movePawn(me)
-  }
+  // }
 
   // emit chosen destination position
   forall p:Position {// An experimental way to emit the chosen position
@@ -169,8 +173,7 @@ graph move(me: Player) {
   }
 
   // place piece on destionation
-  board[position] = P(me, taken_piece_type) 
-
+  board[position] = taken_piece 
 }
 
 graph turn() {

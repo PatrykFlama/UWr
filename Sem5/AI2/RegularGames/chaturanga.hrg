@@ -192,6 +192,28 @@ graph moveHorse(me : Player) {
   }
 }
 
+// elephant
+// TODO: faulty?
+graph moveElephant(me : Player) {
+  // choose elephant 2 jump direction
+  forall pdi : OrtogonalDirections {
+    // execute 2 jumps
+    position = direction(pdi)(position)
+    position = direction(pdi)(position)
+
+    check(position != null)
+    // cant jump onto own pieces
+    branch {
+      check(board[position] == empty)
+    } or {
+      check(board[position] != empty) 
+      check(extract_player(board[position]) == opponent(me))
+    }
+  }
+}
+
+
+
 // ------ main functions ------
 graph move(me: Player) {
   forall p:Position { // find players pieces and move them
@@ -212,6 +234,9 @@ graph move(me: Player) {
   } or {
     check(taken_piece_type == horse)
     moveHorse(me)
+  } or {
+    check(taken_piece_type == elephant)
+    moveElephant(me)
   }
 
   // emit chosen destination position

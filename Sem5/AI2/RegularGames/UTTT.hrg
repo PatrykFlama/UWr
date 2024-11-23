@@ -8,6 +8,9 @@ domain Position = P(X, Y) where X in 0..2, Y in 0..2
 domain GlobalPiece = empty | x | o | tie
 // small boards
 domain LocalPiece = empty | x | o
+// for double loop
+domain DoublePosition = DP(X1, Y1, X2, Y2) 
+  where X1 in 0..2, Y1 in 0..2, X2 in 0..2, Y2 in 0..2 
 
 
 // set all local boards to empty
@@ -43,107 +46,102 @@ op(x) = o
 op(o) = x
 
 
+dp_extract : Boolean -> DoublePosition -> Position
+dp_extract(FIRST, DP(X1, Y1, X2, Y2)) = 
+  if FIRST == true then P(X1, Y1)
+  else P(X2, Y2)
+
+
 position_global_active : Boolean
 position_global : Position
 position_local : Position
 
-graph local_findNonempty() {
+graph findNonempty(board: Position -> GlobalPiece) {
   forall p:Position {
-    check(game_board[position_global][p] == empty)
-  }
-}
-graph global_findNonempty() {
-  forall p:Position {
-    check(global_board[position_global] == empty)
+    check(board[p] == empty)
   }
 }
 
-graph global_win() {
+graph win(board: Position -> GlobalPiece, position: Position) {
   branch {
-    check(position_global != next_d1(position_global))
-    check(global_board[position_global] == global_board[next_d1(position_global)])
-    check(global_board[position_global] == global_board[next_d1(next_d1(position_global))])
+    check(position != next_d1(position))
+    check(board[position] == board[next_d1(position)])
+    check(board[position] == board[next_d1(next_d1(position))])
   } or {
-    check(position_global != next_d2(position_global))
-    check(global_board[position_global] == global_board[next_d2(position_global)])
-    check(global_board[position_global] == global_board[next_d2(next_d2(position_global))])
+    check(position != next_d2(position))
+    check(board[position] == board[next_d2(position)])
+    check(board[position] == board[next_d2(next_d2(position))])
   } or {
-    check(global_board[position_global] == global_board[next_h(position_global)])
-    check(global_board[position_global] == global_board[next_h(next_h(position_global))])
+    check(board[position] == board[next_h(position)])
+    check(board[position] == board[next_h(next_h(position))])
   } or {
-    check(global_board[position_global] == global_board[next_v(position_global)])
-    check(global_board[position_global] == global_board[next_v(next_v(position_global))])
+    check(board[position] == board[next_v(position)])
+    check(board[position] == board[next_v(next_v(position))])
   }
 }
-graph local_win() {
-  branch {
-    check(position_local != next_d1(position_local))
-    check(game_board[position_local] == game_board[next_d1(position_local)])
-    check(game_board[position_local] == game_board[next_d1(next_d1(position_local))])
-  } or {
-    check(position_local != next_d2(position_local))
-    check(game_board[position_local] == game_board[next_d2(position_local)])
-    check(game_board[position_local] == game_board[next_d2(next_d2(position_local))])
-  } or {
-    check(game_board[position_local] == game_board[next_h(position_local)])
-    check(game_board[position_local] == game_board[next_h(next_h(position_local))])
-  } or {
-    check(game_board[position_local] == game_board[next_v(position_local)])
-    check(game_board[position_local] == game_board[next_v(next_v(position_local))])
-  }
-}
+
 
 graph turn(me: Player) {
   player = me
   
-  if position_global_active == false {
-    forall gp:Position {
-      check(global_board[gp] == empty)
-      
-      forall p:Position {
-        check(game_board[gp][p] == empty)
-        // update board
-        game_board[gp][p] = me
-        position_global = gp  // not sure how this works, so...
-        position_local = p
-        position_global_active = true
+  // forall gp:Position {      // TODO adding this loop breaks everything
+  //   check(global_board[gp] == empty)
 
-        // branch? or do something
-        $ p
-      }
+    // forall p:Position {
+    //   check(game_board[gp][p] == empty)
+    //   // update board
+    //   game_board[gp][p] = me
+    //   position_global = gp
+    //   position_local = p
+    //   position_global_active = true
 
-      $ gp
-    }
-  } 
-  if position_global_active == true {
-    forall p:Position {
-      check(game_board[gp][p] == empty)
-      game_board[gp][p] = me
-      position_local = p
-      $ p
-    }
+    //   $ p
+    // }
+
+  //   $ gp
+  // }
+  
+  // TODO: use position_global_active
+  forall dp:DoublePosition {
+    // ensure we can play in given board
+    check(global_board[dp_extract(true, dp)] == empty)
+    // ensure that chosen cell is empty
+    check(game_board[dp_extract(true, dp)][dp_extract(false, dp)] == empty)
+
+    // TODO: can i assign this before checks?
+    position_global = dp_extract(true, dp)
+    position_local = dp_extract(false, dp)
+    position_global_active = true
+    game_board[position_global][position_local] = me
+
+    $ dp
   }
 
 
   player = keeper
-  
-  if reachable(local_win()) {
+
+  if reachable(win(game_board[position_global], position_local)) {
     global_board[position_global] = me
     position_global = position_local
+
+    if reachable(win(global_board, position_global)) {
+      goals[me] = 100
+      goals[op[me]] = 0
+      end()
+    }
+
+    end() //DEB
   }
-  if reachable(global_win()) {
-    goals[me] = 100
-    goals[op[me]] = 0
+
+
+  if not(reachable(findNonempty(game_board[position_global]))) {
+    global_board[position_global] = tie
+    end() //DEB
+  }
+  if not(reachable(findNonempty(global_board))) {
     end()
   }
 
-  if not(reachable(local_findNonempty())) {
-    global_board[position_global] = tie
-  }
-  if not(reachable(global_findNonempty())) {
-    end()
-  }
- 
   position_global = position_local
   if global_board[position_global] != empty {
     position_global_active = false

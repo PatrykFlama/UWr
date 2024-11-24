@@ -173,7 +173,17 @@ graph movePawn(me: Player) {
 
       position = direction(pawn_direction(me, pdi))(position)
       check(position != null)
-      canAttack(me)
+
+        check(board[position] != empty) // ensure position not empty
+        check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
+
+        branch {
+          check(attackKing == false)  // if testing for attacking normal pieces
+          check(extract_piecetype(board[position]) != king) // but we cant attack kings  
+        } or {
+          check(attackKing == true) // if testing for attacking king
+          check(extract_piecetype(board[position]) == king)
+        }
     }
   }
 }
@@ -201,7 +211,16 @@ graph moveHorse(me : Player) {
       check(board[position] == empty)
       check(attackKing == false)
       } or {
-        canAttack(me)
+        check(board[position] != empty) // ensure position not empty
+        check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
+
+        branch {
+          check(attackKing == false)  // if testing for attacking normal pieces
+          check(extract_piecetype(board[position]) != king) // but we cant attack kings  
+        } or {
+          check(attackKing == true) // if testing for attacking king
+          check(extract_piecetype(board[position]) == king)
+        }
       }
     }
   }
@@ -220,7 +239,16 @@ graph moveElephant(me : Player) {
       check(board[position] == empty)
       check(attackKing == false)
     } or {
-      canAttack(me)
+      check(board[position] != empty) // ensure position not empty
+      check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
+
+      branch {
+        check(attackKing == false)  // if testing for attacking normal pieces
+        check(extract_piecetype(board[position]) != king) // but we cant attack kings  
+      } or {
+        check(attackKing == true) // if testing for attacking king
+        check(extract_piecetype(board[position]) == king)
+      }
     }
   }
 }
@@ -276,7 +304,16 @@ graph moveCounselor(me : Player) {
       check(board[position] == empty)
       check(attackKing == false)
     } or {
-      canAttack(me)
+      check(board[position] != empty) // ensure position not empty
+      check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
+
+      branch {
+        check(attackKing == false)  // if testing for attacking normal pieces
+        check(extract_piecetype(board[position]) != king) // but we cant attack kings  
+      } or {
+        check(attackKing == true) // if testing for attacking king
+        check(extract_piecetype(board[position]) == king)
+      }
     }
   }
 }
@@ -291,7 +328,16 @@ graph moveKing(me : Player) {
       check(board[position] == empty)
       check(attackKing == false)
     } or {
-      canAttack(me)
+      check(board[position] != empty) // ensure position not empty
+      check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
+
+      branch {
+        check(attackKing == false)  // if testing for attacking normal pieces
+        check(extract_piecetype(board[position]) != king) // but we cant attack kings  
+      } or {
+        check(attackKing == true) // if testing for attacking king
+        check(extract_piecetype(board[position]) == king)
+      }
     }
   }
 }
@@ -359,31 +405,23 @@ graph findKing(me : Player) {
   }
 }
 
-graph noCheckmate(me : Player) {
-  branch {
-    // check if my king can not be attacked by opponent
-    attackKing = true
-    check(not(reachable(move(opponent(me)))))
-    attackKing = false
-  } or {
-    // // check if my king attacked
+graph checkmate(me : Player) {
+    // check if my king is attacked
     attackKing = true
     check(reachable(move(opponent(me))))
     attackKing = false
 
     // check if my king can escape
-    
     // find my king
     findKing(me)
 
     // move him to any possible position
     moveKing(me)
 
-    // check if no longer attacked
+    // check if still attacked
     attackKing = true
-    check(not(reachable(move(opponent(me)))))
+    check(reachable(move(opponent(me))))
     attackKing = false
-  }
 }
 
 // ---- main game loop ----
@@ -393,10 +431,10 @@ graph turn() {
   move(me)
   player = keeper
 
-  // if my king is attacked and cant escape then i lost
-  if not(reachable(noCheckmate(me))) {
-    goals[me] = 0
-    goals[opponent(me)] = 100
+  // if i did checkmate my opponent
+  if reachable(checkmate(opponent(me))) {
+    goals[me] = 100
+    goals[opponent(me)] = 0
     end()
   }
 

@@ -144,11 +144,6 @@ reversed_direction(right) = left
 
 
 // ----- functions -----
-graph isEmptyCanEnd(me : Player) {
-  check(board[position] == empty)
-  check(attackKing == false)    // do not allow to end on empty if we have to attack king
-}
-
 graph canAttack(me : Player) {
   check(board[position] != empty) // ensure position not empty
   check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
@@ -171,9 +166,8 @@ graph movePawn(me: Player) {
 
       position = direction(pawn_direction(me, pdi))(position) // move pawn
       check(position != null) // ensure position on board
-      // check(board[position] == empty)
-      // check(attackKing == false)
-      isEmptyCanEnd(me)
+      check(board[position] == empty)
+      check(attackKing == false)
     } or { // if move diagonal - attacking
       check(pawn_attacking(pdi) == true)
 
@@ -204,7 +198,8 @@ graph moveHorse(me : Player) {
       check(position != null)
       // cant jump onto own pieces
       branch {
-        isEmptyCanEnd(me)
+      check(board[position] == empty)
+      check(attackKing == false)
       } or {
         canAttack(me)
       }
@@ -222,7 +217,8 @@ graph moveElephant(me : Player) {
     check(position != null)
     // cant jump onto own pieces
     branch {
-      isEmptyCanEnd(me)
+      check(board[position] == empty)
+      check(attackKing == false)
     } or {
       canAttack(me)
     }
@@ -277,7 +273,8 @@ graph moveCounselor(me : Player) {
     check(position != null)
 
     branch {
-      isEmptyCanEnd(me)
+      check(board[position] == empty)
+      check(attackKing == false)
     } or {
       canAttack(me)
     }
@@ -353,45 +350,41 @@ graph move(me : Player) {
 }
 
 // ---- check for win ----
-// graph findKing(me : Player) {
-//   forall p : Position {
-//     check(p != null && board[p] != empty &&
-//           extract_player(board[p]) == me && 
-//           extract_piecetype(board[p]) == king)
-//     position = p
-//   }
-// }
+graph findKing(me : Player) {
+  forall p : Position {
+    check(p != null && board[p] != empty &&
+          extract_player(board[p]) == me && 
+          extract_piecetype(board[p]) == king)
+    position = p
+  }
+}
 
 graph noCheckmate(me : Player) {
   branch {
     // check if my king can not be attacked by opponent
-    // attackKing = true
-    // check(not(reachable(move(opponent(me)))))
-    // attackKing = false
+    attackKing = true
+    check(not(reachable(move(opponent(me)))))
+    attackKing = false
   } or {
     // // check if my king attacked
-    // attackKing = true
-    // check(reachable(move(opponent(me))))
-    // attackKing = false
+    attackKing = true
+    check(reachable(move(opponent(me))))
+    attackKing = false
 
-    // // check if my king can escape
+    // check if my king can escape
     
-    // // find my king
-    // findKing(me)
+    // find my king
+    findKing(me)
 
-    // // move him to any possible position
-    // moveKing(me)
+    // move him to any possible position
+    moveKing(me)
 
-    // // check if no longer attacked
-    // attackKing = true
-    // check(not(reachable(move(opponent(me)))))
-    // attackKing = false
+    // check if no longer attacked
+    attackKing = true
+    check(not(reachable(move(opponent(me)))))
+    attackKing = false
   }
 }
-graph win()  {
-  check(true == false)
-}
-
 
 // ---- main game loop ----
 graph turn() {
@@ -401,14 +394,9 @@ graph turn() {
   player = keeper
 
   // if my king is attacked and cant escape then i lost
-  // if reachable(win()) {
-  //   goals[me] = 0
-  //   goals[opponent(me)] = 100
-  //   end()
-  // }
-  if not(reachable(move(opponent(me)))) {
-    goals[me] = 100
-    goals[opponent(me)] = 0
+  if not(reachable(noCheckmate(me))) {
+    goals[me] = 0
+    goals[opponent(me)] = 100
     end()
   }
 

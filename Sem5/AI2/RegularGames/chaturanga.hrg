@@ -144,6 +144,11 @@ reversed_direction(right) = left
 
 
 // ----- functions -----
+graph isEmptyCanEnd(me : Player) {
+  check(board[position] == empty)
+  check(attackKing == false)    // do not allow to end on empty if we have to attack king
+}
+
 graph canAttack(me : Player) {
   check(board[position] != empty) // ensure position not empty
   check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
@@ -166,7 +171,9 @@ graph movePawn(me: Player) {
 
       position = direction(pawn_direction(me, pdi))(position) // move pawn
       check(position != null) // ensure position on board
-      check(board[position] == empty) // ensure position not taken
+      // check(board[position] == empty)
+      // check(attackKing == false)
+      isEmptyCanEnd(me)
     } or { // if move diagonal - attacking
       check(pawn_attacking(pdi) == true)
 
@@ -197,7 +204,7 @@ graph moveHorse(me : Player) {
       check(position != null)
       // cant jump onto own pieces
       branch {
-        check(board[position] == empty)
+        isEmptyCanEnd(me)
       } or {
         canAttack(me)
       }
@@ -215,7 +222,7 @@ graph moveElephant(me : Player) {
     check(position != null)
     // cant jump onto own pieces
     branch {
-      check(board[position] == empty)
+      isEmptyCanEnd(me)
     } or {
       canAttack(me)
     }
@@ -232,29 +239,30 @@ graph moveChariot(me : Player) {
     position = direction(ddi)(position) check(position != null)
     // check if can attack on position -> ok, but no more moves
     //       if position empty -> ok, you can branch{} or make next move
+    // you cant branch{} without attacking if you have to attack king
     branch { canAttack(me) } 
       or { check(board[position] == empty)
-    branch {} or {
+    branch { check(attackKing == false) } or {
     position = direction(ddi)(position) check(position != null)
     branch { canAttack(me) } 
       or { check(board[position] == empty)
-    branch {} or {
+    branch { check(attackKing == false) } or {
     position = direction(ddi)(position) check(position != null)
     branch { canAttack(me) }
       or { check(board[position] == empty)
-    branch {} or {
+    branch { check(attackKing == false) } or {
     position = direction(ddi)(position) check(position != null)
     branch { canAttack(me) } 
       or { check(board[position] == empty)
-    branch {} or {
+    branch { check(attackKing == false) } or {
     position = direction(ddi)(position) check(position != null)
     branch { canAttack(me) } 
       or { check(board[position] == empty)
-    branch {} or {
+    branch { check(attackKing == false) } or {
     position = direction(ddi)(position) check(position != null)
     branch { canAttack(me) } 
       or { check(board[position] == empty)
-    branch {} or {
+    branch { check(attackKing == false) } or {
     position = direction(ddi)(position) check(position != null)
     branch { canAttack(me) } 
       or { check(board[position] == empty)
@@ -269,7 +277,7 @@ graph moveCounselor(me : Player) {
     check(position != null)
 
     branch {
-      check(board[position] == empty)
+      isEmptyCanEnd(me)
     } or {
       canAttack(me)
     }
@@ -283,7 +291,8 @@ graph moveKing(me : Player) {
     check(position != null)
 
     branch {
-      check(board[position] == empty) 
+      check(board[position] == empty)
+      check(attackKing == false)
     } or {
       canAttack(me)
     }
@@ -295,25 +304,30 @@ graph move_piece(me : Player) {
   branch {
     check(taken_piece_type == pawn)
     movePawn(me)
-  } or {
+  } 
+  or {
     check(taken_piece_type == horse)
     moveHorse(me)
-  } or {
+  } 
+  or {
     check(taken_piece_type == elephant)
     moveElephant(me)
-  } or {
+  } 
+  or {
     check(taken_piece_type == chariot)
     moveChariot(me)
-  } or {
+  } 
+  or {
     check(taken_piece_type == counselor)
     moveCounselor(me)
-  } or {
+  } 
+  or {
     check(taken_piece_type == king)
     moveKing(me)
   }
 }
 
-graph move(me: Player) {
+graph move(me : Player) {
   forall p:Position { // find players pieces and move them
     check(p != null && board[p] != empty && 
           extract_player(board[p]) == me)
@@ -323,14 +337,13 @@ graph move(me: Player) {
 
   taken_piece = board[position]
   taken_piece_type = extract_piecetype(taken_piece)
-  attackKing = false
   board[position] = empty // take piece
 
   // make all possible moves, accordingly to taken piece type
   move_piece(me)
 
-  // emit chosen destination position
-  forall p:Position {// An experimental way to emit the chosen position
+  // emit chosen destination position (cant emit variables)
+  forall p:Position {
     check(p == position)
     $ p
   }
@@ -339,20 +352,66 @@ graph move(me: Player) {
   board[position] = taken_piece 
 }
 
-graph win() {
+// ---- check for win ----
+// graph findKing(me : Player) {
+//   forall p : Position {
+//     check(p != null && board[p] != empty &&
+//           extract_player(board[p]) == me && 
+//           extract_piecetype(board[p]) == king)
+//     position = p
+//   }
+// }
+
+graph noCheckmate(me : Player) {
+  branch {
+    // check if my king can not be attacked by opponent
+    // attackKing = true
+    // check(not(reachable(move(opponent(me)))))
+    // attackKing = false
+  } or {
+    // // check if my king attacked
+    // attackKing = true
+    // check(reachable(move(opponent(me))))
+    // attackKing = false
+
+    // // check if my king can escape
+    
+    // // find my king
+    // findKing(me)
+
+    // // move him to any possible position
+    // moveKing(me)
+
+    // // check if no longer attacked
+    // attackKing = true
+    // check(not(reachable(move(opponent(me)))))
+    // attackKing = false
+  }
+}
+graph win()  {
   check(true == false)
 }
 
+
+// ---- main game loop ----
 graph turn() {
-  if reachable(win()) {
+  player = me
+  attackKing = false
+  move(me)
+  player = keeper
+
+  // if my king is attacked and cant escape then i lost
+  // if reachable(win()) {
+  //   goals[me] = 0
+  //   goals[opponent(me)] = 100
+  //   end()
+  // }
+  if not(reachable(move(opponent(me)))) {
     goals[me] = 100
     goals[opponent(me)] = 0
     end()
   }
 
-  player = me
-  move(me)
-  player = keeper
   me = opponent(me)
 }
 

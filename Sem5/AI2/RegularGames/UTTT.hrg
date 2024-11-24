@@ -108,6 +108,7 @@ graph turn(me: Player) {
       position_global_active = true
       game_board[position_global][position_local] = me
 
+      // tag our choice on the automaton, to differentiate it from other choices
       $ dp
     }
   } or {  // if player can play in any board

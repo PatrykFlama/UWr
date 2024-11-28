@@ -11,3 +11,6 @@
 # Pytania
 ## Zadanie 4
 *  czym się różni partial od render partial? 
+
+## Ogólne
+* autentykacja - jakie są konsekwencje wybrania jakiejś biblioteki, jaką wybrać, czy da się ją później zmienić?

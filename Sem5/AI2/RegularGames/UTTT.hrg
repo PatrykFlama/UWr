@@ -1,3 +1,6 @@
+// Patryk Flama
+// game: Ultimate Tic Tac Toe
+
 // set domains
 domain Player = x | o
 domain Score = 50 | 0 | 100

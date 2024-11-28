@@ -1,3 +1,6 @@
+// Patryk Flama
+// game: chaturanga
+
 // Game rules:
 // chess-like
 // pawn - can only move 1 forward and attack on diagonals, player-dependant
@@ -9,7 +12,7 @@
 // 
 // black on top, white on bottom of the board
 
-// ----- Domains -----
+// ======= domains =======
 domain Boolean = true | false
 domain PieceType = pawn | horse | elephant | chariot | counselor | king
 domain Player = black | white
@@ -22,8 +25,8 @@ domain Directions = upleft | up | upright | left | right | downleft | down | dow
 domain OrtogonalDirections = up | down | left | right
 domain DiagonalDirections = upleft | upright | downleft | downright
 
-// ----- Helpers ------
-// dirs
+// ====== helpers ======
+// functions applying direction on position
 leftdir : Position -> Position
 leftdir(null) = null
 leftdir(V(X, Y)) = if X == 0 then null else V(X - 1, Y)
@@ -59,6 +62,7 @@ downrightdir : Position -> Position
 downrightdir(V(X, Y)) = if X == 7 || Y == 7 then null else V(X+1,Y+1)
 downrightdir(_) = null
 
+// convert direction name to direction function
 direction: Directions -> Position -> Position
 direction(upleft) = upleftdir
 direction(up) = updir
@@ -74,7 +78,7 @@ opponent : Player -> Player
 opponent(white) = black
 opponent(_) = white
 
-// decomposing Piece
+// decomposing Piece into Player and PieceType
 extract_player : Piece -> Player
 extract_player(P(C, PT)) = C
 extract_player(empty) = white //! we should never ask for that!
@@ -83,7 +87,7 @@ extract_piecetype : Piece -> PieceType
 extract_piecetype(P(C, PT)) = PT
 extract_piecetype(empty) = pawn //! we should never ask for that!
 
-// ------- main variables -------
+// ======== variables ========
 board : Position -> Piece = {
   V(X, Y) = 
     if Y == 1 
@@ -107,14 +111,22 @@ board : Position -> Piece = {
   where X in 0..7, Y in 0..7
 }
 
+// active player
 me : Player = white
+// chosen position
 position : Position
-taken_piece : Piece
+// chosen piece (to move)
+taken_piece : Piece 
+// chosen piece type
 taken_piece_type : PieceType
+// piece-movement function mode
+// if true pieces check if can attack opponents king
+// otherwise pieces check if can move to specific position (including attack on opponent)
 attackKing : Boolean
 
-// ------ piece-specific settings ------
-// pawn
+// ------ piece-specific helpers ------
+// --- pawn ---
+// directions in which pawn can move
 domain PawnDirections = down | downright | downleft
 pawn_direction : Player -> PawnDirections -> Directions
 pawn_direction(white, down) = up
@@ -124,12 +136,13 @@ pawn_direction(black, down) = down
 pawn_direction(black, downright) = downright
 pawn_direction(black, downleft) = downleft
 
+// directions in which pawn has to attack
 pawn_attacking : PawnDirections -> Boolean
 pawn_attacking(down) = false
 pawn_attacking(downright) = true
 pawn_attacking(downleft) = true
 
-// horse
+// --- horse ---
 perpendicular_direction : OrtogonalDirections -> OrtogonalDirections
 perpendicular_direction(up) = left
 perpendicular_direction(down) = right
@@ -143,7 +156,8 @@ reversed_direction(left) = right
 reversed_direction(right) = left
 
 
-// ----- functions -----
+// ======= functions =======
+// chariot movement helper - check if he can attack given piece
 graph canAttack(me : Player) {
   check(board[position] != empty) // ensure position not empty
   check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
@@ -161,37 +175,40 @@ graph canAttack(me : Player) {
 graph movePawn(me: Player) {
   // for each move that pawn can make
   forall pdi : PawnDirections {
-    branch { // if move forward - non attacking
+    branch {
+      // check if this move type is not attacking (move forward)
       check(pawn_attacking(pdi) == false)
 
       position = direction(pawn_direction(me, pdi))(position) // move pawn
       check(position != null) // ensure position on board
-      check(board[position] == empty)
+      check(board[position] == empty) // position has to be empty
       check(attackKing == false)
-    } or { // if move diagonal - attacking
+    } or {
+      // check if this move type is attacking (move diagonal)
       check(pawn_attacking(pdi) == true)
 
       position = direction(pawn_direction(me, pdi))(position)
       check(position != null)
 
-        check(board[position] != empty) // ensure position not empty
-        check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
+      // check if we can attack
+      check(board[position] != empty) // ensure position not empty
+      check(extract_player(board[position]) == opponent(me)) // and opponent piece on position
 
-        branch {
-          check(attackKing == false)  // if testing for attacking normal pieces
-          check(extract_piecetype(board[position]) != king) // but we cant attack kings  
-        } or {
-          check(attackKing == true) // if testing for attacking king
-          check(extract_piecetype(board[position]) == king)
-        }
+      branch {
+        check(attackKing == false)  // if testing for attacking normal pieces
+        check(extract_piecetype(board[position]) != king) // but we cant attack kings  
+      } or {
+        check(attackKing == true) // if testing for attacking king
+        check(extract_piecetype(board[position]) == king)
+      }
     }
   }
 }
 
 graph moveHorse(me : Player) {
   // choose horse 2 jumps direction and 1 last jump direction
-  forall odi : OrtogonalDirections {
-    forall negate : Boolean {
+  forall odi : OrtogonalDirections {  // choose first 2 jumps direction
+    forall negate : Boolean {   // choose last jump direction
       // execute 2 jumps
       position = direction(odi)(position)
       position = direction(odi)(position)
@@ -342,7 +359,8 @@ graph moveKing(me : Player) {
   }
 }
 
-// ------ main functions ------
+// ======= main functions =======
+// execute move, based on chosed piece
 graph move_piece(me : Player) {
   branch {
     check(taken_piece_type == pawn)
@@ -370,11 +388,16 @@ graph move_piece(me : Player) {
   }
 }
 
+// move all available pieces
 graph move(me : Player) {
-  forall p:Position { // find players pieces and move them
+  // find my pieces and move them
+  forall p:Position { 
     check(p != null && board[p] != empty && 
           extract_player(board[p]) == me)
+
+    // i can play with this piece, so choose it
     position = p
+    // and tag from where the piece moves
     $ p
   }
 
@@ -385,7 +408,7 @@ graph move(me : Player) {
   // make all possible moves, accordingly to taken piece type
   move_piece(me)
 
-  // emit chosen destination position (cant emit variables)
+  // emit/tag with chosen destination position (cant emit variables)
   forall p:Position {
     check(p == position)
     $ p
@@ -395,8 +418,10 @@ graph move(me : Player) {
   board[position] = taken_piece 
 }
 
-// ---- check for win ----
+// ------ check for win ------
+// find mine king position on board
 graph findKing(me : Player) {
+  // for all positions check if piece on board fits king 'description'
   forall p : Position {
     check(p != null && board[p] != empty &&
           extract_player(board[p]) == me && 
@@ -405,6 +430,7 @@ graph findKing(me : Player) {
   }
 }
 
+// check if i am checkmated
 graph checkmate(me : Player) {
     // check if my king is attacked
     attackKing = true
@@ -426,9 +452,14 @@ graph checkmate(me : Player) {
 
 // ---- main game loop ----
 graph turn() {
+  // i am playing
   player = me
+
+  // execute my move ()
   attackKing = false
   move(me)
+
+  // let the keeper check for game logic
   player = keeper
 
   // if i did checkmate my opponent

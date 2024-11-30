@@ -158,7 +158,20 @@ public:
         return turns_left == 0 || missed_presents_to_end == 0;
     }
 
+    void normalize_action(Point &gargoyle_pos, Point &action) {
+        const int dist = gargoyle_pos.int_dist(action);
+        if (dist > GARGOYLE_SPEED * GARGOYLE_SPEED) {
+            const double ratio = GARGOYLE_SPEED / sqrt(dist);
+            const int nx = gargoyle_pos.x + (action.x - gargoyle_pos.x) * ratio;
+            const int ny = gargoyle_pos.y + (action.y - gargoyle_pos.y) * ratio;
+            action = {nx, ny};
+        }
+    }
+
     void applyAction(Point my_action, Point opp_action) {
+        // normalize_action(my_gargoyle.pos, my_action);
+        // normalize_action(opp_gargoyle.pos, opp_action);
+
         my_gargoyle.pos = my_action;
         opp_gargoyle.pos = opp_action;
 
@@ -188,29 +201,19 @@ public:
     vector<Point> legalActionsSingle(Point gargoyle_pos) const {    // TODO: convert to generating actions based on presents
         vector<Point> actions;
 
-        for(auto &present : presents) {
-            const Point pos = present.pos;
-            const int dist = gargoyle_pos.int_dist(pos);
+        // for(auto &present : presents) {
+        //     actions.push_back(present.pos);
+        // }
+        // if(actions.empty()) actions.push_back(gargoyle_pos);
 
-            if (dist <= GARGOYLE_SPEED * GARGOYLE_SPEED) {
-                actions.push_back(pos);
-            } else {
-                const double ratio = GARGOYLE_SPEED / sqrt(dist);
-                const int nx = gargoyle_pos.x + (pos.x - gargoyle_pos.x) * ratio;
-                const int ny = gargoyle_pos.y + (pos.y - gargoyle_pos.y) * ratio;
-                actions.push_back({nx, ny});
+        // all actions
+        const int step = 30;
+        for(int dx = -GARGOYLE_SPEED; dx <= GARGOYLE_SPEED; dx += step) {
+            for(int dy = -GARGOYLE_SPEED; dy <= GARGOYLE_SPEED; dy += step) {
+                if(dx == 0 && dy == 0) continue;
+                actions.push_back(Point(gargoyle_pos.x + dx, gargoyle_pos.y + dy));
             }
         }
-
-        if(actions.empty()) actions.push_back(gargoyle_pos);
-        // if(actions.empty()) {
-        //     // wander around gargoyle reachable radious
-        //     int ny = my_gargoyle.pos.y;
-        //     for(int nx = my_gargoyle.pos.x - GARGOYLE_SPEED; nx <= my_gargoyle.pos.x + GARGOYLE_SPEED; nx += 1) {
-        //         ny = my_gargoyle.pos.y - sqrt(GARGOYLE_SPEED * GARGOYLE_SPEED - (nx - my_gargoyle.pos.x) * (nx - my_gargoyle.pos.x));
-        //         actions.push_back({nx, ny});
-        //     }
-        // }
 
         return actions;
     }
@@ -260,7 +263,6 @@ public:
     MCTS(State &rootState) {
         root = new Node(rootState);
     }
-
 
     Node *expand(Node *node) {
         auto actions = node->state.legalActions();

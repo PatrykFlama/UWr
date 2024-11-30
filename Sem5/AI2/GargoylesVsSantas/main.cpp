@@ -70,6 +70,9 @@ public:
     Point operator+(const Point& p) const {
         return Point(x + p.x, y + p.y);
     }
+    Point operator-(const Point& p) const {
+        return Point(x - p.x, y - p.y);
+    }
 
     bool operator==(const Point& p) const {
         return x == p.x && y == p.y;
@@ -158,20 +161,7 @@ public:
         return turns_left == 0 || missed_presents_to_end == 0;
     }
 
-    void normalize_action(Point &gargoyle_pos, Point &action) {
-        const int dist = gargoyle_pos.int_dist(action);
-        if (dist > GARGOYLE_SPEED * GARGOYLE_SPEED) {
-            const double ratio = GARGOYLE_SPEED / sqrt(dist);
-            const int nx = gargoyle_pos.x + (action.x - gargoyle_pos.x) * ratio;
-            const int ny = gargoyle_pos.y + (action.y - gargoyle_pos.y) * ratio;
-            action = {nx, ny};
-        }
-    }
-
     void applyAction(Point my_action, Point opp_action) {
-        // normalize_action(my_gargoyle.pos, my_action);
-        // normalize_action(opp_gargoyle.pos, opp_action);
-
         my_gargoyle.pos = my_action;
         opp_gargoyle.pos = opp_action;
 
@@ -201,17 +191,12 @@ public:
     vector<Point> legalActionsSingle(Point gargoyle_pos) const {    // TODO: convert to generating actions based on presents
         vector<Point> actions;
 
-        // for(auto &present : presents) {
-        //     actions.push_back(present.pos);
-        // }
-        // if(actions.empty()) actions.push_back(gargoyle_pos);
-
-        // all actions
-        const int step = 30;
-        for(int dx = -GARGOYLE_SPEED; dx <= GARGOYLE_SPEED; dx += step) {
-            for(int dy = -GARGOYLE_SPEED; dy <= GARGOYLE_SPEED; dy += step) {
-                if(dx == 0 && dy == 0) continue;
-                actions.push_back(Point(gargoyle_pos.x + dx, gargoyle_pos.y + dy));
+        const int step = GARGOYLE_SPEED / 10;
+        for(int nx = gargoyle_pos.x - GARGOYLE_SPEED; nx <= gargoyle_pos.x + GARGOYLE_SPEED; nx += step) {
+            for(int ny = gargoyle_pos.y - GARGOYLE_SPEED; ny <= gargoyle_pos.y + GARGOYLE_SPEED; ny += step) {
+                if(gargoyle_pos.int_dist({nx, ny}) > GARGOYLE_SPEED*GARGOYLE_SPEED || 
+                   nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT) continue;
+                actions.push_back({nx, ny});
             }
         }
 

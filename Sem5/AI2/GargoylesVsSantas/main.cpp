@@ -154,9 +154,6 @@ public:
     int my_score;
     int opp_score;
 
-    Point my_chosen_destination;
-    Point opp_chosen_destination;
-
     //? instead of SM-MCTS: in first 'half-turn' i play
     //? then in second half-turn opponent makes his move
     //? and since we completed entire turn, scores are calculated
@@ -182,7 +179,6 @@ public:
     void swap_roles() {
         swap(my_gargoyle, opp_gargoyle);
         swap(my_score, opp_score);
-        swap(my_chosen_destination, opp_chosen_destination);
         is_my_turn = !is_my_turn;
     }
 
@@ -200,37 +196,33 @@ public:
     }
 
     void applyDestination(const Point &my_destination) {
-        my_chosen_destination = my_destination;
-
-        my_gargoyle.pos = normalizeDestination(my_chosen_destination);
+        my_gargoyle.pos = normalizeDestination(my_destination);
 
         if(is_my_turn) {
             swap_roles();
             return;
         }
 
-
         list<Present>::iterator present = presents.begin();
         while(present != presents.end()) {
+            // first presents fall
+            present->pos.y -= present->vy;
+            if(present->pos.y < 0) {
+                missed_presents_to_end--;
+                present = presents.erase(present++);
+                continue;
+            }
+
+            // then it is the end of the turn and we calculate score
             const int my_points = (my_gargoyle.pos.int_dist(present->pos) <= 30*30) ? present->value : 0;
             const int opp_points = (opp_gargoyle.pos.int_dist(present->pos) <= 30*30) ? present->value : 0;
-
-            // if i catch the present, i can choose the next destination
-            if(my_points) my_chosen_destination = Point(0, 0);
-            if(opp_points) opp_chosen_destination = Point(0, 0);
 
             if(my_points || opp_points) {
                 my_score += my_points;
                 opp_score += opp_points;
                 present = presents.erase(present++);
             } else {
-                present->pos.y -= present->vy;
-                if(present->pos.y < 0) {
-                    missed_presents_to_end--;
-                    present = presents.erase(present++);
-                } else {
-                    ++present;
-                }
+                ++present;
             }
         }
 
@@ -256,11 +248,6 @@ public:
     }
 
     vector<Point> legalDestinations_presentsPredict() const {
-        // if i chose destination already, return it
-        if(my_chosen_destination != Point(0, 0)) {
-            return {my_chosen_destination};
-        }
-
         const Point &gargoyle_pos = my_gargoyle.pos;
         vector<Point> actions;
 
@@ -278,9 +265,30 @@ public:
             }
         }
 
-        if(actions.size() == 0) return legalActions_all();
+        // if(actions.size() == 0) return legalActions_all();
+        if(actions.size() == 0) return {my_gargoyle.pos, Point(WIDTH/2, HEIGHT/2)};
 
         return actions;
+    }
+
+    Point getRandomDestination_presentsPredict() const {
+        const Point &gargoyle_pos = my_gargoyle.pos;
+        int ptr = rand() % presents.size();
+        for(const Present &p : presents) {
+            if(ptr-- == 0) {
+                for(int round = 1; round < 20; round++) {
+                    Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
+                    if(new_pos.y < 0) break;
+
+                    const int rounds = (int)ceil(gargoyle_pos.dist(new_pos) / GARGOYLE_SPEED);
+                    if(rounds == round) {
+                        return new_pos;
+                    }
+                }
+            }
+        }
+
+        return {WIDTH/2, HEIGHT/2};
     }
 
     friend ostream& operator<<(ostream& os, const State &s) {
@@ -289,7 +297,6 @@ public:
         os << "My gargoyle: " << s.my_gargoyle.pos << " " << s.my_gargoyle.cooldown << '\n';
         os << "Opp gargoyle: " << s.opp_gargoyle.pos << " " << s.opp_gargoyle.cooldown << '\n';
         os << "My turn: " << (s.is_my_turn ? "true" : "false") << '\n';
-        os << "Destiantions chosen: " << s.my_chosen_destination << " " << s.opp_chosen_destination << '\n';
         os << "Missed presents to end: " << s.missed_presents_to_end << '\n';
         os << "Turns left: " << s.turns_left << '\n';
         os << "Presents: " << '\n';
@@ -316,18 +323,22 @@ public:
     State state;
     Node *parent;
     vector<Node*> children;
-    // vector<Point> to_vis;        // TODO: dont generate all actions every time (unvisited or smth)
+    vector<Point> to_vis;
     int visits = 0;
     double reward = 0.0;
 
     Node(State s, Node *p = nullptr) : state(s), parent(p) {
-        // to_vis = state.legalDestinations_presentsPredict();
+        to_vis = state.legalDestinations_presentsPredict();
     }
 
     bool isFullyExpanded() const {
-        const auto &actions = state.legalDestinations_presentsPredict();
-        return children.size() == actions.size();
-        // return to_vis.empty();
+        return to_vis.empty();
+    }
+
+    Point getUnvisitedChild() { // TODO randomize?
+        Point res = to_vis.back();
+        to_vis.pop_back();
+        return res;
     }
 
     bool isTerminal() {
@@ -358,47 +369,21 @@ class MCTS {
 public:
     MCTS() {}
 
-    // do we want that? it may kinda slow us down
-    // ~MCTS() {
-    //     deleteTree(root);
-    // }
-    // void deleteTree(Node* node) {
-    //     for (Node* child : node->children) {
-    //         deleteTree(child);
-    //     }
-    //     delete node;
-    // }
-
-
     Node *expand(Node *node) {
-        auto actions = node->state.legalDestinations_presentsPredict();
+        Point my_action = node->getUnvisitedChild();
+        State newState = node->state;
+        newState.applyDestination(my_action);
+        Node *newNode = new Node(newState, node);
+        node->children.push_back(newNode);
 
-        for(const auto &my_action : actions) {
-            bool alreadyExpanded = false;
-            for(const auto &child : node->children) {
-                if (child->state.my_gargoyle.pos == my_action) {
-                    alreadyExpanded = true;
-                    break;
-                }
-            }
-
-            if(!alreadyExpanded) {
-                State newState = node->state;
-                newState.applyDestination(my_action);
-                Node *newNode = new Node(newState, node);
-                node->children.push_back(newNode);
-                return newNode;
-            }
-        }
-
-        // return nullptr;
         return node;
     }
 
     double simulate(State state) {
         while (!state.isTerminal() && state.presents.size() > 0) {
-            auto actions = state.legalDestinations_presentsPredict();
-            state.applyDestination(actions[rand() % actions.size()]);    // TODO get random action
+            // auto actions = state.legalDestinations_presentsPredict();
+            // state.applyDestination(actions[rand() % actions.size()]);
+            state.applyDestination(state.getRandomDestination_presentsPredict());
         }
         return state.my_score - state.opp_score;
     }
@@ -415,6 +400,7 @@ public:
     Point mcts(State &state, int time_limit_ms) {
         root = new Node(state);
 
+        cerr << "MCTSing" << '\n';
         while(timer.elapsed() < time_limit_ms) {
             Node *node = root;
 
@@ -434,6 +420,13 @@ public:
             // Backpropagation
             backpropagate(node, reward);
         }
+
+
+        cerr << "Root children: " << root->children.size() << " unvisited " << root->to_vis.size() << '\n';
+        for (Node *child : root->children) {
+            cerr << " " << child->reward << "/" << child->visits << ' ';
+        }
+        cerr << '\n';
 
 
         Node *bestChild = root->bestChild(0.0);
@@ -481,10 +474,8 @@ int main() {
     Point res = mcts.mcts(curr_state, 1000);
     cout << "FLY " << res << endl;
 
-    while (1) {
+    while(1) {
         read_loop_input(curr_state);
-        // mcts.move(curr_state);
-
 
         timer.reset();
         Point res = mcts.mcts(curr_state, 50);

@@ -148,10 +148,12 @@ public:
 class State {
 public:
     list<Present> presents;
+
     Gargoyle my_gargoyle;
     Gargoyle opp_gargoyle;
     int my_score;
     int opp_score;
+
     int turns_left;
     int missed_presents_to_end;
 
@@ -161,7 +163,11 @@ public:
         return turns_left == 0 || missed_presents_to_end == 0;
     }
 
-    void applyAction(Point my_action, Point opp_action) {
+    int eval() const {
+        return my_score - opp_score;
+    }
+
+    void applyAction(const Point &my_action, const Point &opp_action) {
         my_gargoyle.pos = my_action;
         opp_gargoyle.pos = opp_action;
 
@@ -188,7 +194,7 @@ public:
         --turns_left;
     }
 
-    vector<Point> legalActionsSingle(Point gargoyle_pos) const {    // TODO: convert to generating actions based on presents
+    vector<Point> legalActionsSingle(const Point &gargoyle_pos) const {
         vector<Point> actions;
 
         const int step = GARGOYLE_SPEED / 10;
@@ -214,14 +220,22 @@ public:
     State state;
     Node *parent;
     vector<Node*> children;
+    vector<Point> to_vis;
     int visits = 0;
     double reward = 0.0;
 
-    Node(State s, Node *p = nullptr) : state(s), parent(p) {}
+    Node(State s, Node *p = nullptr) : state(s), parent(p) {
+        to_vis = state.legalActions().first;
+    }
 
     bool isFullyExpanded() const {
-        const auto actions = state.legalActions();
+        const auto &actions = state.legalActions();
         return children.size() == actions.first.size() * actions.second.size();
+        // return to_vis.empty();
+    }
+
+    bool isTerminal() {
+        return state.isTerminal();
     }
 
     Node *bestChild(double explorationWeight = 1.0) const {
@@ -243,11 +257,23 @@ public:
 
 
 class MCTS {
-public:
     Node *root;
+public:
     MCTS(State &rootState) {
         root = new Node(rootState);
     }
+
+    // do we want that? it may kinda slow us down
+    ~MCTS() {
+        deleteTree(root);
+    }
+    void deleteTree(Node* node) {
+        for (Node* child : node->children) {
+            deleteTree(child);
+        }
+        delete node;
+    }
+
 
     Node *expand(Node *node) {
         auto actions = node->state.legalActions();
@@ -280,7 +306,7 @@ public:
             auto actions = state.legalActions();
             state.applyAction(actions.first[rand() % actions.first.size()], actions.second[rand() % actions.second.size()]);
         }
-        return state.my_score - state.opp_score;
+        return state.eval();
     }
 
     void backpropagate(Node *node, double reward) {

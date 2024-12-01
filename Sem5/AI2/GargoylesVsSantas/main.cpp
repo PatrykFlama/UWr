@@ -121,7 +121,7 @@ const int GARGOYLE_SPEED = 150;
 const int WIDTH = 1920;
 const int HEIGHT = 750;
 
-int gargoyles_per_player; // liczba gargulców w drużynie
+int gargoyles_per_player;
 Timer timer;
 
 
@@ -209,7 +209,6 @@ public:
             return;
         }
 
-        // cerr << *this << '\n';
 
         list<Present>::iterator present = presents.begin();
         while(present != presents.end()) {

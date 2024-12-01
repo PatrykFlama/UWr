@@ -123,6 +123,7 @@ const int HEIGHT = 750;
 
 int gargoyles_per_player;
 Timer timer;
+string message = "";
 
 
 class Gargoyle {
@@ -265,7 +266,6 @@ public:
             }
         }
 
-        // if(actions.size() == 0) return legalActions_all();
         if(actions.size() == 0) return {my_gargoyle.pos, Point(WIDTH/2, HEIGHT/2)};
 
         return actions;
@@ -299,7 +299,7 @@ public:
         os << "My turn: " << (s.is_my_turn ? "true" : "false") << '\n';
         os << "Missed presents to end: " << s.missed_presents_to_end << '\n';
         os << "Turns left: " << s.turns_left << '\n';
-        os << "Presents: " << '\n';
+        os << "Presents (" << s.presents.size() << "): " << '\n';
         for(const Present &p : s.presents) {
             os << p.id << " " << p.pos << " " << p.value << " " << p.vy << '\n';
         }
@@ -335,7 +335,7 @@ public:
         return to_vis.empty();
     }
 
-    Point getUnvisitedChild() { // TODO randomize?
+    Point getUnvisitedChild() {
         Point res = to_vis.back();
         to_vis.pop_back();
         return res;
@@ -365,9 +365,16 @@ public:
 
 class MCTS {
     // TODO save tree, so we can reuse it
-    Node *root;
 public:
     MCTS() {}
+    void deleteNode(Node *node) {
+        if(!node) return;
+        for(Node *child : node->children) {
+            deleteNode(child);
+        }
+        if(!node) return;
+        delete node;
+    }
 
     Node *expand(Node *node) {
         Point my_action = node->getUnvisitedChild();
@@ -376,13 +383,11 @@ public:
         Node *newNode = new Node(newState, node);
         node->children.push_back(newNode);
 
-        return node;
+        return newNode;
     }
 
     double simulate(State state) {
         while (!state.isTerminal() && state.presents.size() > 0) {
-            // auto actions = state.legalDestinations_presentsPredict();
-            // state.applyDestination(actions[rand() % actions.size()]);
             state.applyDestination(state.getRandomDestination_presentsPredict());
         }
         return state.my_score - state.opp_score;
@@ -397,8 +402,8 @@ public:
         }
     }
 
-    Point mcts(State &state, int time_limit_ms) {
-        root = new Node(state);
+    Point mcts(State state, int time_limit_ms) {
+        Node *root = new Node(state);
 
         cerr << "MCTSing" << '\n';
         while(timer.elapsed() < time_limit_ms) {
@@ -410,7 +415,7 @@ public:
             }
 
             // Expansion
-            if (!node->state.isTerminal()) {
+            if(!node->state.isTerminal()) {
                 node = expand(node);
             }
 
@@ -430,7 +435,11 @@ public:
 
 
         Node *bestChild = root->bestChild(0.0);
-        return bestChild->state.get_main_player_pos();
+        Point res = bestChild->state.get_main_player_pos();
+        message = to_string(bestChild->reward)+"/"+to_string(bestChild->visits);
+
+        deleteNode(root);
+        return res;
     }
 };
 
@@ -476,9 +485,11 @@ int main() {
 
     while(1) {
         read_loop_input(curr_state);
+        cerr << curr_state;
 
         timer.reset();
         Point res = mcts.mcts(curr_state, 50);
-        cout << "FLY " << res << endl;
+        cout << "FLY " << res << ' ' << message << endl;
+        message = "";
     }
 }

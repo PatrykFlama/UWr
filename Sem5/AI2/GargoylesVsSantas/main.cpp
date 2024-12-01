@@ -170,7 +170,6 @@ public:
 
     int eval() const {
         return (is_my_turn ? 1 : -1) * (my_score - opp_score);
-        // return my_score - opp_score;
     }
 
     Point get_main_player_pos() const {
@@ -181,6 +180,17 @@ public:
         swap(my_gargoyle, opp_gargoyle);
         swap(my_score, opp_score);
         is_my_turn = !is_my_turn;
+    }
+
+    void normalizeDestination(Point &p) const {
+        if(my_gargoyle.pos.int_dist(p) <= GARGOYLE_SPEED*GARGOYLE_SPEED) return;
+
+        const double dist = my_gargoyle.pos.dist(p);
+        const double dx = p.x - my_gargoyle.pos.x;
+        const double dy = p.y - my_gargoyle.pos.y;
+
+        p.x = my_gargoyle.pos.x + (int)(GARGOYLE_SPEED * dx / dist);
+        p.y = my_gargoyle.pos.y + (int)(GARGOYLE_SPEED * dy / dist);   
     }
 
     void applyAction(const Point &my_action) {
@@ -215,7 +225,7 @@ public:
         swap_roles();
     }
 
-    vector<Point> legalActions() const {
+    vector<Point> legalActions_all() const {
         const Point &gargoyle_pos = my_gargoyle.pos;
         vector<Point> actions;
 
@@ -226,6 +236,28 @@ public:
                    nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT || 
                    (nx == gargoyle_pos.x && ny == gargoyle_pos.y)) continue;
                 actions.push_back({nx, ny});
+            }
+        }
+
+        return actions;
+    }
+
+    vector<Point> legalActions_presentsPredict() const {
+        const Point &gargoyle_pos = my_gargoyle.pos;
+        vector<Point> actions;
+
+        for(const Present &p : presents) {
+            // find the round when we can catch the present
+            for(int round = 1; round < 20; round++) {       // kinda slow, but who cares
+                Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
+                if(new_pos.y < 0) break;
+
+                const int rounds = (int)ceil(my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
+                if(rounds == round) {
+                    normalizeDestination(new_pos);
+                    actions.push_back(new_pos);
+                    break;
+                }
             }
         }
 
@@ -267,11 +299,11 @@ public:
     double reward = 0.0;
 
     Node(State s, Node *p = nullptr) : state(s), parent(p) {
-        // to_vis = state.legalActions();
+        // to_vis = state.legalActions_all();
     }
 
     bool isFullyExpanded() const {
-        const auto &actions = state.legalActions();
+        const auto &actions = state.legalActions_all();
         return children.size() == actions.size();
         // return to_vis.empty();
     }
@@ -317,7 +349,7 @@ public:
 
 
     Node *expand(Node *node) {
-        auto actions = node->state.legalActions();
+        auto actions = node->state.legalActions_all();
 
         for(const auto &my_action : actions) {
             bool alreadyExpanded = false;
@@ -343,7 +375,7 @@ public:
 
     double simulate(State state) {
         while (!state.isTerminal() && state.presents.size() > 0) {
-            auto actions = state.legalActions();
+            auto actions = state.legalActions_all();
             state.applyAction(actions[rand() % actions.size()]);    // TODO get random action
         }
         return state.my_score - state.opp_score;

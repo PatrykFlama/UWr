@@ -307,14 +307,15 @@ int main() {
         Point res = curr_state.my_gargoyle.pos;
         int best_rounds = INT_MAX;
         for(const Present &p : curr_state.presents) {
-            for(int round = 1; round < 10; round++) {
+            for(int round = 1; round < 20; round++) {
                 Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
                 if(new_pos.y < 0) break;
 
                 int rounds = (int)ceil(curr_state.my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
-                if(rounds < best_rounds) {
+                if(rounds == round && rounds < best_rounds) {
                     best_rounds = rounds;
                     res = new_pos;
+                    break;
                 }
             }
         }

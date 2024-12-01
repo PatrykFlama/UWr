@@ -201,8 +201,8 @@ public:
                 opp_score += opp_points;
                 present = presents.erase(present++);
             } else {
-                present->pos.y -= present->vy;
-                if(present->pos.y < 0) {
+                present->pos.y += present->vy;
+                if(present->pos.y > HEIGHT) {
                     missed_presents_to_end--;
                     present = presents.erase(present++);
                 } else {
@@ -257,146 +257,6 @@ public:
 };
 
 
-class Node {
-public:
-    State state;
-    Node *parent;
-    vector<Node*> children;
-    // vector<Point> to_vis;        // TODO: dont generate all actions every time (unvisited or smth)
-    int visits = 0;
-    double reward = 0.0;
-
-    Node(State s, Node *p = nullptr) : state(s), parent(p) {
-        // to_vis = state.legalActions();
-    }
-
-    bool isFullyExpanded() const {
-        const auto &actions = state.legalActions();
-        return children.size() == actions.size();
-        // return to_vis.empty();
-    }
-
-    bool isTerminal() {
-        return state.isTerminal();
-    }
-
-    Node *bestChild(double explorationWeight = 1.0) const {
-        Node *best = nullptr;
-        double bestValue = -numeric_limits<double>::infinity();
-
-        for (Node *child : children) {
-            double uctValue = (double)child->reward / (double)(child->visits + 1e-6) +
-                            explorationWeight * sqrt(2*log(visits + 1) / (double)(child->visits + 1e-6));
-            if(uctValue > bestValue) {
-                bestValue = uctValue;
-                best = child;
-            }
-        }
-
-        return best;
-    }
-};
-
-
-class MCTS {
-    // TODO save tree, so we can reuse it
-    Node *root;
-public:
-    MCTS() {}
-
-    // do we want that? it may kinda slow us down
-    // ~MCTS() {
-    //     deleteTree(root);
-    // }
-    // void deleteTree(Node* node) {
-    //     for (Node* child : node->children) {
-    //         deleteTree(child);
-    //     }
-    //     delete node;
-    // }
-
-
-    Node *expand(Node *node) {
-        auto actions = node->state.legalActions();
-
-        for(const auto &my_action : actions) {
-            bool alreadyExpanded = false;
-            for(const auto &child : node->children) {
-                if (child->state.my_gargoyle.pos == my_action) {
-                    alreadyExpanded = true;
-                    break;
-                }
-            }
-
-            if(!alreadyExpanded) {
-                State newState = node->state;
-                newState.applyAction(my_action);
-                Node *newNode = new Node(newState, node);
-                node->children.push_back(newNode);
-                return newNode;
-            }
-        }
-
-        // return nullptr;
-        return node;
-    }
-
-    double simulate(State state) {
-        while (!state.isTerminal() && state.presents.size() > 0) {
-            auto actions = state.legalActions();
-            state.applyAction(actions[rand() % actions.size()]);    // TODO get random action
-        }
-        return state.my_score - state.opp_score;
-    }
-
-    void backpropagate(Node *node, double reward) {
-        while (node) {
-            node->visits++;
-            node->reward += reward;
-            reward = -reward;
-            node = node->parent;
-        }
-    }
-
-    Point mcts(State &state, int time_limit_ms) {
-        root = new Node(state);
-
-        while(timer.elapsed() < time_limit_ms) {
-            Node *node = root;
-
-            // Selection
-            while(!node->children.empty() && node->isFullyExpanded()) {
-                node = node->bestChild();
-            }
-
-            cerr << "Selected node: " << node->state.my_gargoyle.pos << (node->state.is_my_turn ? 't' : 'f') << '\n';
-
-            // Expansion
-            if (!node->state.isTerminal()) {
-                node = expand(node);
-            }
-
-            cerr << "Expanded to: " << node->state.my_gargoyle.pos << (node->state.is_my_turn ? 't' : 'f') << '\n';
-
-            // Simulation
-            double reward = simulate(node->state);
-
-            cerr << "Simulated reward: " << reward << '\n';
-
-            // Backpropagation
-            backpropagate(node, reward);
-        }
-
-        cerr << "Calculated moves: " << '\n';
-        for (Node *child : root->children) {
-            cerr << child->state.my_gargoyle.pos << " " << child->reward << " " << child->visits << '\n';
-        }
-
-        Node *bestChild = root->bestChild(0.0);
-        return bestChild->state.get_main_player_pos();
-    }
-};
-
 void read_loop_input(State &s) {
     cin >> s.missed_presents_to_end; cin.ignore();
     
@@ -431,8 +291,6 @@ int main() {
     cin >> gargoyles_per_player; cin.ignore();
     // read_loop_input(curr_state);
 
-    timer.reset();
-    MCTS mcts;
 
     // Point res = mcts.mcts(curr_state, 1000);
     // cout << "FLY " << res << endl;
@@ -442,8 +300,26 @@ int main() {
         // mcts.move(curr_state);
         cerr << curr_state << '\n';
 
-        timer.reset();
-        Point res = mcts.mcts(curr_state, 50);
+        // find closest present
+        // calculate in how lower it will be next round 
+        // (calculate rounds needed to get to it, and how much it will fall)
+        // if it's worth it, go for it
+        Point res = curr_state.my_gargoyle.pos;
+        int best_rounds = INT_MAX;
+        for(const Present &p : curr_state.presents) {
+            for(int round = 1; round < 10; round++) {
+                Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
+                if(new_pos.y < 0) break;
+
+                int rounds = (int)ceil(curr_state.my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
+                if(rounds < best_rounds) {
+                    best_rounds = rounds;
+                    res = new_pos;
+                }
+            }
+        }
+
+
         cout << "FLY " << res << endl;
     }
 }

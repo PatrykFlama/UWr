@@ -154,22 +154,42 @@ public:
     int my_score;
     int opp_score;
 
+    //? instead of SM-MCTS: in first 'half-turn' i play
+    //? then in second half-turn opponent makes his move
+    //? and since we completed entire turn, scores are calculated
+    bool is_my_turn;
+
     int turns_left;
     int missed_presents_to_end;
 
-    State() : my_score(0), opp_score(0), turns_left(TURNS), missed_presents_to_end(MISSED_PRESENTS) {}
+    State() : is_my_turn(true), my_score(0), opp_score(0), turns_left(TURNS), missed_presents_to_end(MISSED_PRESENTS) {}
 
     bool isTerminal() const {
         return turns_left == 0 || missed_presents_to_end == 0;
     }
 
     int eval() const {
-        return my_score - opp_score;
+        return (is_my_turn ? 1 : -1) * (my_score - opp_score);
+        // return my_score - opp_score;
     }
 
-    void applyAction(const Point &my_action, const Point &opp_action) {
+    Point get_main_player_pos() const {
+        return is_my_turn ? my_gargoyle.pos : opp_gargoyle.pos;
+    }
+
+    void swap_roles() {
+        swap(my_gargoyle, opp_gargoyle);
+        swap(my_score, opp_score);
+        is_my_turn = !is_my_turn;
+    }
+
+    void applyAction(const Point &my_action) {
         my_gargoyle.pos = my_action;
-        opp_gargoyle.pos = opp_action;
+
+        if(is_my_turn) {
+            swap_roles();
+            return;
+        }
 
         list<Present>::iterator present = presents.begin();
         while(present != presents.end()) {
@@ -192,16 +212,19 @@ public:
         }
 
         --turns_left;
+        swap_roles();
     }
 
-    vector<Point> legalActionsSingle(const Point &gargoyle_pos) const {
+    vector<Point> legalActions() const {
+        const Point &gargoyle_pos = my_gargoyle.pos;
         vector<Point> actions;
 
         const int step = GARGOYLE_SPEED / 10;
         for(int nx = gargoyle_pos.x - GARGOYLE_SPEED; nx <= gargoyle_pos.x + GARGOYLE_SPEED; nx += step) {
             for(int ny = gargoyle_pos.y - GARGOYLE_SPEED; ny <= gargoyle_pos.y + GARGOYLE_SPEED; ny += step) {
                 if(gargoyle_pos.int_dist({nx, ny}) > GARGOYLE_SPEED*GARGOYLE_SPEED || 
-                   nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT) continue;
+                   nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT || 
+                   (nx == gargoyle_pos.x && ny == gargoyle_pos.y)) continue;
                 actions.push_back({nx, ny});
             }
         }
@@ -209,8 +232,27 @@ public:
         return actions;
     }
 
-    pair<vector<Point>, vector<Point>> legalActions() const {
-        return {legalActionsSingle(my_gargoyle.pos), legalActionsSingle(opp_gargoyle.pos)};
+    friend ostream& operator<<(ostream& os, const State &s) {
+        os << "My score: " << s.my_score << '\n';
+        os << "Opp score: " << s.opp_score << '\n';
+        os << "My gargoyle: " << s.my_gargoyle.pos << " " << s.my_gargoyle.cooldown << '\n';
+        os << "Opp gargoyle: " << s.opp_gargoyle.pos << " " << s.opp_gargoyle.cooldown << '\n';
+        os << "My turn: " << (s.is_my_turn ? "true" : "false") << '\n';
+        os << "Presents: " << '\n';
+        for(const Present &p : s.presents) {
+            os << p.id << " " << p.pos << " " << p.value << " " << p.vy << '\n';
+        }
+        return os;
+    }
+
+    void short_debug() {
+        if(is_my_turn) {
+            cerr << my_gargoyle.pos << " / " << opp_gargoyle.pos << ' ';
+            cerr << my_score << " / " << opp_score << '\n';
+        } else {
+            cerr << opp_gargoyle.pos << " / " << my_gargoyle.pos << ' ';
+            cerr << opp_score << " / " << my_score << '\n';
+        }
     }
 };
 
@@ -220,17 +262,17 @@ public:
     State state;
     Node *parent;
     vector<Node*> children;
-    vector<Point> to_vis;
+    // vector<Point> to_vis;        // TODO: dont generate all actions every time (unvisited or smth)
     int visits = 0;
     double reward = 0.0;
 
     Node(State s, Node *p = nullptr) : state(s), parent(p) {
-        to_vis = state.legalActions().first;
+        // to_vis = state.legalActions();
     }
 
     bool isFullyExpanded() const {
         const auto &actions = state.legalActions();
-        return children.size() == actions.first.size() * actions.second.size();
+        return children.size() == actions.size();
         // return to_vis.empty();
     }
 
@@ -243,9 +285,9 @@ public:
         double bestValue = -numeric_limits<double>::infinity();
 
         for (Node *child : children) {
-            double uctValue = child->reward / (child->visits + 1e-6) +
-                            explorationWeight * sqrt(log(visits + 1) / (child->visits + 1e-6));
-            if (uctValue > bestValue) {
+            double uctValue = (double)child->reward / (double)(child->visits + 1e-6) +
+                            explorationWeight * sqrt(2*log(visits + 1) / (double)(child->visits + 1e-6));
+            if(uctValue > bestValue) {
                 bestValue = uctValue;
                 best = child;
             }
@@ -257,60 +299,58 @@ public:
 
 
 class MCTS {
+    // TODO save tree, so we can reuse it
     Node *root;
 public:
-    MCTS(State &rootState) {
-        root = new Node(rootState);
-    }
+    MCTS() {}
 
     // do we want that? it may kinda slow us down
-    ~MCTS() {
-        deleteTree(root);
-    }
-    void deleteTree(Node* node) {
-        for (Node* child : node->children) {
-            deleteTree(child);
-        }
-        delete node;
-    }
+    // ~MCTS() {
+    //     deleteTree(root);
+    // }
+    // void deleteTree(Node* node) {
+    //     for (Node* child : node->children) {
+    //         deleteTree(child);
+    //     }
+    //     delete node;
+    // }
 
 
     Node *expand(Node *node) {
         auto actions = node->state.legalActions();
 
-        for (const auto &my_action : actions.first) {
-            for (const auto &opp_action : actions.second) {
-                bool alreadyExpanded = false;
-                for (const auto &child : node->children) {
-                    if (child->state.my_gargoyle.pos == my_action && child->state.opp_gargoyle.pos == opp_action) {
-                        alreadyExpanded = true;
-                        break;
-                    }
+        for(const auto &my_action : actions) {
+            bool alreadyExpanded = false;
+            for(const auto &child : node->children) {
+                if (child->state.my_gargoyle.pos == my_action) {
+                    alreadyExpanded = true;
+                    break;
                 }
+            }
 
-                if (!alreadyExpanded) {
-                    State newState = node->state;
-                    newState.applyAction(my_action, opp_action);
-                    Node *newNode = new Node(newState, node);
-                    node->children.push_back(newNode);
-                    return newNode;
-                }
+            if(!alreadyExpanded) {
+                State newState = node->state;
+                newState.applyAction(my_action);
+                Node *newNode = new Node(newState, node);
+                node->children.push_back(newNode);
+                return newNode;
             }
         }
 
-        return nullptr;
+        // return nullptr;
+        return node;
     }
 
     double simulate(State state) {
-        while (!state.isTerminal()) {
+        while (!state.isTerminal() && state.presents.size() > 0) {
             auto actions = state.legalActions();
-            state.applyAction(actions.first[rand() % actions.first.size()], actions.second[rand() % actions.second.size()]);
+            state.applyAction(actions[rand() % actions.size()]);    // TODO get random action
         }
-        return state.eval();
+        return state.my_score - state.opp_score;
     }
 
     void backpropagate(Node *node, double reward) {
-        while (node != nullptr) {
+        while (node) {
             node->visits++;
             node->reward += reward;
             reward = -reward;
@@ -318,41 +358,42 @@ public:
         }
     }
 
-    void move(State &state) {
-        for (auto &child : root->children) {
-            if (child->state.my_gargoyle.pos == state.my_gargoyle.pos) {
-                root = child;
-                root->parent = nullptr;
-                return;
-            }
-        }
-
+    Point mcts(State &state, int time_limit_ms) {
         root = new Node(state);
-    }
 
-    Point mcts(int time_limit_ms) {
         while(timer.elapsed() < time_limit_ms) {
             Node *node = root;
 
             // Selection
-            while (!node->children.empty() && node->isFullyExpanded()) {
+            while(!node->children.empty() && node->isFullyExpanded()) {
                 node = node->bestChild();
             }
+
+            cerr << "Selected node: " << node->state.my_gargoyle.pos << (node->state.is_my_turn ? 't' : 'f') << '\n';
 
             // Expansion
             if (!node->state.isTerminal()) {
                 node = expand(node);
             }
 
+            cerr << "Expanded to: " << node->state.my_gargoyle.pos << (node->state.is_my_turn ? 't' : 'f') << '\n';
+
             // Simulation
             double reward = simulate(node->state);
+
+            cerr << "Simulated reward: " << reward << '\n';
 
             // Backpropagation
             backpropagate(node, reward);
         }
 
-        Node *bestChild = root->bestChild(0.0); // Brak eksploracji przy wyborze ostatecznego ruchu
-        return bestChild->state.my_gargoyle.pos;
+        cerr << "Calculated moves: " << '\n';
+        for (Node *child : root->children) {
+            cerr << child->state.my_gargoyle.pos << " " << child->reward << " " << child->visits << '\n';
+        }
+
+        Node *bestChild = root->bestChild(0.0);
+        return bestChild->state.get_main_player_pos();
     }
 };
 
@@ -388,20 +429,21 @@ int main() {
     State curr_state;
 
     cin >> gargoyles_per_player; cin.ignore();
-    read_loop_input(curr_state);
+    // read_loop_input(curr_state);
 
     timer.reset();
-    MCTS mcts(curr_state);
+    MCTS mcts;
 
-    Point res = mcts.mcts(1000);
-    cout << "FLY " << res << endl;
+    // Point res = mcts.mcts(curr_state, 1000);
+    // cout << "FLY " << res << endl;
 
     while (1) {
         read_loop_input(curr_state);
-        mcts.move(curr_state);
+        // mcts.move(curr_state);
+        cerr << curr_state << '\n';
 
         timer.reset();
-        Point res = mcts.mcts(50);
+        Point res = mcts.mcts(curr_state, 50);
         cout << "FLY " << res << endl;
     }
 }

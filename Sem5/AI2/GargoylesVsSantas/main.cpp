@@ -254,11 +254,14 @@ public:
 
         for(const Present &p : presents) {
             // find the first round when we can catch the present
-            for(int round = 1; round < 20; round++) {       // kinda slow, but who cares
-                Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
-                if(new_pos.y < 0) break;
+            Point new_pos = p.pos;
+            for(int round = 1; round <= 20; round++) {       // kinda slow, but who cares
+                new_pos.y -= p.vy;  // where the present will be at the end of the round
+                if(new_pos.y < 0) {
+                    break;    // present fell on the ground
+                }
 
-                const int rounds = (int)ceil(my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
+                const int rounds = (int)ceil(my_gargoyle.pos.dist(new_pos) / (double)GARGOYLE_SPEED);
                 if(rounds <= round) {
                     actions.push_back(new_pos);
                     break;
@@ -350,6 +353,7 @@ public:
         double bestValue = -numeric_limits<double>::infinity();
 
         for (Node *child : children) {
+            // TODO probably should be positive and not so big
             double uctValue = (double)child->reward / (double)(child->visits + 1e-6) +
                             explorationWeight * sqrt(2*log(visits + 1) / (double)(child->visits + 1e-6));
             if(uctValue > bestValue) {
@@ -367,14 +371,6 @@ class MCTS {
     // TODO save tree, so we can reuse it
 public:
     MCTS() {}
-    void deleteNode(Node *node) {
-        if(!node) return;
-        for(Node *child : node->children) {
-            deleteNode(child);
-        }
-        if(!node) return;
-        delete node;
-    }
 
     Node *expand(Node *node) {
         Point my_action = node->getUnvisitedChild();
@@ -387,10 +383,11 @@ public:
     }
 
     double simulate(State state) {
+        const int OFFSET = 1e3;
         while (!state.isTerminal() && state.presents.size() > 0) {
             state.applyDestination(state.getRandomDestination_presentsPredict());
         }
-        return state.my_score - state.opp_score;
+        return ((state.my_score - state.opp_score) + OFFSET) / (2.*OFFSET);
     }
 
     void backpropagate(Node *node, double reward) {
@@ -405,6 +402,7 @@ public:
     Point mcts(State state, int time_limit_ms) {
         Node *root = new Node(state);
 
+        int debug_counter = 0;
         cerr << "MCTSing" << '\n';
         while(timer.elapsed() < time_limit_ms) {
             Node *node = root;
@@ -424,10 +422,12 @@ public:
 
             // Backpropagation
             backpropagate(node, reward);
+
+            if(DEBUG) debug_counter++;
         }
 
 
-        cerr << "Root children: " << root->children.size() << " unvisited " << root->to_vis.size() << '\n';
+        cerr << "Root children: " << root->children.size() << " unvisited " << root->to_vis.size() << " simulations " << debug_counter << '\n';
         for (Node *child : root->children) {
             cerr << " " << child->reward << "/" << child->visits << ' ';
         }
@@ -438,8 +438,118 @@ public:
         Point res = bestChild->state.get_main_player_pos();
         message = to_string(bestChild->reward)+"/"+to_string(bestChild->visits);
 
-        deleteNode(root);
         return res;
+    }
+};
+
+
+class Minimax {
+public:
+    Minimax() {}
+
+    int minimax(State &state, int depth, bool isMax) {
+        if(depth == 0 || state.isTerminal()) {
+            return state.eval();
+        }
+
+        if(isMax) {
+            int best = -numeric_limits<int>::infinity();
+            for(const Point &action : state.legalDestinations_presentsPredict()) {
+                State newState = state;
+                newState.applyDestination(action);
+                best = max(best, minimax(newState, depth-1, !isMax));
+            }
+            return best;
+        } else {
+            int best = numeric_limits<int>::infinity();
+            for(const Point &action : state.legalDestinations_presentsPredict()) {
+                State newState = state;
+                newState.applyDestination(action);
+                best = min(best, minimax(newState, depth-1, !isMax));
+            }
+            return best;
+        }
+    }
+
+    Point getMiniMax(State state, int depth) {
+        int best = INT_MIN;
+        Point bestAction = state.get_main_player_pos();
+
+        for(const Point &action : state.legalDestinations_presentsPredict()) {
+            State newState = state;
+            newState.applyDestination(action);
+            int val = minimax(newState, depth, false);
+            if(val > best) {
+                best = val;
+                bestAction = action;
+            }
+        }
+
+        return bestAction;
+    }
+
+
+    int alphaBeta(State &state, int depth, int alpha, int beta, bool isMax) {
+        if(depth == 0 || state.isTerminal()) {
+            return state.eval();
+        }
+
+        if(isMax) {
+            int best = INT_MIN;
+            for(const Point &action : state.legalDestinations_presentsPredict()) {
+                State newState = state;
+                newState.applyDestination(action);
+                best = max(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
+                alpha = max(alpha, best);
+                if(beta <= alpha) break;
+            }
+            return best;
+        } else {
+            int best = INT_MAX;
+            for(const Point &action : state.legalDestinations_presentsPredict()) {
+                State newState = state;
+                newState.applyDestination(action);
+                best = min(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
+                beta = min(beta, best);
+                if(beta <= alpha) break;
+            }
+            return best;
+        }
+    }
+
+    Point getAlphaBeta(State state, int depth) {
+        int best = INT_MIN;
+        Point bestAction = state.get_main_player_pos();
+
+        for(const Point &action : state.legalDestinations_presentsPredict()) {
+            State newState = state;
+            newState.applyDestination(action);
+            int val = alphaBeta(newState, depth, INT_MIN, INT_MAX, false);
+            if(val > best) {
+                best = val;
+                bestAction = action;
+            }
+        }
+
+        return bestAction;
+    }
+};
+
+
+class AI {
+    MCTS mcts;
+    Minimax minimax;
+public:
+    AI() {}
+
+    inline Point getFirstAction(State &state) {
+        // return mcts.mcts(state, 1000);
+        return minimax.getAlphaBeta(state, 8);
+    }
+
+    inline Point getAction(State &state) {
+        // return mcts.mcts(state, 50);
+        return minimax.getAlphaBeta(state, 5);
     }
 };
 
@@ -467,6 +577,7 @@ void read_loop_input(State &s) {
     }
 }
 
+
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
@@ -477,18 +588,23 @@ int main() {
     cin >> gargoyles_per_player; cin.ignore();
     read_loop_input(curr_state);
 
+    AI ai;
     timer.reset();
-    MCTS mcts;
 
-    Point res = mcts.mcts(curr_state, 1000);
+    Point res = ai.getFirstAction(curr_state);
     cout << "FLY " << res << endl;
 
     while(1) {
         read_loop_input(curr_state);
-        cerr << curr_state;
+
+        curr_state.short_debug();
+        for(auto &action : curr_state.legalDestinations_presentsPredict()) {
+            cerr << action << " | ";
+        }
+        cerr << '\n';
 
         timer.reset();
-        Point res = mcts.mcts(curr_state, 50);
+        Point res = ai.getAction(curr_state);
         cout << "FLY " << res << ' ' << message << endl;
         message = "";
     }

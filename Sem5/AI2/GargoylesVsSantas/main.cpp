@@ -7,8 +7,8 @@
 
 
 /*
-League 1 - greedy
-League 2 - minimax
+League 1 - minimax with aggro with timeout protection
+League 2 - minimax with aggro
 League 3 - minimax with aggro
 League 4
 */
@@ -476,54 +476,13 @@ public:
 };
 
 
+int minimax_timeout = 1000;
 class Minimax {
 public:
     Minimax() {}
 
-    int minimax(State &state, int depth, bool isMax) {
-        if(depth == 0 || state.isTerminal()) {
-            return state.eval();
-        }
-
-        if(isMax) {
-            int best = -numeric_limits<int>::infinity();
-            for(const Point &action : state.legalDestinations_presentsPredict()) {
-                State newState = state;
-                newState.applyDestination(action);
-                best = max(best, minimax(newState, depth-1, !isMax));
-            }
-            return best;
-        } else {
-            int best = numeric_limits<int>::infinity();
-            for(const Point &action : state.legalDestinations_presentsPredict()) {
-                State newState = state;
-                newState.applyDestination(action);
-                best = min(best, minimax(newState, depth-1, !isMax));
-            }
-            return best;
-        }
-    }
-
-    Point getMiniMax(State state, int depth) {
-        int best = INT_MIN;
-        Point bestAction = state.get_main_player_pos();
-
-        for(const Point &action : state.legalDestinations_presentsPredict()) {
-            State newState = state;
-            newState.applyDestination(action);
-            int val = minimax(newState, depth, false);
-            if(val > best) {
-                best = val;
-                bestAction = action;
-            }
-        }
-
-        return bestAction;
-    }
-
-
     int alphaBeta(State &state, int depth, int alpha, int beta, bool isMax) {
-        if(depth == 0 || state.isTerminal()) {
+        if(depth == 0 || state.isTerminal() || state.presents.size() == 0) {
             return state.eval();
         }
 
@@ -555,6 +514,8 @@ public:
         Point bestAction = state.get_main_player_pos();
 
         for(const Point &action : state.legalDestinations_presentsPredict()) {
+            if(timer.elapsed() > minimax_timeout) break;
+
             State newState = state;
             newState.applyDestination(action);
             int val = alphaBeta(newState, depth, INT_MIN, INT_MAX, false);
@@ -576,12 +537,17 @@ public:
     AI() {}
 
     inline Point getFirstAction(State &state) {
-        return minimax.getAlphaBeta(state, 3201);
+        minimax_timeout = 1000;
+        const auto res = minimax.getAlphaBeta(state, 3201);
+        minimax_timeout = 50;
+        return res;
+
         return mcts.mcts(state, 1000);
     }
 
     inline Point getAction(State &state) {
         return minimax.getAlphaBeta(state, 191);
+
         return mcts.mcts(state, 50);
     }
 };

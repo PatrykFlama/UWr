@@ -6,6 +6,13 @@
 // #include <x86intrin.h>                                                      //AVX/SSE Extensions
 
 
+/*
+League 1 - greedy
+League 2 - minimax
+League 3 - minimax
+League 4
+*/
+
 #include <bits/stdc++.h>
 #include <chrono>
 #include <thread>
@@ -170,7 +177,13 @@ public:
     }
 
     int eval() const {
+        return my_score - opp_score;
+    }
+    int main_player_eval() const {
         return (is_my_turn ? 1 : -1) * (my_score - opp_score);
+    }
+    int main_player_score() const {
+        return is_my_turn ? my_score : opp_score;
     }
 
     Point get_main_player_pos() const {
@@ -269,7 +282,7 @@ public:
             }
         }
 
-        if(actions.size() == 0) return {my_gargoyle.pos, Point(WIDTH/2, HEIGHT/2)};
+        if(actions.size() == 0) return {Point(WIDTH/2, HEIGHT/2)};
 
         return actions;
     }
@@ -383,11 +396,10 @@ public:
     }
 
     double simulate(State state) {
-        const int OFFSET = 1e3;
         while (!state.isTerminal() && state.presents.size() > 0) {
             state.applyDestination(state.getRandomDestination_presentsPredict());
         }
-        return ((state.my_score - state.opp_score) + OFFSET) / (2.*OFFSET);
+        return state.eval();
     }
 
     void backpropagate(Node *node, double reward) {
@@ -543,12 +555,12 @@ public:
     AI() {}
 
     inline Point getFirstAction(State &state) {
-        // return mcts.mcts(state, 1000);
+        return mcts.mcts(state, 1000);
         return minimax.getAlphaBeta(state, 8);
     }
 
     inline Point getAction(State &state) {
-        // return mcts.mcts(state, 50);
+        return mcts.mcts(state, 50);
         return minimax.getAlphaBeta(state, 5);
     }
 };

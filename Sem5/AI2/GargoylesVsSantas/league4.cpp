@@ -527,62 +527,49 @@ public:
         }
     }
 
-    Point getAlphaBeta(State state, int depth) {
+    vector<Point> getAlphaBeta(State state, int depth) {
         int best = INT_MIN;
-        Point bestAction = state.get_main_player_pos();
+        // vector<Point> best3Actions = state.get_main_player_pos();
+        priority_queue<pair<int, Point>> pq;
+        pq.push({INT_MIN, state.get_main_player_pos()});
+        pq.push({INT_MIN, state.get_main_player_pos()});
+        pq.push({INT_MIN, state.get_main_player_pos()});
 
         for(const Point &action : state.legalDestinations_presentsPredict()) {
             State newState = state;
             newState.applyDestination(action);
             int val = alphaBeta(newState, depth, INT_MIN, INT_MAX, false);
-            if(val > best) {
-                best = val;
-                bestAction = action;
-            }
+
+            pq.push({val, action});
         }
 
-        return bestAction;
-    }
-
-    Point getABIterativeDeepening(State state, int timeout, int max_depth, int step=1) {
-        int best = INT_MIN;
-        Point bestAction = state.get_main_player_pos();
-
-        for(int depth = 2; depth <= max_depth; depth += step) {
-            if(timer.elapsed() > timeout) break;
-
-            Point action = getAlphaBeta(state, depth);
-            State newState = state;
-            newState.applyDestination(action);
-            int val = alphaBeta(newState, depth, INT_MIN, INT_MAX, false);
-
-            if(val > best) {
-                best = val;
-                bestAction = action;
-            }
+        vector<Point> best3Actions;
+        for(int i = 0; i < 3; i++) {
+            best3Actions.push_back(pq.top().second);
+            pq.pop();
         }
 
-        return bestAction;
+        return best3Actions;
     }
 };
 
 
 class AI {
-    MCTS mcts;
+    // MCTS mcts;
     Minimax minimax;
 public:
     AI() {}
 
-    inline Point getFirstAction(State &state) {
+    inline vector<Point> getFirstAction(State &state) {
         return minimax.getAlphaBeta(state, 3201);
-        return mcts.mcts(state, 1000);
+        // return mcts.mcts(state, 1000);
     }
 
-    inline Point getAction(State &state) {
+    inline vector<Point> getAction(State &state) {
         // return minimax.getAlphaBeta(state, 191);
         return minimax.getAlphaBeta(state, 5);
-        return mcts.mcts(state, 50);
-        return minimax.getABIterativeDeepening(state, 50, 191, 50);
+        // return mcts.mcts(state, 50);
+        // return minimax.getABIterativeDeepening(state, 50, 191, 50);
     }
 };
 
@@ -624,8 +611,10 @@ int main() {
     AI ai;
     timer.reset();
 
-    Point res = ai.getFirstAction(curr_state);
-    cout << "FLY " << res << endl;
+    vector<Point> res = ai.getFirstAction(curr_state);
+    for(auto &p : res) {
+        cout << "FLY " << p << endl;
+    }
 
     while(1) {
         read_loop_input(curr_state);
@@ -637,8 +626,9 @@ int main() {
         cerr << '\n';
 
         timer.reset();
-        Point res = ai.getAction(curr_state);
-        cout << "FLY " << res << ' ' << message << endl;
-        message = "";
+        vector<Point> res = ai.getAction(curr_state);
+        for(auto &p : res) {
+            cout << "FLY " << p << ' ' << message << endl;
+        }
     }
 }

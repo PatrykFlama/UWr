@@ -15,6 +15,15 @@
     - [Wersja w .NET Framework, WebForms](#wersja-w-net-framework-webforms)
     - [Wersja w MVC](#wersja-w-mvc)
     - [Wersja w .NET Core](#wersja-w-net-core)
+- [Wykład 9 - WebAPI i REST](#wykład-9---webapi-i-rest)
+  - [REST vs SOAP](#rest-vs-soap)
+  - [.NET Framewrok](#net-framewrok)
+    - [GET](#get)
+    - [POST](#post)
+    - [Jak zakazać GET](#jak-zakazać-get)
+  - [.NET Core](#net-core)
+  - [API key](#api-key)
+  - [Tokeny JWT](#tokeny-jwt)
 
 
 
@@ -279,3 +288,107 @@ w notatkach powinna być
 w Main dodajemy do buildera autentykację (z notatek) (tutaj możemy tez np dodać własny cookie builder, albo cookie manager)  
 w app dodajemy middleware (z notatek)  
 reszta jest analogicznie jak wcześniej  
+
+# Wykład 9 - WebAPI i REST
+## REST vs SOAP  
+REST jest bardziej dedykowany dla komunikacji serwer->przeglądarka, natomiast SOAP jest bardziej dedykowany dla komunikacji serwer->serwer  
+
+## .NET Framewrok
+tworząc nowy projekt wybieramy WebAPI _oraz_ MVC (możemy skorzystac z obu)  
+w folderze controllers zrobimy osobne foldery na MVC oraz WebAPI, żeby nam się nie pomieszały  
+`./App_Start/RouterConfig.cs` - zawiera konfigurację routigu dla MVC  
+`./App_Start/WebApiConfig.cs` - zawiera konfigurację routingu dla WebAPI  
+dlatego że MVC ma być ścieżką domyślną to zarejestrujemy ją po WebAPI  
+żeby ścieżki idące do kontrolerów WebAPI były rozróżniane od tych idących do kontrolerów MVC, dodajemy prefix `api` do ścieżki: `api/{controller}/{id}`  
+> dlaczego w WebAPI nie ma w ścieżce {action}?  
+> bo w WebAPI mamy tylko jedną akcję, dla GET/POST/PUT/DELETE
+
+tworząc kontroler do WebAPI musimy wybrać (w trakcie tworzenia) odpowiedni szablon! (w nim klasa kontrolera dziedziczy po ApiController)  
+z nazwy funkcji kontrolera w weapi wynika jaką akcję obsługuje  
+
+### GET
+```cs
+public class PersonController : ApiController
+{
+    // oba zapytania działają, bo są rozróżnione po ścieżce
+    public Person Get()
+    {
+        return new Person { Name = "Jan" };
+    }
+
+    public Person Get(string id)
+    {
+        return new Person { Name = "Jan" + id };
+    }
+}
+
+public class Person
+{
+    public string Name { get; set; }
+}
+```
+
+domyślnie zostanie zwrócony XML, aby to zmienić dodajemy w WebApiCongig.cs:
+```cs
+config.Formatters.Remove(GlobalConfiguration.Configuration.Formatters.XmlFormatter);
+```
+
+> zasada na oko: do 3 parametrów w URL zapytania GET mają jeszcze sens
+
+### POST
+```cs
+public PersonPostResponseModel Post(PersonPostRequestModel model)
+{
+    return new PersonPostResponseModel();
+}
+
+public class PersonPostRequestModel {}
+public class PersonPostResponseModel {}
+```
+
+### Jak zakazać GET
+```cs
+public IHttpActionResult Get(string id)
+{
+    // tutaj np możemy przeproawdzić weryfikację zapytania
+    if(id == "foo") {
+        return this.BadRequest();
+    }
+
+    return this.Ok(
+        new Person({ Name = "Jan" });
+    );
+}
+```
+
+## .NET Core
+Tworzymy po prostu nowy pusty projekt (ewentualnie skorzystamy z szablonu dla MVC - jest już tam skonfigurowany routing)  
+
+W core kontrolery dla webapi i dla mvc to te same routy   
+tworzymy z dedykowanego szblonu dla webapi - dziedziczy on po `ControllerBase` oraz ma nadpisaną ścieżkę `[Route("api"/[controller])]`  
+działa to praktycznie tak samo jak w .NET Framework
+```cs
+public IActionResult Get()
+{
+    return this.Ok(new Person(){} );
+}
+```
+
+w .NET Core jak ustawimy funkcji w kontrolerze atrybut `[HttpGet]` to nasza funkcja może mieć już dowolną nazwę  
+
+## API key
+przy komunikacji serwer-serwer nie mamy dostępu do ciasteczek = autentykacji, więc potrzebujemy innego sposobu na autentykację - kluczy z dostatecznie dużą entropią  
+do tego możemy stworzyć własny filtr do autentykacji za pomocą api key, wtedy zamiast `[Authorize]` nad funkcją będziemy pisać `[CustomAuthenticationFilter]`  
+w standardzie mamy już dedykowany nagłówek `Authorization` który ma albo wartość `Basic` która trzymma proste klucze (np klucz api), albo coś bardziej zkomplikowanego   
+
+## Tokeny JWT
+Sensowna alternatywa dla prymitywnych uwierzytelnień stałym kluczem (mogą się często zmieniać, przez co wykradnięcie ich nie tworzy dużego ryzyka)  
+niestety dla nich w .NET Framework musimy sami napisać filtry autentykacyjne  
+w .NET Core do autentykacji służy funkcja `.JWTAddBearer`, która pozwala nam zweryfikować token jwt  
+
+wtedy w nagłówku HTML mamy `"Authorization": Bearer ${token}`, gdzie bearer jest dedykowany dla 'wygasających' kluczy  
+
+walidacja symetryczna vs asymetryczna: 
+* symetryczna enkoduje i dekoduje tylko jednym kluczem, więc nie możemy się nim z nikim podzielić (więc tylko nasz serwer powinien wydawać i autentykować klucze)
+* asymetryczna ma klucz prywatny do szyfrowania i publiczny do weryfikowania, więc możemy wydać klucz jednym serwerem i zautentykować go innym 
+

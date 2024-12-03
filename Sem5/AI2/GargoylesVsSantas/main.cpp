@@ -9,7 +9,7 @@
 /*
 League 1 - greedy
 League 2 - minimax
-League 3 - minimax
+League 3 - minimax with aggro
 League 4
 */
 
@@ -162,6 +162,9 @@ public:
     int my_score;
     int opp_score;
 
+    Point my_locked_destination;
+    Point opp_locked_destination;
+
     //? instead of SM-MCTS: in first 'half-turn' i play
     //? then in second half-turn opponent makes his move
     //? and since we completed entire turn, scores are calculated
@@ -193,6 +196,7 @@ public:
     void swap_roles() {
         swap(my_gargoyle, opp_gargoyle);
         swap(my_score, opp_score);
+        swap(my_locked_destination, opp_locked_destination);
         is_my_turn = !is_my_turn;
     }
 
@@ -211,6 +215,7 @@ public:
 
     void applyDestination(const Point &my_destination) {
         my_gargoyle.pos = normalizeDestination(my_destination);
+        my_locked_destination = my_destination;
 
         if(is_my_turn) {
             swap_roles();
@@ -230,6 +235,19 @@ public:
             // then it is the end of the turn and we calculate score
             const int my_points = (my_gargoyle.pos.int_dist(present->pos) <= 30*30) ? present->value : 0;
             const int opp_points = (opp_gargoyle.pos.int_dist(present->pos) <= 30*30) ? present->value : 0;
+
+            if(my_points) {
+                my_locked_destination = Point(0, 0);
+                if(present->pos == opp_locked_destination) {
+                    opp_locked_destination = Point(0, 0);
+                }
+            }
+            if(opp_points) {
+                opp_locked_destination = Point(0, 0);
+                if(present->pos == my_locked_destination) {
+                    my_locked_destination = Point(0, 0);
+                }
+            }
 
             if(my_points || opp_points) {
                 my_score += my_points;
@@ -262,6 +280,9 @@ public:
     }
 
     vector<Point> legalDestinations_presentsPredict() const {
+        if(my_locked_destination != Point(0, 0)) 
+            return {my_locked_destination};
+
         const Point &gargoyle_pos = my_gargoyle.pos;
         vector<Point> actions;
 
@@ -555,13 +576,13 @@ public:
     AI() {}
 
     inline Point getFirstAction(State &state) {
+        return minimax.getAlphaBeta(state, 3201);
         return mcts.mcts(state, 1000);
-        return minimax.getAlphaBeta(state, 8);
     }
 
     inline Point getAction(State &state) {
+        return minimax.getAlphaBeta(state, 191);
         return mcts.mcts(state, 50);
-        return minimax.getAlphaBeta(state, 5);
     }
 };
 

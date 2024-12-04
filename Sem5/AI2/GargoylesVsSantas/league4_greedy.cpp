@@ -149,8 +149,8 @@ class State {
 public:
     list<Present> presents;
 
-    Gargoyle my_gargoyle;
-    Gargoyle opp_gargoyle;
+    vector<Gargoyle> my_gargoyle;
+    vector<Gargoyle> opp_gargoyle;
     int my_score;
     int opp_score;
 
@@ -173,8 +173,18 @@ public:
         // return my_score - opp_score;
     }
 
-    Point get_main_player_pos() const {
-        return is_my_turn ? my_gargoyle.pos : opp_gargoyle.pos;
+    vector<Point> get_main_player_pos() const {
+        vector<Point> res;
+        if(is_my_turn) {
+            for(const Gargoyle &g : my_gargoyle) {
+                res.push_back(g.pos);
+            }
+        } else {
+            for(const Gargoyle &g : opp_gargoyle) {
+                res.push_back(g.pos);
+            }
+        }
+        return res;
     }
 
     void swap_roles() {
@@ -184,7 +194,9 @@ public:
     }
 
     void applyAction(const Point &my_action) {
-        my_gargoyle.pos = my_action;
+        for(Gargoyle &g : my_gargoyle) {
+            g.pos = my_action;
+        }
 
         if(is_my_turn) {
             swap_roles();
@@ -193,8 +205,19 @@ public:
 
         list<Present>::iterator present = presents.begin();
         while(present != presents.end()) {
-            const int my_points = (my_gargoyle.pos.int_dist(present->pos) <= 30*30) ? present->value : 0;
-            const int opp_points = (opp_gargoyle.pos.int_dist(present->pos) <= 30*30) ? present->value : 0;
+            int my_points = 0;
+            int opp_points = 0;
+            for(const Gargoyle &g : my_gargoyle) {
+                if(g.pos.int_dist(present->pos) <= 30*30) {
+                    my_points = present->value;
+                }
+            }
+
+            for(const Gargoyle &g : opp_gargoyle) {
+                if(g.pos.int_dist(present->pos) <= 30*30) {
+                    opp_points = present->value;
+                }
+            }
 
             if(my_points || opp_points) {
                 my_score += my_points;
@@ -215,45 +238,45 @@ public:
         swap_roles();
     }
 
-    vector<Point> legalActions() const {
-        const Point &gargoyle_pos = my_gargoyle.pos;
-        vector<Point> actions;
+    // vector<Point> legalActions() const {
+    //     const Point &gargoyle_pos = my_gargoyle.pos;
+    //     vector<Point> actions;
 
-        const int step = GARGOYLE_SPEED / 10;
-        for(int nx = gargoyle_pos.x - GARGOYLE_SPEED; nx <= gargoyle_pos.x + GARGOYLE_SPEED; nx += step) {
-            for(int ny = gargoyle_pos.y - GARGOYLE_SPEED; ny <= gargoyle_pos.y + GARGOYLE_SPEED; ny += step) {
-                if(gargoyle_pos.int_dist({nx, ny}) > GARGOYLE_SPEED*GARGOYLE_SPEED || 
-                   nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT || 
-                   (nx == gargoyle_pos.x && ny == gargoyle_pos.y)) continue;
-                actions.push_back({nx, ny});
-            }
-        }
+    //     const int step = GARGOYLE_SPEED / 10;
+    //     for(int nx = gargoyle_pos.x - GARGOYLE_SPEED; nx <= gargoyle_pos.x + GARGOYLE_SPEED; nx += step) {
+    //         for(int ny = gargoyle_pos.y - GARGOYLE_SPEED; ny <= gargoyle_pos.y + GARGOYLE_SPEED; ny += step) {
+    //             if(gargoyle_pos.int_dist({nx, ny}) > GARGOYLE_SPEED*GARGOYLE_SPEED || 
+    //                nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT || 
+    //                (nx == gargoyle_pos.x && ny == gargoyle_pos.y)) continue;
+    //             actions.push_back({nx, ny});
+    //         }
+    //     }
 
-        return actions;
-    }
+    //     return actions;
+    // }
 
-    friend ostream& operator<<(ostream& os, const State &s) {
-        os << "My score: " << s.my_score << '\n';
-        os << "Opp score: " << s.opp_score << '\n';
-        os << "My gargoyle: " << s.my_gargoyle.pos << " " << s.my_gargoyle.cooldown << '\n';
-        os << "Opp gargoyle: " << s.opp_gargoyle.pos << " " << s.opp_gargoyle.cooldown << '\n';
-        os << "My turn: " << (s.is_my_turn ? "true" : "false") << '\n';
-        os << "Presents: " << '\n';
-        for(const Present &p : s.presents) {
-            os << p.id << " " << p.pos << " " << p.value << " " << p.vy << '\n';
-        }
-        return os;
-    }
+    // friend ostream& operator<<(ostream& os, const State &s) {
+    //     os << "My score: " << s.my_score << '\n';
+    //     os << "Opp score: " << s.opp_score << '\n';
+    //     os << "My gargoyle: " << s.my_gargoyle.pos << " " << s.my_gargoyle.cooldown << '\n';
+    //     os << "Opp gargoyle: " << s.opp_gargoyle.pos << " " << s.opp_gargoyle.cooldown << '\n';
+    //     os << "My turn: " << (s.is_my_turn ? "true" : "false") << '\n';
+    //     os << "Presents: " << '\n';
+    //     for(const Present &p : s.presents) {
+    //         os << p.id << " " << p.pos << " " << p.value << " " << p.vy << '\n';
+    //     }
+    //     return os;
+    // }
 
-    void short_debug() {
-        if(is_my_turn) {
-            cerr << my_gargoyle.pos << " / " << opp_gargoyle.pos << ' ';
-            cerr << my_score << " / " << opp_score << '\n';
-        } else {
-            cerr << opp_gargoyle.pos << " / " << my_gargoyle.pos << ' ';
-            cerr << opp_score << " / " << my_score << '\n';
-        }
-    }
+    // void short_debug() {
+    //     if(is_my_turn) {
+    //         cerr << my_gargoyle.pos << " / " << opp_gargoyle.pos << ' ';
+    //         cerr << my_score << " / " << opp_score << '\n';
+    //     } else {
+    //         cerr << opp_gargoyle.pos << " / " << my_gargoyle.pos << ' ';
+    //         cerr << opp_score << " / " << my_score << '\n';
+    //     }
+    // }
 };
 
 
@@ -261,13 +284,19 @@ void read_loop_input(State &s) {
     cin >> s.missed_presents_to_end; cin.ignore();
     
     cin >> s.my_score; cin.ignore();
+    s.my_gargoyle.clear();
     for (int i = 0; i < gargoyles_per_player; i++) {
-        cin >> s.my_gargoyle.pos.x >> s.my_gargoyle.pos.y >> s.my_gargoyle.cooldown; cin.ignore();
+        int x, y, cooldown;
+        cin >> x >> y >> cooldown; cin.ignore();
+        s.my_gargoyle.push_back(Gargoyle(Point(x, y), cooldown));
     }
 
     cin >> s.opp_score; cin.ignore();
+    s.opp_gargoyle.clear();
     for (int i = 0; i < gargoyles_per_player; i++) {
-        cin >> s.opp_gargoyle.pos.x >> s.opp_gargoyle.pos.y >> s.opp_gargoyle.cooldown; cin.ignore();
+        int x, y, cooldown;
+        cin >> x >> y >> cooldown; cin.ignore();
+        s.opp_gargoyle.push_back(Gargoyle(Point(x, y), cooldown));
     }
 
     int presents_count;
@@ -281,116 +310,45 @@ void read_loop_input(State &s) {
     }
 }
 
-Point get_closest_dest(State &state) {
-    const int tolerance = 30;
-    // Point res = state.my_gargoyle.pos;
-    Point res = {WIDTH / 2, HEIGHT / 2};
-    int best_rounds = INT_MAX;
-    for(const Present &p : state.presents) {
-        for(int round = 1; round < 20; round++) {
-            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
-                Point new_pos = {p.pos.x + tol, p.pos.y - p.vy * round};
+vector<Point> get_closest_dest(State &state) {
+    priority_queue<pair<int, Point>, 
+                     vector<pair<int, Point>>, 
+                     greater<pair<int, Point>>> pq; 
+
+    pq.push({INT_MAX, Point(3*WIDTH / 5, HEIGHT / 2)});
+    pq.push({INT_MAX, Point(2*WIDTH / 5, HEIGHT / 2)});
+    pq.push({INT_MAX, Point(4*WIDTH / 5, HEIGHT / 2)});
+
+    for(Gargoyle &g : state.my_gargoyle) {
+        for(const Present &p : state.presents) {
+            for(int round = 1; round < 20; round++) {
+                Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
                 if(new_pos.y < 0) break;
 
-                int rounds = (int)ceil(state.my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
-                if(rounds == round && rounds < best_rounds) {
-                    best_rounds = rounds;
-                    res = new_pos;
-                    break;
-                }
-            }
-
-            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
-                Point new_pos = {p.pos.x, p.pos.y - p.vy * round + tol};
-                if(new_pos.y < 0) break;
-
-                int rounds = (int)ceil(state.my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
-                if(rounds == round && rounds < best_rounds) {
-                    best_rounds = rounds;
-                    res = new_pos;
+                int rounds = (int)ceil(g.pos.dist(new_pos) / GARGOYLE_SPEED);
+                if(rounds == round) {
+                    pq.push({round, new_pos});
                     break;
                 }
             }
         }
+    }
+
+    // get closest presents, but ensure they are different
+    vector<Point> res;
+    unordered_set<Point> visited;
+    while(!pq.empty()) {
+        Point p = pq.top().second;
+        pq.pop();
+        if(visited.count(p)) continue;
+        visited.insert(p);
+        res.push_back(p);
+        if(res.size() == state.my_gargoyle.size()) break;
     }
 
     return res;
 }
 
-
-Point get_closest_opponent_aware(State &state) {
-    const int tolerance = 30;
-    Point res = {0, 0};
-    int best_rounds = INT_MAX;
-
-    const Point &my_pos = state.my_gargoyle.pos;
-    const Point &opp_pos = state.opp_gargoyle.pos;
-
-    for(const Present &p : state.presents) {
-        int my_rounds = INT_MAX;
-        int opp_rounds = INT_MAX;
-
-        Point my_res = {WIDTH / 2, HEIGHT / 2};
-        Point opp_res = {WIDTH / 2, HEIGHT / 2};
-
-        for(int round = 1; round < 20; round++) {
-            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
-                Point new_pos = {p.pos.x + tol, p.pos.y - p.vy * round};
-                if(new_pos.y < 0) break;
-
-                int rounds = (int)ceil(my_pos.dist(new_pos) / GARGOYLE_SPEED);
-                if(rounds == round && rounds < my_rounds) {
-                    my_rounds = rounds;
-                    my_res = new_pos;
-                    break;
-                }
-            }
-
-            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
-                Point new_pos = {p.pos.x, p.pos.y - p.vy * round + tol};
-                if(new_pos.y < 0) break;
-
-                int rounds = (int)ceil(my_pos.dist(new_pos) / GARGOYLE_SPEED);
-                if(rounds == round && rounds < my_rounds) {
-                    my_rounds = rounds;
-                    my_res = new_pos;
-                    break;
-                }
-            }
-        }
-
-        for(int round = 1; round < 20; round++) {
-            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
-                Point new_pos = {p.pos.x + tol, p.pos.y - p.vy * round};
-                if(new_pos.y < 0) break;
-
-                int rounds = (int)ceil(opp_pos.dist(new_pos) / GARGOYLE_SPEED);
-                if(rounds == round && rounds < opp_rounds) {
-                    opp_rounds = rounds;
-                    opp_res = new_pos;
-                    break;
-                }
-            }
-
-            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
-                Point new_pos = {p.pos.x, p.pos.y - p.vy * round + tol};
-                if(new_pos.y < 0) break;
-
-                int rounds = (int)ceil(opp_pos.dist(new_pos) / GARGOYLE_SPEED);
-                if(rounds == round && rounds < opp_rounds) {
-                    opp_rounds = rounds;
-                    opp_res = new_pos;
-                    break;
-                }
-            }
-        }
-
-        if(my_rounds <= opp_rounds && my_rounds < best_rounds) {
-            best_rounds = my_rounds;
-            res = my_res;
-        }
-    }
-}
 
 
 int main() {
@@ -414,12 +372,9 @@ int main() {
 
         Point res;
         
-        res = get_closest_dest(curr_state);
-        res = get_closest_opponent_aware(curr_state);
-        if(res == Point(0, 0)) {
-            res = get_closest_dest(curr_state);
+        vector<Point> actions = get_closest_dest(curr_state);
+        for(auto &action : actions) {
+            cout << "FLY " << action << endl;
         }
-
-        cout << "FLY " << res << endl;
     }
 }

@@ -281,6 +281,81 @@ void read_loop_input(State &s) {
     }
 }
 
+Point get_closest_dest(State &state) {
+    // Point res = state.my_gargoyle.pos;
+    Point res = {WIDTH / 2, HEIGHT / 2};
+    int best_rounds = INT_MAX;
+    for(const Present &p : state.presents) {
+        for(int round = 1; round < 20; round++) {
+            Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
+            if(new_pos.y < 0) break;
+
+            int rounds = (int)ceil(state.my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
+            if(rounds == round && rounds < best_rounds) {
+                best_rounds = rounds;
+                res = new_pos;
+                break;
+            }
+        }
+    }
+
+    return res;
+}
+
+void calc_rounds_to_present(State &state, vector<int> &rounds_to_present) {
+    for(const Present &p : state.presents) {
+        bool found = false;
+        for(int round = 1; round < 20; round++) {
+            Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
+            if(new_pos.y < 0) break;
+
+            int rounds = (int)ceil(state.my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
+            if(rounds == round) {
+                rounds_to_present.push_back(round);
+                found = true;
+                break;
+            }
+        }
+
+        if(!found) {
+            rounds_to_present.push_back(INT_MAX);
+        }
+    }
+}
+
+Point get_closest_dest2(State &state) {
+    // this time filter out presents that are closer to opponent
+    vector<int> my_rounds_to_present;
+    vector<int> opp_rounds_to_present;
+
+    calc_rounds_to_present(state, my_rounds_to_present);
+    state.swap_roles();
+    calc_rounds_to_present(state, opp_rounds_to_present);
+    state.swap_roles();
+
+    Point res = Point(0, 0);
+    int best_rounds = INT_MAX;
+    int present_ptr = 0;
+    for(const Present &p : state.presents) {
+        const int my_rounds = my_rounds_to_present[present_ptr];
+        const int opp_rounds = opp_rounds_to_present[present_ptr];
+
+        if(opp_rounds < my_rounds) {
+            present_ptr++;
+            continue;
+        }
+
+        if(my_rounds < best_rounds) {
+            best_rounds = my_rounds;
+            res = {p.pos.x, p.pos.y - p.vy * best_rounds};
+        }
+        
+        present_ptr++;
+    }
+
+    return res;
+}
+
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
@@ -289,37 +364,21 @@ int main() {
     State curr_state;
 
     cin >> gargoyles_per_player; cin.ignore();
-    // read_loop_input(curr_state);
-
-
-    // Point res = mcts.mcts(curr_state, 1000);
-    // cout << "FLY " << res << endl;
 
     while (1) {
         read_loop_input(curr_state);
-        // mcts.move(curr_state);
         cerr << curr_state << '\n';
 
         // find closest present
         // calculate in how lower it will be next round 
         // (calculate rounds needed to get to it, and how much it will fall)
         // if it's worth it, go for it
-        Point res = curr_state.my_gargoyle.pos;
-        int best_rounds = INT_MAX;
-        for(const Present &p : curr_state.presents) {
-            for(int round = 1; round < 20; round++) {
-                Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
-                if(new_pos.y < 0) break;
+        // but if opponent is closer dont go for it
 
-                int rounds = (int)ceil(curr_state.my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
-                if(rounds == round && rounds < best_rounds) {
-                    best_rounds = rounds;
-                    res = new_pos;
-                    break;
-                }
-            }
+        Point res = get_closest_dest2(curr_state);
+        if(res == Point(0, 0)) {
+            res = get_closest_dest(curr_state);
         }
-
 
         cout << "FLY " << res << endl;
     }

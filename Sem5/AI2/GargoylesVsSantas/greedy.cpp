@@ -281,97 +281,115 @@ void read_loop_input(State &s) {
     }
 }
 
-
-int rounds_to_present(const Point &gargoyle_pos, const Point &pos, const int vy) {
-    for(int round = 1; round < 20; round++) {
-        Point new_pos = {pos.x, pos.y - vy * round};
-        if(new_pos.y < 0) break;
-
-        int rounds = (int)ceil(gargoyle_pos.dist(new_pos) / GARGOYLE_SPEED);
-        if(rounds == round) {
-            return rounds;
-        }
-    }
-
-    return INT_MAX;
-}
-
-pair<int, Point> rounds_to_present_tolerance(const Point &gargoyle_pos, const Point &pos, const int vy, const int tolerance) {
-    int best_rounds = INT_MAX;
-    Point best_pos = pos;
-    
-    for(int round = 1; round < 20; round++) {
-        for(int tol = -tolerance; tol <= tolerance; tol += 10) {
-            Point new_pos = {pos.x + tol, pos.y - vy * round};
-            if(new_pos.y < 0) break;
-
-            int rounds = (int)ceil(gargoyle_pos.dist(new_pos) / GARGOYLE_SPEED);
-            if(rounds == round) {
-                best_rounds = min(best_rounds, rounds);
-                best_pos = new_pos;
-                break;
-            }
-        }
-
-        for(int tol = -tolerance; tol <= tolerance; tol += 10) {
-            Point new_pos = {pos.x, pos.y + tol - vy * round};
-            if(new_pos.y < 0) break;
-
-            int rounds = (int)ceil(gargoyle_pos.dist(new_pos) / GARGOYLE_SPEED);
-            if(rounds == round) {
-                best_rounds = min(best_rounds, rounds);
-                best_pos = new_pos;
-                break;
-            }
-        }
-    }
-
-    return {best_rounds, best_pos};
-}
-
 Point get_closest_dest(State &state) {
     const int tolerance = 30;
-
+    // Point res = state.my_gargoyle.pos;
     Point res = {WIDTH / 2, HEIGHT / 2};
     int best_rounds = INT_MAX;
     for(const Present &p : state.presents) {
-        auto [rounds, tres] = rounds_to_present_tolerance(state.my_gargoyle.pos, p.pos, p.vy, tolerance);
-        if(rounds < best_rounds) {
-            best_rounds = rounds;
-            res = tres;
+        for(int round = 1; round < 20; round++) {
+            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
+                Point new_pos = {p.pos.x + tol, p.pos.y - p.vy * round};
+                if(new_pos.y < 0) break;
+
+                int rounds = (int)ceil(state.my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
+                if(rounds == round && rounds < best_rounds) {
+                    best_rounds = rounds;
+                    res = new_pos;
+                    break;
+                }
+            }
+
+            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
+                Point new_pos = {p.pos.x, p.pos.y - p.vy * round + tol};
+                if(new_pos.y < 0) break;
+
+                int rounds = (int)ceil(state.my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
+                if(rounds == round && rounds < best_rounds) {
+                    best_rounds = rounds;
+                    res = new_pos;
+                    break;
+                }
+            }
         }
     }
 
     return res;
 }
 
-void calc_rounds_to_present(State &state, vector<int> &rounds_to_present) {
-    for(const Present &p : state.presents) {
-        bool found = false;
-        for(int round = 1; round < 20; round++) {
-            Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
-            if(new_pos.y < 0) break;
 
-            int rounds = (int)ceil(state.my_gargoyle.pos.dist(new_pos) / GARGOYLE_SPEED);
-            if(rounds == round) {
-                rounds_to_present.push_back(round);
-                found = true;
-                break;
+Point get_closest_opponent_aware(State &state) {
+    const int tolerance = 30;
+    Point res = {0, 0};
+    int best_rounds = INT_MAX;
+
+    const Point &my_pos = state.my_gargoyle.pos;
+    const Point &opp_pos = state.opp_gargoyle.pos;
+
+    for(const Present &p : state.presents) {
+        int my_rounds = INT_MAX;
+        int opp_rounds = INT_MAX;
+
+        Point my_res = {WIDTH / 2, HEIGHT / 2};
+        Point opp_res = {WIDTH / 2, HEIGHT / 2};
+
+        for(int round = 1; round < 20; round++) {
+            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
+                Point new_pos = {p.pos.x + tol, p.pos.y - p.vy * round};
+                if(new_pos.y < 0) break;
+
+                int rounds = (int)ceil(my_pos.dist(new_pos) / GARGOYLE_SPEED);
+                if(rounds == round && rounds < my_rounds) {
+                    my_rounds = rounds;
+                    my_res = new_pos;
+                    break;
+                }
+            }
+
+            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
+                Point new_pos = {p.pos.x, p.pos.y - p.vy * round + tol};
+                if(new_pos.y < 0) break;
+
+                int rounds = (int)ceil(my_pos.dist(new_pos) / GARGOYLE_SPEED);
+                if(rounds == round && rounds < my_rounds) {
+                    my_rounds = rounds;
+                    my_res = new_pos;
+                    break;
+                }
             }
         }
 
-        if(!found) {
-            rounds_to_present.push_back(INT_MAX);
+        for(int round = 1; round < 20; round++) {
+            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
+                Point new_pos = {p.pos.x + tol, p.pos.y - p.vy * round};
+                if(new_pos.y < 0) break;
+
+                int rounds = (int)ceil(opp_pos.dist(new_pos) / GARGOYLE_SPEED);
+                if(rounds == round && rounds < opp_rounds) {
+                    opp_rounds = rounds;
+                    opp_res = new_pos;
+                    break;
+                }
+            }
+
+            for(int tol = -tolerance; tol <= tolerance; tol += 10) {
+                Point new_pos = {p.pos.x, p.pos.y - p.vy * round + tol};
+                if(new_pos.y < 0) break;
+
+                int rounds = (int)ceil(opp_pos.dist(new_pos) / GARGOYLE_SPEED);
+                if(rounds == round && rounds < opp_rounds) {
+                    opp_rounds = rounds;
+                    opp_res = new_pos;
+                    break;
+                }
+            }
+        }
+
+        if(my_rounds <= opp_rounds && my_rounds < best_rounds) {
+            best_rounds = my_rounds;
+            res = my_res;
         }
     }
-}
-
-Point get_closest_dest_opponent_aware(State &state) {
-    // is aware of opponent and won't go for the presents that opponent can get first to
-
-    const int tolerance = 30;
-    const Point &my_pos = state.my_gargoyle.pos;
-    const Point &opp_pos = state.opp_gargoyle.pos;
 }
 
 
@@ -386,6 +404,7 @@ int main() {
 
     while (1) {
         read_loop_input(curr_state);
+        // cerr << curr_state << '\n';
 
         // find closest present
         // calculate in how lower it will be next round 
@@ -394,8 +413,18 @@ int main() {
         // but if opponent is closer dont go for it
 
         Point res;
+        
+        // res = get_closest_dest2(curr_state);
+        // if(res == Point(0, 0)) {
+        //     res = get_closest_dest(curr_state);
+        // }
 
-        res = get_closest_dest(curr_state);
+        // res = get_closest_dest(curr_state);
+        res = get_closest_opponent_aware(curr_state);
+        if(res == Point(0, 0)) {
+            res = get_closest_dest(curr_state);
+        }
+        
         cout << "FLY " << res << endl;
     }
 }

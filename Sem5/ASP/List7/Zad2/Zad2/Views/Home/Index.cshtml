@@ -1,0 +1,35 @@
+﻿@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Strona główna";
+}
+
+<h1>Witaj w aplikacji ASP.NET Core!</h1>
+
+@if (User.Identity.IsAuthenticated)
+{
+    <p>Witaj, @User.Identity.Name!</p>
+    <p>Twój adres email: @User.FindFirst(ClaimTypes.Email)?.Value</p>
+    <p>Towja rola: @User.FindFirst(ClaimTypes.Role)?.Value</p>
+
+    <ul>
+        <li><a href="/Account/Logout">Wyloguj się</a></li>
+    </ul>
+}
+else
+{
+    <p>Nie jesteś zalogowany.</p>
+    <ul>
+        <li><a href="/Account/Login">Zaloguj się</a></li>
+        <li><a href="/Account/Register">Zarejestruj się</a></li>
+    </ul>
+}
+
+
+<li><a href="/Home/Restricted">Przejdź do strony tylko dla zalogowanych</a></li>
+
+<li><a href="/Home/Admin">Admin</a></li>
+
+<li><a href="/Home/AdminPolicy">AdminPolicy</a></li>
+
+<li><a href="/Home/User">User</a></li>

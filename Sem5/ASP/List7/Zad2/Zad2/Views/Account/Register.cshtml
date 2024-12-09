@@ -1,0 +1,30 @@
+﻿@* <form method="post"> *@
+@*     <input type="text" name="userName" placeholder="User Name" required /> *@
+@*     <input type="email" name="email" placeholder="Email" required /> *@
+@*     <input type="password" name="password" placeholder="Password" required /> *@
+
+@*     <label for="role">Wybierz rolę:</label> *@
+@*     <select name="role" id="role" required> *@
+@*         <option value="User">User</option> *@
+@*         <option value="Admin">Admin</option> *@
+@*     </select> *@
+
+@*     <button type="submit">Register</button> *@
+@* </form> *@
+
+
+<form method="post">
+    <input type="text" name="userName" placeholder="User Name" required />
+    <input type="email" name="email" placeholder="Email" required />
+    <input type="password" name="password" placeholder="Password" required />
+
+    <label for="role">Wybierz rolę:</label>
+    <select name="role" id="role" required>
+        @foreach (var role in ViewBag.Roles as List<string>)
+        {
+            <option value="@role">@role</option>
+        }
+    </select>
+
+    <button type="submit">Register</button>
+</form>

@@ -3,11 +3,11 @@
 # Lista 7
 | 1 | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|
-| X | X |   |   |   |
+| X | X | X |   |   |
 
 ## Pytania
 * zad2 - czy dobry podział na foldery?
-* jaki jest najpopularniejszy/standard?
+* jaki jest najpopularniejszy/standard = jak najlepiej dzielić na foldery wszystkie moduły aplikacji (w szczególności: wszystkie z tej listy)?
 
 ## Zadanie 2
 * dlaczego po stronie serwera hasła użytkownika nie można przechować w postaci jawnej?  

@@ -15,7 +15,7 @@ namespace Zad2.Controllers
         [Authorize]
         public IActionResult Restricted()
         {
-            return View(); // Widok dostêpny tylko dla zalogowanych
+            return View();
         }
 
         [Authorize(Roles = "Admin")]

@@ -1,0 +1,10 @@
+﻿@using System.Security.Claims
+
+<form asp-action="Verify2FA" method="post">
+    <input type="hidden" name="userId" value="@User.FindFirst(ClaimTypes.NameIdentifier)?.Value" />
+    <div class="form-group">
+        <label for="code">Kod TOTP:</label>
+        <input type="text" id="code" name="code" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Zweryfikuj</button>
+</form>

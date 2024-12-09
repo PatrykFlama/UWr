@@ -3,7 +3,7 @@
 # Lista 7
 | 1 | 2 | 3 | 4 | 5 |
 |---|---|---|---|---|
-| X | X | X |   |   |
+| X | X | X | X | X |
 
 ## Pytania
 * zad2 - czy dobry podział na foldery?

@@ -1,0 +1,19 @@
+﻿@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<p>@User.Identity.Name</p>
+<p>@User.FindFirst(ClaimTypes.NameIdentifier)?.Value</p>
+
+<li><a href="/Account/Login">Login</a></li>
+<li><a href="/Account/Register">Register</a></li>
+<li><a href="/Account/Logout">Logout</a></li>
+
+
+<li><a href="/Account/DisplayTOTPKey">Pokaż klucz TOTP</a></li>
+<li><a href="/Account/Enable2FA">Stwórz klucz TOTP</a></li>
+<li><a href="/Account/Verify2FA">Zweryfikuj klucz TOTP</a></li>
+
+

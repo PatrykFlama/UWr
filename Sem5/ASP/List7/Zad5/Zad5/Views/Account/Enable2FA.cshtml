@@ -1,0 +1,7 @@
+﻿@using System.Security.Claims
+@model int
+
+<form asp-action="Enable2FA" method="post">
+    <input type="hidden" name="userId" value="@User.FindFirst(ClaimTypes.NameIdentifier)?.Value" />
+    <button type="submit" class="btn btn-primary">Włącz 2FA</button>
+</form>

@@ -15,4 +15,8 @@
     <Folder Include="NewFolder\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Uwr,Project1.Data\Uwr,Project1.Data.csproj" />
+  </ItemGroup>
+
 </Project>

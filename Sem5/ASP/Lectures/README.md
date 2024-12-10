@@ -15,6 +15,8 @@
     - [Wersja w .NET Framework, WebForms](#wersja-w-net-framework-webforms)
     - [Wersja w MVC](#wersja-w-mvc)
     - [Wersja w .NET Core](#wersja-w-net-core)
+- [Wykład 8](#wykład-8)
+  - [FIDO2 dla .NET Framework](#fido2-dla-net-framework)
 - [Wykład 9 - WebAPI i REST](#wykład-9---webapi-i-rest)
   - [REST vs SOAP](#rest-vs-soap)
   - [.NET Framewrok](#net-framewrok)
@@ -24,6 +26,11 @@
   - [.NET Core](#net-core)
   - [API key](#api-key)
   - [Tokeny JWT](#tokeny-jwt)
+- [Wykład 10 - SOAP](#wykład-10---soap)
+  - [ASP.NET Framework](#aspnet-framework)
+    - [WSDL](#wsdl)
+    - [WCF](#wcf)
+  - [ASP.NET Core](#aspnet-core)
 
 
 
@@ -289,6 +296,10 @@ w Main dodajemy do buildera autentykację (z notatek) (tutaj możemy tez np doda
 w app dodajemy middleware (z notatek)  
 reszta jest analogicznie jak wcześniej  
 
+# Wykład 8
+## FIDO2 dla .NET Framework
+https://github.com/wzychla/Fido2.NetFramework
+
 # Wykład 9 - WebAPI i REST
 ## REST vs SOAP  
 REST jest bardziej dedykowany dla komunikacji serwer->przeglądarka, natomiast SOAP jest bardziej dedykowany dla komunikacji serwer->serwer  
@@ -391,4 +402,115 @@ wtedy w nagłówku HTML mamy `"Authorization": Bearer ${token}`, gdzie bearer je
 walidacja symetryczna vs asymetryczna: 
 * symetryczna enkoduje i dekoduje tylko jednym kluczem, więc nie możemy się nim z nikim podzielić (więc tylko nasz serwer powinien wydawać i autentykować klucze)
 * asymetryczna ma klucz prywatny do szyfrowania i publiczny do weryfikowania, więc możemy wydać klucz jednym serwerem i zautentykować go innym 
+
+# Wykład 10 - SOAP
+## ASP.NET Framework
+### WSDL
+to plik opisujący nasz serwis (pratkycznie zawsze jest on generowany automatycznie, nikt tego nie robi manualnie)  
+można go wygenerować jakimś narzędziem, i na podstawie takiego pliku stworzyć serwer oraz klienta, albo można też stworzyć serwer, z niego wyprodukować plik WSDL, a na podstawie tego pliku stworzyć klienta (co na tym wykładzie przećwiczymy)  
+
+_____
+
+tworzymy kompletnie pusty asp.net framework web app  
+
+> aktualnie w asp.net core też można już za pomocą WCF konstruować serwisy SOAP
+
+dodajemy web service ASMX  
+
+tutaj nie mamy części klienckiej, tylko jest zapytanie o wynik oraz jego zwrócenie - to już będzie nasza usługa sieciowa  
+po uruchomieniu serwera i przejściu na link, (paradoksalnie) pojawia się jakaś strona - jest to strona z opisem naszej usługi sieciowej (zawiera ona link do pliku WSDL przechodząc z parametrem zapytania `?wsdl`)   
+
+_____
+
+przykład:  
+tworzymy modele
+```cs
+public class WebService1RequestModel
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+}
+
+public class WebService1ResponseModel
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+}
+```
+
+następnie dodajemy metodę do naszego serwisu
+```cs
+[WebMethod]
+public WebService1ResponseModel WebService1(WebService1RequestModel model)
+{
+    return new WebService1ResponseModel
+    {
+        Name = model.Name,
+        Age = model.Age
+    };
+}
+```
+
+stwórzmy nowy projekt webforms (dzięki temu że jest on w tym samym solution to będzie się on z naszym serwerem po localhost komunikować)  
+znajdujemy `wsdl.exe` w sdk dla .NET Framework, i generujemy na jego podstawie plik `WebService1.cs`  
+```bash
+wsdl.exe http://localhost:1234/WebService1.asmx?wsdl
+```
+
+ewentualnie dzięki visual studio możemy zrobić to samo, klikając prawym na projekt i wybierając `Add Service Reference`; wtedy możemy wybrać naszą usługę i stworzyć serwis sieciowy  
+utworzy się wtedy klasa proxy, która pozwala nam na komunikację z serwerem  
+
+podepnijmy teraz pod przycisk w webforms naszą akcję
+```cs
+protected void Button1_Click(object sender, EventArgs e)
+{
+    WebService1SoapClient client = new WebService1SoapClient();
+    
+    var response = client.WebService1(new WebService1RequestModel
+    {
+        Name = "Jan",
+        Age = 42
+    });
+
+    MessageBox.Show(response.Name + " " + response.Age);
+}
+```
+
+### WCF
+tworzenie analogiczne, ale wybieramy `WCF Service`  
+w kodzie mamy `IService1.cs` oraz `Service1.svc`
+
+zaimplementujmy poprzedni przykład:  
+`IService1.cs`
+```cs
+[ServiceContract]
+public interface IService1
+{
+    [OperationContract]
+    WebService1ResponseModel WebService1(WebService1RequestModel model);
+}
+```
+
+`Service1.svc.cs`
+```cs
+public class Service1 : IService1
+{
+    public WebService1ResponseModel WebService1(WebService1RequestModel model)
+    {
+        return new WebService1ResponseModel
+        {
+            Name = model.Name,
+            Age = model.Age
+        };
+    }
+}
+```
+
+teraz możemy dodać klienta, ale został on przyspieszony, żeby z tego skorzystać musimy kliknąć w advanced, gdzie odpali się nowe okno do dodawania klientów nowego typu  
+
+
+## ASP.NET Core
+> przykład z wykładu - jak to akutlanie się robi  
+
+
 

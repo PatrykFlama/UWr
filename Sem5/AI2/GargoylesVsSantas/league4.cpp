@@ -1,11 +1,17 @@
-#pragma GCC optimize("Ofast,inline,tracer")
-#pragma GCC optimize("unroll-loops,vpt,split-loops,unswitch-loops,omit-frame-pointer,inline")
-#pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
-#pragma GCC target("arch=haswell,tune=haswell")
-#pragma GCC target("aes,abm,align-stringops,avx,avx2,bmi,bmi2,crc32,cx16,f16c,fma,fsgsbase,fxsr,hle,ieee-fp,lzcnt,mmx,movbe,mwait,pclmul,popcnt,rdrnd,sahf,sse,sse2,sse3,sse4,sse4.1,sse4.2,ssse3,xsave,xsaveopt")
-#include <x86intrin.h>                                                      //AVX/SSE Extensions
+// #pragma GCC optimize("Ofast,inline,tracer")
+// #pragma GCC optimize("unroll-loops,vpt,split-loops,unswitch-loops,omit-frame-pointer,inline")
+// #pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
+// #pragma GCC target("arch=haswell,tune=haswell")
+// #pragma GCC target("aes,abm,align-stringops,avx,avx2,bmi,bmi2,crc32,cx16,f16c,fma,fsgsbase,fxsr,hle,ieee-fp,lzcnt,mmx,movbe,mwait,pclmul,popcnt,rdrnd,sahf,sse,sse2,sse3,sse4,sse4.1,sse4.2,ssse3,xsave,xsaveopt")
+// #include <x86intrin.h>                                                      //AVX/SSE Extensions
 
 
+/*
+League 1 - minimax with aggro with timeout protection
+League 2 - minimax with aggro
+League 3 - minimax with aggro
+League 4
+*/
 
 #include <bits/stdc++.h>
 #include <chrono>
@@ -127,6 +133,7 @@ Timer timer;
 string message = "";
 
 
+
 class Gargoyle {
 public:
     Point pos;
@@ -135,6 +142,10 @@ public:
     Gargoyle() : pos(0, 0), cooldown(0) {}
     Gargoyle(Point pos, int cooldown) : pos(pos), cooldown(cooldown) {}
 };
+
+vector<Gargoyle> all_my_gargoyles;
+vector<Gargoyle> all_opp_gargoyles;
+
 
 class Present {
 public:
@@ -151,15 +162,14 @@ class State {
 public:
     list<Present> presents;
 
-    vector<Gargoyle> my_gargoyle;
-    vector<Gargoyle> opp_gargoyle;
+    Gargoyle my_gargoyle;
+    Gargoyle opp_gargoyle;
     int my_score;
     int opp_score;
 
-    vector<Point> my_locked_destination;
-    vector<Point> opp_locked_destination;
+    Point my_locked_destination;
+    Point opp_locked_destination;
 
-    //? instead of SM-MCTS: in first 'half-turn' i play
     //? then in second half-turn opponent makes his move
     //? and since we completed entire turn, scores are calculated
     bool is_my_turn;
@@ -183,18 +193,8 @@ public:
         return is_my_turn ? my_score : opp_score;
     }
 
-    vector<Point> get_main_player_pos() const {
-        vector<Point> res;
-        if(is_my_turn) {
-            for(const Gargoyle &g : my_gargoyle) {
-                res.push_back(g.pos);
-            }
-        } else {
-            for(const Gargoyle &g : opp_gargoyle) {
-                res.push_back(g.pos);
-            }
-        }
-        return res;
+    Point get_main_player_pos() const {
+        return is_my_turn ? my_gargoyle.pos : opp_gargoyle.pos;
     }
 
     void swap_roles() {
@@ -204,24 +204,22 @@ public:
         is_my_turn = !is_my_turn;
     }
 
-    Point normalizeDestination(Point p, const Point &gargoyle) const {
-        if(gargoyle.int_dist(p) <= GARGOYLE_SPEED*GARGOYLE_SPEED) return p;
+    Point normalizeDestination(Point p) const {
+        if(my_gargoyle.pos.int_dist(p) <= GARGOYLE_SPEED*GARGOYLE_SPEED) return p;
 
-        const double dist = gargoyle.dist(p);
-        const double dx = p.x - gargoyle.x;
-        const double dy = p.y - gargoyle.y;
+        const double dist = my_gargoyle.pos.dist(p);
+        const double dx = p.x - my_gargoyle.pos.x;
+        const double dy = p.y - my_gargoyle.pos.y;
 
-        p.x = gargoyle.x + (int)(GARGOYLE_SPEED * dx / dist);
-        p.y = gargoyle.y + (int)(GARGOYLE_SPEED * dy / dist);   
+        p.x = my_gargoyle.pos.x + (int)(GARGOYLE_SPEED * dx / dist);
+        p.y = my_gargoyle.pos.y + (int)(GARGOYLE_SPEED * dy / dist);   
 
         return p;
     }
 
-    void applyDestination(const vector<Point> &my_destination) {
-        for(int i = 0; i < my_gargoyle.size(); i++) {
-            my_gargoyle[i].pos = normalizeDestination(my_destination[i], my_gargoyle[i].pos);
-            my_locked_destination[i] = my_destination[i];
-        }
+    void applyDestination(const Point &my_destination) {
+        my_gargoyle.pos = normalizeDestination(my_destination);
+        my_locked_destination = my_destination;
 
         if(is_my_turn) {
             swap_roles();
@@ -239,17 +237,19 @@ public:
             }
 
             // then it is the end of the turn and we calculate score
-            int my_points = 0;
-            int opp_points = 0;
-            for(const Gargoyle &g : my_gargoyle) {
-                if(g.pos.int_dist(present->pos) <= 30*30) {
-                    my_points = present->value;
+            const int my_points = (my_gargoyle.pos.int_dist(present->pos) <= 30*30) ? present->value : 0;
+            const int opp_points = (opp_gargoyle.pos.int_dist(present->pos) <= 30*30) ? present->value : 0;
+
+            if(my_points) {
+                my_locked_destination = Point(0, 0);
+                if(present->pos == opp_locked_destination) {
+                    opp_locked_destination = Point(0, 0);
                 }
             }
-
-            for(const Gargoyle &g : opp_gargoyle) {
-                if(g.pos.int_dist(present->pos) <= 30*30) {
-                    opp_points = present->value;
+            if(opp_points) {
+                opp_locked_destination = Point(0, 0);
+                if(present->pos == my_locked_destination) {
+                    my_locked_destination = Point(0, 0);
                 }
             }
 
@@ -258,13 +258,7 @@ public:
                 opp_score += opp_points;
                 present = presents.erase(present++);
             } else {
-                present->pos.y += present->vy;
-                if(present->pos.y > HEIGHT) {
-                    missed_presents_to_end--;
-                    present = presents.erase(present++);
-                } else {
-                    ++present;
-                }
+                ++present;
             }
         }
 
@@ -272,11 +266,28 @@ public:
         swap_roles();
     }
 
-    vector<Point> legalDestinations_presentsPredict_single(int gargoyle) const {
-        if(my_locked_destination[gargoyle] != Point(0, 0)) 
-            return {my_locked_destination[gargoyle]};
+    vector<Point> legalActions_all() const {
+        const Point &gargoyle_pos = my_gargoyle.pos;
+        vector<Point> actions;
 
-        const Point &gargoyle_pos = my_gargoyle[gargoyle].pos;
+        const int step = GARGOYLE_SPEED / 10;
+        for(int nx = gargoyle_pos.x - GARGOYLE_SPEED; nx <= gargoyle_pos.x + GARGOYLE_SPEED; nx += step) {
+            for(int ny = gargoyle_pos.y - GARGOYLE_SPEED; ny <= gargoyle_pos.y + GARGOYLE_SPEED; ny += step) {
+                if(gargoyle_pos.int_dist({nx, ny}) > GARGOYLE_SPEED*GARGOYLE_SPEED || 
+                   nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT || 
+                   (nx == gargoyle_pos.x && ny == gargoyle_pos.y)) continue;
+                actions.push_back({nx, ny});
+            }
+        }
+
+        return actions;
+    }
+
+    vector<Point> legalDestinations_presentsPredict() const {
+        if(my_locked_destination != Point(0, 0)) 
+            return {my_locked_destination};
+
+        const Point &gargoyle_pos = my_gargoyle.pos;
         vector<Point> actions;
 
         for(const Present &p : presents) {
@@ -288,7 +299,7 @@ public:
                     break;    // present fell on the ground
                 }
 
-                const int rounds = (int)ceil(my_gargoyle[gargoyle].pos.dist(new_pos) / (double)GARGOYLE_SPEED);
+                const int rounds = (int)ceil(my_gargoyle.pos.dist(new_pos) / (double)GARGOYLE_SPEED);
                 if(rounds <= round) {
                     actions.push_back(new_pos);
                     break;
@@ -301,160 +312,113 @@ public:
         return actions;
     }
 
-    vector<vector<Point>> legalDestinations_presentsPredict() const {
-        vector<vector<Point>> res;  // vector of vectors of size my_gargoyle.size() - every possible combination of destinations
+    Point getRandomDestination_presentsPredict() const {
+        const Point &gargoyle_pos = my_gargoyle.pos;
+        int ptr = rand() % presents.size();
+        for(const Present &p : presents) {
+            if(ptr-- == 0) {
+                for(int round = 1; round < 20; round++) {
+                    Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
+                    if(new_pos.y < 0) break;
 
-        // assuming there are 3 gargoyles
-        vector<Point> actions0 = legalDestinations_presentsPredict_single(0);
-        vector<Point> actions1 = legalDestinations_presentsPredict_single(1);
-        vector<Point> actions2 = legalDestinations_presentsPredict_single(2);
-
-        for(const Point &p0 : actions0) {
-            for(const Point &p1 : actions1) {
-                for(const Point &p2 : actions2) {
-                    if(p0 == p1 || p0 == p2 || p1 == p2) continue;
-                    res.push_back({p0, p1, p2});
-                }
-            }
-        }
-
-        return res;
-    }
-
-    vector<Point> getRandomDestination_presentsPredict() const {
-        // 3 random presents
-        vector<Point> res;
-
-        for(int i = 0; i < 3; i++) {
-            int ptr = rand() % presents.size();
-            for(const Present &p : presents) {
-                if(ptr-- == 0) {
-                    for(int round = 1; round < 20; round++) {
-                        Point new_pos = {p.pos.x, p.pos.y - p.vy * round};
-                        if(new_pos.y < 0) break;
-
-                        const int rounds = (int)ceil(my_gargoyle[i].pos.dist(new_pos) / GARGOYLE_SPEED);
-                        if(rounds == round) {
-                            res.push_back(new_pos);
-                            break;
-                        }
+                    const int rounds = (int)ceil(gargoyle_pos.dist(new_pos) / GARGOYLE_SPEED);
+                    if(rounds == round) {
+                        return new_pos;
                     }
                 }
             }
         }
 
-        return res;
+        return {WIDTH/2, HEIGHT/2};
     }
 
-    // friend ostream& operator<<(ostream& os, const State &s) {
-    //     os << "My score: " << s.my_score << '\n';
-    //     os << "Opp score: " << s.opp_score << '\n';
-    //     os << "My gargoyle: " << s.my_gargoyle.pos << " " << s.my_gargoyle.cooldown << '\n';
-    //     os << "Opp gargoyle: " << s.opp_gargoyle.pos << " " << s.opp_gargoyle.cooldown << '\n';
-    //     os << "My turn: " << (s.is_my_turn ? "true" : "false") << '\n';
-    //     os << "Missed presents to end: " << s.missed_presents_to_end << '\n';
-    //     os << "Turns left: " << s.turns_left << '\n';
-    //     os << "Presents (" << s.presents.size() << "): " << '\n';
-    //     for(const Present &p : s.presents) {
-    //         os << p.id << " " << p.pos << " " << p.value << " " << p.vy << '\n';
-    //     }
-    //     return os;
-    // }
-
-    // void short_debug() {
-    //     if(is_my_turn) {
-    //         cerr << my_gargoyle.pos << " / " << opp_gargoyle.pos << ' ';
-    //         cerr << my_score << " / " << opp_score << '\n';
-    //     } else {
-    //         cerr << opp_gargoyle.pos << " / " << my_gargoyle.pos << ' ';
-    //         cerr << opp_score << " / " << my_score << '\n';
-    //     }
-    // }
-};
-
-
-class Node {
-public:
-    State state;
-    Node *parent;
-    vector<Node*> children;
-    vector<vector<Point>> to_vis;
-    int visits = 0;
-    double reward = 0.0;
-
-    Node(State s, Node *p = nullptr) : state(s), parent(p) {
-        to_vis = state.legalDestinations_presentsPredict();
-    }
-
-    bool isFullyExpanded() const {
-        return to_vis.empty();
-    }
-
-    vector<Point> getUnvisitedChild() {
-        vector<Point> res = to_vis.back();
-        to_vis.pop_back();
-        return res;
-    }
-
-    bool isTerminal() {
-        return state.isTerminal();
-    }
-
-    Node *bestChild(double explorationWeight = 1.0) const {
-        Node *best = nullptr;
-        double bestValue = -numeric_limits<double>::infinity();
-
-        for (Node *child : children) {
-            // TODO probably should be positive and not so big
-            double uctValue = (double)child->reward / (double)(child->visits + 1e-6) +
-                            explorationWeight * sqrt(2*log(visits + 1) / (double)(child->visits + 1e-6));
-            if(uctValue > bestValue) {
-                bestValue = uctValue;
-                best = child;
-            }
+    friend ostream& operator<<(ostream& os, const State &s) {
+        os << "My score: " << s.my_score << '\n';
+        os << "Opp score: " << s.opp_score << '\n';
+        os << "My gargoyle: " << s.my_gargoyle.pos << " " << s.my_gargoyle.cooldown << '\n';
+        os << "Opp gargoyle: " << s.opp_gargoyle.pos << " " << s.opp_gargoyle.cooldown << '\n';
+        os << "My turn: " << (s.is_my_turn ? "true" : "false") << '\n';
+        os << "Missed presents to end: " << s.missed_presents_to_end << '\n';
+        os << "Turns left: " << s.turns_left << '\n';
+        os << "Presents (" << s.presents.size() << "): " << '\n';
+        for(const Present &p : s.presents) {
+            os << p.id << " " << p.pos << " " << p.value << " " << p.vy << '\n';
         }
+        return os;
+    }
 
-        return best;
+    void short_debug() {
+        if(is_my_turn) {
+            cerr << my_gargoyle.pos << " / " << opp_gargoyle.pos << ' ';
+            cerr << my_score << " / " << opp_score << '\n';
+        } else {
+            cerr << opp_gargoyle.pos << " / " << my_gargoyle.pos << ' ';
+            cerr << opp_score << " / " << my_score << '\n';
+        }
     }
 };
+
 
 
 class Minimax {
 public:
     Minimax() {}
 
-    int minimax(State &state, int depth, bool isMax) {
-        if(depth == 0 || state.isTerminal()) {
+    int alphaBeta(State &state, int depth, int alpha, int beta, bool isMax) {
+        if(depth == 0 || state.isTerminal() || state.presents.size() == 0) {
             return state.eval();
         }
 
+        const auto &actions = state.legalDestinations_presentsPredict();
         if(isMax) {
-            int best = -numeric_limits<int>::infinity();
-            for(const vector<Point> &action : state.legalDestinations_presentsPredict()) {
-                State newState = state;
-                newState.applyDestination(action);
-                best = max(best, minimax(newState, depth-1, !isMax));
+            int best = INT_MIN;
+            if(actions.size() > 1) {
+                for(const Point &action : actions) {
+                    State newState = state;
+                    newState.applyDestination(action);
+                    best = max(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
+                    alpha = max(alpha, best);
+                    if(beta <= alpha) break;
+                }
+            } else {
+                for(const Point &action : actions) {
+                    state.applyDestination(action);
+                    best = max(best, alphaBeta(state, depth-1, alpha, beta, !isMax));
+                    alpha = max(alpha, best);
+                    if(beta <= alpha) break;
+                }
             }
             return best;
         } else {
-            int best = numeric_limits<int>::infinity();
-            for(const vector<Point> &action : state.legalDestinations_presentsPredict()) {
-                State newState = state;
-                newState.applyDestination(action);
-                best = min(best, minimax(newState, depth-1, !isMax));
+            int best = INT_MAX;
+            if(actions.size() > 1) {
+                for(const Point &action : actions) {
+                    State newState = state;
+                    newState.applyDestination(action);
+                    best = min(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
+                    beta = min(beta, best);
+                    if(beta <= alpha) break;
+                }
+            } else {
+                for(const Point &action : actions) {
+                    state.applyDestination(action);
+                    best = min(best, alphaBeta(state, depth-1, alpha, beta, !isMax));
+                    beta = min(beta, best);
+                    if(beta <= alpha) break;
+                }
             }
             return best;
         }
     }
 
-    vector<Point> getMiniMax(State state, int depth) {
+    Point getAlphaBeta(State state, int depth) {
         int best = INT_MIN;
-        vector<Point> bestAction = state.get_main_player_pos();
+        Point bestAction = state.get_main_player_pos();
 
-        for(const vector<Point> &action : state.legalDestinations_presentsPredict()) {
+        for(const Point &action : state.legalDestinations_presentsPredict()) {
             State newState = state;
             newState.applyDestination(action);
-            int val = minimax(newState, depth, false);
+            int val = alphaBeta(newState, depth, INT_MIN, INT_MAX, false);
             if(val > best) {
                 best = val;
                 bestAction = action;
@@ -464,43 +428,18 @@ public:
         return bestAction;
     }
 
-
-    int alphaBeta(State &state, int depth, int alpha, int beta, bool isMax) {
-        if(depth == 0 || state.isTerminal()) {
-            return state.eval();
-        }
-
-        if(isMax) {
-            int best = INT_MIN;
-            for(const vector<Point> &action : state.legalDestinations_presentsPredict()) {
-                State newState = state;
-                newState.applyDestination(action);
-                best = max(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
-                alpha = max(alpha, best);
-                if(beta <= alpha) break;
-            }
-            return best;
-        } else {
-            int best = INT_MAX;
-            for(const vector<Point> &action : state.legalDestinations_presentsPredict()) {
-                State newState = state;
-                newState.applyDestination(action);
-                best = min(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
-                beta = min(beta, best);
-                if(beta <= alpha) break;
-            }
-            return best;
-        }
-    }
-
-    vector<Point> getAlphaBeta(State state, int depth) {
+    Point getABIterativeDeepening(State state, int timeout, int max_depth, int step=1) {
         int best = INT_MIN;
-        vector<Point> bestAction = state.get_main_player_pos();
+        Point bestAction = state.get_main_player_pos();
 
-        for(const vector<Point> &action : state.legalDestinations_presentsPredict()) {
+        for(int depth = 2; depth <= max_depth; depth += step) {
+            if(timer.elapsed() > timeout) break;
+
+            Point action = getAlphaBeta(state, depth);
             State newState = state;
             newState.applyDestination(action);
             int val = alphaBeta(newState, depth, INT_MIN, INT_MAX, false);
+
             if(val > best) {
                 best = val;
                 bestAction = action;
@@ -518,11 +457,25 @@ public:
     AI() {}
 
     inline vector<Point> getFirstAction(State &state) {
-        return minimax.getAlphaBeta(state, 3201);
+        vector<Point> res(3);
+        for(int i = 0; i < 3; i++) {
+            state.my_gargoyle = all_my_gargoyles[i];
+            state.opp_gargoyle = all_opp_gargoyles[i];
+            
+            res[i] = minimax.getAlphaBeta(state, 3201);
+        }
+        return res;
     }
 
     inline vector<Point> getAction(State &state) {
-        return minimax.getAlphaBeta(state, 191);
+        vector<Point> res(3);
+        for(int i = 0; i < 3; i++) {
+            state.my_gargoyle = all_my_gargoyles[i];
+            state.opp_gargoyle = all_opp_gargoyles[i];
+            
+            res[i] = minimax.getAlphaBeta(state, 3);
+        }
+        return res;
     }
 };
 
@@ -530,19 +483,13 @@ void read_loop_input(State &s) {
     cin >> s.missed_presents_to_end; cin.ignore();
     
     cin >> s.my_score; cin.ignore();
-    s.my_gargoyle.clear();
     for (int i = 0; i < gargoyles_per_player; i++) {
-        int x, y, cooldown;
-        cin >> x >> y >> cooldown; cin.ignore();
-        s.my_gargoyle.push_back(Gargoyle(Point(x, y), cooldown));
+        cin >> all_my_gargoyles[i].pos.x >> all_my_gargoyles[i].pos.y >> all_my_gargoyles[i].cooldown; cin.ignore();
     }
 
     cin >> s.opp_score; cin.ignore();
-    s.opp_gargoyle.clear();
     for (int i = 0; i < gargoyles_per_player; i++) {
-        int x, y, cooldown;
-        cin >> x >> y >> cooldown; cin.ignore();
-        s.opp_gargoyle.push_back(Gargoyle(Point(x, y), cooldown));
+        cin >> all_opp_gargoyles[i].pos.x >> all_opp_gargoyles[i].pos.y >> all_opp_gargoyles[i].cooldown; cin.ignore();
     }
 
     int presents_count;
@@ -556,11 +503,13 @@ void read_loop_input(State &s) {
     }
 }
 
-
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     srand(time(0));
+
+    all_my_gargoyles.resize(3);
+    all_opp_gargoyles.resize(3);
     
     State curr_state;
 
@@ -571,20 +520,23 @@ int main() {
     timer.reset();
 
     vector<Point> res = ai.getFirstAction(curr_state);
-
-    for(auto &action : res) {
-        cout << "FLY " << action << endl;
+    for(auto &r : res) {
+        cout << "FLY " << r << endl;
     }
 
     while(1) {
         read_loop_input(curr_state);
 
+        curr_state.short_debug();
+        for(auto &action : curr_state.legalDestinations_presentsPredict()) {
+            cerr << action << " | ";
+        }
+        cerr << '\n';
 
         timer.reset();
         vector<Point> res = ai.getAction(curr_state);
-
-        for(auto &action : res) {
-            cout << "FLY " << action << ' ' << message << endl;
+        for(auto &r : res) {
+            cout << "FLY " << r << endl;
         }
     }
 }

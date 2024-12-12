@@ -167,8 +167,8 @@ public:
     int my_score;
     int opp_score;
 
-    Point my_locked_destination;
-    Point opp_locked_destination;
+    pair<Point, Point> my_locked_destination;
+    pair<Point, Point> opp_locked_destination;
 
     //? then in second half-turn opponent makes his move
     //? and since we completed entire turn, scores are calculated
@@ -219,7 +219,7 @@ public:
 
     void applyDestination(const Point &my_destination) {
         my_gargoyle.pos = normalizeDestination(my_destination);
-        my_locked_destination = my_destination;
+        my_locked_destination.first = my_destination;
 
         if(is_my_turn) {
             swap_roles();
@@ -241,15 +241,15 @@ public:
             const int opp_points = (opp_gargoyle.pos.int_dist(present->pos) <= 30*30) ? present->value : 0;
 
             if(my_points) {
-                my_locked_destination = Point(0, 0);
-                if(present->pos == opp_locked_destination) {
-                    opp_locked_destination = Point(0, 0);
+                my_locked_destination.first = Point(0, 0);
+                if(present->pos == opp_locked_destination.first) {
+                    opp_locked_destination.first = Point(0, 0);
                 }
             }
             if(opp_points) {
-                opp_locked_destination = Point(0, 0);
-                if(present->pos == my_locked_destination) {
-                    my_locked_destination = Point(0, 0);
+                opp_locked_destination.first = Point(0, 0);
+                if(present->pos == my_locked_destination.first) {
+                    my_locked_destination.first = Point(0, 0);
                 }
             }
 
@@ -283,12 +283,12 @@ public:
         return actions;
     }
 
-    vector<Point> legalDestinations_presentsPredict() const {
-        if(my_locked_destination != Point(0, 0)) 
+    vector<pair<Point, Point>> legalDestinations_presentsPredict() const {
+        if(my_locked_destination.first != Point(0, 0)) 
             return {my_locked_destination};
 
         const Point &gargoyle_pos = my_gargoyle.pos;
-        vector<Point> actions;
+        vector<pair<Point, Point>> actions;
 
         for(const Present &p : presents) {
             // find the first round when we can catch the present
@@ -301,13 +301,13 @@ public:
 
                 const int rounds = (int)ceil(my_gargoyle.pos.dist(new_pos) / (double)GARGOYLE_SPEED);
                 if(rounds <= round) {
-                    actions.push_back(new_pos);
+                    actions.push_back({new_pos, p.pos});
                     break;
                 }
             }
         }
 
-        if(actions.size() == 0) return {Point(WIDTH/2, HEIGHT/2)};
+        if(actions.size() == 0) return {{Point(WIDTH/2, HEIGHT/2), Point(WIDTH/2, HEIGHT/2)}};
 
         return actions;
     }
@@ -373,7 +373,7 @@ public:
         if(isMax) {
             int best = INT_MIN;
             if(actions.size() > 1) {
-                for(const Point &action : actions) {
+                for(const auto &[action, pres] : actions) {
                     State newState = state;
                     newState.applyDestination(action);
                     best = max(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
@@ -381,7 +381,7 @@ public:
                     if(beta <= alpha) break;
                 }
             } else {
-                for(const Point &action : actions) {
+                for(const auto &[action, pres] : actions) {
                     state.applyDestination(action);
                     best = max(best, alphaBeta(state, depth-1, alpha, beta, !isMax));
                     alpha = max(alpha, best);
@@ -392,7 +392,7 @@ public:
         } else {
             int best = INT_MAX;
             if(actions.size() > 1) {
-                for(const Point &action : actions) {
+                for(const auto &[action, pres] : actions) {
                     State newState = state;
                     newState.applyDestination(action);
                     best = min(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
@@ -400,7 +400,7 @@ public:
                     if(beta <= alpha) break;
                 }
             } else {
-                for(const Point &action : actions) {
+                for(const auto &[action, pres] : actions) {
                     state.applyDestination(action);
                     best = min(best, alphaBeta(state, depth-1, alpha, beta, !isMax));
                     beta = min(beta, best);
@@ -411,42 +411,23 @@ public:
         }
     }
 
-    Point getAlphaBeta(State state, int depth) {
+    pair<Point, Point> getAlphaBeta(State state, int depth) {
         int best = INT_MIN;
         Point bestAction = state.get_main_player_pos();
+        Point bestPres = state.get_main_player_pos();
 
-        for(const Point &action : state.legalDestinations_presentsPredict()) {
+        for(const auto &[action, pres] : state.legalDestinations_presentsPredict()) {
             State newState = state;
             newState.applyDestination(action);
             int val = alphaBeta(newState, depth, INT_MIN, INT_MAX, false);
             if(val > best) {
                 best = val;
                 bestAction = action;
+                bestPres = pres;
             }
         }
 
-        return bestAction;
-    }
-
-    Point getABIterativeDeepening(State state, int timeout, int max_depth, int step=1) {
-        int best = INT_MIN;
-        Point bestAction = state.get_main_player_pos();
-
-        for(int depth = 2; depth <= max_depth; depth += step) {
-            if(timer.elapsed() > timeout) break;
-
-            Point action = getAlphaBeta(state, depth);
-            State newState = state;
-            newState.applyDestination(action);
-            int val = alphaBeta(newState, depth, INT_MIN, INT_MAX, false);
-
-            if(val > best) {
-                best = val;
-                bestAction = action;
-            }
-        }
-
-        return bestAction;
+        return {bestAction, bestPres};
     }
 };
 
@@ -462,7 +443,16 @@ public:
             state.my_gargoyle = all_my_gargoyles[i];
             state.opp_gargoyle = all_opp_gargoyles[i];
             
-            res[i] = minimax.getAlphaBeta(state, 3201);
+            auto t_res = minimax.getAlphaBeta(state, 3201);
+            res[i] = t_res.first;
+
+            // erase the present that we are going to catch
+            for(auto it = state.presents.begin(); it != state.presents.end(); ++it) {
+                if(it->pos == t_res.second) {
+                    state.presents.erase(it);
+                    break;
+                }
+            }
         }
         return res;
     }
@@ -473,7 +463,16 @@ public:
             state.my_gargoyle = all_my_gargoyles[i];
             state.opp_gargoyle = all_opp_gargoyles[i];
             
-            res[i] = minimax.getAlphaBeta(state, 3);
+            auto t_res = minimax.getAlphaBeta(state, 51);
+            res[i] = t_res.first;
+
+            // erase the present that we are going to catch
+            for(auto it = state.presents.begin(); it != state.presents.end(); ++it) {
+                if(it->pos == t_res.second) {
+                    state.presents.erase(it);
+                    break;
+                }
+            }
         }
         return res;
     }

@@ -1,14 +1,14 @@
-// #pragma GCC optimize("Ofast,inline,tracer")
-// #pragma GCC optimize("unroll-loops,vpt,split-loops,unswitch-loops,omit-frame-pointer,inline")
-// #pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
-// #pragma GCC target("arch=haswell,tune=haswell")
-// #pragma GCC target("aes,abm,align-stringops,avx,avx2,bmi,bmi2,crc32,cx16,f16c,fma,fsgsbase,fxsr,hle,ieee-fp,lzcnt,mmx,movbe,mwait,pclmul,popcnt,rdrnd,sahf,sse,sse2,sse3,sse4,sse4.1,sse4.2,ssse3,xsave,xsaveopt")
-// #include <x86intrin.h>                                                      //AVX/SSE Extensions
+#pragma GCC optimize("Ofast,inline,tracer")
+#pragma GCC optimize("unroll-loops,vpt,split-loops,unswitch-loops,omit-frame-pointer,inline")
+#pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
+#pragma GCC target("arch=haswell,tune=haswell")
+#pragma GCC target("aes,abm,align-stringops,avx,avx2,bmi,bmi2,crc32,cx16,f16c,fma,fsgsbase,fxsr,hle,ieee-fp,lzcnt,mmx,movbe,mwait,pclmul,popcnt,rdrnd,sahf,sse,sse2,sse3,sse4,sse4.1,sse4.2,ssse3,xsave,xsaveopt")
+#include <x86intrin.h>                                                      //AVX/SSE Extensions
 
 
 /*
-League 1 - minimax with aggro with timeout protection
-League 2 - minimax with aggro
+League 1 - greedy
+League 2 - minimax
 League 3 - minimax with aggro
 League 4
 */
@@ -133,7 +133,6 @@ Timer timer;
 string message = "";
 
 
-
 class Gargoyle {
 public:
     Point pos;
@@ -142,10 +141,6 @@ public:
     Gargoyle() : pos(0, 0), cooldown(0) {}
     Gargoyle(Point pos, int cooldown) : pos(pos), cooldown(cooldown) {}
 };
-
-vector<Gargoyle> all_my_gargoyles;
-vector<Gargoyle> all_opp_gargoyles;
-
 
 class Present {
 public:
@@ -167,8 +162,8 @@ public:
     int my_score;
     int opp_score;
 
-    pair<Point, Point> my_locked_destination;
-    pair<Point, Point> opp_locked_destination;
+    Point my_locked_destination;
+    Point opp_locked_destination;
 
     //? then in second half-turn opponent makes his move
     //? and since we completed entire turn, scores are calculated
@@ -219,7 +214,7 @@ public:
 
     void applyDestination(const Point &my_destination) {
         my_gargoyle.pos = normalizeDestination(my_destination);
-        my_locked_destination.first = my_destination;
+        my_locked_destination = my_destination;
 
         if(is_my_turn) {
             swap_roles();
@@ -241,15 +236,15 @@ public:
             const int opp_points = (opp_gargoyle.pos.int_dist(present->pos) <= 30*30) ? present->value : 0;
 
             if(my_points) {
-                my_locked_destination.first = Point(0, 0);
-                if(present->pos == opp_locked_destination.first) {
-                    opp_locked_destination.first = Point(0, 0);
+                my_locked_destination = Point(0, 0);
+                if(present->pos == opp_locked_destination) {
+                    opp_locked_destination = Point(0, 0);
                 }
             }
             if(opp_points) {
-                opp_locked_destination.first = Point(0, 0);
-                if(present->pos == my_locked_destination.first) {
-                    my_locked_destination.first = Point(0, 0);
+                opp_locked_destination = Point(0, 0);
+                if(present->pos == my_locked_destination) {
+                    my_locked_destination = Point(0, 0);
                 }
             }
 
@@ -283,12 +278,12 @@ public:
         return actions;
     }
 
-    vector<pair<Point, Point>> legalDestinations_presentsPredict() const {
-        if(my_locked_destination.first != Point(0, 0)) 
+    vector<Point> legalDestinations_presentsPredict() const {
+        if(my_locked_destination != Point(0, 0)) 
             return {my_locked_destination};
 
         const Point &gargoyle_pos = my_gargoyle.pos;
-        vector<pair<Point, Point>> actions;
+        vector<Point> actions;
 
         for(const Present &p : presents) {
             // find the first round when we can catch the present
@@ -301,13 +296,13 @@ public:
 
                 const int rounds = (int)ceil(my_gargoyle.pos.dist(new_pos) / (double)GARGOYLE_SPEED);
                 if(rounds <= round) {
-                    actions.push_back({new_pos, p.pos});
+                    actions.push_back(new_pos);
                     break;
                 }
             }
         }
 
-        if(actions.size() == 0) return {{Point(WIDTH/2, HEIGHT/2), Point(WIDTH/2, HEIGHT/2)}};
+        if(actions.size() == 0) return {Point(WIDTH/2, HEIGHT/2)};
 
         return actions;
     }
@@ -379,75 +374,53 @@ public:
 };
 
 
-
 class Minimax {
 public:
     Minimax() {}
 
     int alphaBeta(State &state, int depth, int alpha, int beta, bool isMax) {
-        if(depth == 0 || state.isTerminal() || state.presents.size() == 0) {
+        if(depth == 0 || state.isTerminal()) {
             return state.eval();
         }
 
-        const auto &actions = state.legalDestinations_presentsPredict();
         if(isMax) {
             int best = INT_MIN;
-            if(actions.size() > 1) {
-                for(const auto &[action, pres] : actions) {
-                    State newState = state;
-                    newState.applyDestination(action);
-                    best = max(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
-                    alpha = max(alpha, best);
-                    if(beta <= alpha) break;
-                }
-            } else {
-                for(const auto &[action, pres] : actions) {
-                    state.applyDestination(action);
-                    best = max(best, alphaBeta(state, depth-1, alpha, beta, !isMax));
-                    alpha = max(alpha, best);
-                    if(beta <= alpha) break;
-                }
+            for(const Point &action : state.legalDestinations_presentsPredict()) {
+                State newState = state;
+                newState.applyDestination(action);
+                best = max(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
+                alpha = max(alpha, best);
+                if(beta <= alpha) break;
             }
             return best;
         } else {
             int best = INT_MAX;
-            if(actions.size() > 1) {
-                for(const auto &[action, pres] : actions) {
-                    State newState = state;
-                    newState.applyDestination(action);
-                    best = min(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
-                    beta = min(beta, best);
-                    if(beta <= alpha) break;
-                }
-            } else {
-                for(const auto &[action, pres] : actions) {
-                    state.applyDestination(action);
-                    best = min(best, alphaBeta(state, depth-1, alpha, beta, !isMax));
-                    beta = min(beta, best);
-                    if(beta <= alpha) break;
-                }
+            for(const Point &action : state.legalDestinations_presentsPredict()) {
+                State newState = state;
+                newState.applyDestination(action);
+                best = min(best, alphaBeta(newState, depth-1, alpha, beta, !isMax));
+                beta = min(beta, best);
+                if(beta <= alpha) break;
             }
             return best;
         }
     }
 
-    pair<Point, Point> getAlphaBeta(State state, int depth) {
+    Point getAlphaBeta(State state, int depth) {
         int best = INT_MIN;
         Point bestAction = state.get_main_player_pos();
-        Point bestPres = state.get_main_player_pos();
 
-        for(const auto &[action, pres] : state.legalDestinations_presentsPredict()) {
+        for(const Point &action : state.legalDestinations_presentsPredict()) {
             State newState = state;
             newState.applyDestination(action);
             int val = alphaBeta(newState, depth, INT_MIN, INT_MAX, false);
             if(val > best) {
                 best = val;
                 bestAction = action;
-                bestPres = pres;
             }
         }
 
-        return {bestAction, bestPres};
+        return bestAction;
     }
 };
 
@@ -457,58 +430,12 @@ class AI {
 public:
     AI() {}
 
-    inline vector<Point> getFirstAction(State &state) {
-        vector<Point> res(3);
-        for(int i = 0; i < 3; i++) {
-            state.my_gargoyle = all_my_gargoyles[i];
-            state.opp_gargoyle = all_opp_gargoyles[i];
-            
-            auto t_res = minimax.getAlphaBeta(state, 3201);
-            res[i] = t_res.first;
-
-            // erase the present that we are going to catch
-            for(auto it = state.presents.begin(); it != state.presents.end(); ++it) {
-                if(it->pos == t_res.second) {
-                    state.presents.erase(it);
-                    break;
-                }
-            }
-        }
-        return res;
+    inline Point getFirstAction(State &state) {
+        return minimax.getAlphaBeta(state, 3201);
     }
 
-    inline vector<pair<Point, int>> getAction(State &state) {
-        vector<pair<Point, int>> res(3);
-        for(int i = 0; i < 3; i++) {
-            state.my_gargoyle = all_my_gargoyles[i];
-            state.opp_gargoyle = all_opp_gargoyles[i];
-
-            int fireball = state.greedy_fireball();
-            if(state.my_gargoyle.cooldown == 0 && fireball != -1) {
-                res[i] = {{-1, -1}, fireball};
-
-                for(auto it = state.presents.begin(); it != state.presents.end(); ++it) {
-                    if(it->id == fireball) {
-                        state.presents.erase(it);
-                        break;
-                    }
-                }
-
-                continue;
-            }
-            
-            auto t_res = minimax.getAlphaBeta(state, 51);
-            res[i] = {t_res.first, -1};
-
-            // erase the present that we are going to catch
-            for(auto it = state.presents.begin(); it != state.presents.end(); ++it) {
-                if(it->pos == t_res.second) {
-                    state.presents.erase(it);
-                    break;
-                }
-            }
-        }
-        return res;
+    inline Point getAction(State &state) {
+        return minimax.getAlphaBeta(state, 191);
     }
 };
 
@@ -517,12 +444,12 @@ void read_loop_input(State &s) {
     
     cin >> s.my_score; cin.ignore();
     for (int i = 0; i < gargoyles_per_player; i++) {
-        cin >> all_my_gargoyles[i].pos.x >> all_my_gargoyles[i].pos.y >> all_my_gargoyles[i].cooldown; cin.ignore();
+        cin >> s.my_gargoyle.pos.x >> s.my_gargoyle.pos.y >> s.my_gargoyle.cooldown; cin.ignore();
     }
 
     cin >> s.opp_score; cin.ignore();
     for (int i = 0; i < gargoyles_per_player; i++) {
-        cin >> all_opp_gargoyles[i].pos.x >> all_opp_gargoyles[i].pos.y >> all_opp_gargoyles[i].cooldown; cin.ignore();
+        cin >> s.opp_gargoyle.pos.x >> s.opp_gargoyle.pos.y >> s.opp_gargoyle.cooldown; cin.ignore();
     }
 
     int presents_count;
@@ -536,13 +463,11 @@ void read_loop_input(State &s) {
     }
 }
 
+
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     srand(time(0));
-
-    all_my_gargoyles.resize(3);
-    all_opp_gargoyles.resize(3);
     
     State curr_state;
 
@@ -552,10 +477,8 @@ int main() {
     AI ai;
     timer.reset();
 
-    vector<Point> res = ai.getFirstAction(curr_state);
-    for(auto &r : res) {
-        cout << "FLY " << r << endl;
-    }
+    Point res = ai.getFirstAction(curr_state);
+    cout << "FLY " << res << endl;
 
     while(1) {
         read_loop_input(curr_state);
@@ -566,14 +489,15 @@ int main() {
         }
         cerr << '\n';
 
-        timer.reset();
-        vector<pair<Point, int>> res = ai.getAction(curr_state);
-        for(auto &[fly, fireball] : res) {
-            if(fireball != -1) {
-                cout << "FIREBALL " << fireball << endl;
-                continue;
-            }
-            cout << "FLY " << fly << endl;
+        int fireball = curr_state.greedy_fireball();
+        if(curr_state.my_gargoyle.cooldown == 0 && fireball != -1) {
+            cout << "FIREBALL " << fireball;
+        } else {
+            timer.reset();
+            Point res = ai.getAction(curr_state);
+            cout << "FLY " << res;
         }
+
+        cout << endl;
     }
 }

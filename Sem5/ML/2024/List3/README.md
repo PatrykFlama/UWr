@@ -59,6 +59,7 @@ $$ = \prod_{i=1}^m S(x_i\beta)^{y_i} (1-S(x_i\beta)^{1-y_i}) $$
 $$ l(\beta) = \ln L(\beta) $$
 $$ = \ln \prod_{i=1}^m S(x_i\beta)^{y_i} (1-S(x_i\beta)^{1-y_i}) $$
 $$ = \sum_{i=1}^m \ln S(x_i\beta)^{y_i} (1-S(x_i\beta)^{1-y_i}) $$
+$$ = \sum_{i=1}^m y_i \ln S(x_i\beta) + (1-y_i) \ln (1-S(x_i\beta)) $$
 
 We will maximize log likelihood (using gradient ascent) to find the best $\beta$.
 
@@ -66,4 +67,7 @@ We will maximize log likelihood (using gradient ascent) to find the best $\beta$
 $$ \frac{\partial S(x\beta)}{\partial \beta} = \frac{\partial}{\partial \beta} \left(\frac{1}{1+\exp (-x\beta)}\right) $$
 $$ = -\frac{1}{(1+\exp(-x\beta))^2} \frac{\partial}{\partial \beta}\exp(-x\beta) $$
 $$ = \frac{\exp(-x\beta) x}{(1+\exp(-x\beta))^2} $$
+___
+$$ \frac{\partial^2 l(\beta)}{\partial \beta^{(j)} \partial \beta^{(k)}} = \frac{\partial}{\partial \beta^{(j)}} (y - S(x\beta))x^{(k)} $$
 
+$$ = 

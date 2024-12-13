@@ -435,7 +435,9 @@ public:
     }
 
     inline Point getAction(State &state) {
-        return minimax.getAlphaBeta(state, 191);
+        if(state.presents.size() < 8)
+            return minimax.getAlphaBeta(state, 191);
+        else return minimax.getAlphaBeta(state, 101);
     }
 };
 

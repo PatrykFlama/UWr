@@ -68,6 +68,11 @@ $$ \frac{\partial S(x\beta)}{\partial \beta} = \frac{\partial}{\partial \beta} \
 $$ = -\frac{1}{(1+\exp(-x\beta))^2} \frac{\partial}{\partial \beta}\exp(-x\beta) $$
 $$ = \frac{\exp(-x\beta) x}{(1+\exp(-x\beta))^2} $$
 ___
+### Second derivative of the log-likelihood function
+
 $$ \frac{\partial^2 l(\beta)}{\partial \beta^{(j)} \partial \beta^{(k)}} = \frac{\partial}{\partial \beta^{(j)}} (y - S(x\beta))x^{(k)} $$
 
-$$ = 
+$$ = yx^{(k)} - \frac{\partial S(x\beta)}{\partial \beta^{(k)}} $$
+$$ = yx^{(k)} - S(x\beta)(1-S(x\beta)) \frac{\partial x\beta}{\partial \beta^{(k)}} $$
+$$ = yx^{(k)} - S(x\beta)(1-S(x\beta)) x^{(k)} $$
+$$ = x^{(k)}(y - S(x\beta) (1-S(x\beta))) $$

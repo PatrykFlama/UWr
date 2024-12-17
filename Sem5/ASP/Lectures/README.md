@@ -31,6 +31,7 @@
     - [WSDL](#wsdl)
     - [WCF](#wcf)
   - [ASP.NET Core](#aspnet-core)
+- [Wykład 11 - SignalR oraz MediatR](#wykład-11---signalr-oraz-mediatr)
 
 
 
@@ -514,3 +515,49 @@ teraz możemy dodać klienta, ale został on przyspieszony, żeby z tego skorzys
 
 
 
+# Wykład 11 - SignalR oraz MediatR
+hands on z wykładu - gdzie zaimplementować logikę obsługi maili?  
+tworzymy nowy projekt `PortsImpl` w którym tworzymy klasę `EmailSender` dziedziczącą co IEmailSender z metodą `SendEmail`  
+
+teraz możemy w starcie naszego programu (w `Program.cs`) zarejestrować nasz serwis w kontenerze DI  
+```cs
+bulider.Services.AddScoped<IEmailSender, EmailSender>();
+```
+
+takie miejsce, na konfigurację aplikacji naszymi bibliotekami, jest nazywane CompositionRoot i możemy je wyekstraktować do osobnej klasy `CompositionRoot`  
+```cs
+private static void CompositionRoot(WebApplicationBuilder builder)
+{
+    builder.Services.AddScoped<IEmailSender, EmailSender>();
+}
+```
+
+___
+teraz możemy łatwo napisać testy jednostkowe  
+skorzystamy z biblioteki mock do wytwarania typów zastępczych (w runtime generuje typów które implementują dany interfejs)  
+
+```cs 
+namespace UnitTests.LogonUseCaseTestsSpace
+{
+    [TestClass]
+    public class LogonUseCaseTests
+    {
+        [TestMethod]
+        public async Task SucessScenario()
+        {
+            var emailPortMock = new Mock<IEmailSender>();
+            var useUseCase = new LogonUseCase(emailPortMock.Object);
+            var result = await useUseCase.Handle(new LogonUseCaseRequestModel
+            {
+                Password = "foo",
+                Username = "bar"
+            }, new CancellationToken());
+
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual("bar", result.Username);
+
+            emailPortMock.Verify(x => x.SendEmail(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+    }
+}
+```

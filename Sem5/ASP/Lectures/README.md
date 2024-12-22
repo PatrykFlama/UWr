@@ -391,7 +391,7 @@ w .NET Core jak ustawimy funkcji w kontrolerze atrybut `[HttpGet]` to nasza funk
 ## API key
 przy komunikacji serwer-serwer nie mamy dostępu do ciasteczek = autentykacji, więc potrzebujemy innego sposobu na autentykację - kluczy z dostatecznie dużą entropią  
 do tego możemy stworzyć własny filtr do autentykacji za pomocą api key, wtedy zamiast `[Authorize]` nad funkcją będziemy pisać `[CustomAuthenticationFilter]`  
-w standardzie mamy już dedykowany nagłówek `Authorization` który ma albo wartość `Basic` która trzymma proste klucze (np klucz api), albo coś bardziej zkomplikowanego   
+w standardzie mamy już dedykowany nagłówek `Authorization` który ma albo wartość `Basic` która trzymma proste klucze (np klucz api), albo coś bardziej skomplikowanego   
 
 ## Tokeny JWT
 Sensowna alternatywa dla prymitywnych uwierzytelnień stałym kluczem (mogą się często zmieniać, przez co wykradnięcie ich nie tworzy dużego ryzyka)  

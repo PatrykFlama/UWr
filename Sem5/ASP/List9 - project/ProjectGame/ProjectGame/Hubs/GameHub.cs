@@ -6,26 +6,20 @@ namespace ProjectGame.Hubs
 {
     public class GameHub : Hub
     {
-        private static readonly ConcurrentDictionary<string, GameState> Games = new();
+        private static readonly ConcurrentDictionary<string, TicTacToeGame> Games = new();
 
         public async Task JoinGame(string gameId)
         {
             if(!Games.ContainsKey(gameId))
             {
-                // Create a new game if it doesn't exist
-                Games[gameId] = new GameState
-                {
-                    GameId = gameId,
-                    Players = new List<string>(),
-                    Board = new int[3, 3], // Example board size
-                    Scores = new Dictionary<string, int>()
-                };
+                Games[gameId] = new TicTacToeGame();
             }
 
             var game = Games[gameId];
+
             if(game.Players.Count >= 2)
             {
-                throw new HubException("This game room is full.");
+                throw new HubException("This game room is full");
             }
 
             if(!game.Players.Contains(Context.ConnectionId))
@@ -33,75 +27,54 @@ namespace ProjectGame.Hubs
                 game.Players.Add(Context.ConnectionId);
             }
 
+            if(game.Players.Count == 2)
+            {
+                game.CurrentPlayer = game.Players[0];
+                game.CurrentPlayerRole = "X";
+            }
+
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
-            await Clients.Group(gameId).SendAsync("PlayerJoined", Context.ConnectionId, game.Players);
+            await Clients.Group(gameId).SendAsync("PlayerJoined", game.Players);
+            await Clients.Group(gameId).SendAsync("GameState", game.Board, game.CurrentPlayerRole);
 
-            // Send initial game state to the joining player
-            await Clients.Caller.SendAsync("GameState", game.Board, game.Scores, game.Players);
+            await Clients.Client(game.Players[0]).SendAsync("PlayerRole", "X");
+            await Clients.Client(game.Players[1]).SendAsync("PlayerRole", "O");
         }
 
-        public async Task MakeMove(bool isHorizontal, int row, int col)
+        public async Task MakeMove(string gameId, string srow, string scol)
         {
-            var gameId = GetGameIdFromConnection(Context.ConnectionId);
-            if(string.IsNullOrEmpty(gameId) || !Games.ContainsKey(gameId))
+            int row = int.Parse(srow), col = int.Parse(scol); //TODO why?
+
+            if(!Games.TryGetValue(gameId, out var game) || game.Players.Count < 2)
             {
-                throw new HubException("Game not found.");
+                throw new HubException("Invalid game state");
             }
 
-            var game = Games[gameId];
-            // Validate move
-            if(!IsValidMove(game, isHorizontal, row, col))
+            if(game.CurrentPlayer != Context.ConnectionId)
             {
-                throw new HubException("Invalid move.");
+                throw new HubException("Not your turn");
             }
 
-            // Apply move
-            var currentPlayer = Context.ConnectionId;
-            ApplyMove(game, isHorizontal, row, col, currentPlayer);
-
-            // Broadcast updated state
-            await Clients.Group(gameId).SendAsync("MoveMade", isHorizontal, row, col, currentPlayer, game.Board, game.Scores, GetNextPlayer(game));
-        }
-
-        private bool IsValidMove(GameState game, bool isHorizontal, int row, int col)
-        {
-            // Check if the move is valid (not already taken, within bounds, etc.)
-            return true; // Replace with actual validation logic
-        }
-
-        private void ApplyMove(GameState game, bool isHorizontal, int row, int col, string currentPlayer)
-        {
-            // Update game state with the move
-            // Update scores, mark the move, etc.
-        }
-
-        private string GetGameIdFromConnection(string connectionId)
-        {
-            // Find the game ID for the given connection ID
-            foreach(var game in Games)
+            if(!string.IsNullOrEmpty(game.Board[row][col]))
             {
-                if(game.Value.Players.Contains(connectionId))
-                {
-                    return game.Key;
-                }
+                throw new HubException("Cell already occupied");
             }
-            return null;
-        }
 
-        private string GetNextPlayer(GameState game)
-        {
-            // Determine the next player's connection ID
-            var currentIndex = game.Players.IndexOf(Context.ConnectionId);
-            return game.Players[(currentIndex + 1) % game.Players.Count];
-        }
 
-        private class GameState
-        {
-            public string GameId { get; set; }
-            public List<string> Players { get; set; }
-            public int[,] Board { get; set; }
-            public Dictionary<string, int> Scores { get; set; }
-        }
+            var symbol = game.Players[0] == Context.ConnectionId ? "X" : "O";
+            game.Board[row][col] = symbol;
+            game.CurrentPlayerRole = game.CurrentPlayerRole == "X" ? "O" : "X";
+            await Clients.Group(gameId).SendAsync("MoveMade", row, col, symbol, game.CurrentPlayerRole);
 
+            var winner = game.CheckWinner();
+            if(!string.IsNullOrEmpty(winner))
+            {
+                await Clients.Group(gameId).SendAsync("GameOver", winner);
+                Games.TryRemove(gameId, out _);
+                return;
+            }
+
+            game.CurrentPlayer = game.Players.First(p => p != game.CurrentPlayer);
+        }
     }
 }

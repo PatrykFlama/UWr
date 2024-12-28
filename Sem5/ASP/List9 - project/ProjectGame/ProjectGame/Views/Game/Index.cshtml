@@ -1,13 +1,12 @@
 ﻿@{
-    ViewData["Title"] = "Dots and Boxes - Home";
+    ViewData["Title"] = "Tic Tac Toe - Home";
 }
 
-<h1>Dots and Boxes</h1>
-
+<h1>Tic Tac Toe</h1>
 <form method="get" action="/Game/Play">
     <div>
         <label for="gameId">Game ID:</label>
-        <input type="text" id="gameId" name="gameId" placeholder="Enter Game ID or leave blank to create" />
+        <input type="text" id="gameId" name="gameId" placeholder="Enter Game ID" required />
     </div>
     <button type="submit">Join/Create Game</button>
 </form>

@@ -1,150 +1,49 @@
 ﻿@{
-    ViewData["Title"] = "Dots and Boxes - Game";
+    ViewData["Title"] = "Tic Tac Toe - Game";
     var gameId = ViewData["GameId"]?.ToString();
 }
 
-<h1>Dots and Boxes - Game Room: @gameId</h1>
+<h1>Tic Tac Toe - Game Room: @gameId</h1>
 
-<div id="game-board"></div>
-<div>
-    <h3>Scores</h3>
-    <ul id="scores"></ul>
+<div id="game-board">
+    @for (int row = 0; row < 3; row++)
+    {
+        <div class="row">
+            @for (int col = 0; col < 3; col++)
+            {
+                <button class="cell" data-row="@row" data-col="@col"></button>
+            }
+        </div>
+    }
 </div>
-<h4>Current Player: <span id="current-player"></span></h4>
+
+<h3>Current Player: <span id="current-player"></span></h3>
+<h3>Your role: <span id="player-role"></span></h3>
+<p id="game-result"></p>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
-<script>
-    const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/gamehub")
-        .build();
-
-    let currentPlayer = '';
-    let scores = {};
-    const gameId = "@gameId";
-
-    connection.start().then(() => {
-        connection.invoke("JoinGame", gameId);
-
-        connection.on("MoveMade", (isHorizontal, row, col, player, updatedBoxes, updatedScores, nextPlayer) => {
-            updateGameBoard(updatedBoxes);
-            updateScores(updatedScores);
-            currentPlayer = nextPlayer;
-            document.getElementById("current-player").innerText = currentPlayer;
-        });
-
-        setupGameBoard();
-    });
-
-    function setupGameBoard() {
-        const board = document.getElementById("game-board");
-        board.innerHTML = '';
-
-        const rows = 3; // Example grid size
-        const columns = 3;
-
-        for (let r = 0; r <= rows; r++) {
-            const row = document.createElement("div");
-            row.classList.add("row");
-
-            for (let c = 0; c <= columns; c++) {
-                const dot = document.createElement("span");
-                dot.classList.add("dot");
-                row.appendChild(dot);
-
-                if (c < columns) {
-                    const horizontalEdge = document.createElement("button");
-                    horizontalEdge.classList.add("horizontal-edge");
-                    horizontalEdge.dataset.row = r;
-                    horizontalEdge.dataset.col = c;
-                    horizontalEdge.onclick = () => makeMove(true, r, c);
-                    row.appendChild(horizontalEdge);
-                }
-            }
-
-            board.appendChild(row);
-
-            if (r < rows) {
-                const verticalRow = document.createElement("div");
-                verticalRow.classList.add("row");
-
-                for (let c = 0; c <= columns; c++) {
-                    const verticalEdge = document.createElement("button");
-                    verticalEdge.classList.add("vertical-edge");
-                    verticalEdge.dataset.row = r;
-                    verticalEdge.dataset.col = c;
-                    verticalEdge.onclick = () => makeMove(false, r, c);
-                    verticalRow.appendChild(verticalEdge);
-
-                    if (c < columns) {
-                        const box = document.createElement("span");
-                        box.classList.add("box");
-                        verticalRow.appendChild(box);
-                    }
-                }
-
-                board.appendChild(verticalRow);
-            }
-        }
-    }
-
-    function makeMove(isHorizontal, row, col) {
-        connection.invoke("MakeMove", isHorizontal, row, col).catch(err => console.error(err.toString()));
-    }
-
-    function updateGameBoard(updatedBoxes) {
-        document.querySelectorAll(".box").forEach((box, index) => {
-            const row = Math.floor(index / 3);
-            const col = index % 3;
-            box.innerText = updatedBoxes[row][col] || '';
-        });
-    }
-
-    function updateScores(updatedScores) {
-        const scoresList = document.getElementById("scores");
-        scoresList.innerHTML = '';
-        for (const [player, score] of Object.entries(updatedScores)) {
-            const li = document.createElement("li");
-            li.textContent = `${player}: ${score}`;
-            scoresList.appendChild(li);
-        }
-    }
-</script>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/js/site.js"></script>
 
 <style>
-    .dot {
-        width: 10px;
-        height: 10px;
-        background: black;
-        display: inline-block;
-        border-radius: 50%;
-    }
-
-    .horizontal-edge, .vertical-edge {
-        width: 50px;
-        height: 10px;
-        margin: 0;
-        padding: 0;
-    }
-
-    .horizontal-edge {
-        display: inline-block;
-    }
-
-    .vertical-edge {
-        display: inline-block;
-        height: 50px;
-        width: 10px;
-    }
-
-    .box {
-        width: 50px;
-        height: 50px;
-        display: inline-block;
-        text-align: center;
-        line-height: 50px;
+    #game-board {
+        display: grid;
+        grid-template-rows: repeat(3, 1fr);
+        grid-gap: 5px;
     }
 
     .row {
         display: flex;
+    }
+
+    .cell {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        text-align: center;
+        line-height: 60px;
+        border: 1px solid black;
+        background-color: white;
+        cursor: pointer;
     }
 </style>

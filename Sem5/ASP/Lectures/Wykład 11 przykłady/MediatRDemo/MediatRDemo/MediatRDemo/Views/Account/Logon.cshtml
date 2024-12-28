@@ -1,0 +1,22 @@
+﻿@model MediatRDemo.Models.Account.LogonModel
+@{
+    ViewData["Title"] = "Logon";
+}
+
+<form method="post">
+    <div>
+        <div>
+            @Html.LabelFor( m => m.Username, "UserName" )
+            @Html.TextBoxFor( m => m.Username )
+            @Html.ValidationMessageFor( m => m.Username )
+        </div>
+        <div>
+            @Html.LabelFor( m => m.Password, "Password" )
+            @Html.PasswordFor( m => m.Password )
+            @Html.ValidationMessageFor( m => m.Password )
+        </div>
+        <div>
+            <button>Login</button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,24 @@
+﻿@model NetCoreSignalR.Models.AccountLogonModel
+@{
+    ViewData["Title"] = "Logon";
+}
+
+<form method="post">
+    <div>
+        Login: @Html.TextBoxFor(m => m.UserName)
+        @Html.ValidationMessageFor(m => m.UserName)
+    </div>
+    <div>
+        Password: @Html.PasswordFor(m => m.Password)
+    </div>
+    <div>
+        <button>Zaloguj</button>
+    </div>
+    @if ( this.ViewBag.Message != null )
+    {
+        <div>
+            @this.ViewBag.Message
+        </div>
+    }
+</form>
+

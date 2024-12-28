@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container">
+    <div>
+        Message:
+        <div>
+            <textarea type="text" id="message" rows="20"></textarea>
+        </div>
+    </div>
+    <div>
+        <input type="button" id="sendmessage" value="Send" />
+    </div>
+    <ul id="discussion">
+    </ul>
+</div>
+
+@section Scripts {
+    <!--Reference the jQuery library. -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!--Reference the SignalR library. -->
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <!--Reference the app script. -->
+    <script src="~/js/site.js"></script>
+}

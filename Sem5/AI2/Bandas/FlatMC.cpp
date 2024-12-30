@@ -1,3 +1,11 @@
+// #pragma GCC optimize("Ofast,inline,tracer")
+// #pragma GCC optimize("unroll-loops,vpt,split-loops,unswitch-loops,omit-frame-pointer,inline")
+// #pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
+// #pragma GCC target("arch=haswell,tune=haswell")
+// #pragma GCC target("aes,abm,align-stringops,avx,avx2,bmi,bmi2,crc32,cx16,f16c,fma,fsgsbase,fxsr,hle,ieee-fp,lzcnt,mmx,movbe,mwait,pclmul,popcnt,rdrnd,sahf,sse,sse2,sse3,sse4,sse4.1,sse4.2,ssse3,xsave,xsaveopt")
+// #include <x86intrin.h>                                                      //AVX/SSE Extensions
+
+
 #include <bits/stdc++.h>
 #include <chrono>
 #include <thread>

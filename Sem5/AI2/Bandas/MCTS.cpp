@@ -12,7 +12,7 @@
 using namespace std;
 
 #define DEBUG 1
-
+#define cerr if(DEBUG) cerr
 
 /* #region --- HELPERS ---- */
 // cout pair
@@ -113,7 +113,6 @@ namespace std {
 
 
 enum DIR {U, D, L, R};
-const Point DIR_POINT[] = {Point(0, -1), Point(0, 1), Point(-1, 0), Point(1, 0)};
 const string DIRECTIONS[] = {"UP", "DOWN", "LEFT", "RIGHT"};
 const DIR PERPENDICULAR[] = {R, L, U, D};
 const DIR OPPOSITE[] = {D, U, R, L};
@@ -121,6 +120,12 @@ const DIR OPPOSITE[] = {D, U, R, L};
 const char EMPTY = '-', HOLE = 'x';
 const int MAX_TURNS = 200;
 Timer timer;
+
+// MCTS constants
+const double EXPLORATION_CONSTANT = 2*sqrt(2);
+constexpr int MAX_ACTIONS = 4;
+constexpr int MAX_TREE_SIZE = 10000;
+
 
 class GameState {
 public:
@@ -317,21 +322,16 @@ public:
 
 
 // ----------------- MCTS -----------------
-const double EXPLORATION_CONSTANT = sqrt(2);
-constexpr int MAX_ACTIONS = 4;
-constexpr int MAX_TREE_SIZE = 10000;
-constexpr int MAX_GAME_LENGTH = 200;
-
 struct Node {
     double reward = 0;
     int visits = 0;
     int parentId = 0;
+    int childrenNum = 0;
     int childrenId[MAX_ACTIONS];    // 0 <=> not initialized
     GameState state;
 
-    Node() = default;
-    Node(int parentId, const GameState& state)
-        : reward(reward), visits(visits), parentId(parentId), state(state) {
+    Node(int parentId, const GameState state)
+        : parentId(parentId), state(state) {
         for(int i = 0; i < MAX_ACTIONS; i++) {
             this->childrenId[i] = 0;
         }
@@ -346,7 +346,7 @@ public:
     Node* tree[MAX_TREE_SIZE];
     int treeSize = 1;
 
-    int selectedStates[MAX_GAME_LENGTH + 1];
+    int selectedStates[MAX_TURNS + 1];
     int selectedStatesNum = 0;
 
     MCTS(GameState state) {
@@ -355,10 +355,26 @@ public:
     }
 
     void opp_move(GameState state) {
+        // cerr << "Opponent move\n";
         for(int i = 0; i < MAX_ACTIONS; i++) {
-            if(root->childrenId[i] != 0 && tree[root->childrenId[i]]->state == state) {
+            if(root->childrenId[i] == 0) {
+                expand(rootId);
+            }
+
+            if(tree[root->childrenId[i]]->state == state) {
                 rootId = root->childrenId[i];
                 root = tree[rootId];
+
+                // cerr << root->state << '\n';
+
+                // cerr << "With children:\n";
+                // for(int j = 0; j < MAX_ACTIONS; j++) {
+                //     if(root->childrenId[j] != 0) {
+                //         cerr << DIRECTIONS[j] << " " << root->childrenId[j] << "\n" << tree[root->childrenId[j]]->state << '\n';
+                //     } else {
+                //         cerr << DIRECTIONS[j] << " " << root->childrenId[j] << '\n';
+                //     }
+                // }
                 return;
             }
         }
@@ -367,7 +383,7 @@ public:
     // ----- MCTS funcitons ------
     int tree_policy(int stateId) {
         while(!tree[stateId]->state.is_terminal()) {
-            if(tree[stateId]->visits < MAX_ACTIONS) {
+            if(tree[stateId]->childrenNum < MAX_ACTIONS) {
                 return expand(stateId);
             } else {
                 stateId = best_child(stateId, EXPLORATION_CONSTANT);
@@ -378,7 +394,7 @@ public:
     }
 
     static inline double UCB1(int reward, int visits, int parent_visits, int c) {
-        return reward / visits + c * sqrt(log(parent_visits) / visits);
+        return reward / (double)visits + c * sqrt(log(parent_visits) / visits);
     }
 
     int best_child(const int stateId, const double c) const {
@@ -400,8 +416,9 @@ public:
     }
 
     int expand(const int stateId) {
-        const int action = tree[stateId]->visits;
-        tree[stateId]->visits++;
+        const int action = tree[stateId]->childrenNum;
+        tree[stateId]->childrenNum++;
+        // cerr << "Expanding state " << stateId << " with action " << DIRECTIONS[action] << '\n';
 
         tree[treeSize] = new Node(stateId, tree[stateId]->state);
         tree[treeSize]->state.apply_move((DIR)action);
@@ -439,10 +456,13 @@ public:
     }
 
     int robust_child(const int stateId) const { // choose the most visited child
+        cerr << "Choosing robust child\n";
         double best_score = -1e9;
         int best_action = 0;
 
         for(int action = 0; action < MAX_ACTIONS; action++) {
+            cerr << "Action: " << DIRECTIONS[action] << " | " << tree[stateId]->childrenId[action] << ", " << tree[tree[stateId]->childrenId[action]]->reward << " / " << tree[tree[stateId]->childrenId[action]]->visits << '\n';
+            // cerr << tree[tree[stateId]->childrenId[action]]->state << '\n';
             const int childId = tree[stateId]->childrenId[action];
             if(childId == 0) continue;
 
@@ -466,6 +486,10 @@ public:
 
         const int best_child_id = robust_child(rootId);
         const DIR best_action = child_to_action(rootId, best_child_id);
+
+        rootId = best_child_id;
+        root = tree[best_child_id];
+
         return DIRECTIONS[best_action];
     }
 };
@@ -473,8 +497,8 @@ public:
 
 
 int main() {
-    // ios_base::sync_with_stdio(false);
-    // cin.tie(0);
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
 
     srand(time(0));
 
@@ -500,7 +524,7 @@ int main() {
             mcts->opp_move(state);
         }
 
-        string best_move = mcts->choose_best_move(50);
+        string best_move = mcts->choose_best_move(90);
         cout << best_move << endl;
     }
 

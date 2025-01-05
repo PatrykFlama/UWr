@@ -111,7 +111,7 @@ namespace std {
 
 /* #endregion */
 
-
+enum DIR {UP, DOWN, LEFT, RIGHT};
 const Point DIRS[] = {Point(0, -1), Point(0, 1), Point(-1, 0), Point(1, 0)};
 
 const char EMPTY = '-', WALL = '#';
@@ -132,6 +132,7 @@ public:
     int id;
     int parent_id;
     int root_id;
+    DIR direction;
 };
 
 class Protein {
@@ -152,7 +153,6 @@ public:
     vector<vector<int>> dist_to_protein = vector<vector<int>>(height, vector<int>(width, 1e9));  //? distance from pos to closest protein
     
     GameState() {}
-
 
     void calc_dist_to_protein() {
         priority_queue<pair<int, Point>> q;
@@ -183,31 +183,57 @@ public:
         return proteins.find(p) != proteins.end();
     }
 
+    void debug_print_grid() {
+        for(int i = 0; i < height; i++) {
+            for(int j = 0; j < width; j++) {
+                if(grid[i][j] == EMPTY) cerr << dist_to_protein[i][j] << ' ';
+                else if(is_protein(Point(j, i))) cerr << proteins[Point(j, i)].type << ' ';
+                else cerr << grid[i][j] << ' ';
+            }
+            cerr << '\n';
+        }
+    }
+};
+
+
+class AI {
+public:
+    GameState state;
+
+    AI() {}
+    
+    void recreate_state() {
+        state = GameState();
+        read_loop_input(state);
+        state.calc_dist_to_protein();
+    }
+
     int get_parent_id(const Point &pos) {
         // simply find neighbour organ
         for(int dir = 0; dir < 4; dir++) {
             Point new_p = pos + DIRS[dir];
-            if(my_organs.find(new_p) != my_organs.end()) {
-                return my_organs[new_p].id;
+            if(state.my_organs.find(new_p) != state.my_organs.end()) {
+                return state.my_organs[new_p].id;
             }
         }
+        return 1;   // better not happen
     }
 
     Point get_closest_to_protein() {
         Point best_pos(-1, -1);
         int best_dist = 1e9;
 
-        for(const auto& [pos, organ] : my_organs) {
+        for(const auto& [pos, organ] : state.my_organs) {
             for(int i = 0; i < 4; i++) {
                 const Point new_p = organ.pos + DIRS[i];
                 // assuming grid surrounded by walls
                 // if(new_p.x < 0 || new_p.x >= width || new_p.y < 0 || new_p.y >= height) continue;
-                if(grid[new_p.y][new_p.x] != EMPTY && !is_protein(new_p)) continue;
+                if(state.grid[new_p.y][new_p.x] != EMPTY && !state.is_protein(new_p)) continue;
 
-                cerr << "Checking " << new_p << " with dist " << dist_to_protein[new_p.y][new_p.x] << '\n';
+                cerr << "Checking " << new_p << " with dist " << state.dist_to_protein[new_p.y][new_p.x] << '\n';
 
-                if(dist_to_protein[new_p.y][new_p.x] < best_dist) {
-                    best_dist = dist_to_protein[new_p.y][new_p.x];
+                if(state.dist_to_protein[new_p.y][new_p.x] < best_dist) {
+                    best_dist = state.dist_to_protein[new_p.y][new_p.x];
                     best_pos = new_p;
                 }
             }
@@ -220,29 +246,18 @@ public:
         Point best = get_closest_to_protein();
         if(best != Point(-1, -1)) return best;
 
-        for(const auto& [pos, organ] : my_organs) {
+        for(const auto& [pos, organ] : state.my_organs) {
             for(int i = 0; i < 4; i++) {
                 const Point new_p = organ.pos + DIRS[i];
                 // assuming grid surrounded by walls
                 // if(new_p.x < 0 || new_p.x >= width || new_p.y < 0 || new_p.y >= height) continue;
-                if(grid[new_p.y][new_p.x] != EMPTY) continue;
+                if(state.grid[new_p.y][new_p.x] != EMPTY) continue;
 
                 return new_p;
             }
         }
 
         return Point(-1, -1);
-    }
-
-    void debug_print_grid() {
-        for(int i = 0; i < height; i++) {
-            for(int j = 0; j < width; j++) {
-                if(grid[i][j] == EMPTY) cerr << dist_to_protein[i][j] << ' ';
-                else if(is_protein(Point(j, i))) cerr << proteins[Point(j, i)].type << ' ';
-                else cerr << grid[i][j] << ' ';
-            }
-            cerr << '\n';
-        }
     }
 };
 
@@ -298,23 +313,20 @@ void read_loop_input(GameState &state) {
 int main() {
     cin >> width >> height; cin.ignore();
 
+    AI ai;
 
     // game loop
     while(1) {
-        GameState state;
-        read_loop_input(state);
-        state.calc_dist_to_protein();
-
-        state.debug_print_grid();
+        ai.recreate_state();
 
         for (int i = 0; i < required_actions_count; i++) {
-            Point move = state.greedy_to_protein();
+            Point move = ai.greedy_to_protein();
 
             if(move == Point(-1, -1)) {
                 cout << "WAIT" << endl;
             } else {
-                cout << "GROW " << state.get_parent_id(move) << ' ' << move << " BASIC" << endl;
-                cerr << "Decided to take " << move << " with dist " << state.dist_to_protein[move.y][move.x] << '\n';
+                cout << "GROW " << ai.get_parent_id(move) << ' ' << move << " BASIC" << endl;
+                cerr << "Decided to take " << move << " with dist " << ai.state.dist_to_protein[move.y][move.x] << '\n';
             }
         }
     }

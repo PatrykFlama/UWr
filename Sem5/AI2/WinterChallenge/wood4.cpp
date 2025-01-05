@@ -196,6 +196,54 @@ public:
 };
 
 
+
+void read_loop_input(GameState &state) {
+    state.proteins.clear();
+
+    int entity_count;
+    cin >> entity_count; cin.ignore();
+    for (int i = 0; i < entity_count; i++) {
+        int col;
+        int row; // grid coordinate
+
+        string type; // WALL, ROOT, BASIC, TENTACLE, HARVESTER, SPORER, A, B, C, D
+        int owner; // 1 if your organ, 0 if enemy organ, -1 if neither
+        int organ_id; // id of this entity if it's an organ, 0 otherwise
+        string organ_dir; // N,E,S,W or X if not an organ
+        int organ_parent_id;
+        int organ_root_id;
+        cin >> col >> row >> type >> owner >> organ_id >> organ_dir >> organ_parent_id >> organ_root_id; cin.ignore();
+
+        if(type == "ROOT" || type == "BASIC") {
+            if(owner == 1) {    // my organ
+                state.grid[row][col] = type[0];
+                state.my_organs[Point(col, row)] = {Point(col, row), type[0], organ_id, organ_parent_id, organ_root_id};
+            } else {            // opponent's organ
+                state.grid[row][col] = tolower(type[0]);
+                state.opp_organs[Point(col, row)] = {Point(col, row), type[0], organ_id, organ_parent_id, organ_root_id};
+            }
+        } else if(type == "WALL") {
+            state.grid[row][col] = WALL;
+        } else {    // protein
+            state.grid[row][col] = type[0] - 'A' + '1';
+            state.proteins[Point(col, row)] = {Point(col, row), organ_id, type[0]};
+        }
+    }
+
+    int my_a;
+    int my_b;
+    int my_c;
+    int my_d; // your protein stock
+    cin >> my_a >> my_b >> my_c >> my_d; cin.ignore();
+
+    int opp_a;
+    int opp_b;
+    int opp_c;
+    int opp_d; // opponent's protein stock
+    cin >> opp_a >> opp_b >> opp_c >> opp_d; cin.ignore();
+    cin >> required_actions_count; cin.ignore();
+}
+
 class AI {
 public:
     GameState state;
@@ -261,53 +309,6 @@ public:
     }
 };
 
-
-void read_loop_input(GameState &state) {
-    state.proteins.clear();
-
-    int entity_count;
-    cin >> entity_count; cin.ignore();
-    for (int i = 0; i < entity_count; i++) {
-        int col;
-        int row; // grid coordinate
-
-        string type; // WALL, ROOT, BASIC, TENTACLE, HARVESTER, SPORER, A, B, C, D
-        int owner; // 1 if your organ, 0 if enemy organ, -1 if neither
-        int organ_id; // id of this entity if it's an organ, 0 otherwise
-        string organ_dir; // N,E,S,W or X if not an organ
-        int organ_parent_id;
-        int organ_root_id;
-        cin >> col >> row >> type >> owner >> organ_id >> organ_dir >> organ_parent_id >> organ_root_id; cin.ignore();
-
-        if(type == "ROOT" || type == "BASIC") {
-            if(owner == 1) {    // my organ
-                state.grid[row][col] = type[0];
-                state.my_organs[Point(col, row)] = {Point(col, row), type[0], organ_id, organ_parent_id, organ_root_id};
-            } else {            // opponent's organ
-                state.grid[row][col] = tolower(type[0]);
-                state.opp_organs[Point(col, row)] = {Point(col, row), type[0], organ_id, organ_parent_id, organ_root_id};
-            }
-        } else if(type == "WALL") {
-            state.grid[row][col] = WALL;
-        } else {    // protein
-            state.grid[row][col] = type[0] - 'A' + '1';
-            state.proteins[Point(col, row)] = {Point(col, row), organ_id, type[0]};
-        }
-    }
-
-    int my_a;
-    int my_b;
-    int my_c;
-    int my_d; // your protein stock
-    cin >> my_a >> my_b >> my_c >> my_d; cin.ignore();
-
-    int opp_a;
-    int opp_b;
-    int opp_c;
-    int opp_d; // opponent's protein stock
-    cin >> opp_a >> opp_b >> opp_c >> opp_d; cin.ignore();
-    cin >> required_actions_count; cin.ignore();
-}
 
 
 int main() {

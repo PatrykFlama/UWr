@@ -112,25 +112,15 @@ namespace std {
 /* #endregion */
 
 enum DIR {UP, DOWN, LEFT, RIGHT};
-const DIR DIRS[] = {UP, DOWN, LEFT, RIGHT};
-const Point DIR_TO_POINT[] = {Point(0, -1), Point(0, 1), Point(-1, 0), Point(1, 0)};
+const Point DIRS[] = {Point(0, -1), Point(0, 1), Point(-1, 0), Point(1, 0)};
+const char DIR_TO_GEO[] = {'N', 'S', 'W', 'E'};
+const unordered_map<char, DIR> GEO_TO_DIR = {{'N', UP}, {'S', DOWN}, {'W', LEFT}, {'E', RIGHT}, {'X', UP}};
 
 const char EMPTY = '-', WALL = '#';
 const char PA = '1', PB = '2', PC = '3', PD = '4';
 const char MY_ROOT = 'R', MY_BASIC = 'B', MY_TENTACLE = 'T', MY_HARVESTER = 'H', MY_SPORER = 'S';
 const char OPP_ROOT = 'r', OPP_BASIC = 'b', OPP_TENTACLE = 't', OPP_HARVESTER = 'h', OPP_SPORER = 's';
 
-const char MY_TYPES[] = {MY_ROOT, MY_BASIC, MY_TENTACLE, MY_HARVESTER, MY_SPORER};
-
-const int ORGAN_COST[4][4] = {
-    {1, 0, 0, 0},
-    {0, 1, 1, 0},
-    {1000, 1000, 1000, 1000},
-    {1000, 1000, 1000, 1000}
-};
-
-const int SCORE_PROTEIN_DESTROY = 3;
-const int SCORE_PROTEIN_HARVEST = 1;
 
 int width, height;
 int required_actions_count;
@@ -144,7 +134,7 @@ public:
     int id;
     int parent_id;
     int root_id;
-    DIR direction;  // not always needed
+    DIR direction;
 };
 
 class Protein {
@@ -154,215 +144,72 @@ public:
     char type;
 };
 
-class Move {
-public:
-    int parent_id;
-    Point pos;
-    char type;
-    DIR direction;
-};
-
 class GameState {
 public:
     vector<string> grid = vector<string>(height, string(width, EMPTY));
-
-    int active_owner = 1;   //! what if in real game i and opponent grow onto same cell? is there priority or what
 
     unordered_map<Point, Organ> my_organs;
     unordered_map<Point, Organ> opp_organs;
     unordered_map<Point, Protein> proteins;
 
     vector<int> my_proteins_cnt = vector<int>(4, 0);
-    vector<int> opp_proteins_cnt = vector<int>(4, 0);
 
+    vector<vector<int>> dist_to_protein = vector<vector<int>>(height, vector<int>(width, 1e8));  //? distance from pos to closest protein
     
     GameState() {}
 
-
-
-    // ---- simulation -----
-    bool move_is_valid(const Move &move) {
-        // assuming grid surrounded by walls
-        // if(move.pos.x < 0 || move.pos.x >= width || move.pos.y < 0 || move.pos.y >= height) return false;
-        if(grid[move.pos.y][move.pos.x] != EMPTY && proteins.find(move.pos) == proteins.end()) return false;
-
-        if(active_owner) {
-            for(int protein = 0; protein < 4; protein++) {
-                if(my_proteins_cnt[protein] < ORGAN_COST[move.type - '1'][protein]) return false;
-            }
-        } else {
-            for(int protein = 0; protein < 4; protein++) {
-                if(opp_proteins_cnt[protein] < ORGAN_COST[move.type - '1'][protein]) return false;
-            }
-        }
-
-        return true;
-    }
-
-    void _grow_organ(unordered_map<Point, Organ> &organs, vector<int> &proteins_cnt, int parent_id, const Point& pos, const char type, const DIR direction) {
-        // pay for organ
-        for(int protein = 0; protein < 4; protein++) {
-            proteins_cnt[protein] -= ORGAN_COST[type - '1'][protein];
-        }
-
-        // destroy protein and gain score (if it exists)
-        const char tile_type = grid[pos.y][pos.x];
-        if('1' <= tile_type && tile_type <= '4') {
-            proteins_cnt[tile_type - '1'] += SCORE_PROTEIN_DESTROY;
-            proteins.erase(pos);
-        }
-        
-        // create new organ
-        grid[pos.y][pos.x] = type;
-        const int my_id = my_organs.size() + opp_organs.size() + 1;
-
-        int root = 1;
-        for(DIR d : DIRS) {
-            Point new_p = pos + DIR_TO_POINT[d];
-            if(organs.find(new_p) != organs.end()) {
-                root = organs[new_p].root_id;
-                break;
-            }
-        }
-
-        organs[pos] = {pos, type, my_id, parent_id, root, direction};
-    }
-    void apply_move(const Move &move) { // assume pos is correct
-        if(move.pos != Point(-1, -1)) {
-            if(active_owner) {
-                _grow_organ(my_organs, my_proteins_cnt, move.parent_id, move.pos, move.type, move.direction);
-            } else {
-                _grow_organ(opp_organs, opp_proteins_cnt, move.parent_id, move.pos, move.type, move.direction);
-            }
-        }
-
-        harvest_proteins();
-        swap_players();
-    }
-
-    void harvest_proteins() {
-        // each harvester can harvest 1 protein that it is facing (if it exists)
+    void safekeep_harvesters() {
+        // for each harvester ensure to not harvest its protein, would be nice: unless there are no more cells to go
         for(auto& [pos, organ] : my_organs) {
             if(organ.type == MY_HARVESTER) {
-                Point new_p = pos + DIR_TO_POINT[organ.direction];
+                Point new_p = pos + DIRS[organ.direction];
                 if(proteins.find(new_p) != proteins.end()) {
-                    my_proteins_cnt[proteins[new_p].type - 'A'] += SCORE_PROTEIN_HARVEST;
-                }
-            }
-        }
-
-        for(auto& [pos, organ] : opp_organs) {
-            if(organ.type == OPP_HARVESTER) {
-                Point new_p = pos + DIR_TO_POINT[organ.direction];
-                if(proteins.find(new_p) != proteins.end()) {
-                    opp_proteins_cnt[proteins[new_p].type - 'A'] += SCORE_PROTEIN_HARVEST;
+                    dist_to_protein[new_p.y][new_p.x] = 1e9;
                 }
             }
         }
     }
 
-    void swap_players() {
-        // swap(my_organs, opp_organs);
-        // swap(my_proteins_cnt, opp_proteins_cnt);
-
-        active_owner = 1 - active_owner;
-    }
-
-    int eval() {
-        return my_organs.size() - opp_organs.size();
-    }
-
-    bool is_terminal() {
-        bool my_alive = false, opp_alive = false;
-        for(int protein = 0; protein < 4; protein++) {
-            if(my_proteins_cnt[protein] != 0) my_alive = true;
-            if(opp_proteins_cnt[protein] != 0) opp_alive = true;
-        }
-
-        return !my_alive || !opp_alive;
-    }
-
-    // -----
-    Move _get_random_valid_move(unordered_map<Point, Organ> organs, vector<int> proteins_cnt) {
-        vector<Point> valid_positions;
-        vector<char> valid_types;   // valid organ types
-
-        // valid positions are empty or protein neighbours
-        queue<Point> q;
-        for(const auto& [pos, organ] : organs) {
-            q.push(pos);
+    void calc_dist_to_protein() {
+        priority_queue<pair<int, Point>> q;
+        for(const auto& [pos, protein] : proteins) {
+            q.push({0, protein.pos});
+            dist_to_protein[protein.pos.y][protein.pos.x] = 0;
         }
 
         while(!q.empty()) {
-            Point p = q.front();
+            auto [dist, p] = q.top();
             q.pop();
 
-            for(DIR d : DIRS) {
-                Point new_p = p + DIR_TO_POINT[d];
-                if(grid[new_p.y][new_p.x] != EMPTY && proteins.find(new_p) == proteins.end()) continue;
-                valid_positions.push_back(new_p);    
-            }
-        }
+            for(int i = 0; i < 4; i++) {
+                Point new_p = p + DIRS[i];
+                // assuming grid surrounded by walls
+                // if(new_p.x < 0 || new_p.x >= width || new_p.y < 0 || new_p.y >= height) continue;
+                if(grid[new_p.y][new_p.x] == WALL) continue;
 
-        // valid types are those that can be paid for
-        for(char type : MY_TYPES) {
-            bool valid = true;
-            for(int protein = 0; protein < 4; protein++) {
-                if(proteins_cnt[protein] < ORGAN_COST[type - '1'][protein]) {
-                    valid = false;
-                    break;
-                }
-            }
-
-            if(valid) {
-                valid_types.push_back(type);
-            }
-        }
-
-        // check if there are any valid moves
-        if(valid_positions.empty() || valid_types.empty()) {
-            return Move{-1, Point(-1, -1), EMPTY, UP};
-        }
-
-        // choose random move
-        Point pos = valid_positions[rand() % valid_positions.size()];
-        char type = valid_types[rand() % valid_types.size()];
-
-        // if type is harvester choose random direction facing protein, else UP
-        DIR direction = UP;
-        if(type == MY_HARVESTER) {
-            for(DIR d : DIRS) {
-                Point new_p = pos + DIR_TO_POINT[d];
-                if(proteins.find(new_p) != proteins.end()) {
-                    direction = d;
-                    break;
+                if(dist_to_protein[new_p.y][new_p.x] > dist_to_protein[p.y][p.x] + 1) {
+                    dist_to_protein[new_p.y][new_p.x] = dist_to_protein[p.y][p.x] + 1;
+                    q.push({-dist_to_protein[new_p.y][new_p.x], new_p});
                 }
             }
         }
-
-        // find parent id, which will be any neigbouring organ
-        int parent_id = 0;
-        for(DIR d : DIRS) {
-            Point new_p = pos + DIR_TO_POINT[d];
-            if(organs.find(new_p) != organs.end()) {
-                parent_id = organs[new_p].id;
-                break;
-            }
-        }
-
-        // return move, converting type to adequate player
-        return Move{parent_id, pos, (active_owner ? type : (char)tolower(type)), direction};
     }
-    Move get_random_valid_move() {  // if no valid move, make empty move <=> pos = Point(-1, -1)
-        if(active_owner) {
-            return _get_random_valid_move(my_organs, my_proteins_cnt);
-        } else {
-            return _get_random_valid_move(opp_organs, opp_proteins_cnt);
+
+    inline bool is_protein(const Point &p) const {
+        return proteins.find(p) != proteins.end();
+    }
+
+    void debug_print_grid() {
+        for(int i = 0; i < height; i++) {
+            for(int j = 0; j < width; j++) {
+                if(grid[i][j] == EMPTY) cerr << dist_to_protein[i][j] << ' ';
+                else if(is_protein(Point(j, i))) cerr << proteins[Point(j, i)].type << ' ';
+                else cerr << grid[i][j] << ' ';
+            }
+            cerr << '\n';
         }
     }
 };
-
-
 
 
 
@@ -383,13 +230,13 @@ void read_loop_input(GameState &state) {
         int organ_root_id;
         cin >> col >> row >> type >> owner >> organ_id >> organ_dir >> organ_parent_id >> organ_root_id; cin.ignore();
 
-        if(type == "ROOT" || type == "BASIC") {
+        if(type == "ROOT" || type == "BASIC" || type == "HARVESTER") {
             if(owner == 1) {    // my organ
                 state.grid[row][col] = type[0];
-                state.my_organs[Point(col, row)] = {Point(col, row), type[0], organ_id, organ_parent_id, organ_root_id};
+                state.my_organs[Point(col, row)] = {Point(col, row), type[0], organ_id, organ_parent_id, organ_root_id, GEO_TO_DIR.find(organ_dir[0])->second};
             } else {            // opponent's organ
                 state.grid[row][col] = tolower(type[0]);
-                state.opp_organs[Point(col, row)] = {Point(col, row), type[0], organ_id, organ_parent_id, organ_root_id};
+                state.opp_organs[Point(col, row)] = {Point(col, row), type[0], organ_id, organ_parent_id, organ_root_id, GEO_TO_DIR.find(organ_dir[0])->second};
             }
         } else if(type == "WALL") {
             state.grid[row][col] = WALL;
@@ -411,18 +258,78 @@ void read_loop_input(GameState &state) {
     int opp_c;
     int opp_d; // opponent's protein stock
     cin >> opp_a >> opp_b >> opp_c >> opp_d; cin.ignore();
-    state.opp_proteins_cnt = {opp_a, opp_b, opp_c, opp_d};
-
     cin >> required_actions_count; cin.ignore();
 }
 
+class AI {
+public:
+    GameState state;
+
+    AI() {}
+    
+    void recreate_state() {
+        state = GameState();
+        read_loop_input(state);
+        state.calc_dist_to_protein();
+        state.safekeep_harvesters();
+    }
+
+    int get_parent_id(const Point &pos) {
+        // simply find neighbour organ
+        for(int dir = 0; dir < 4; dir++) {
+            Point new_p = pos + DIRS[dir];
+            if(state.my_organs.find(new_p) != state.my_organs.end()) {
+                return state.my_organs[new_p].id;
+            }
+        }
+        return 1;   // better not happen
+    }
+
+    Point get_closest_to_protein() {
+        Point best_pos(-1, -1);
+        int best_dist = 1e8;
+
+        for(const auto& [pos, organ] : state.my_organs) {
+            for(int i = 0; i < 4; i++) {
+                const Point new_p = organ.pos + DIRS[i];
+                // assuming grid surrounded by walls
+                // if(new_p.x < 0 || new_p.x >= width || new_p.y < 0 || new_p.y >= height) continue;
+                if(state.grid[new_p.y][new_p.x] != EMPTY && !state.is_protein(new_p)) continue;
+
+                cerr << "Checking " << new_p << " with dist " << state.dist_to_protein[new_p.y][new_p.x] << '\n';
+
+                if(state.dist_to_protein[new_p.y][new_p.x] < best_dist) {
+                    best_dist = state.dist_to_protein[new_p.y][new_p.x];
+                    best_pos = new_p;
+                }
+            }
+        }
+
+        return best_pos;
+    }
+
+    Point greedy_to_protein() {
+        Point best = get_closest_to_protein();
+        if(best != Point(-1, -1)) return best;
+
+        for(const auto& [pos, organ] : state.my_organs) {
+            for(int i = 0; i < 4; i++) {
+                const Point new_p = organ.pos + DIRS[i];
+                // assuming grid surrounded by walls
+                // if(new_p.x < 0 || new_p.x >= width || new_p.y < 0 || new_p.y >= height) continue;
+                if(state.grid[new_p.y][new_p.x] != EMPTY) continue;
+
+                return new_p;
+            }
+        }
+
+        return Point(-1, -1);
+    }
+};
+
+
 
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(0);
-
-    srand(time(0));
-
     cin >> width >> height; cin.ignore();
 
     AI ai;
@@ -437,8 +344,20 @@ int main() {
             if(move == Point(-1, -1)) {
                 cout << "WAIT" << endl;
             } else {
-                cout << "GROW " << ai.get_parent_id(move) << ' ' << move << " BASIC" << endl;
-                cerr << "Decided to take " << move << " with dist " << ai.state.dist_to_protein[move.y][move.x] << '\n';
+                if(ai.state.dist_to_protein[move.y][move.x] == 1 && ai.state.my_proteins_cnt[2] > 0 && ai.state.my_proteins_cnt[3] > 0) {
+                    DIR dir = UP;
+                    for(int i = 0; i < 4; i++) {
+                        Point new_p = move + DIRS[i];
+                        if(ai.state.proteins.find(new_p) != ai.state.proteins.end()) {
+                            dir = (DIR)i;
+                            break;
+                        }
+                    }
+                    cout << "GROW " << ai.get_parent_id(move) << ' ' << move << " HARVESTER" << ' ' << DIR_TO_GEO[dir] << endl;
+                } else {
+                    cout << "GROW " << ai.get_parent_id(move) << ' ' << move << " BASIC" << endl;
+                    cerr << "Decided to take BASIC " << move << " with dist " << ai.state.dist_to_protein[move.y][move.x] << '\n';
+                }
             }
         }
     }

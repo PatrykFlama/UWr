@@ -168,6 +168,7 @@ class GameState {
 public:
     vector<string> grid = vector<string>(height, string(width, EMPTY));
 
+    //? ANS: cell wall is created
     int active_owner = 1;   //! what if in real game i and opponent grow onto same cell? is there priority or what
 
     unordered_map<Point, Organ> my_organs;

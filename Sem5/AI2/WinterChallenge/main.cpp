@@ -120,15 +120,17 @@ const char PA = '1', PB = '2', PC = '3', PD = '4';
 const char MY_ROOT = 'R', MY_BASIC = 'B', MY_TENTACLE = 'T', MY_HARVESTER = 'H', MY_SPORER = 'S';
 const char OPP_ROOT = 'r', OPP_BASIC = 'b', OPP_TENTACLE = 't', OPP_HARVESTER = 'h', OPP_SPORER = 's';
 
-const char MY_TYPES[] = {MY_ROOT, MY_BASIC, MY_TENTACLE, MY_HARVESTER, MY_SPORER};
-string TYPE_NAMES[255];
+enum TYPE {ROOT, BASIC, HARVESTER, TENTACLE, SPORER};
+string TYPE_NAMES[5] = {"ROOT", "BASIC", "HARVESTER", "TENTACLE", "SPORER"};
+const char MY_TYPES[] = {MY_ROOT, MY_BASIC, MY_HARVESTER, MY_TENTACLE, MY_SPORER};
+const char OPP_TYPES[] = {OPP_ROOT, OPP_BASIC, OPP_HARVESTER, OPP_TENTACLE, OPP_SPORER};
 
-
-const int ORGAN_COST[4][4] = {
+const int ORGAN_COST[5][4] = {
+    {1, 1, 1, 1},
     {1, 0, 0, 0},
+    {0, 0, 1, 1},
     {0, 1, 1, 0},
-    {1000, 1000, 1000, 1000},
-    {1000, 1000, 1000, 1000}
+    {0, 1, 0, 1}
 };
 
 const int SCORE_PROTEIN_DESTROY = 3;
@@ -142,7 +144,7 @@ Timer timer;
 class Organ {
 public:
     Point pos;
-    char type;
+    TYPE type;
     int id;
     int parent_id;
     int root_id;
@@ -160,7 +162,7 @@ class Move {
 public:
     int parent_id;
     Point pos;
-    char type;
+    TYPE type;
     DIR direction;
 };
 
@@ -182,7 +184,6 @@ public:
     GameState() {}
 
 
-
     // ---- simulation -----
     bool move_is_valid(const Move &move) {
         // assuming grid surrounded by walls
@@ -191,21 +192,21 @@ public:
 
         if(active_owner) {
             for(int protein = 0; protein < 4; protein++) {
-                if(my_proteins_cnt[protein] < ORGAN_COST[move.type - '1'][protein]) return false;
+                if(my_proteins_cnt[protein] < ORGAN_COST[move.type][protein]) return false;
             }
         } else {
             for(int protein = 0; protein < 4; protein++) {
-                if(opp_proteins_cnt[protein] < ORGAN_COST[move.type - '1'][protein]) return false;
+                if(opp_proteins_cnt[protein] < ORGAN_COST[move.type][protein]) return false;
             }
         }
 
         return true;
     }
 
-    void _grow_organ(unordered_map<Point, Organ> &organs, vector<int> &proteins_cnt, int parent_id, const Point& pos, const char type, const DIR direction) {
+    void _grow_organ(unordered_map<Point, Organ> &organs, vector<int> &proteins_cnt, int parent_id, const Point& pos, const TYPE type, const DIR direction) {
         // pay for organ
         for(int protein = 0; protein < 4; protein++) {
-            proteins_cnt[protein] -= ORGAN_COST[type - '1'][protein];
+            proteins_cnt[protein] -= ORGAN_COST[type][protein];
         }
 
         // destroy protein and gain score (if it exists)
@@ -216,7 +217,7 @@ public:
         }
         
         // create new organ
-        grid[pos.y][pos.x] = type;
+        grid[pos.y][pos.x] = (active_owner == 1 ? MY_TYPES[type] : OPP_TYPES[type]);
         const int my_id = my_organs.size() + opp_organs.size() + 1;
 
         int root = 1;
@@ -246,7 +247,7 @@ public:
     void harvest_proteins() {
         // each harvester can harvest 1 protein that it is facing (if it exists)
         for(auto& [pos, organ] : my_organs) {
-            if(organ.type == MY_HARVESTER) {
+            if(organ.type == HARVESTER) {
                 Point new_p = pos + DIR_TO_POINT[organ.direction];
                 if(proteins.find(new_p) != proteins.end()) {
                     my_proteins_cnt[proteins[new_p].type - 'A'] += SCORE_PROTEIN_HARVEST;
@@ -255,10 +256,31 @@ public:
         }
 
         for(auto& [pos, organ] : opp_organs) {
-            if(organ.type == OPP_HARVESTER) {
+            if(organ.type == HARVESTER) {
                 Point new_p = pos + DIR_TO_POINT[organ.direction];
                 if(proteins.find(new_p) != proteins.end()) {
                     opp_proteins_cnt[proteins[new_p].type - 'A'] += SCORE_PROTEIN_HARVEST;
+                }
+            }
+        }
+    }
+
+    void tentacle_attack() {
+        // each tentacle can attack 1 protein that it is facing (if it exists) causing chain reaction to its parent
+        for(auto& [pos, organ] : my_organs) {
+            if(organ.type == TENTACLE) {
+                Point new_p = pos + DIR_TO_POINT[organ.direction];
+                if(proteins.find(new_p) != proteins.end()) {
+                    proteins.erase(new_p);
+                }
+            }
+        }
+
+        for(auto& [pos, organ] : opp_organs) {
+            if(organ.type == TENTACLE) {
+                Point new_p = pos + DIR_TO_POINT[organ.direction];
+                if(proteins.find(new_p) != proteins.end()) {
+                    proteins.erase(new_p);
                 }
             }
         }
@@ -534,18 +556,6 @@ int main() {
 
     srand(time(0));
 
-    TYPE_NAMES[MY_ROOT] = "ROOT";
-    TYPE_NAMES[MY_BASIC] = "BASIC";
-    TYPE_NAMES[MY_TENTACLE] = "TENTACLE";
-    TYPE_NAMES[MY_HARVESTER] = "HARVESTER";
-    TYPE_NAMES[MY_SPORER] = "SPORER";
-    TYPE_NAMES[OPP_ROOT] = "ROOT";
-    TYPE_NAMES[OPP_BASIC] = "BASIC";
-    TYPE_NAMES[OPP_TENTACLE] = "TENTACLE";
-    TYPE_NAMES[OPP_HARVESTER] = "HARVESTER";
-    TYPE_NAMES[OPP_SPORER] = "SPORER";
-
-
     cin >> width >> height; cin.ignore();
 
     GameState state;
@@ -556,7 +566,7 @@ int main() {
         read_loop_input(state);
 
         for (int i = 0; i < required_actions_count; i++) {
-            Move move = agent.choose_best_move(state);
+            Move move = agent.choose_best_move(state, 50);
 
             if(move.pos == Point(-1, -1)) {
                 cout << "WAIT" << endl;

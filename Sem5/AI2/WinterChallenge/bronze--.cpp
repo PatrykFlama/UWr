@@ -128,6 +128,7 @@ const char OPP_ROOT = 'r', OPP_BASIC = 'b', OPP_TENTACLE = 't', OPP_HARVESTER = 
 
 int width, height;
 int required_actions_count;
+int turn = 0;
 Timer timer;
 
 
@@ -269,6 +270,12 @@ public:
 
             for(int i = 0; i < 4; i++) {
                 for(int j = 0; j < 4; j++) {
+                    // check if we can grow here
+                    Point here = pos + DIRS[i];
+                    if(safe(here) && grid[here.y][here.x] != EMPTY && proteins.find(here) != proteins.end()) {
+                        continue;
+                    }
+
                     Point new_p = pos + DIRS[i] + DIRS[j];
                     if(safe(new_p) && opp_organs.find(new_p) != opp_organs.end()) {
                         return {pos + DIRS[i], (DIR)j};
@@ -356,9 +363,11 @@ public:
     void recreate_state() {
         state = GameState();
         read_loop_input(state);
-        state.hide_harvesters();
+        if(turn < 30)
+            state.hide_harvesters();
         state.calc_dist_to_protein();
-        // state.safekeep_harvesters();
+        if(turn >= 30)
+            state.safekeep_harvesters();
     }
 
     int get_parent_id(const Point &pos) {
@@ -427,6 +436,7 @@ int main() {
 
     // game loop
     while(1) {
+        turn++;
         ai.recreate_state();
 
         for (int i = 0; i < required_actions_count; i++) {
@@ -434,12 +444,11 @@ int main() {
 
             Point move = ai.greedy_to_protein();
 
-            if(move == Point(-1, -1)) {
-                cout << "WAIT" << endl;
-            } else {
+          
+          
                 // auto [sporer_id, spore_pos] = ai.state.sporers_can_spore();
                 // auto [plant_pos, plant_dir] = ai.state.plant_sporers();
-                auto [pos_h, dir_h] = ai.state.opp_is_neigh();
+                auto [pos_attack, dir_attack] = ai.state.opp_is_neigh();
                 // try sporers
                 // check if can launch spore
                 // if(sporer_id != -1) {
@@ -450,8 +459,8 @@ int main() {
 
                 // stuff
 
-                if(pos_h != Point(-1, -1) && ai.state.my_proteins_cnt[1] > 0 && ai.state.my_proteins_cnt[2] > 0) {
-                    cout << "GROW " << ai.get_parent_id(pos_h) << ' ' << pos_h << " TENTACLE " << DIR_TO_GEO[dir_h] << endl;
+                if(pos_attack != Point(-1, -1) && ai.state.my_proteins_cnt[1] > 0 && ai.state.my_proteins_cnt[2] > 0) {
+                    cout << "GROW " << ai.get_parent_id(pos_attack) << ' ' << pos_attack << " TENTACLE " << DIR_TO_GEO[dir_attack] << endl;
                 } else if(ai.state.dist_to_protein[move.y][move.x] == 1 && ai.state.my_proteins_cnt[2] > 0 && ai.state.my_proteins_cnt[3] > 0) {
                     DIR dir = UP;
                     for(int i = 0; i < 4; i++) {
@@ -474,7 +483,6 @@ int main() {
                 } else {
                     cout << "WAIT" << endl;
                 }
-            }
         }
     }
 }

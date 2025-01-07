@@ -32,6 +32,9 @@
     - [WCF](#wcf)
   - [ASP.NET Core](#aspnet-core)
 - [Wykład 11 - SignalR oraz MediatR](#wykład-11---signalr-oraz-mediatr)
+- [Wykład 12 - ClickOnce, gRPC](#wykład-12---clickonce-grpc)
+  - [gRPC](#grpc)
+  - [ClickOnce](#clickonce)
 
 
 
@@ -561,3 +564,13 @@ namespace UnitTests.LogonUseCaseTestsSpace
     }
 }
 ```
+
+# Wykład 12 - ClickOnce, gRPC
+## gRPC
+tldr: niby tylko ciekawostka ale potencjalenie użyteczne gdy chcemy zwiększyć przepustowość komunikacji (lepiej skompresowane dane)  
+przykłady z wykładu
+
+## ClickOnce
+>> zasobnik cerytifkatów w windows to MMC (Microsoft Management Console)  
+
+tldr; narzędzie do tworzenia instalatorów, które pozwala na proste zautomatyzowane zainstalowanie aplikacji za pomocą linku w przeglądarce (cons: działa tylko na windows i na ms edge)

@@ -76,5 +76,15 @@ namespace ProjectGame.Hubs
 
             game.CurrentPlayer = game.Players.First(p => p != game.CurrentPlayer);
         }
+
+        public async Task GetRooms(string player)
+        {
+            var rooms = Games.Keys;
+            
+            if(player != null)
+            {
+                rooms.All(game => game.)
+            }
+        }
     }
 }

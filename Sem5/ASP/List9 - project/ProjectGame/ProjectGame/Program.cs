@@ -1,4 +1,8 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using ProjectGame.Hubs;
+using Data;
+using Microsoft.EntityFrameworkCore;
+using ProjectGame.Helpers;
 
 namespace ProjectGame
 {
@@ -7,6 +11,20 @@ namespace ProjectGame
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // DB context
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/Account/Login";
+                    options.AccessDeniedPath = "/Account/Denied";
+                });
+
+            builder.Services.AddScoped<AuthService>();
+
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();

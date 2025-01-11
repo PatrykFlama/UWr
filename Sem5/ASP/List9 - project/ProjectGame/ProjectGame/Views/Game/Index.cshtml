@@ -4,7 +4,11 @@
 
 <h1>Tic Tac Toe</h1>
 
-<a href="/Account">Change nickname</a>
+@if(Context.User == null) {
+    <a href="/Account/Login">Login to your account</a>
+} else {
+    <a href="/Account/Logout">Logout</a>
+}
 
 <br />
 

@@ -4,13 +4,13 @@
 
 <h1>Tic Tac Toe</h1>
 
-@if(Context.User == null) {
+@if(Context.User.Identity.IsAuthenticated == false) {
     <a href="/Account/Login">Login to your account</a>
 } else {
     <a href="/Account/Logout">Logout</a>
 }
 
-<br />
+<br /> <br />
 
 <form method="get" action="/Game/Play">
     <div>

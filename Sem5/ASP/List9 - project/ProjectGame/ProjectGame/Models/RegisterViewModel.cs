@@ -17,6 +17,8 @@ namespace ProjectGame.Models
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; }
+
+        public List<string> Errors { get; set; } = new List<string>();
     }
 
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using ProjectGame.Helpers;
 using System.Security.Claims;
+using ProjectGame.Models;
 
 namespace ProjectGame.Controllers
 {
@@ -20,12 +21,13 @@ namespace ProjectGame.Controllers
 
         public IActionResult Login()
         {
-            return View();
+            var model = new LoginViewModel();
+            return View(model);
         }
         [HttpPost]
-        public async Task<IActionResult> Login(string name, string password)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            var user = await _authService.Login(name, password);
+            var user = await _authService.Login(model.Name, model.Password);
 
             if(user != null)
             {
@@ -45,19 +47,21 @@ namespace ProjectGame.Controllers
             }
 
             ModelState.AddModelError("", "Invalid login");
+            model.Errors.Add("Invalid Login");
             return View();
         }
 
 
         public IActionResult Register()
         {
-            return View();
+            var model = new RegisterViewModel();
+            return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(string name, string password)
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            bool success = await _authService.Register(name, password);
+            bool success = await _authService.Register(model.Name, model.Password);
 
             if(success)
             {
@@ -65,13 +69,14 @@ namespace ProjectGame.Controllers
             }
 
             ModelState.AddModelError("", "Invalid username or password");
+            model.Errors.Add("Invalid username or password");
             return View();
         }
 
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login");
+            return Redirect("/");
         }
     }
 }

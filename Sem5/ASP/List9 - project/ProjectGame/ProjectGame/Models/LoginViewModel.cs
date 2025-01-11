@@ -10,6 +10,8 @@ namespace ProjectGame.Models
         [Required(ErrorMessage = "Password is required.")]
         [DataType(DataType.Password)]
         public string Password { get; set; }
+
+        public List<string> Errors { get; set; } = new List<string>();
     }
 
 }

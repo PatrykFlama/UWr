@@ -2,26 +2,27 @@
 {
     public class TicTacToeGame
     {
-        public string[][] Board { get; set; }
+        public char[][] Board { get; set; }
         public List<string> Players { get; set; }
+        public List<char> PlayerSymbols { get; set; }
         public string CurrentPlayer { get; set; }
-        public string CurrentPlayerRole { get; set; }
+        public char CurrentPlayerRole { get; set; }
 
         public TicTacToeGame()
         {
-            Board = new string[3][];
+            Board = new char[3][];
             for(int i = 0; i < 3; i++)
             {
-                Board[i] = new string[3];
+                Board[i] = new char[3]{' ', ' ', ' '};
             }
             Players = new List<string>();
             CurrentPlayer = null;
-            CurrentPlayerRole = "";
+            PlayerSymbols = new List<char>{ 'X', 'O' };
         }
 
-        public string CheckWinner()
+        public char? CheckWinner()
         {
-            string[] players = { "X", "O" };
+            char[] players = { 'X', 'O' };
             foreach(var player in players)
             {
                 for(int i = 0; i < 3; i++)

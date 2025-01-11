@@ -9,7 +9,6 @@ namespace ProjectGame.Hubs
     {
         private static readonly ConcurrentDictionary<string, TicTacToeGame> Games = new();
 
-        [Authorize]
         public async Task JoinGame(string gameId)
         {
             if(!Games.ContainsKey(gameId))
@@ -24,54 +23,54 @@ namespace ProjectGame.Hubs
                 throw new HubException("This game room is full");
             }
 
-            var nickname = Context.User.Identity.Name;
-            if(!game.Players.Contains(nickname))
+            var playerIdentifier = Context.ConnectionId;
+            if(!game.Players.Contains(playerIdentifier))
             {
-                game.Players.Add(nickname);
+                game.Players.Add(playerIdentifier);
             }
 
             if(game.Players.Count == 2)
             {
                 game.CurrentPlayer = game.Players[0];
-                game.CurrentPlayerRole = "X";
+                game.CurrentPlayerRole = game.PlayerSymbols[0];
             }
 
-            await Groups.AddToGroupAsync(nickname, gameId);
+            await Groups.AddToGroupAsync(playerIdentifier, gameId);
             await Clients.Group(gameId).SendAsync("PlayerJoined", game.Players);
             await Clients.Group(gameId).SendAsync("GameState", game.Board, game.CurrentPlayerRole);
 
-            await Clients.Client(game.Players[0]).SendAsync("PlayerRole", "X");
-            await Clients.Client(game.Players[1]).SendAsync("PlayerRole", "O");
+            await Clients.Client(game.Players[0]).SendAsync("PlayerRole", game.PlayerSymbols[0]);
+            await Clients.Client(game.Players[1]).SendAsync("PlayerRole", game.PlayerSymbols[1]);
         }
 
-        [Authorize]
         public async Task MakeMove(string gameId, string srow, string scol)
         {
-            int row = int.Parse(srow), col = int.Parse(scol); //TODO why?
+            int row = int.Parse(srow), col = int.Parse(scol); //! TODO why?
 
             if(!Games.TryGetValue(gameId, out var game) || game.Players.Count < 2)
             {
                 throw new HubException("Invalid game state");
             }
 
-            if(game.CurrentPlayer != Context.ConnectionId)
+            var playerIdentifier = Context.ConnectionId;
+            if(game.CurrentPlayer != playerIdentifier)
             {
                 throw new HubException("Not your turn");
             }
 
-            if(!string.IsNullOrEmpty(game.Board[row][col]))
+            if(game.Board[row][col] != ' ')
             {
                 throw new HubException("Cell already occupied");
             }
 
 
-            var symbol = game.Players[0] == Context.ConnectionId ? "X" : "O";
+            var symbol = game.Players[0] == playerIdentifier ? game.PlayerSymbols[0] : game.PlayerSymbols[1];
             game.Board[row][col] = symbol;
-            game.CurrentPlayerRole = game.CurrentPlayerRole == "X" ? "O" : "X";
+            game.CurrentPlayerRole = game.CurrentPlayerRole == 'X' ? 'O' : 'X';
             await Clients.Group(gameId).SendAsync("MoveMade", row, col, symbol, game.CurrentPlayerRole);
 
-            var winner = game.CheckWinner();
-            if(!string.IsNullOrEmpty(winner))
+            char? winner = game.CheckWinner();
+            if(winner != null)
             {
                 await Clients.Group(gameId).SendAsync("GameOver", winner);
                 Games.TryRemove(gameId, out _);
@@ -81,13 +80,38 @@ namespace ProjectGame.Hubs
             game.CurrentPlayer = game.Players.First(p => p != game.CurrentPlayer);
         }
 
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            var playerIdentifier = Context.ConnectionId;
+            var gameId = Games.Keys
+                .First(gameId => Games[gameId].Players.Contains(playerIdentifier));
 
-        public IEnumerable<string> GetRooms(string containsPlayer)
+            if(!string.IsNullOrEmpty(gameId))
+            {
+                if(Games[gameId].Players.Count == 2 && 
+                   Games[gameId].Players[0] == playerIdentifier)
+                {
+                    Games[gameId].PlayerSymbols[0] = (Games[gameId].PlayerSymbols[0] == 'O' ? 'X' : 'O');
+                    Games[gameId].PlayerSymbols[1] = (Games[gameId].PlayerSymbols[1] == 'O' ? 'X' : 'O');
+                }
+
+                Games[gameId].Players.Remove(playerIdentifier);
+
+                if(Games[gameId].Players.Count == 0)
+                {
+                    Games.Remove(gameId, out var trash);
+                }
+            }
+        }
+
+
+        public async Task<IEnumerable<string>> GetRooms(string containsPlayer)
         {
             var res = Games.Keys;
             if(containsPlayer != "")
             {
-                res = (ICollection<string>)res.Where(game => Games[game].Players.Contains(containsPlayer));
+                res = (ICollection<string>)res
+                    .Where(game => Games[game].Players.Contains(containsPlayer));
             }
             return res;
         }

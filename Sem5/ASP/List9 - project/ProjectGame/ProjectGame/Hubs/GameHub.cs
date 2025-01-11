@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 using GameLogic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ProjectGame.Hubs
 {
@@ -8,6 +9,7 @@ namespace ProjectGame.Hubs
     {
         private static readonly ConcurrentDictionary<string, TicTacToeGame> Games = new();
 
+        [Authorize]
         public async Task JoinGame(string gameId)
         {
             if(!Games.ContainsKey(gameId))
@@ -22,9 +24,10 @@ namespace ProjectGame.Hubs
                 throw new HubException("This game room is full");
             }
 
-            if(!game.Players.Contains(Context.ConnectionId))
+            var nickname = Context.User.Identity.Name;
+            if(!game.Players.Contains(nickname))
             {
-                game.Players.Add(Context.ConnectionId);
+                game.Players.Add(nickname);
             }
 
             if(game.Players.Count == 2)
@@ -33,7 +36,7 @@ namespace ProjectGame.Hubs
                 game.CurrentPlayerRole = "X";
             }
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
+            await Groups.AddToGroupAsync(nickname, gameId);
             await Clients.Group(gameId).SendAsync("PlayerJoined", game.Players);
             await Clients.Group(gameId).SendAsync("GameState", game.Board, game.CurrentPlayerRole);
 
@@ -41,6 +44,7 @@ namespace ProjectGame.Hubs
             await Clients.Client(game.Players[1]).SendAsync("PlayerRole", "O");
         }
 
+        [Authorize]
         public async Task MakeMove(string gameId, string srow, string scol)
         {
             int row = int.Parse(srow), col = int.Parse(scol); //TODO why?
@@ -77,14 +81,15 @@ namespace ProjectGame.Hubs
             game.CurrentPlayer = game.Players.First(p => p != game.CurrentPlayer);
         }
 
-        public async Task GetRooms(string player)
+
+        public IEnumerable<string> GetRooms(string containsPlayer)
         {
-            var rooms = Games.Keys;
-            
-            if(player != null)
+            var res = Games.Keys;
+            if(containsPlayer != "")
             {
-                rooms.All(game => game.)
+                res = (ICollection<string>)res.Where(game => Games[game].Players.Contains(containsPlayer));
             }
+            return res;
         }
     }
 }

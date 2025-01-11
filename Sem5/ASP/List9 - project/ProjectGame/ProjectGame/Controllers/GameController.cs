@@ -9,12 +9,22 @@ namespace ProjectGame.Controllers
             return View();
         }
 
+        public IActionResult ListGames()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ListGames(string playerName)
+        {
+            return View();
+        }
+
         [HttpGet]
         public IActionResult Play(string gameId)
         {
             ViewData["GameId"] = gameId;
             return View();
         }
-
     }
 }

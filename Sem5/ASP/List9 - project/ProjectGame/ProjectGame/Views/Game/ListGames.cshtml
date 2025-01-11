@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Available Rooms";
+}
+
+<h1>Available Rooms</h1>
+
+<div class="mb-3">
+    <label for="playerName" class="form-label">Filter by Player Name:</label>
+    <input type="text" id="playerName" class="form-control" placeholder="Enter player name">
+    <button id="searchButton" class="btn btn-primary mt-2">Search</button>
+</div>
+
+<table class="table" id="rooms-table">
+    <thead>
+        <tr>
+            <th>Room Name</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="rooms-body">
+        <tr>
+            <td colspan="2">Loading rooms...</td>
+        </tr>
+    </tbody>
+</table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/js/listgames.js"></script>

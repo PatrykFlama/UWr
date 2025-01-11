@@ -6,8 +6,6 @@ const connection = new signalR.HubConnectionBuilder()
     .withUrl("/gamehub")
     .build();
 
-const gameId = "@gameId";
-
 connection.start().then(() => {
     connection.invoke("JoinGame", gameId);
 

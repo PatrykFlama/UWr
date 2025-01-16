@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using GameLogic;
 using Microsoft.AspNetCore.Authorization;
+using ProjectGame.Helpers;
 
 namespace ProjectGame.Hubs
 {
@@ -27,6 +28,8 @@ namespace ProjectGame.Hubs
             if(!game.Players.Contains(playerIdentifier))
             {
                 game.Players.Add(playerIdentifier);
+                game.PlayerNames.Add((Context.User.Identity.IsAuthenticated ? 
+                    Context.User.Identity.Name : ""));
             }
 
             if(game.Players.Count == 2)
@@ -73,6 +76,9 @@ namespace ProjectGame.Hubs
             if(winner != null)
             {
                 await Clients.Group(gameId).SendAsync("GameOver", winner);
+
+                await GamesHistoryService.AddGame(game.PlayerNames[0], game.PlayerNames[1], (winner == null ? 0 : (winner == 'X' ? 1 : -1)));
+                
                 Games.TryRemove(gameId, out _);
                 return;
             }

@@ -14,14 +14,22 @@ namespace ProjectGame.Helpers
         }
 
 
-        public async Task AddGame(int playerXId, int playerOId, int playerXScore, DateTime gameDate)
+        public async Task AddGame(string playerXName, string playerOName, int playerXScore)
         {
+            var playerXId = 0;
+            var playerOId = 0;
+
+            if(playerXName != "")
+                playerXId = (await _context.Users.FirstOrDefaultAsync(u => u.Name == playerXName)).Id;
+            if(playerOName != "")
+                playerOId = (await _context.Users.FirstOrDefaultAsync(u => u.Name == playerOName)).Id;
+
             var game = new GamesHistory
             {
                 PlayerXId = playerXId,
                 PlayerOId = playerOId,
                 PlayerXScore = playerXScore,
-                GameDate = gameDate
+                GameDate = DateTime.Now,
             };
 
             await _context.GamesHistory.AddAsync(game);

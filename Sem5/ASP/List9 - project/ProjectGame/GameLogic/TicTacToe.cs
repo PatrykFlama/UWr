@@ -5,6 +5,7 @@
         public char[][] Board { get; set; }
         public List<string> Players { get; set; }
         public List<char> PlayerSymbols { get; set; }
+        public List<string> PlayerNames { get; set; }
         public string CurrentPlayer { get; set; }
         public char CurrentPlayerRole { get; set; }
 
@@ -16,6 +17,7 @@
                 Board[i] = new char[3]{' ', ' ', ' '};
             }
             Players = new List<string>();
+            PlayerNames = new List<string>();
             CurrentPlayer = null;
             PlayerSymbols = new List<char>{ 'X', 'O' };
         }

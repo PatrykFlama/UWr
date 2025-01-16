@@ -18,7 +18,7 @@ async function fetchRooms(playerName = "") {
                 row.innerHTML = `
                         <td>${room}</td>
                         <td>
-                            <a href="/Game/Join?gameId=${room}" class="btn btn-primary">Join</a>
+                            <a href="/Game/Play?gameId=${room}" class="btn btn-primary">Join</a>
                         </td>
                     `;
                 roomsBody.appendChild(row);

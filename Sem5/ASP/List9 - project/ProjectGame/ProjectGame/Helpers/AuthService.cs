@@ -17,7 +17,7 @@ namespace ProjectGame.Helpers
 
         public async Task<bool> Register(string name, string password)
         {
-            var checkuser = await _context.Users.FindAsync(name);
+            var checkuser = await _context.Users.SingleOrDefaultAsync(u => u.Name == name);
             if(checkuser != null)
             {
                 return false;

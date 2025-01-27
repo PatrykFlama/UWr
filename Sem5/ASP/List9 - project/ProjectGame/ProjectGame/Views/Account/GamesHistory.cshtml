@@ -1,0 +1,34 @@
+﻿@model ProjectGame.Models.GamesHistoryViewModel
+
+<h2>Your Game History</h2>
+
+@if (Model.history.Count == 0)
+{
+    <p>No games played yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Opponent</th>
+                <th>Your Score</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var game in Model.history)
+            {
+                <tr>
+                    <td>@game.Id</td>
+                    <td>
+                        @(game.PlayerXId == ViewBag.UserId ? "Player O" : "Player X")
+                    </td>
+                    <td>@game.PlayerXScore</td>
+                    <td>@game.GameDate.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

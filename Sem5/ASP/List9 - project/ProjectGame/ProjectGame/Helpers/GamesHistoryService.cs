@@ -37,10 +37,13 @@ namespace ProjectGame.Helpers
         }
 
 
-        public async Task<List<GamesHistory>> GetGamesByPlayer(int playerId)
+        public async Task<List<GamesHistory>> GetGamesByPlayer(string playerName)
         {
+            var playerId = (await _context.Users.FirstOrDefaultAsync(u => u.Name == playerName)).Id;
+
             return await _context.GamesHistory
                 .Where(g => g.PlayerXId == playerId || g.PlayerOId == playerId)
+                .OrderByDescending(g => g.GameDate)
                 .ToListAsync();
         }
 

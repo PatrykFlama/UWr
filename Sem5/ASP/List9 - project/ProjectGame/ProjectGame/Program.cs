@@ -24,6 +24,7 @@ namespace ProjectGame
                 });
 
             builder.Services.AddScoped<AuthService>();
+            builder.Services.AddScoped<GamesHistoryService>();
 
 
             // Add services to the container.

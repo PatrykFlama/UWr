@@ -7,6 +7,10 @@
 @if(Context.User.Identity.IsAuthenticated == false) {
     <a href="/Account/Login">Login to your account</a>
 } else {
+    <p> Weclome @Context.User.Identity.Name </p>
+    <br />
+    <a href="/Account/GamesHistory">Games History</a>
+    <br />
     <a href="/Account/Logout">Logout</a>
 }
 

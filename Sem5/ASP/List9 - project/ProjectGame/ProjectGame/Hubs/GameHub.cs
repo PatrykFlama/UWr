@@ -3,12 +3,22 @@ using System.Collections.Concurrent;
 using GameLogic;
 using Microsoft.AspNetCore.Authorization;
 using ProjectGame.Helpers;
+using Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ProjectGame.Hubs
 {
     public class GameHub : Hub
     {
         private static readonly ConcurrentDictionary<string, TicTacToeGame> Games = new();
+        AppDbContext _context;
+        GamesHistoryService _historyService;
+
+        public GameHub(AppDbContext context, GamesHistoryService historyService)
+        {
+            _context = context;
+            _historyService = historyService;
+        }
 
         public async Task JoinGame(string gameId)
         {
@@ -77,7 +87,10 @@ namespace ProjectGame.Hubs
             {
                 await Clients.Group(gameId).SendAsync("GameOver", winner);
 
-                await GamesHistoryService.AddGame(game.PlayerNames[0], game.PlayerNames[1], (winner == null ? 0 : (winner == 'X' ? 1 : -1)));
+                string playerXname = game.PlayerNames[0];
+                string playerYname = game.PlayerNames[1];
+                int Xscore = (winner == null ? 0 : (winner == 'X' ? 1 : -1));
+                await _historyService.AddGame(playerXname, playerYname, Xscore);
                 
                 Games.TryRemove(gameId, out _);
                 return;

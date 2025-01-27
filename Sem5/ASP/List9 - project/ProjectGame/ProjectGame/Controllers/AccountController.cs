@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using ProjectGame.Helpers;
 using System.Security.Claims;
 using ProjectGame.Models;
+using Microsoft.Identity.Client;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ProjectGame.Controllers
 {
@@ -12,11 +14,13 @@ namespace ProjectGame.Controllers
     {
         private readonly AppDbContext _context;
         private readonly AuthService _authService;
+        private readonly GamesHistoryService _historyService;
 
-        public AccountController(AppDbContext context, AuthService authService)
+        public AccountController(AppDbContext context, AuthService authService, GamesHistoryService historyService)
         {
             _context = context;
             _authService = authService;
+            _historyService = historyService;
         }
 
         public IActionResult Login()
@@ -27,6 +31,11 @@ namespace ProjectGame.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
+            if(!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             var user = await _authService.Login(model.Name, model.Password);
 
             if(user != null)
@@ -46,8 +55,7 @@ namespace ProjectGame.Controllers
                 return Redirect("/");
             }
 
-            ModelState.AddModelError("", "Invalid login");
-            model.Errors.Add("Invalid Login");
+            ModelState.AddModelError("Errors", "Invalid login");
             return View();
         }
 
@@ -61,6 +69,11 @@ namespace ProjectGame.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            if(!ModelState.IsValid)
+            { 
+                return View(model); 
+            }
+
             bool success = await _authService.Register(model.Name, model.Password);
 
             if(success)
@@ -68,15 +81,29 @@ namespace ProjectGame.Controllers
                 return RedirectToAction("Login");
             }
 
-            ModelState.AddModelError("", "Invalid username or password");
-            model.Errors.Add("Invalid username or password");
+            ModelState.AddModelError("Name", "Username taken");
             return View();
         }
 
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Redirect("/");
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GamesHistory()
+        {
+            GamesHistoryViewModel model = new GamesHistoryViewModel();
+
+            if(ModelState.IsValid && User.Identity.IsAuthenticated)
+            {
+                model.history = await _historyService.GetGamesByPlayer(User.Identity.Name);
+            }
+
+            return View(model);
         }
     }
 }

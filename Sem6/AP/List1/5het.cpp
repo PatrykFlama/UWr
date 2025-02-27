@@ -9,50 +9,30 @@ using namespace std;
 
 typedef long long ll;
 
-constexpr int L = 13;
 int N;
-int cols[L], diag_l[2*L], diag_r[2*L];
+int res = 0;
 
-inline bool check_cell(int r, int c) {
-    return cols[c] || diag_l[c+r] || diag_r[c-r+N];
-}
+// diagonals are current row cells taken by diag attack
+void solve(int row=0, int cols=0, int diag_l=0, int diag_r=0) {
+    if(row == N) { // each row needs a queen
+        res++;
+        return;
+    }
 
-inline void place_hetman(int r, int c, int amt) {
-    cols[c] += amt;
-    diag_l[c+r] += amt;
-    diag_r[c-r+N] += amt;
-}
+    int free_cells =((1 << N) - 1) & ~(cols | diag_l | diag_r);
+    while(free_cells) {  // for each free cell
+        int col = free_cells & -free_cells;
+        free_cells ^= col;
 
-ll res = 0;
-void solve(int hetmans, int rfrom=0) {
-    for(int i = rfrom; i < N; i++) {
-        for(int j = 0; j < N; j++) {
-            // cell occupied
-            if(check_cell(i, j)) continue;
-
-            // place hetman
-            cols[j] = 1;
-            diag_l[j+i] = 1;
-            diag_r[j-i+N] = 1;
-            
-            // recursive call
-            if(hetmans > 1) solve(hetmans-1, i+1);
-            else res++;
-            
-            // remove hetman
-            cols[j] = 0;
-            diag_l[j+i] = 0;
-            diag_r[j-i+N] = 0;
-        }
+        solve(row + 1, cols | col, (diag_l | col) << 1, (diag_r | col) >> 1);
     }
 }
-
 
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
 
     cin >> N;
-    solve(N);
+    solve();
     cout << res << '\n';
 }

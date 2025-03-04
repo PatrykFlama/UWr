@@ -1,14 +1,23 @@
 # Lista 2
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 |
 |---|---|---|---|---|---|---|---|---|----|----|----|----|
-|   | X |   |   |   |   |   |   |   |    |    |    |    |
+| X | X |   |   |   |   |   |   |   |    |    |    |    |
 
 ## Zad 1
-### `cloc`
-**cloc - Count, or compute differences of, lines of source code and comments.**  
+### `cloc` – Count Lines of Code  
+**cloc - Count, or compute differences of, lines of source code and comments.**   
+* liczy liczbę plików i linii kodu w projekcie
+* rozróżnia języki programowania i osobno traktuje komentarze oraz puste linie
+* obsługuje **różne formaty** plików, w tym `.c`, `.cpp`, `.py`, `.java`, `.sh`, itd.  
 
-### `sloccount`
-**sloccount - count source lines of code (SLOC)**
+
+
+
+### `sloccount` - analiza kodu i szacowanie kosztów
+**sloccount - count source lines of code (SLOC)**  
+* wykrywa język programowania dla każdego pliku.
+* grupuje wyniki według katalogów.
+* oblicza czas pracy (osobolata) i koszt na podstawie modelu COCOMO.
 
 ## Zad 2
 ### `ll`

@@ -37,7 +37,7 @@ alias ll='ls -lAFbhv --color=always | less -XFR'
 
 ### `gentmp`
 ```bash
-alias gentmp=`date "+tmp-%Y%m%d%H%M%S"'
+alias gentmp='date "+tmp-%Y%m%d%H%M%S"'
 ```
 
 date [OPTION]... [+FORMAT] - wyświetla datę w podanym formacie  
@@ -47,7 +47,7 @@ format poprzedzamy znakiem `+`
 `/dev/urandom` - losowa wartość, w przeciwieństwie do `/dev/random` nie blokuje się, gdy zabraknie entropii  
 
 ```bash
-< /dev/urandom tr -dc '3-9A-HJ-NP-Z' | head -c 32; echo
+alias genpwd='< /dev/urandom tr -dc "3-9A-HJ-NP-Z" | head -c 32; echo'
 ```
 
 bierzemy strumień losowych znaków, usuwamy te które nam nie pasują, pozostałość skracamy do 32 znaków
@@ -134,7 +134,7 @@ bierzemy strumień losowych znaków, usuwamy te które nam nie pasują, pozosta�
 `awk '{print $1}'` wybierze tylko pierwszą kolumnę z linii (czyli nazwę pakietu),  
 sortujemy aby porównać (wymagane)  
 porównanie za pomocą `comm -23`, który przyjmuje 2 porównywane strumienie   
-* `-2` ukrywa wiersze które występują tylko w drugiej liście, 
+`-2` ukrywa wiersze które występują tylko w drugiej liście,  
 * `-3` ukrywa wiersze które występują w obu listach 
 więz zostawia te pakiety które są tylko w pierwszej liście  
 
@@ -143,7 +143,8 @@ comm -23 <(dpkg --get-selections | awk '{print $1}' | sort) <(ls /usr/share/doc 
 ```
 
 * katalogi bez pakietu oraz nazwy pakietu-właściciela
-początek jest podobny - bierzemy nazwy pakietów, ale tym razem korzystamy z opcji `comm -13` czyli mamy wiersze tylko z 2 listy  
+początek jest podobny
+bierzemy nazwy pakietów, ale tym razem korzystamy z opcji `comm -13` czyli mamy wiersze tylko z 2 listy  
 dodajemy polecenie `xargs` które wykonuje polecenie dla każdego argumentu,  
 `-I{}` oznacza że `{}` to argument, 
 `dpkg -S /usr/share/doc/{}` - znajduje pakiet do którego należy plik w `/usr/share/doc/nazwapakietu`

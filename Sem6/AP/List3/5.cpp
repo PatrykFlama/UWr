@@ -3,59 +3,68 @@ using namespace std;
 
 typedef long long ll;
 
-
-// we can simplify problem so that all point lay either on 1 or 0
-// if 2 points have even dist then they lay on the same spot
-// otherwise they lay on different spots
-// first point can be either on 1 or 0 (wlg)
+constexpr int L = 1e6+5;
 
 /*
-1 3 0
-3 4 1
-4 6 0
-3 6 1
-4 5 0
-1 5 0
-5 7 1
-
-1 2 3 4 5 6 7
-0   0 1 1 1  
+lets keep corelation of parities on the forest;
+parity array is parity with respect to the root of the set
+the xor operation simply checks if parity is the same or not
 */
 
-constexpr int L = 1e6+5;
-int tab[L];
+class UF {
+public:
+    vector<int> parent, parity;
+
+    UF(int n) {
+        parent.resize(n + 1);
+        parity.resize(n + 1, 0);
+
+        for(int i = 1; i <= n; i++)
+            parent[i] = i;
+    }
+
+    int find(int x) {
+        if(parent[x] == x) return x;
+
+        const int root = find(parent[x]);
+        parity[x] ^= parity[parent[x]];
+        return parent[x] = root;
+    }
+
+    bool uni(int a, int b, int par) {
+        int ra = find(a);
+        int rb = find(b);
+
+        if(ra == rb) {
+            return (parity[a] ^ parity[b]) == par;
+        }
+
+        parent[rb] = ra;
+        parity[rb] = parity[a] ^ parity[b] ^ par;
+
+        return true;
+    }
+};
 
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
 
-    int n, m; cin >> n >> m;
-    bool found = false;
-    
-    // place points on 1 or 2
-    int cnt = 0;
-    while(m--) {
-        int a, b, diff; cin >> a >> b >> diff;
-        if(found) continue;
+    int n, m;
+    cin >> n >> m;
 
-        if(tab[a] == 0) {
-            if(tab[b] == 0) {
-                tab[a] = tab[b] = (diff ? 1 : 2);       //! it cant be arbitrary here
-            } else {
-                tab[a] = (diff ? tab[b] : 3 - tab[b]);
-            }
-        } else {
-            if(tab[b] == 0) {
-                tab[b] = (diff ? tab[a] : 3 - tab[a]);
-            } else if(abs(tab[a] - tab[b]) == diff) {    //! check condition
-                continue;
-            } else {
-                found = true;
-            }
+    UF uf(n);
+
+    int max_valid = 0;
+    for(int i = 0; i < m; i++) {
+        int a, b, p; cin >> a >> b >> p;
+
+        if(!uf.uni(a, b, p)) {
+            break;
         }
-        
-        cnt++;
+
+        max_valid++;
     }
 
-    cout << cnt << '\n';
+    cout << max_valid << '\n';
 }

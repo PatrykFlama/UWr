@@ -1,3 +1,8 @@
+// #pragma GCC optimize("Ofast","unroll-loops","omit-frame-pointer","inline")  //Optimization flags
+// #pragma GCC option("march=native","tune=native","no-zero-upper")            //Enable AVX
+// #pragma GCC target("avx2")                                                  //Enable AVX
+// #include <x86intrin.h>                                                      //AVX/SSE Extensions
+
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -11,8 +16,8 @@ typedef pair<int, int> pii;
 
 constexpr int L = 1e5+5;
 int tab[L];
-pii queries[L];
-
+pair<int, pii> queries[L];
+int res[L];
 
 unordered_map<int, int> cnt;    //TODO change to array
 int ans = 0;
@@ -50,26 +55,23 @@ int main() {
     }
 
     for(int i = 0; i < q; i++) {
-        cin >> queries[i].fst >> queries[i].snd;
+        cin >> queries[i].snd.fst >> queries[i].snd.snd;
+        queries[i].fst = i;
     }
 
 
     // sort queries: tab is divided into blocks, sort by query block number in the first place, then by query end
     const int block_size = ceil(sqrt(n));
-    sort(queries, queries+q, [&](pii a, pii b) {
-        if(a.fst/block_size != b.fst/block_size) return a.fst < b.fst;
-        return a.snd < b.snd;
+    sort(queries, queries+q, [&](pair<int, pii> a, pair<int, pii> b) {
+        if(a.snd.fst/block_size != b.snd.fst/block_size) return a.snd.fst < b.snd.fst;
+        return a.snd.snd < b.snd.snd;
     });
 
     for(int i = 0; i < q; i++) {
-        const auto [queryL, queryR] = queries[i];
+        const int ptr = queries[i].fst;
+        const auto [queryL, queryR] = queries[i].snd;
         cerr << "query " << i << " [" << queryL << ", " << queryR << "]\n";
-
         
-        while(currentL < queryL) {
-            remove(tab[currentL]);
-            currentL++;
-        }
         while(currentL > queryL) {
             currentL--;
             add(tab[currentL]);
@@ -77,6 +79,10 @@ int main() {
         while(currentR < queryR) {
             currentR++;
             add(tab[currentR]);
+        }
+        while(currentL < queryL) {
+            remove(tab[currentL]);
+            currentL++;
         }
         while(currentR > queryR) {
             remove(tab[currentR]);
@@ -87,7 +93,10 @@ int main() {
             cerr << a << ' ' << b << '\n';
         }
 
+        res[ptr] = ans;
+    }
 
-        cout << ans << '\n';
+    for(int i = 0; i < q; i++) {
+        cout << res[i] << '\n';
     }
 }

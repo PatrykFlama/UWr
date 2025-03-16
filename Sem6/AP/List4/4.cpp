@@ -19,7 +19,11 @@ int tab[L];
 pair<int, pii> queries[L];
 int res[L];
 
-unordered_map<int, int> cnt;    //TODO change to array
+// instead of umap we can first convert all _numbers from tab to [1, n] range and remember for them target cnt
+// then simply calculate on the converted array
+unordered_map<int, int> _numbers;
+int target_cnt[L];
+int cnt[L];
 int ans = 0;
 int currentL = 1, currentR = 0;
 
@@ -27,9 +31,9 @@ int currentL = 1, currentR = 0;
 void add(int x) {
     cnt[x]++;
 
-    if(cnt[x] == x) {
+    if(cnt[x] == target_cnt[x]) {
         ans++;
-    } else if(cnt[x] == x+1) {
+    } else if(cnt[x] == target_cnt[x]+1) {
         ans--;
     }
 }
@@ -37,9 +41,9 @@ void add(int x) {
 void remove(int x) {
     cnt[x]--;
 
-    if(cnt[x] == x) {
+    if(cnt[x] == target_cnt[x]) {
         ans++;
-    } else if(cnt[x] == x-1) {
+    } else if(cnt[x] == target_cnt[x]-1) {
         ans--;
     }
 }
@@ -51,7 +55,17 @@ int main() {
 
     int n, q; cin >> n >> q;
     for(int i = 1; i <= n; i++) {
+        // read number
         cin >> tab[i];
+
+        // convert it to [1, n] range if new, remember target cnt
+        if(_numbers.find(tab[i]) == _numbers.end()) {
+            _numbers[tab[i]] = _numbers.size();
+            target_cnt[_numbers[tab[i]]] = tab[i];
+        }
+
+        // save the new number to tab
+        tab[i] = _numbers[tab[i]];
     }
 
     for(int i = 0; i < q; i++) {
@@ -87,10 +101,6 @@ int main() {
         while(currentR > queryR) {
             remove(tab[currentR]);
             currentR--;
-        }
-        
-        for(auto [a, b] : cnt) {
-            cerr << a << ' ' << b << '\n';
         }
 
         res[ptr] = ans;

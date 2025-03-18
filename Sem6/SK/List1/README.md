@@ -1,4 +1,6 @@
-## Wyzwanie 1
+# Lista 1
+## Podsumowanie
+
 * aktywowanie kart:
 ```bash
 sudo ip link set up dev enp0s3
@@ -35,3 +37,10 @@ telnet 192.168.0.2 7
 sudo ip link set down dev enp0s3
 sudo ip addr flush dev enp0s3
 ```
+
+
+## Wyzwanie 1
+![img](image.png)
+![img](image-1.png)
+
+![img](image-2.png)

@@ -9,10 +9,14 @@
 ```mermaid
 classDiagram
     class ICommand {
+        <<interface>>
+
         +Execute(string CommandName)
     }
 
     class AbstractCommand {
+        <<abstract>>
+
         -int commandCount
         #string commandState
         +string commandName

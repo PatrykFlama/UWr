@@ -22,6 +22,21 @@ is_terminal() {
     tty -s
 }
 
+# print help
+print_help() {
+cat <<EOT
+usage: hwb [OPTIONS] [NAMES...]
+print greetings
+options:
+    -c, --capitalize            capitalize the name or 'world'
+    --color=MODE                set color mode (never, auto, always)
+    -g TEXT, --greeting=TEXT    set greeting text instead of 'Hello'
+    -w, --world                 also print 'Hello, world!'
+    -h, --help                  display this help message
+    -v, --version               display program version
+EOT
+}
+
 # colorizing
 colorize() {
     local text="$1"
@@ -54,16 +69,7 @@ while true; do
             print_world=true
             shift ;;
         -h|--help)
-            echo "usage: hwb [OPTIONS] [NAMES...]"
-            echo "print greetings"
-            echo 
-            echo "options:"
-            echo "  -c, --capitalize            capitalize the name or 'world'"
-            echo "  --color=MODE                set color mode (never, auto, always)"
-            echo "  -g TEXT, --greeting=TEXT    set greeting text instead of 'Hello'"
-            echo "  -w, --world                 also print 'Hello, world!'"
-            echo "  -h, --help                  display this help message"
-            echo "  -v, --version               display program version"
+            print_help
             exit 0 ;;
         -v|--version)
             echo "$version"

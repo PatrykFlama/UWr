@@ -10,7 +10,8 @@
 
 using namespace std;
 
-#define dprintf if(1) printf
+#define DEBUG 2     // debug stage; 0 = none
+#define dprintf if(DEBUG) printf
 
 constexpr int MAX_HOPS = 30;
 constexpr int WAIT_TIME = 1;
@@ -24,7 +25,23 @@ void ERROR(const char* str)
     exit(EXIT_FAILURE);
 }
 
-/*//* #region ---DEBUG--- */
+/*//* #region --- HELPER --- */
+class Timer {
+public:
+    chrono::time_point<chrono::high_resolution_clock> start_time;
+    Timer() : start_time(chrono::high_resolution_clock::now()) {}
+
+    void reset() {
+        start_time = chrono::high_resolution_clock::now();
+    }
+
+    int64_t elapsed() {
+        return chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - start_time).count();
+    }
+};
+/*//* #endregion */
+
+/*//* #region --- DEBUG --- */
 void print_as_bytes (unsigned char* buff, ssize_t length)
 {
     for (ssize_t i = 0; i < length; i++, buff++)
@@ -113,25 +130,44 @@ u_int16_t compute_icmp_checksum(const void *buff, int length)
     return (u_int16_t)(~(sum + (sum >> 16U)));
 }
 
+/*//* #region ------ UID ------ */
 inline int gen_uid(int ttl, int seq) {
-    return ttl * PACKETS_PER_TTL + seq;
+    // return ttl * PACKETS_PER_TTL + seq;
+    return ttl;
 }
 inline int get_ttl(int uid) {
-    return uid / PACKETS_PER_TTL;
+    // return uid / PACKETS_PER_TTL;
+    return uid;
+}
+inline int get_ttl(struct icmp icmp_header) {
+    return get_ttl(icmp_header.icmp_hun.ih_idseq.icd_seq);
 }
 inline int get_seq(int uid) {
-    return uid % PACKETS_PER_TTL;
+    // return uid % PACKETS_PER_TTL;
+    return 0;
 }
-
-int find_header_start(unsigned char* buffer, ssize_t length) {
-    const int IP_HEADER_SIZE = 20;
-    for (int i = 0; i < length - 1; i++) {
-        if (buffer[i] == 0x45 && buffer[i + 1] == 0x00) {
-            return i;
-        }
-    }
+inline int get_seq(struct icmp icmp_header) {
+    return get_seq(icmp_header.icmp_hun.ih_idseq.icd_seq);
 }
+/*//* #endregion */
 
+/*//* #region ------ ICMP ------ */
+//? get sent icmp header from received ip header
+inline unsigned char* ip_head__to__sent_icmp_head(unsigned char* ip_header_start) {
+    struct ip* ip_header = (struct ip*) ip_header_start;
+    const ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
+    unsigned char *ip_data_start = ip_header_start + ip_header_len;
+    unsigned char *original_ip_header_start = ip_data_start + sizeof(struct icmp);
+    return original_ip_header_start;
+}
+//? get sent icmp struct from received ip header
+inline struct icmp ip_head__to__sent_icmp_struct(unsigned char* ip_header_start) {
+    unsigned char *icmp_header_start = ip_head__to__sent_icmp_head(ip_header_start);
+    return *(struct icmp*) icmp_header_start;
+}
+/*//* #endregion */
+
+/*//* #region ------ packets ------*/
 //? send icmp echo packet
 void icmp_send(int sock_fd, struct sockaddr_in &recipient, int ttl, int seq) {
     // generate header
@@ -145,31 +181,33 @@ void icmp_send(int sock_fd, struct sockaddr_in &recipient, int ttl, int seq) {
 
     // set ttl in socket
     if (setsockopt(sock_fd,
-                   IPPROTO_IP, 
-                   IP_TTL, 
-                   &ttl, 
+                   IPPROTO_IP,
+                   IP_TTL,
+                   &ttl,
                    sizeof(int)) < 0) {
         ERROR("setsockopt error");
     }
 
     // send packet
-    if (sendto(sock_fd, 
-               &header, 
-               sizeof(header), 
-               0, 
-               (struct sockaddr*)&recipient, 
+    if (sendto(sock_fd,
+               &header,
+               sizeof(header),
+               0,
+               (struct sockaddr*)&recipient,
                sizeof(recipient)) < 0) {
         ERROR("sendto error");
     }
 
-    dprintf("Sent ICMP echo packet with TTL = %d\n", ttl);
-    dprintf("ICMP header:\n");
-    print_icmp_header((unsigned char*)&header, sizeof(header));
-    dprintf("\n");
+    if(DEBUG == 1) {
+        dprintf("Sent ICMP echo packet with TTL = %d\n", ttl);
+        dprintf("ICMP header:\n");
+        print_icmp_header((unsigned char*)&header, sizeof(header));
+        dprintf("\n");
+    }
 }
 
 // TODO fix stalling with poll
-//? receive icmp echo packet 
+//? receive icmp echo packet
 void icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
     struct sockaddr_in sender;
     socklen_t sender_len = sizeof(sender);
@@ -183,12 +221,13 @@ void icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
     char sender_ip_str[20];
     inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
     ip = sender_ip_str;
-    dprintf("Received IP packet with ICMP content from: %s\n", sender_ip_str);
-
-    decompose_response(buffer, packet_len, 1,0,1);
+    
+    if(DEBUG == 1) {
+        dprintf("Received IP packet with ICMP content from: %s\n", sender_ip_str);
+        decompose_response(buffer, packet_len, 1,0,1);
+    }
 }
-
-
+/*//* #endregion */
 
 // ==============================
 
@@ -231,12 +270,12 @@ int main(int argc, char* argv[])
         // wait WAIT_TIME for responses, without stalling cpu
         for (int seq = 0; seq < PACKETS_PER_TTL; seq++) {
             dprintf("--- SEQ = %d ---\n", seq);
-            
+
             string ip;
             int recv_ttl;
             long rtt;
             icmp_receive(sock_fd, ip, recv_ttl, rtt);
-            if (recv_ttl == ttl) {
+            if (recv_ttl == ttl) {  // drop old ttl
                 ips.push_back(ip);
             }
         }

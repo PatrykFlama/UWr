@@ -11,12 +11,12 @@
 
 using namespace std;
 
-#define DEBUG 2     // debug stage; 0 = none
+#define DEBUG 3     // debug stage; 0 = none
 #define dprintf if(DEBUG) printf
 
 constexpr int MAX_TTL = 30;
 constexpr int WAIT_TIME_MS = 1000;
-constexpr int PACKETS_PER_TTL = 1;
+constexpr int PACKETS_PER_TTL = 3;
 
 
 //? handle errors - write them and exit
@@ -155,10 +155,17 @@ inline int get_seq(struct icmp icmp_header) {
 /*//* #endregion */
 
 /*//* #region ------ ICMP IP ------ */
-//? get type of request from ip header
-inline char ip_head__to__type(unsigned char* ip_header_start) {
+//? get sent icmp header from received ip header
+inline unsigned char* ip_head_timeout__to__icmp_head(unsigned char* ip_header_start) {
     struct ip* ip_header = (struct ip*) ip_header_start;
-    return ip_header->ip_p;
+    const ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
+    unsigned char *ip_data_start = ip_header_start + ip_header_len;
+    return ip_data_start;
+}
+//? get sent icmp struct from received ip header
+inline struct icmp ip_head_timeout__to__icmp_struct(unsigned char* ip_header_start) {
+    unsigned char *icmp_header_start = ip_head_timeout__to__icmp_head(ip_header_start);
+    return *(struct icmp*) icmp_header_start;
 }
 //? get sent icmp header from received ip header
 inline unsigned char* ip_head_timeout__to__sent_icmp_head(unsigned char* ip_header_start) {
@@ -206,7 +213,7 @@ void icmp_send(int sock_fd, struct sockaddr_in &recipient, int ttl, int seq) {
         ERROR("sendto error");
     }
 
-    if(DEBUG == 1) {
+    if(DEBUG == 1 || DEBUG == 3) {
         dprintf("Sent ICMP echo packet with TTL = %d\n", ttl);
         dprintf("ICMP header:\n");
         print_icmp_header((unsigned char*)&header, sizeof(header));
@@ -223,7 +230,7 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
     //? https://pubs.opengroup.org/onlinepubs/7908799/xsh/poll.html
     struct pollfd fds = {sock_fd, POLLIN, 0};
     int status = poll(&fds, 1, WAIT_TIME_MS);
-    if(status < 0) 
+    if(status < 0)
         ERROR("poll error");
     if(status == 0) {
         dprintf("No response received\n");
@@ -241,16 +248,18 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
     ip = sender_ip_str;
 
     //? get ttl from received packet
-    // if(ip_head__to__type(buffer) == 11) {
+    const char type = ip_head_timeout__to__icmp_struct(buffer).icmp_type;
+    if(type == 11) {
         ttl = get_ttl(ip_head_timeout__to__sent_icmp_struct(buffer));
-    // } else if(ip_head__to__type(buffer) == 0) {
-    // } else {
-    //     ERROR("Received packet with wrong type");
-    // }
+    } else if(type == 0) {
+        ttl = get_ttl(ip_head_timeout__to__icmp_struct(buffer));
+    } else {
+        ERROR("Received packet with wrong type");
+    }
     
-    if(DEBUG == 1 || DEBUG == 2) {
+    if(DEBUG == 1 || DEBUG == 2 || DEBUG == 3) {
         dprintf("Received IP packet with ICMP content from: %s\n", sender_ip_str);
-        decompose_response_timeout(buffer, packet_len, 0,0,1);
+        decompose_response_timeout(buffer, packet_len, 1,0,1);
     }
 
     return true;
@@ -260,8 +269,6 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
 // ==============================
 //TODO add rtt
 //TODO add veryfing checksum
-//TODO add printing result
-//TODO add timeout for waiting for response
 
 int main(int argc, char* argv[])
 {
@@ -319,6 +326,8 @@ int main(int argc, char* argv[])
                 }
             }
         }
+
+        dprintf("========> ");
 
         // check if destination reached
         if(!ips.empty() && find(ips.begin(), ips.end(), argv[1]) != ips.end()) {

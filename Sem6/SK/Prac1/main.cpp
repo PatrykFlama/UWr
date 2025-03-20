@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define DEBUG 0     // debug stage; 0 = none
+#define DEBUG 4     // debug stage; 0 = none
 #define dprintf if(DEBUG) printf
 
 constexpr int MAX_TTL = 30;
@@ -77,9 +77,9 @@ void print_ip_header (unsigned char* header, ssize_t header_length, bool verbose
 
 //? debug/sandbox playing with response
 void decompose_response_timeout(
-    unsigned char* ip_header_start, 
-    ssize_t length, 
-    int p_ip_header=1, 
+    unsigned char* ip_header_start,
+    ssize_t length,
+    int p_ip_header=1,
     bool p_icmp_header=true,
     bool p_original_ip_header=true
 ) {
@@ -154,31 +154,21 @@ inline int get_seq(struct icmp icmp_header) {
 }
 /*//* #endregion */
 
-/*//* #region ------ ICMP IP ------ */
-//? get sent icmp header from received ip header
-inline unsigned char* ip_head_timeout__to__icmp_head(unsigned char* ip_header_start) {
+/*//* #region ------ ICMP IP HELPER ------ */
+//? get sent icmp struct from received ip header
+inline struct icmp get_icmp_header(unsigned char* ip_header_start) {
     struct ip* ip_header = (struct ip*) ip_header_start;
     const ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
     unsigned char *ip_data_start = ip_header_start + ip_header_len;
-    return ip_data_start;
+    return *(struct icmp*) ip_data_start;
 }
 //? get sent icmp struct from received ip header
-inline struct icmp ip_head_timeout__to__icmp_struct(unsigned char* ip_header_start) {
-    unsigned char *icmp_header_start = ip_head_timeout__to__icmp_head(ip_header_start);
-    return *(struct icmp*) icmp_header_start;
-}
-//? get sent icmp header from received ip header
-inline unsigned char* ip_head_timeout__to__sent_icmp_head(unsigned char* ip_header_start) {
+inline struct icmp get_sent_icmp_header(unsigned char* ip_header_start) {
     struct ip* ip_header = (struct ip*) ip_header_start;
     const ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
     unsigned char *ip_data_start = ip_header_start + ip_header_len;
     unsigned char *original_ip_header_start = ip_data_start + sizeof(struct icmp);
-    return original_ip_header_start;
-}
-//? get sent icmp struct from received ip header
-inline struct icmp ip_head_timeout__to__sent_icmp_struct(unsigned char* ip_header_start) {
-    unsigned char *icmp_header_start = ip_head_timeout__to__sent_icmp_head(ip_header_start);
-    return *(struct icmp*) icmp_header_start;
+    return *(struct icmp*) original_ip_header_start;
 }
 /*//* #endregion */
 
@@ -242,26 +232,42 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
     if (packet_len < 0)
         ERROR("recvfrom error");
 
+    struct ip* ip_header = (struct ip*) buffer;
+    struct icmp icmp_header = get_icmp_header(buffer);
+    struct icmp sent_icmp_header = get_sent_icmp_header(buffer);
+
+    // ensure type
+    if(icmp_header.icmp_type != ICMP_ECHOREPLY && icmp_header.icmp_type != ICMP_TIME_EXCEEDED) {
+        dprintf("Received packet with wrong type\n");
+        return false;
+    }
+
+    // check if its my packet
+    if(sent_icmp_header.icmp_hun.ih_idseq.icd_id != getpid()) {
+        dprintf("Received packet not meant for me\n");
+        return false;
+    }
+
     // check checksum
-    struct icmp* icmp_header = (struct icmp*) buffer;
-    u_int16_t checksum = icmp_header->icmp_cksum;
-    icmp_header->icmp_cksum = 0;
-    if(checksum != compute_icmp_checksum((u_int16_t*)icmp_header, packet_len)) {
+    u_int16_t checksum = icmp_header.icmp_cksum;
+    icmp_header.icmp_cksum = 0;
+    if(checksum != compute_icmp_checksum((u_int16_t*)&icmp_header, packet_len)) {
         dprintf("Received packet with wrong checksum\n");
         return false;
     }
 
+    // extract ip
     char sender_ip_str[20];
     //? inet_ntop - convert IPv4 and IPv6 addresses from binary to text form
     inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
     ip = sender_ip_str;
 
     // get ttl from received packet
-    const char type = ip_head_timeout__to__icmp_struct(buffer).icmp_type;
+    const char type = icmp_header.icmp_type;
     if(type == 11) {
-        ttl = get_ttl(ip_head_timeout__to__sent_icmp_struct(buffer));
+        ttl = get_ttl(get_sent_icmp_header(buffer));
     } else if(type == 0) {
-        // ttl = get_ttl(ip_head_timeout__to__icmp_struct(buffer));
+        // ttl = get_ttl(get_icmp_header(buffer));
     } else {
         ERROR("Received packet with wrong type");
     }

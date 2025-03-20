@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define DEBUG 3     // debug stage; 0 = none
+#define DEBUG 0     // debug stage; 0 = none
 #define dprintf if(DEBUG) printf
 
 constexpr int MAX_TTL = 30;
@@ -242,17 +242,26 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
     if (packet_len < 0)
         ERROR("recvfrom error");
 
+    // check checksum
+    struct icmp* icmp_header = (struct icmp*) buffer;
+    u_int16_t checksum = icmp_header->icmp_cksum;
+    icmp_header->icmp_cksum = 0;
+    if(checksum != compute_icmp_checksum((u_int16_t*)icmp_header, packet_len)) {
+        dprintf("Received packet with wrong checksum\n");
+        return false;
+    }
+
     char sender_ip_str[20];
     //? inet_ntop - convert IPv4 and IPv6 addresses from binary to text form
     inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
     ip = sender_ip_str;
 
-    //? get ttl from received packet
+    // get ttl from received packet
     const char type = ip_head_timeout__to__icmp_struct(buffer).icmp_type;
     if(type == 11) {
         ttl = get_ttl(ip_head_timeout__to__sent_icmp_struct(buffer));
     } else if(type == 0) {
-        ttl = get_ttl(ip_head_timeout__to__icmp_struct(buffer));
+        // ttl = get_ttl(ip_head_timeout__to__icmp_struct(buffer));
     } else {
         ERROR("Received packet with wrong type");
     }
@@ -268,8 +277,7 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
 
 // ==============================
 //TODO add rtt
-//TODO add veryfing checksum
-
+//TODO prevent program from taking packets not meant for it
 int main(int argc, char* argv[])
 {
     // ensure ip argumennt
@@ -277,6 +285,9 @@ int main(int argc, char* argv[])
         cerr << "Usage: " << argv[0] << " <destination IP>" << endl;
         return EXIT_FAILURE;
     }
+
+    // time
+    Timer timer;
 
     // generate destination ip and check if valid
     struct sockaddr_in recipient;
@@ -307,9 +318,9 @@ int main(int argc, char* argv[])
             icmp_send(sock_fd, recipient, ttl, seq);
         }
 
-        //TODO change to time limited while
         // wait WAIT_TIME for responses, without stalling cpu
-        for (int seq = 0; seq < PACKETS_PER_TTL; seq++) {
+        timer.reset();
+        while(timer.elapsed() < WAIT_TIME_MS && responses < PACKETS_PER_TTL) {
             string ip;
             int recv_ttl = ttl;
             long rtt = 0;
@@ -336,7 +347,7 @@ int main(int argc, char* argv[])
         }
 
         // print ips
-        printf("%d: ", ttl);
+        printf("%d:\t", ttl);
         if(ips.empty()) {
             printf("*\n");
         } else {

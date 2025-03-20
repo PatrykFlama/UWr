@@ -7,15 +7,16 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <poll.h>
 
 using namespace std;
 
 #define DEBUG 2     // debug stage; 0 = none
 #define dprintf if(DEBUG) printf
 
-constexpr int MAX_HOPS = 30;
-constexpr int WAIT_TIME = 1;
-constexpr int PACKETS_PER_TTL = 2;
+constexpr int MAX_TTL = 30;
+constexpr int WAIT_TIME_MS = 1000;
+constexpr int PACKETS_PER_TTL = 1;
 
 
 //? handle errors - write them and exit
@@ -56,27 +57,29 @@ void print_icmp_header (unsigned char* header, ssize_t header_length)
     dprintf("ID: %d\n", icmp_header->icmp_hun.ih_idseq.icd_id);
     dprintf("Sequence: %d\n", icmp_header->icmp_hun.ih_idseq.icd_seq);
 }
-void print_ip_header (unsigned char* header, ssize_t header_length)
+void print_ip_header (unsigned char* header, ssize_t header_length, bool verbose=true)
 {
     struct ip* ip_header = (struct ip*) header;
-    dprintf("Version: %d\n", ip_header->ip_v);
-    dprintf("Header length: %d\n", ip_header->ip_hl);
-    dprintf("Type of service: %d\n", ip_header->ip_tos);
-    dprintf("Total length: %d\n", ip_header->ip_len);
-    dprintf("Identification: %d\n", ip_header->ip_id);
-    dprintf("Fragment offset: %d\n", ip_header->ip_off);
-    dprintf("Time to live: %d\n", ip_header->ip_ttl);
-    dprintf("Protocol: %d\n", ip_header->ip_p);
-    dprintf("Checksum: %d\n", ip_header->ip_sum);
+    if(verbose) {
+        dprintf("Version: %d\n", ip_header->ip_v);
+        dprintf("Header length: %d\n", ip_header->ip_hl);
+        dprintf("Type of service: %d\n", ip_header->ip_tos);
+        dprintf("Total length: %d\n", ip_header->ip_len);
+        dprintf("Identification: %d\n", ip_header->ip_id);
+        dprintf("Fragment offset: %d\n", ip_header->ip_off);
+        dprintf("Time to live: %d\n", ip_header->ip_ttl);
+        dprintf("Protocol: %d\n", ip_header->ip_p);
+        dprintf("Checksum: %d\n", ip_header->ip_sum);
+    }
     dprintf("Source: %s\n", inet_ntoa(ip_header->ip_src));
     dprintf("Destination: %s\n", inet_ntoa(ip_header->ip_dst));
 }
 
 //? debug/sandbox playing with response
-void decompose_response(
+void decompose_response_timeout(
     unsigned char* ip_header_start, 
     ssize_t length, 
-    bool p_ip_header=true, 
+    int p_ip_header=1, 
     bool p_icmp_header=true,
     bool p_original_ip_header=true
 ) {
@@ -86,7 +89,7 @@ void decompose_response(
     // received entire packet header, usually first 20 bytes
     if(p_ip_header) {
         dprintf("IP header:\n");
-        print_ip_header(ip_header_start, ip_header_len);
+        print_ip_header(ip_header_start, ip_header_len, p_ip_header - 1);
         dprintf("\n");
     }
 
@@ -151,9 +154,14 @@ inline int get_seq(struct icmp icmp_header) {
 }
 /*//* #endregion */
 
-/*//* #region ------ ICMP ------ */
+/*//* #region ------ ICMP IP ------ */
+//? get type of request from ip header
+inline char ip_head__to__type(unsigned char* ip_header_start) {
+    struct ip* ip_header = (struct ip*) ip_header_start;
+    return ip_header->ip_p;
+}
 //? get sent icmp header from received ip header
-inline unsigned char* ip_head__to__sent_icmp_head(unsigned char* ip_header_start) {
+inline unsigned char* ip_head_timeout__to__sent_icmp_head(unsigned char* ip_header_start) {
     struct ip* ip_header = (struct ip*) ip_header_start;
     const ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
     unsigned char *ip_data_start = ip_header_start + ip_header_len;
@@ -161,8 +169,8 @@ inline unsigned char* ip_head__to__sent_icmp_head(unsigned char* ip_header_start
     return original_ip_header_start;
 }
 //? get sent icmp struct from received ip header
-inline struct icmp ip_head__to__sent_icmp_struct(unsigned char* ip_header_start) {
-    unsigned char *icmp_header_start = ip_head__to__sent_icmp_head(ip_header_start);
+inline struct icmp ip_head_timeout__to__sent_icmp_struct(unsigned char* ip_header_start) {
+    unsigned char *icmp_header_start = ip_head_timeout__to__sent_icmp_head(ip_header_start);
     return *(struct icmp*) icmp_header_start;
 }
 /*//* #endregion */
@@ -206,30 +214,54 @@ void icmp_send(int sock_fd, struct sockaddr_in &recipient, int ttl, int seq) {
     }
 }
 
-// TODO fix stalling with poll
-//? receive icmp echo packet
-void icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
+//? receive icmp echo packet, return if received
+bool icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
     struct sockaddr_in sender;
     socklen_t sender_len = sizeof(sender);
     u_int8_t buffer[IP_MAXPACKET];
 
-    // stall here (i think)
+    //? https://pubs.opengroup.org/onlinepubs/7908799/xsh/poll.html
+    struct pollfd fds = {sock_fd, POLLIN, 0};
+    int status = poll(&fds, 1, WAIT_TIME_MS);
+    if(status < 0) 
+        ERROR("poll error");
+    if(status == 0) {
+        dprintf("No response received\n");
+        return false;
+    }
+
+    //? recvfrom - receive a message from a socket
     ssize_t packet_len = recvfrom(sock_fd, buffer, IP_MAXPACKET, 0, (struct sockaddr*)&sender, &sender_len);
     if (packet_len < 0)
         ERROR("recvfrom error");
 
     char sender_ip_str[20];
+    //? inet_ntop - convert IPv4 and IPv6 addresses from binary to text form
     inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
     ip = sender_ip_str;
+
+    //? get ttl from received packet
+    // if(ip_head__to__type(buffer) == 11) {
+        ttl = get_ttl(ip_head_timeout__to__sent_icmp_struct(buffer));
+    // } else if(ip_head__to__type(buffer) == 0) {
+    // } else {
+    //     ERROR("Received packet with wrong type");
+    // }
     
-    if(DEBUG == 1) {
+    if(DEBUG == 1 || DEBUG == 2) {
         dprintf("Received IP packet with ICMP content from: %s\n", sender_ip_str);
-        decompose_response(buffer, packet_len, 1,0,1);
+        decompose_response_timeout(buffer, packet_len, 0,0,1);
     }
+
+    return true;
 }
 /*//* #endregion */
 
 // ==============================
+//TODO add rtt
+//TODO add veryfing checksum
+//TODO add printing result
+//TODO add timeout for waiting for response
 
 int main(int argc, char* argv[])
 {
@@ -252,60 +284,69 @@ int main(int argc, char* argv[])
     if (sock_fd < 0)
         ERROR("socket error");
 
-    // for each ttl send 3 packets without waiting
+    // for each ttl send packets without waiting
     // wait WAIT_TIME for responses
     // if none received, print * for path and ??? for time
     // if received, print all ips and avg time
-    for (int ttl = 1; ttl <= MAX_HOPS; ttl++) {
+    for (int ttl = 1; ttl <= MAX_TTL; ttl++) {
         dprintf("====== TTL = %d ======\n", ttl);
 
         vector<string> ips; // received ips from this ttl
+        long total_rtt = 0;
+        int responses = 0;
 
         // send packets
         for (int seq = 0; seq < PACKETS_PER_TTL; seq++) {
-            dprintf("--- SEQ = %d ---\n", seq);
             icmp_send(sock_fd, recipient, ttl, seq);
         }
 
+        //TODO change to time limited while
         // wait WAIT_TIME for responses, without stalling cpu
         for (int seq = 0; seq < PACKETS_PER_TTL; seq++) {
-            dprintf("--- SEQ = %d ---\n", seq);
-
             string ip;
-            int recv_ttl;
-            long rtt;
-            icmp_receive(sock_fd, ip, recv_ttl, rtt);
-            if (recv_ttl == ttl) {  // drop old ttl
-                ips.push_back(ip);
+            int recv_ttl = ttl;
+            long rtt = 0;
+            if(icmp_receive(sock_fd, ip, recv_ttl, rtt)) {
+                if (recv_ttl == ttl) {  // drop old ttls
+                    if(find(ips.begin(), ips.end(), ip) == ips.end())
+                        ips.push_back(ip);
+                    total_rtt += rtt;
+                    responses++;
+                } else {
+                    if(DEBUG == 2) {
+                        dprintf("Received packet from %s with wrong TTL: %d\n", ip.c_str(), recv_ttl);
+                    }
+                }
             }
+        }
+
+        // check if destination reached
+        if(!ips.empty() && find(ips.begin(), ips.end(), argv[1]) != ips.end()) {
+            printf("%d:\t%s %ldms\n", ttl, argv[1], total_rtt/PACKETS_PER_TTL);
+            break;
+        }
+
+        // print ips
+        printf("%d: ", ttl);
+        if(ips.empty()) {
+            printf("*\n");
+        } else {
+            // ips
+            for(string ip : ips) {
+                printf("%s ", ip.c_str());
+            }
+            
+            // rtt
+            if(responses < PACKETS_PER_TTL) {
+                printf("???");
+            } else {
+                printf("%ldms", total_rtt/PACKETS_PER_TTL);
+            }
+
+            printf("\n");
         }
     }
 
-    // ------------------------------
-    // receive example
-
-    // for (;;) {
-    //     struct sockaddr_in sender;
-    //     socklen_t sender_len = sizeof(sender);
-    //     u_int8_t buffer[IP_MAXPACKET];
-
-    //     ssize_t packet_len = recvfrom(sock_fd, buffer, IP_MAXPACKET, 0, (struct sockaddr*)&sender, &sender_len);
-    //     if (packet_len < 0)
-    //         ERROR("recvfrom error");
-
-    //     char sender_ip_str[20];
-    //     inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
-    //     printf("Received IP packet with ICMP content from: %s\n", sender_ip_str);
-
-    //     struct ip* ip_header = (struct ip*) buffer;
-    //     ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
-
-    //     printf("IP header: ");
-    //     print_as_bytes(buffer, ip_header_len);
-    //     printf("\n");
-
-    //     printf("IP data:   ");
-    //     print_as_bytes(buffer + ip_header_len, packet_len - ip_header_len);
-    //     printf("\n\n");
-    // }
+    close(sock_fd);
+    return EXIT_SUCCESS;
 }

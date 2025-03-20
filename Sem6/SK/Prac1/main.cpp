@@ -249,9 +249,10 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
     }
 
     // check checksum
-    u_int16_t checksum = icmp_header.icmp_cksum;
-    icmp_header.icmp_cksum = 0;
-    if(checksum != compute_icmp_checksum((u_int16_t*)&icmp_header, packet_len)) {
+    struct icmp* icmp_head = (struct icmp*) buffer;
+    u_int16_t checksum = icmp_head->icmp_cksum;
+    icmp_head->icmp_cksum = 0;
+    if(checksum != compute_icmp_checksum((u_int16_t*)icmp_head, packet_len)) {
         dprintf("Received packet with wrong checksum\n");
         return false;
     }

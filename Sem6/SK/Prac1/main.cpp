@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define DEBUG 4     // debug stage; 0 = none
+#define DEBUG 0     // debug stage; 0 = none, current = 4
 #define dprintf if(DEBUG) printf
 
 constexpr int MAX_TTL = 30;
@@ -39,7 +39,21 @@ public:
     int64_t elapsed() {
         return chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - start_time).count();
     }
+
+    int64_t now() {
+        return chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+    }
 };
+
+// hash for pair
+namespace std {
+    template <typename T, typename U>
+    struct hash<pair<T, U>> {
+        size_t operator()(const pair<T, U>& p) const {
+            return hash<T>()(p.first) ^ hash<U>()(p.second);
+        }
+    };
+}
 /*//* #endregion */
 
 /*//* #region --- DEBUG --- */
@@ -135,19 +149,19 @@ u_int16_t compute_icmp_checksum(const void *buff, int length)
 
 /*//* #region ------ UID ------ */
 inline int gen_uid(int ttl, int seq) {
-    // return ttl * PACKETS_PER_TTL + seq;
-    return ttl;
+    return ttl * PACKETS_PER_TTL + seq;
+    // return ttl;
 }
 inline int get_ttl(int uid) {
-    // return uid / PACKETS_PER_TTL;
-    return uid;
+    return uid / PACKETS_PER_TTL;
+    // return uid;
 }
 inline int get_ttl(struct icmp icmp_header) {
     return get_ttl(icmp_header.icmp_hun.ih_idseq.icd_seq);
 }
 inline int get_seq(int uid) {
-    // return uid % PACKETS_PER_TTL;
-    return 0;
+    return uid % PACKETS_PER_TTL;
+    // return 0;
 }
 inline int get_seq(struct icmp icmp_header) {
     return get_seq(icmp_header.icmp_hun.ih_idseq.icd_seq);
@@ -212,7 +226,7 @@ void icmp_send(int sock_fd, struct sockaddr_in &recipient, int ttl, int seq) {
 }
 
 //? receive icmp echo packet, return if received
-bool icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
+bool icmp_receive(int sock_fd, string &ip, int &ttl, int &seq) {
     struct sockaddr_in sender;
     socklen_t sender_len = sizeof(sender);
     u_int8_t buffer[IP_MAXPACKET];
@@ -266,7 +280,8 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
     // get ttl from received packet
     const char type = icmp_header.icmp_type;
     if(type == 11) {
-        ttl = get_ttl(get_sent_icmp_header(buffer));
+        ttl = get_ttl(sent_icmp_header);
+        seq = get_seq(sent_icmp_header);
     } else if(type == 0) {
         // ttl = get_ttl(get_icmp_header(buffer));
     } else {
@@ -283,18 +298,21 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, long &rtt) {
 /*//* #endregion */
 
 // ==============================
-//TODO add rtt
-//TODO prevent program from taking packets not meant for it
+//TODO seem to still not work good in parallel
+//TODO clean up this mess a little
 int main(int argc, char* argv[])
 {
+    cout << getpid() << endl;
+
     // ensure ip argumennt
     if (argc != 2) {
         cerr << "Usage: " << argv[0] << " <destination IP>" << endl;
         return EXIT_FAILURE;
     }
 
-    // time
+    // variables
     Timer timer;
+    unordered_map<pair<int, int>, int64_t> sent_times;
 
     // generate destination ip and check if valid
     struct sockaddr_in recipient;
@@ -322,6 +340,7 @@ int main(int argc, char* argv[])
 
         // send packets
         for (int seq = 0; seq < PACKETS_PER_TTL; seq++) {
+            sent_times[{ttl, seq}] = timer.now();
             icmp_send(sock_fd, recipient, ttl, seq);
         }
 
@@ -330,11 +349,13 @@ int main(int argc, char* argv[])
         while(timer.elapsed() < WAIT_TIME_MS && responses < PACKETS_PER_TTL) {
             string ip;
             int recv_ttl = ttl;
-            long rtt = 0;
-            if(icmp_receive(sock_fd, ip, recv_ttl, rtt)) {
+            int recv_seq = 0;
+            if(icmp_receive(sock_fd, ip, recv_ttl, recv_seq)) {
                 if (recv_ttl == ttl) {  // drop old ttls
                     if(find(ips.begin(), ips.end(), ip) == ips.end())
                         ips.push_back(ip);
+
+                    long rtt = timer.now() - sent_times[{recv_ttl, recv_seq}];
                     total_rtt += rtt;
                     responses++;
                 } else {

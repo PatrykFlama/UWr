@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define DEBUG 0     // debug stage; 0 = none, current = 4
+#define DEBUG 3     // debug stage; 0 = none, current = 4
 #define dprintf if(DEBUG) printf
 
 constexpr int MAX_TTL = 30;
@@ -257,8 +257,13 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, int &seq) {
     }
 
     // check if its my packet
-    if(sent_icmp_header.icmp_hun.ih_idseq.icd_id != getpid()) {
-        dprintf("Received packet not meant for me\n");
+    if(icmp_header.icmp_type == ICMP_TIME_EXCEEDED && 
+       sent_icmp_header.icmp_hun.ih_idseq.icd_id != getpid()) {
+        dprintf("Received packet not meant for me:\t%d != %d\n", sent_icmp_header.icmp_hun.ih_idseq.icd_id, getpid());
+        return false;
+    } else if(icmp_header.icmp_type == ICMP_ECHOREPLY && 
+              icmp_header.icmp_hun.ih_idseq.icd_id != getpid()) {
+        dprintf("Received packet not meant for me:\t%d != %d\n", sent_icmp_header.icmp_hun.ih_idseq.icd_id, getpid());
         return false;
     }
 
@@ -298,7 +303,6 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, int &seq) {
 /*//* #endregion */
 
 // ==============================
-//TODO seem to still not work good in parallel
 //TODO clean up this mess a little
 int main(int argc, char* argv[])
 {

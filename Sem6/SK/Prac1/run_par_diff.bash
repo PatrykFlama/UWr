@@ -9,9 +9,13 @@ PROGRAM=$1
 shift
 
 mkdir -p ./results_run_parallel
+mkdir -p ./results_traceroute
+mkdir -p ./results_ping
 
 for ARG in "$@"; do
     eval $PROGRAM $ARG > ./results_run_parallel/run_$ARG &
+    eval traceroute -I $ARG > ./results_traceroute/traceroute_$ARG &
+    eval ping -c 5 $ARG > ./results_ping/ping_$ARG &
 done
 
 # wait for all background processes to finish

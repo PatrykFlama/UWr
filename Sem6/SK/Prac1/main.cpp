@@ -1,3 +1,4 @@
+
 #include <bits/stdc++.h>
 #include <cstring>
 #include <cstdlib>
@@ -11,7 +12,7 @@
 
 using namespace std;
 
-#define DEBUG 3     // debug stage; 0 = none, current = 4
+#define DEBUG 0     // debug stage; 0 = none, verbose = 3, minimal >= 4
 #define dprintf if(DEBUG) printf
 
 constexpr int MAX_TTL = 30;
@@ -19,14 +20,14 @@ constexpr int WAIT_TIME_MS = 1000;
 constexpr int PACKETS_PER_TTL = 3;
 
 
-//? handle errors - write them and exit
+//* handle errors - write them and exit
 void ERROR(const char* str)
 {
     fprintf(stderr, "%s: %s\n", str, strerror(errno));
     exit(EXIT_FAILURE);
 }
 
-/*//* #region --- HELPER --- */
+/* //? #region --- HELPER --- */
 class Timer {
 public:
     chrono::time_point<chrono::high_resolution_clock> start_time;
@@ -43,6 +44,9 @@ public:
     int64_t now() {
         return chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
     }
+    double now_precise() {
+        return chrono::duration<double, milli>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+    }
 };
 
 // hash for pair
@@ -54,15 +58,15 @@ namespace std {
         }
     };
 }
-/*//* #endregion */
+/*//? #endregion */
 
-/*//* #region --- DEBUG --- */
+/*//? #region --- DEBUG --- */
 void print_as_bytes (unsigned char* buff, ssize_t length)
 {
     for (ssize_t i = 0; i < length; i++, buff++)
         dprintf("%.2x ", *buff);
 }
-void print_icmp_header (unsigned char* header, ssize_t header_length)
+void print_icmp_header (unsigned char* header)
 {
     struct icmp* icmp_header = (struct icmp*) header;
     dprintf("Type: %d\n", icmp_header->icmp_type);
@@ -71,7 +75,7 @@ void print_icmp_header (unsigned char* header, ssize_t header_length)
     dprintf("ID: %d\n", icmp_header->icmp_hun.ih_idseq.icd_id);
     dprintf("Sequence: %d\n", icmp_header->icmp_hun.ih_idseq.icd_seq);
 }
-void print_ip_header (unsigned char* header, ssize_t header_length, bool verbose=true)
+void print_ip_header (unsigned char* header, bool verbose=true)
 {
     struct ip* ip_header = (struct ip*) header;
     if(verbose) {
@@ -89,10 +93,9 @@ void print_ip_header (unsigned char* header, ssize_t header_length, bool verbose
     dprintf("Destination: %s\n", inet_ntoa(ip_header->ip_dst));
 }
 
-//? debug/sandbox playing with response
+//* debug/sandbox playing with response
 void decompose_response_timeout(
     unsigned char* ip_header_start,
-    ssize_t length,
     int p_ip_header=1,
     bool p_icmp_header=true,
     bool p_original_ip_header=true
@@ -103,17 +106,16 @@ void decompose_response_timeout(
     // received entire packet header, usually first 20 bytes
     if(p_ip_header) {
         dprintf("IP header:\n");
-        print_ip_header(ip_header_start, ip_header_len, p_ip_header - 1);
+        print_ip_header(ip_header_start, p_ip_header - 1);
         dprintf("\n");
     }
 
     // received entire packet data, after the header
     // in our case, if its icmp header, there will be info about our ping (reply or ttl exceeded)
     unsigned char *ip_data_start = ip_header_start + ip_header_len;
-    const ssize_t packet_len = length - ip_header_len;
     if(p_icmp_header) {
         dprintf("IP data / ICMP header:\n");
-        print_icmp_header(ip_data_start, packet_len);
+        print_icmp_header(ip_data_start);
         dprintf("\n");
     }
 
@@ -129,13 +131,13 @@ void decompose_response_timeout(
     unsigned char *original_ip_header_start = ip_data_start + sizeof(struct icmp);
     if(p_original_ip_header) {
         dprintf("IP header from IP data / original ICMP header:\n");
-        print_icmp_header(original_ip_header_start, ip_header_len);
+        print_icmp_header(original_ip_header_start);
         dprintf("\n\n");
     }
 }
-/*//* #endregion */
+/*//? #endregion */
 
-//? compute checksum for icmp packet
+//* compute checksum for icmp packet
 u_int16_t compute_icmp_checksum(const void *buff, int length)
 {
     const u_int16_t* ptr = reinterpret_cast<const uint16_t*>(buff);
@@ -147,7 +149,7 @@ u_int16_t compute_icmp_checksum(const void *buff, int length)
     return (u_int16_t)(~(sum + (sum >> 16U)));
 }
 
-/*//* #region ------ UID ------ */
+/*//? #region ------ UID ------ */
 inline int gen_uid(int ttl, int seq) {
     return ttl * PACKETS_PER_TTL + seq;
     // return ttl;
@@ -166,17 +168,17 @@ inline int get_seq(int uid) {
 inline int get_seq(struct icmp icmp_header) {
     return get_seq(icmp_header.icmp_hun.ih_idseq.icd_seq);
 }
-/*//* #endregion */
+/*//? #endregion */
 
-/*//* #region ------ ICMP IP HELPER ------ */
-//? get sent icmp struct from received ip header
+/*//? #region ------ ICMP IP HELPER ------ */
+//* get sent icmp struct from received ip header
 inline struct icmp get_icmp_header(unsigned char* ip_header_start) {
     struct ip* ip_header = (struct ip*) ip_header_start;
     const ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
     unsigned char *ip_data_start = ip_header_start + ip_header_len;
     return *(struct icmp*) ip_data_start;
 }
-//? get sent icmp struct from received ip header
+//* get sent icmp struct from received ip header
 inline struct icmp get_sent_icmp_header(unsigned char* ip_header_start) {
     struct ip* ip_header = (struct ip*) ip_header_start;
     const ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
@@ -184,10 +186,10 @@ inline struct icmp get_sent_icmp_header(unsigned char* ip_header_start) {
     unsigned char *original_ip_header_start = ip_data_start + sizeof(struct icmp);
     return *(struct icmp*) original_ip_header_start;
 }
-/*//* #endregion */
+/*//? #endregion */
 
-/*//* #region ------ packets ------*/
-//? send icmp echo packet
+/*//? #region ------ packets ------*/
+//* send icmp echo packet
 void icmp_send(int sock_fd, struct sockaddr_in &recipient, int ttl, int seq) {
     // generate header
     struct icmp header;
@@ -220,12 +222,12 @@ void icmp_send(int sock_fd, struct sockaddr_in &recipient, int ttl, int seq) {
     if(DEBUG == 1 || DEBUG == 3) {
         dprintf("Sent ICMP echo packet with TTL = %d\n", ttl);
         dprintf("ICMP header:\n");
-        print_icmp_header((unsigned char*)&header, sizeof(header));
+        print_icmp_header((unsigned char*)&header);
         dprintf("\n");
     }
 }
 
-//? receive icmp echo packet, return if received
+//* receive icmp echo packet, return if received
 bool icmp_receive(int sock_fd, string &ip, int &ttl, int &seq) {
     struct sockaddr_in sender;
     socklen_t sender_len = sizeof(sender);
@@ -246,7 +248,7 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, int &seq) {
     if (packet_len < 0)
         ERROR("recvfrom error");
 
-    struct ip* ip_header = (struct ip*) buffer;
+    // struct ip* ip_header = (struct ip*) buffer;
     struct icmp icmp_header = get_icmp_header(buffer);
     struct icmp sent_icmp_header = get_sent_icmp_header(buffer);
 
@@ -263,7 +265,7 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, int &seq) {
         return false;
     } else if(icmp_header.icmp_type == ICMP_ECHOREPLY && 
               icmp_header.icmp_hun.ih_idseq.icd_id != getpid()) {
-        dprintf("Received packet not meant for me:\t%d != %d\n", sent_icmp_header.icmp_hun.ih_idseq.icd_id, getpid());
+        dprintf("Received packet not meant for me:\t%d != %d\n", icmp_header.icmp_hun.ih_idseq.icd_id, getpid());
         return false;
     }
 
@@ -278,7 +280,7 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, int &seq) {
 
     // extract ip
     char sender_ip_str[20];
-    //? inet_ntop - convert IPv4 and IPv6 addresses from binary to text form
+    //* inet_ntop - convert IPv4 and IPv6 addresses from binary to text form
     inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
     ip = sender_ip_str;
 
@@ -295,18 +297,18 @@ bool icmp_receive(int sock_fd, string &ip, int &ttl, int &seq) {
     
     if(DEBUG == 1 || DEBUG == 2 || DEBUG == 3) {
         dprintf("Received IP packet with ICMP content from: %s\n", sender_ip_str);
-        decompose_response_timeout(buffer, packet_len, 1,0,1);
+        decompose_response_timeout(buffer, 1,0,1);
     }
 
     return true;
 }
-/*//* #endregion */
+/*//? #endregion */
 
 // ==============================
 //TODO clean up this mess a little
 int main(int argc, char* argv[])
 {
-    cout << getpid() << endl;
+    dprintf("PID: %d\n", getpid());
 
     // ensure ip argumennt
     if (argc != 2) {
@@ -316,7 +318,7 @@ int main(int argc, char* argv[])
 
     // variables
     Timer timer;
-    unordered_map<pair<int, int>, int64_t> sent_times;
+    unordered_map<pair<int, int>, double> sent_times;
 
     // generate destination ip and check if valid
     struct sockaddr_in recipient;
@@ -339,12 +341,12 @@ int main(int argc, char* argv[])
         dprintf("====== TTL = %d ======\n", ttl);
 
         vector<string> ips; // received ips from this ttl
-        long total_rtt = 0;
+        double total_rtt = 0;
         int responses = 0;
 
         // send packets
         for (int seq = 0; seq < PACKETS_PER_TTL; seq++) {
-            sent_times[{ttl, seq}] = timer.now();
+            sent_times[{ttl, seq}] = timer.now_precise();
             icmp_send(sock_fd, recipient, ttl, seq);
         }
 
@@ -359,7 +361,7 @@ int main(int argc, char* argv[])
                     if(find(ips.begin(), ips.end(), ip) == ips.end())
                         ips.push_back(ip);
 
-                    long rtt = timer.now() - sent_times[{recv_ttl, recv_seq}];
+                    double rtt = timer.now_precise() - sent_times[{recv_ttl, recv_seq}];
                     total_rtt += rtt;
                     responses++;
                 } else {
@@ -374,7 +376,8 @@ int main(int argc, char* argv[])
 
         // check if destination reached
         if(!ips.empty() && find(ips.begin(), ips.end(), argv[1]) != ips.end()) {
-            printf("%d:\t%s %ldms\n", ttl, argv[1], total_rtt/PACKETS_PER_TTL);
+            const double avg_rtt = total_rtt/(double)PACKETS_PER_TTL;
+            printf("%d:\t%s %.2fms\n", ttl, argv[1], avg_rtt);
             break;
         }
 
@@ -392,7 +395,8 @@ int main(int argc, char* argv[])
             if(responses < PACKETS_PER_TTL) {
                 printf("???");
             } else {
-                printf("%ldms", total_rtt/PACKETS_PER_TTL);
+                const double avg_rtt = (double)total_rtt/(double)PACKETS_PER_TTL;
+                printf("%.2fms", avg_rtt);    
             }
 
             printf("\n");

@@ -1,3 +1,5 @@
 virbian.vdi
 main
-results_run_parallel
+
+results_*
+traceroute

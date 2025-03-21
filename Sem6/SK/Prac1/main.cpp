@@ -60,6 +60,7 @@ namespace std {
 }
 /*//? #endregion */
 
+
 /*//? #region --- DEBUG --- */
 void print_as_bytes (unsigned char* buff, ssize_t length)
 {
@@ -137,17 +138,6 @@ void decompose_response_timeout(
 }
 /*//? #endregion */
 
-//* compute checksum for icmp packet
-u_int16_t compute_icmp_checksum(const void *buff, int length)
-{
-    const u_int16_t* ptr = reinterpret_cast<const uint16_t*>(buff);
-    u_int32_t sum = 0;
-    assert (length % 2 == 0);
-    for (; length > 0; length -= 2)
-        sum += *ptr++;
-    sum = (sum >> 16U) + (sum & 0xffffU);
-    return (u_int16_t)(~(sum + (sum >> 16U)));
-}
 
 /*//? #region ------ UID ------ */
 inline int gen_uid(int ttl, int seq) {
@@ -171,6 +161,17 @@ inline int get_seq(struct icmp icmp_header) {
 /*//? #endregion */
 
 /*//? #region ------ ICMP IP HELPER ------ */
+//* compute checksum for icmp packet
+u_int16_t compute_icmp_checksum(const void *buff, int length)
+{
+    const u_int16_t* ptr = reinterpret_cast<const uint16_t*>(buff);
+    u_int32_t sum = 0;
+    assert (length % 2 == 0);
+    for (; length > 0; length -= 2)
+        sum += *ptr++;
+    sum = (sum >> 16U) + (sum & 0xffffU);
+    return (u_int16_t)(~(sum + (sum >> 16U)));
+}
 //* get sent icmp struct from received ip header
 inline struct icmp get_icmp_header(unsigned char* ip_header_start) {
     struct ip* ip_header = (struct ip*) ip_header_start;

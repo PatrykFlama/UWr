@@ -12,6 +12,10 @@
   - [`(...)` vs `((...))` vs `$((...))`](#-vs--vs-)
   - [globy](#globy)
   - [po co jest `$@`?](#po-co-jest-)
+- [Wykład 2](#wykład-2)
+    - [Operatory sterujące](#operatory-sterujące)
+    - [Operatory przekierowania](#operatory-przekierowania)
+    - [Słowa kluczowe](#słowa-kluczowe)
 - [Wykład 4 - deskryptory plików](#wykład-4---deskryptory-plików)
   - [Składnia przekierowań](#składnia-przekierowań)
   - [Przykłady](#przykłady)
@@ -91,6 +95,65 @@ $> ./ts.sh "a b" /tmp
 ```
 
 
+
+# Wykład 2
+### Operatory sterujące
+Używane do sterowania wykonywaniem poleceń w powłoce  
+
+- `<newline>` – kończy linię poleceń i powoduje ich wykonanie
+- `||` – wykonuje drugie polecenie tylko wtedy, gdy pierwsze zakończyło się błędem (OR logiczne)
+- `&&` – wykonuje drugie polecenie tylko wtedy, gdy pierwsze zakończyło się sukcesem (AND logiczne)
+- `&` – uruchamia polecenie w tle
+- `;` – oddziela polecenia, wykonując je kolejno
+- `;;` – używane w `case`, kończy blok `case`
+- `;&` – powoduje wykonanie kolejnego bloku `case` bez sprawdzania warunku
+- `;;&` – wykonuje kolejny blok `case`, sprawdzając jego warunek
+- `|` – przekazuje wyjście jednego polecenia do wejścia drugiego (pipe)
+- `|&` – przekazuje zarówno standardowe wyjście, jak i błędy do wejścia następnego polecenia
+- `(` i `)` – grupowanie poleceń w podpowłoce
+
+---
+
+### Operatory przekierowania
+Pozwalają na przekierowanie wejścia/wyjścia
+
+- `<` – przekierowanie wejścia z pliku
+- `>` – przekierowanie wyjścia do pliku (nadpisuje)
+- `<<` – tzw "here document", pozwala wprowadzać wieloliniowe wejście
+- `>>` – przekierowanie wyjścia do pliku (dopisywanie)
+- `<<<` – tzw "here string", przekazuje podany ciąg jako wejście
+- `<>` – otwiera plik do jednoczesnego odczytu i zapisu
+- `&>` – przekierowuje zarówno standardowe wyjście, jak i błędy do pliku
+- `>&` – alternatywna forma przekierowania wyjścia standardowego do innego deskryptora
+- `<&` – przekierowanie wejścia z innego deskryptora
+- `>&` – przekierowanie wyjścia do innego deskryptora
+- `&>>` – przekierowuje standardowe wyjście i błędy do pliku (dopisywanie)
+
+---
+
+### Słowa kluczowe
+Zarezerwowane słowa języka powłoki, używane w instrukcjach sterujących
+
+- `!` – negacja warunku
+- `case` – instrukcja warunkowa podobna do `switch`
+- `coproc` – tworzy współproces
+- `do` – używane w pętlach `for`, `while`, `until` do rozpoczęcia bloku kodu
+- `done` – kończy pętlę `for`, `while`, `until`
+- `elif` – `else if` w `if`
+- `else` – alternatywna ścieżka w `if`
+- `esac` – kończy `case`
+- `fi` – kończy `if`
+- `for` – pętla iteracyjna
+- `function` – deklaracja funkcji
+- `if` – instrukcja warunkowa
+- `in` – używane w `for` oraz `case`
+- `select` – tworzy menu wyboru
+- `then` – rozpoczyna blok `if`
+- `until` – pętla wykonywana, dopóki warunek jest fałszywy
+- `while` – pętla wykonywana, dopóki warunek jest prawdziwy
+- `{` i `}` – grupowanie poleceń w bloku
+- `time` – mierzy czas wykonania polecenia
+- `[[` i `]]` – rozszerzona składnia dla warunków logicznych
 
 
 

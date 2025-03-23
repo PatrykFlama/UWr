@@ -3,6 +3,15 @@
 
 [\[Polish\]](README.md)
 
+## [Term 6](Sem6/)
+* [Computer Networks](Sem6/SK/)
+* [Neural Networks (theory and practice)](Sem6/NN/)
+* [Linux system administration course](Sem6/Linux/)
+* [Object-Oriented Software Programming](Sem6/POO/)
+* [Seminar: Machine Learning Automata](Sem6/UMA/)
+* [Practical Algorithmics](Sem6/AP/)
+* Workshops: How to start a business?
+* Ethics for thinkers
 
 ## [Term 5](Sem5/)
 * Advanced algorithms and data structures

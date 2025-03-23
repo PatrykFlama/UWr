@@ -2,6 +2,51 @@
 
 [\[English\]](README.en.md)
 
+## [Semestr 6](Sem6/)
+<!-- 
+<details>
+    <summary>Plan</summary>
+
+```mermaid
+gantt
+    title Letni 24/25
+    dateFormat HH
+    axisFormat %H:%M
+
+    section Monday
+        UMA : 12, 14
+        AP (w) : 12, 14
+        AP (ć) : 14, 16
+
+    section Tuesday
+        POO (w) : 08, 10
+        NN (w) : 12, 14
+        SK (ć) : 14, 16
+        NN (ć) : 16, 18
+
+    section Wednesday
+        POO (ć) : 08, 10
+        SK (w) : 10, 12
+        JZF : 17, 19
+        Linux (ć) : 18, 20
+
+    section Thursday
+        Linux (w) : 14, 16
+        Human : 16, 18
+```
+
+</details> -->
+
+
+* [**S**ieci **K**omputerowe](Sem6/SK/)
+* [**N**erual **N**etworks (theory and practice)](Sem6/NN/)
+* [Kurs administrowania systemem **Linux**](Sem6/Linux/)
+* [**P**rogramowanie **O**biektowe **O**oprogramowania](Sem6/POO/)
+* [Seminarium: **U**czenie **m**aszynowe **a**utomatów](Sem6/UMA/)
+* [**A**lgorytmika **p**raktyczna](Sem6/AP/)
+* Warsztaty: Jak założyć firmę?
+* Etyka dla myślących
+
 ## [Semestr 5](Sem5/)
 
 <details>

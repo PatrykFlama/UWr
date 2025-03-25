@@ -13,9 +13,10 @@
 * Minimally Adequete Teacher
 * Tabela obserwacji
   * **Dziury** w tabeli obserwacji + **Kompletność** tabeli obserwacji
-  * **Zamknięcie** tabeli obserwacji
-  * **Spójność** tabeli obserwacji
+  * **Zamknięcie/Zamkniętość** tabeli obserwacji
+  * **Spójność** tabeli obserwacji z automatem
+  * **Spójność** tabeli
+  * czym są **eksperymenty** / budowa tabeli
 * Budowa DFA z kompletnej i zamkniętej tabeli obserwacji
   * Lemat o spójności
-
-<!-- todo from 13.1.4 -->
+* Równoważność prefiksów/rzędów

@@ -18,7 +18,7 @@ fi
 
 sleep_time=$1
 
-while IFS= read -r line; do
+while read -r line; do
     echo "$line"
     sleep "$sleep_time"
 done
@@ -50,6 +50,32 @@ exec 4>>output.txt
 ./reader 1.0 <multiline.txt >&4 &
 ./reader 1.6 <multiline.txt >&4 &
 ```
+
+
+## Zad 2
+aby dowiedzieć się jakichś informacji o pliku możemy skorzystać ze `stat(2)` (zamiast z `ls -l`)  
+`truncate` służy do zmiany rozmiaru pliku, może być używane do skracania lub rozszerzania pliku  
+
+zamiasta czegoś w stylu /dev/sda tak na prawdę urządzenia mają swoje majory i minory identyfikujące je
+
+`ls`:  
+* flaga `-S` – sortuje pliki według rozmiaru
+* flaga `-t` – sortuje pliki według czasu modyfikacji
+* flaga `-r` – odwraca kolejność sortowania
+
+
+opcja montowania `no atime` oznacza że wartość czasu dostępu do plików nie będzie *zbyt często* modyfikowany  
+
+
+linki symboliczne; zazwyczaj natykając się na lik symboliczny mamy 2 opcje: pójść po nim albo się zatrzymać i powiedzieć że to link symboliczyn  
+więc mamy polecenia `relpath` oraz `readlink`   
+`realpath` (który rozwija symlinki) jest w stanie podać ścieżkę do pliku który nie istnieje (co jest przydatne, bo może np dopiero jeszcze utworzymy ten plik)
+
+
+`dirname` - zwraca katalog nadrzędny pliku  
+`basename` - zwraca nazwę pliku bez katalogu nadrzędnego; możemy podać mu argument, który będzie usuwanym suffixem z nazwy, o ile istnieje/pasuje, np jego rozszerzenie  
+
+
 
 ## Zad 4
 ### `lsof`, `fuser`
@@ -115,7 +141,7 @@ fuser -k path
 `lsof -u <użytkownik>`
 
 
-# Zad 5
+## Zad 5
 `strace` służy do śledzenia wywołań systemowych procesów, umożliwia analizowanie interakcji programów z jądrem systemu (co jest przydatne w debugowaniu, optymalizacji i diagnozowaniu problemów)
 
 ## Podstawowe scenariusze użycia
@@ -165,3 +191,11 @@ while true; do
     sleep 1
 done
 ```
+
+
+## Zad 6
+zadaine: "zrób sobie pipe'a ale takiego nazwanego, i do niego sobie pisz"   
+`mkfifio(1)` - tworzy plik ktory jest pipem  
+`mkfifo sada` - tworzy plik o nazwie sada, który jest pipe'm  
+
+

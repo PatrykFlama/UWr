@@ -119,3 +119,8 @@ równowaznie:
 - 10.3.0.64/26 -> B
 
 
+## Zadanie 5
+<!-- TODO: czym jest zasada najlepszego doapsowania? -->
+
+## Zadanie 6
+

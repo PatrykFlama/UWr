@@ -11,6 +11,7 @@
 ## Notatki z książki
 ### Tematy do omówienia, krok po kroku
 * Minimally Adequete Teacher
+* ogólny pomysł na algorytm
 * Tabela obserwacji
   * **Dziury** w tabeli obserwacji + **Kompletność** tabeli obserwacji
   * **Zamknięcie/Zamkniętość** tabeli obserwacji
@@ -20,3 +21,11 @@
 * Budowa DFA z kompletnej i zamkniętej tabeli obserwacji
   * Lemat o spójności
 * Równoważność prefiksów/rzędów
+
+* Algorytm
+  * rozpisać, wyjaśnić działanie
+  * przykład
+  * dowód poprawności algorytmu
+  * problemy implementacyjne
+
+## L#

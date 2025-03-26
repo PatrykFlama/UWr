@@ -141,6 +141,10 @@ fuser -k path
 `lsof -u <użytkownik>`
 
 
+### użytyczne zastosowania
+`lsof` - gdy chcemy odmontować system plików, ale nie możemy tego zrobić, bo coś go używa  
+
+
 ## Zad 5
 `strace` służy do śledzenia wywołań systemowych procesów, umożliwia analizowanie interakcji programów z jądrem systemu (co jest przydatne w debugowaniu, optymalizacji i diagnozowaniu problemów)
 
@@ -195,7 +199,9 @@ done
 
 ## Zad 6
 zadaine: "zrób sobie pipe'a ale takiego nazwanego, i do niego sobie pisz"   
-`mkfifio(1)` - tworzy plik ktory jest pipem  
-`mkfifo sada` - tworzy plik o nazwie sada, który jest pipe'm  
-
-
+- `mkfifio(1)` - tworzy plik ktory jest pipem  
+- `mkfifo sada` - tworzy plik o nazwie sada, który jest pipe'm  
+- `debugfs` - narzędzie do debugowania systemu plików ext2/ext3/ext4  
+- `cat < sada` - odczytuje dane z pipe'a  
+- `echo "Hello" > sada` (w innym terminalu) - zapisuje dane do pipe'a, komenda `cat < sada` odczyta te dane i się skończy (bo dostanie EOF)  
+- 

@@ -103,41 +103,41 @@ public:
         bool p_icmp_header=true,
         bool p_original_ip_header=true
     ) {
-    struct ip* ip_header = (struct ip*) ip_header_start;
-    ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
+        struct ip* ip_header = (struct ip*) ip_header_start;
+        ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
 
-    // received entire packet header, usually first 20 bytes
-    if(p_ip_header) {
-        dprintf("IP header:\n");
-        Debug::print_ip_header(ip_header_start, p_ip_header - 1);
-        dprintf("\n");
-    }
+        // received entire packet header, usually first 20 bytes
+        if(p_ip_header) {
+            dprintf("IP header:\n");
+            Debug::print_ip_header(ip_header_start, p_ip_header - 1);
+            dprintf("\n");
+        }
 
-    // received entire packet data, after the header
-    // in our case, if its icmp header, there will be info about our ping (reply or ttl exceeded)
-    unsigned char *ip_data_start = ip_header_start + ip_header_len;
-    if(p_icmp_header) {
-        dprintf("IP data / ICMP header:\n");
-        Debug::print_icmp_header(ip_data_start);
-        dprintf("\n");
-    }
+        // received entire packet data, after the header
+        // in our case, if its icmp header, there will be info about our ping (reply or ttl exceeded)
+        unsigned char *ip_data_start = ip_header_start + ip_header_len;
+        if(p_icmp_header) {
+            dprintf("IP data / ICMP header:\n");
+            Debug::print_icmp_header(ip_data_start);
+            dprintf("\n");
+        }
 
-    /*
-    since it is icmp response, there are 2 cases:
-        either our original ping reached host -
-        - in this case the icmp header contains the original ip header
-        
-        or it didnt and we got ttl exceeded - 
-        - in this case the router sends us the original ip header 
-        (or at least as much as managed to fit) after the icmp header
-    */
-    unsigned char *original_ip_header_start = ip_data_start + sizeof(struct icmp);
-    if(p_original_ip_header) {
-        dprintf("IP header from IP data / original ICMP header:\n");
-        Debug::print_icmp_header(original_ip_header_start);
-        dprintf("\n\n");
+        /*
+        since it is icmp response, there are 2 cases:
+            either our original ping reached host -
+            - in this case the icmp header contains the original ip header
+            
+            or it didnt and we got ttl exceeded - 
+            - in this case the router sends us the original ip header 
+            (or at least as much as managed to fit) after the icmp header
+        */
+        unsigned char *original_ip_header_start = ip_data_start + sizeof(struct icmp);
+        if(p_original_ip_header) {
+            dprintf("IP header from IP data / original ICMP header:\n");
+            Debug::print_icmp_header(original_ip_header_start);
+            dprintf("\n\n");
+        }
     }
-}
 };
 
 
@@ -160,8 +160,8 @@ public:
         // return 0;
     }
     static inline int get_seq(struct icmp icmp_header) {
-    return get_seq(icmp_header.icmp_hun.ih_idseq.icd_seq);
-}
+        return get_seq(icmp_header.icmp_hun.ih_idseq.icd_seq);
+    }
 };
 
 class IcmpIpHelper {
@@ -187,12 +187,12 @@ public:
     }
     //* get sent icmp struct from received ip header
     static inline struct icmp get_sent_icmp_header(unsigned char* ip_header_start) {
-    struct ip* ip_header = (struct ip*) ip_header_start;
-    const ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
-    unsigned char *ip_data_start = ip_header_start + ip_header_len;
-    unsigned char *original_ip_header_start = ip_data_start + sizeof(struct icmp);
-    return *(struct icmp*) original_ip_header_start;
-}
+        struct ip* ip_header = (struct ip*) ip_header_start;
+        const ssize_t	ip_header_len = 4 * (ssize_t)(ip_header->ip_hl);
+        unsigned char *ip_data_start = ip_header_start + ip_header_len;
+        unsigned char *original_ip_header_start = ip_data_start + sizeof(struct icmp);
+        return *(struct icmp*) original_ip_header_start;
+    }
 };
 
 class IcmpPackets {
@@ -239,79 +239,79 @@ public:
 
     //* receive icmp echo packet, return if received
     static bool icmp_receive(int sock_fd, string &ip, int &ttl, int &seq) {
-    struct sockaddr_in sender;
-    socklen_t sender_len = sizeof(sender);
-    u_int8_t buffer[IP_MAXPACKET];
+        struct sockaddr_in sender;
+        socklen_t sender_len = sizeof(sender);
+        u_int8_t buffer[IP_MAXPACKET];
 
-    //? https://pubs.opengroup.org/onlinepubs/7908799/xsh/poll.html
-    struct pollfd fds = {sock_fd, POLLIN, 0};
-    int status = poll(&fds, 1, WAIT_TIME_MS);
-    if(status < 0)
-        ERROR("poll error");
-    if(status == 0) {
-        dprintf("No response received\n");
-        return false;
+        //? https://pubs.opengroup.org/onlinepubs/7908799/xsh/poll.html
+        struct pollfd fds = {sock_fd, POLLIN, 0};
+        int status = poll(&fds, 1, WAIT_TIME_MS);
+        if(status < 0)
+            ERROR("poll error");
+        if(status == 0) {
+            dprintf("No response received\n");
+            return false;
+        }
+
+        //? recvfrom - receive a message from a socket
+        ssize_t packet_len = recvfrom(sock_fd, buffer, IP_MAXPACKET, 0, (struct sockaddr*)&sender, &sender_len);
+        if (packet_len < 0)
+            ERROR("recvfrom error");
+
+        // struct ip* ip_header = (struct ip*) buffer;
+        struct icmp icmp_header = IcmpIpHelper::get_icmp_header(buffer);
+        struct icmp sent_icmp_header = IcmpIpHelper::get_sent_icmp_header(buffer);
+
+        // ensure type
+        if(icmp_header.icmp_type != ICMP_ECHOREPLY && icmp_header.icmp_type != ICMP_TIME_EXCEEDED) {
+            dprintf("Received packet with wrong type\n");
+            return false;
+        }
+
+        // check if its my packet
+        if(icmp_header.icmp_type == ICMP_TIME_EXCEEDED && 
+        sent_icmp_header.icmp_hun.ih_idseq.icd_id != getpid()) {
+            dprintf("Received packet not meant for me:\t%d != %d\n", sent_icmp_header.icmp_hun.ih_idseq.icd_id, getpid());
+            return false;
+        } else if(icmp_header.icmp_type == ICMP_ECHOREPLY && 
+                icmp_header.icmp_hun.ih_idseq.icd_id != getpid()) {
+            dprintf("Received packet not meant for me:\t%d != %d\n", icmp_header.icmp_hun.ih_idseq.icd_id, getpid());
+            return false;
+        }
+
+        // check checksum
+        struct icmp* icmp_head = (struct icmp*) buffer;
+        u_int16_t checksum = icmp_head->icmp_cksum;
+        icmp_head->icmp_cksum = 0;
+        if(checksum != IcmpIpHelper::compute_icmp_checksum((u_int16_t*)icmp_head, packet_len)) {
+            dprintf("Received packet with wrong checksum\n");
+            return false;
+        }
+
+        // extract ip
+        char sender_ip_str[20];
+        //* inet_ntop - convert IPv4 and IPv6 addresses from binary to text form
+        inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
+        ip = sender_ip_str;
+
+        // get ttl from received packet
+        const char type = icmp_header.icmp_type;
+        if(type == 11) {
+            ttl = UidHelper::get_ttl(sent_icmp_header);
+            seq = UidHelper::get_seq(sent_icmp_header);
+        } else if(type == 0) {
+            // ttl = UidHelper::get_ttl(IcmpIpHelper::get_icmp_header(buffer));
+        } else {
+            ERROR("Received packet with wrong type");
+        }
+        
+        if(DEBUG == 1 || DEBUG == 2 || DEBUG == 3) {
+            dprintf("Received IP packet with ICMP content from: %s\n", sender_ip_str);
+            Debug::decompose_response_timeout(buffer, 1,0,1);
+        }
+
+        return true;
     }
-
-    //? recvfrom - receive a message from a socket
-    ssize_t packet_len = recvfrom(sock_fd, buffer, IP_MAXPACKET, 0, (struct sockaddr*)&sender, &sender_len);
-    if (packet_len < 0)
-        ERROR("recvfrom error");
-
-    // struct ip* ip_header = (struct ip*) buffer;
-    struct icmp icmp_header = IcmpIpHelper::get_icmp_header(buffer);
-    struct icmp sent_icmp_header = IcmpIpHelper::get_sent_icmp_header(buffer);
-
-    // ensure type
-    if(icmp_header.icmp_type != ICMP_ECHOREPLY && icmp_header.icmp_type != ICMP_TIME_EXCEEDED) {
-        dprintf("Received packet with wrong type\n");
-        return false;
-    }
-
-    // check if its my packet
-    if(icmp_header.icmp_type == ICMP_TIME_EXCEEDED && 
-       sent_icmp_header.icmp_hun.ih_idseq.icd_id != getpid()) {
-        dprintf("Received packet not meant for me:\t%d != %d\n", sent_icmp_header.icmp_hun.ih_idseq.icd_id, getpid());
-        return false;
-    } else if(icmp_header.icmp_type == ICMP_ECHOREPLY && 
-              icmp_header.icmp_hun.ih_idseq.icd_id != getpid()) {
-        dprintf("Received packet not meant for me:\t%d != %d\n", icmp_header.icmp_hun.ih_idseq.icd_id, getpid());
-        return false;
-    }
-
-    // check checksum
-    struct icmp* icmp_head = (struct icmp*) buffer;
-    u_int16_t checksum = icmp_head->icmp_cksum;
-    icmp_head->icmp_cksum = 0;
-    if(checksum != IcmpIpHelper::compute_icmp_checksum((u_int16_t*)icmp_head, packet_len)) {
-        dprintf("Received packet with wrong checksum\n");
-        return false;
-    }
-
-    // extract ip
-    char sender_ip_str[20];
-    //* inet_ntop - convert IPv4 and IPv6 addresses from binary to text form
-    inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
-    ip = sender_ip_str;
-
-    // get ttl from received packet
-    const char type = icmp_header.icmp_type;
-    if(type == 11) {
-        ttl = UidHelper::get_ttl(sent_icmp_header);
-        seq = UidHelper::get_seq(sent_icmp_header);
-    } else if(type == 0) {
-        // ttl = UidHelper::get_ttl(IcmpIpHelper::get_icmp_header(buffer));
-    } else {
-        ERROR("Received packet with wrong type");
-    }
-    
-    if(DEBUG == 1 || DEBUG == 2 || DEBUG == 3) {
-        dprintf("Received IP packet with ICMP content from: %s\n", sender_ip_str);
-        Debug::decompose_response_timeout(buffer, 1,0,1);
-    }
-
-    return true;
-}
 };
 
 class Traceroute {

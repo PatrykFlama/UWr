@@ -24,6 +24,9 @@
     - [Kolejność](#kolejność)
   - [Dygresja - wypisywanie na terminal a przekierowywanie do pliku](#dygresja---wypisywanie-na-terminal-a-przekierowywanie-do-pliku)
   - [Operacje na plikach](#operacje-na-plikach)
+- [Wykład 5 - podstawowe czynności administracyjne](#wykład-5---podstawowe-czynności-administracyjne)
+  - [Co to jest plik?](#co-to-jest-plik)
+  - [Hierarchia](#hierarchia)
 
 
 # Some notes
@@ -327,6 +330,58 @@ jak to się może stać że jakieś deskryptory współdzielą OFO?
 `dup` - duplikuje deskryptor (tworzy nowy deskryptor, który wskazuje na ten sam OFO)
 `dup2` - duplikuje deskryptor (tworzy nowy deskryptor, który wskazuje na ten sam OFO) ale na podany deskryptor
 
+_______
+**KONIEC OMAWIANIA POWŁOKI SYSTEMOWEJ**
+_______
+
+# Wykład 5 - podstawowe czynności administracyjne
+pomysł na unixa: wszystko jest plikiem i wszystko żyje w systemie plików  
+
+## Co to jest plik?
+dawniej dane przechowywano na kartach perforowanych, później przeszło to w bębny magnetyczne (w formie cashe'u), dyski, blah blah blah  
+
+> zbiór wielu kart (stos) nazywany był plikiem, pliki kart były organizowane za pomocą folderów  
+
+w systemie wszystko jest wirtualizowane (procesor, ram, ...), więc powstał pomysł wirtualizacji dysku -> system plików  
+jądro nie powinno/musi wiedzieć jak interpretować zawartość plików, to zadanie należy do userlandu  
 
 
+aby zidentyfikować dyski przypisujemy im 2 liczby: majory i minory (które dla łatwości interpretacji przez użytkownika są reprezentowane jako np `/dev/sda`), kiedyś `/dev/` było faktycznym folderem, teraz jest to symulowane przez jądro  
+są rozwiązania gdzie osobne dyski żyją w osobnych drzewach, co wiele upraszcza bo istnieją różne systemy plików, w unixie przez to że jest tylko jedno drzewo plików dołożona została dodatkowa warstwa abstrakcji wyrównująca różnice między systemami plików (w kernelu)  
+
+systemy plików ciągle się rozwija, np system `ext2` dostał w superbloku dodatkowe miejsce na oznaczenie rozszerzenia plików  
+
+dla poprawienia niezawodności stworzony został `journal` - dziennik, który przechowuje zmiany w systemie plików, aby w razie awarii można było je odtworzyć
+
+wprowadzenie dysków typu flash było problematyczne, bo wszystkie systemy były dostosowane do dysków magnetycznych (np lokalność przestrzenna)  
+
+pseudosystemy plików:  
+- `sysfs` - pliki hardware'owe, informacje o systemie i urządzeniach
+- `procfs` - pliki procesów
+- `udevfs` - pliki urządzeń
+- `tempfs` - pliki tymczasowe (zapisywane tylko w ramie)  
+(dołożona więc została dodatkowa warstwa abstrakcji - `vfs`)
+
+procesy mogą się komunikować za pomocą:  
+- plików
+- pipe'ów (jedno kierunkowe)
+- socketów (dwu kierunkowe)
+- inter process communication (ipc) - katalog w któym trzyma się uchwyty do stron pamięci, w której procesy mogą się komunikować
+
+## Hierarchia
+- w `rootfs` mamy 2 linki symboliczne: jądro i initramfs  
+- `/etc/` - pliki konfiguracyjne systemu
+- `/bin/` `/sbin` - pliki binarne dla użytkowników i administratorów
+- `/lib*/` - biblioteki systemowe (współdzielone)
+- `/root/` `/home/` `/usr/home` - katalogi domowe użytkowników, katalog roota jest w innym miejscy, tak aby mógł być na innej partycji (home roota jest potrzebny do uruchomienia systemu, katalogi innych użytkowników mogą być dołożone później)  
+- `/proc/` - procfs
+- `/sys/` - sysfs
+- `/dev/` - udevfs
+- `/tmp/` `/run/` - tempfs
+
+- `/var/` - zmienne pliki (np logi, cache, ...)
+- `/usr/` - drugi poziom hierarchii, osobny punkt montażowy na systemy plików (może być domontowany później, ale nie zawsze np w nowym debianie)  
+- `/opt/` - oprogramowanie opcjonalne
+- `/srv/` - dane lokalne serwera (np apache, ftp, ...)
+- `/media/` `/mnt/` - montowanie systemów plików 
 

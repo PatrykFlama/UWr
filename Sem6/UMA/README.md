@@ -14,9 +14,8 @@
 * ogólny pomysł na algorytm
 * Tabela obserwacji
   * **Dziury** w tabeli obserwacji + **Kompletność** tabeli obserwacji
-  * **Zamknięcie/Zamkniętość** tabeli obserwacji
   * **Spójność** tabeli obserwacji z automatem
-  * **Spójność** tabeli
+  * **Zamknięcie/Zamkniętość** tabeli obserwacji
   * czym są **eksperymenty** / budowa tabeli
 * Budowa DFA z kompletnej i zamkniętej tabeli obserwacji
   * Lemat o spójności

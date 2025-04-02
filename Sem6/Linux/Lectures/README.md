@@ -12,6 +12,7 @@
   - [`(...)` vs `((...))` vs `$((...))`](#-vs--vs-)
   - [globy](#globy)
   - [po co jest `$@`?](#po-co-jest-)
+  - [moduły jądra](#moduły-jądra)
 - [Wykład 2](#wykład-2)
     - [Operatory sterujące](#operatory-sterujące)
     - [Operatory przekierowania](#operatory-przekierowania)
@@ -96,6 +97,11 @@ $> ./ts.sh "a b" /tmp
 
 # rozwinie się do ls "a b" /tmp
 ```
+
+## moduły jądra
+`lsmod` listuje moduły jądra, oraz ich zależności  
+`insmod` - wczytuje moduł do jądra  
+`modprobe` - dodaje/usuwa moduły z jądra  
 
 
 

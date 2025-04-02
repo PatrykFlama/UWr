@@ -6,7 +6,7 @@
 
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
 |---|---|---|---|---|---|---|
-| 1 | 2 | 1 | 1 | 1/2 |   |   |
+| 1 | 2 | 1 | 1 | 1 |   |   |
 
 ## Zad 2
 [chroot tutorial](https://www.turnkeylinux.org/docs/chroot-to-repair-system)  
@@ -90,6 +90,8 @@ df -h /mnt/ramdisk
 dd if=/dev/urandom of=/mnt/ramdisk/container.img bs=1M count=1024 status=progress
 ```
 
+problem: mamy bottleneck ze strony generatora liczb losowych, możemy użyć `/dev/zero` zamiast `/dev/urandom` aby przyspieszyć proces  
+
 podłączanie kontenera jako urządzenie blokowe:
 ```bash
 sudo losetup /dev/loop99 /mnt/ramdisk/container.img
@@ -109,8 +111,11 @@ sudo mount /dev/mapper/ramdisk_enc /mnt/ramdisk_enc
 
 ### test zapisu na ramdysku
 ```bash
-dd if=/dev/urandom of=/mnt/ramdisk_enc/testfile bs=1M count=1024 conv=fsync status=progress
+dd if=/dev/urandom of=/mnt/ramdisk_enc/testfile bs=1M count=1024 conv=fsync status=progress oflag=direct
 ```
+
+- oflag=direct - bez buforowania
+- bs - block size
 
 ### test na innych dyskach
 wypisujemy dyski:
@@ -120,12 +125,35 @@ lsblk
 
 powtarzamy zapis:
 ```bash
-dd if=/dev/urandom of=DRIVE_LOCATION/testfile bs=1M count=1024 conv=fsync status=progress
+dd if=/dev/urandom of=DRIVE_LOCATION/testfile bs=1M count=1024 conv=fsync status=progress oflag=direct
 ```
 
 ### test odczytu
 ```bash
-dd if=/mnt/ramdisk_enc/testfile of=/dev/null bs=1M status=progress
+dd if=/mnt/ramdisk_enc/testfile of=/dev/null bs=1M status=progress oflag=direct
 ```
 
+## Zad 6
+```makefile
+module: 
+  sudo modproble zram
+
+zram: 
+  sudo zramctl --size 2G /dev/zram0
+  sudo mkfs.ext4 /dev/zram0
+  sudo mkdir -o /mnt/zram
+  sudo mount /dev/zram0 /mnt/zram
+
+writezram:
+  sudo dd if=/dev/urandom of=/mnt/zram/test bs=1M count=1024 conv=fsync status=progress
+
+readzram:
+  sudo dd if=/mnt/zram/test of/dev/nnull bs=1M content=1024 status=progress
+```
+
+
+teraz możemy sprawdzić ile skompresowanych zer się zmieści:  
+```bash
+sudo dd if=/dev/urandom of=/mnt/zram/test bs=1M conv=fsync status=progress oflag=direct
+```
 

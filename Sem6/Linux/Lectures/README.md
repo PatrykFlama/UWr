@@ -28,15 +28,15 @@
 - [Wykład 5 - podstawowe czynności administracyjne](#wykład-5---podstawowe-czynności-administracyjne)
   - [Co to jest plik?](#co-to-jest-plik)
   - [Hierarchia](#hierarchia)
-  - [Wykład 6 - systemy plików (cd)](#wykład-6---systemy-plików-cd)
-    - [mount, fstab](#mount-fstab)
-    - [identyfikatory i nazwy urządzeń](#identyfikatory-i-nazwy-urządzeń)
-    - [urządzenia znakowe w katalogu `/dev/`](#urządzenia-znakowe-w-katalogu-dev)
-    - [urządzenia blokowe w katalogu `/dev/`](#urządzenia-blokowe-w-katalogu-dev)
-    - [chroot](#chroot)
-    - [loopback](#loopback)
-    - [szyfrowanie](#szyfrowanie)
-    - [access control](#access-control)
+- [Wykład 6 - systemy plików (cd)](#wykład-6---systemy-plików-cd)
+  - [mount, fstab](#mount-fstab)
+  - [identyfikatory i nazwy urządzeń](#identyfikatory-i-nazwy-urządzeń)
+  - [urządzenia znakowe w katalogu `/dev/`](#urządzenia-znakowe-w-katalogu-dev)
+  - [urządzenia blokowe w katalogu `/dev/`](#urządzenia-blokowe-w-katalogu-dev)
+  - [chroot](#chroot)
+  - [loopback](#loopback)
+  - [szyfrowanie](#szyfrowanie)
+  - [access control](#access-control)
 
 
 # Some notes
@@ -401,7 +401,7 @@ procesy mogą się komunikować za pomocą:
 - `/media/` `/mnt/` - montowanie systemów plików 
 
 
-## Wykład 6 - systemy plików (cd)
+# Wykład 6 - systemy plików (cd)
 system plików składa się z wielu części
 - namespace - potrzebujemy mechanizmu nazywania plików oraz katalogów
 - access control - atrybuty
@@ -409,7 +409,7 @@ system plików składa się z wielu części
 - implementacja
 
 
-### mount, fstab
+## mount, fstab
 z racji iż mamy jedno drzewo plików (rootfs) to musimy mieć mechanizm montowania systemów plików w inne miejsca  
 ta warstwa abstrakcji musi umieć 'zmyślać' - np fat32 nie ma atrybutów  
 
@@ -429,7 +429,7 @@ konwencja folderów `XXX.d` - folder w którym na każdy obiekt jest jeden osobn
 - `umask` `fmask` `dmask` - maski uprawnień (umask - maska domyślna, fmask - maska dla plików, dmask - maska dla katalogów)
 
 
-### identyfikatory i nazwy urządzeń
+## identyfikatory i nazwy urządzeń
 **urządzenia blokowe**  
 możemy skoczyć do dowolnego miejsca (seek)
 
@@ -443,7 +443,7 @@ dostęp opraty na strumieniu (nie możemy skoczyć do dowolnego miejsca, musimy 
 **plik urządzenia w katalogu `/dev/`**
 zamiast majorów i minorów (które mogą się zmieniać przy każdym uruchomieniu systemu) mamy nazwy urządzeń (które też w jakichś sytuacjach mogą się zmieniać), więc mamy jeszcze uuid przypisane do urządzenia (które się nie zmienia)
 
-### urządzenia znakowe w katalogu `/dev/`
+## urządzenia znakowe w katalogu `/dev/`
 - `ttyn` - terminale wirtualne (symulowany przez jądro na karcie graficznej)
 - `tty` - termnial sterujący (dla każdego procesu)
 - `ttySn` - terminale szeregowe (np porty COM, RS232, USB)
@@ -457,7 +457,7 @@ zamiast majorów i minorów (które mogą się zmieniać przy każdym uruchomien
   - `random` `urandom` - losowe bajty (z cache'u, lub z /dev/random)
   - `kmsg` - kernel message
 
-### urządzenia blokowe w katalogu `/dev/`
+## urządzenia blokowe w katalogu `/dev/`
 namespace w nvme - zwykle jest tylko 1  
 urządzenia loopbackowe są symulowane przez kernel  
 
@@ -468,14 +468,14 @@ gdy padnie bateria rtc to system przy starcie ustawia czas na czas odmontowania 
 za pomocą `adjusttime` można zapobiegać dryfowi czasu   
 
 
-### chroot
+## chroot
 mamy zapisane *current working directory* oraz *root working directory* w struktórze procesu, więc możemy zmieniać root directory (ale nie current working directory); z konceptu root nie może przejść wyżej niż jego wrokign directory
 
 dodatkowo musismy stworzyć osobno pseudosystemy proc, sys, dev (np za pomocą mount rbind)  
 proc i sys możemy stworzyć osobne (nowe) `mount -t proc <cokolwiek - urządzenie blokowe, którego nie ma więc zosatnie zignorowane> /target/proc`, ale dev musi być współdzieloony `mount -o bind /dev /target/dev`  
 
 
-### loopback
+## loopback
 urządzenie blokowe, które symuluje urządzenie blokowe (np plik)  
 `losetup` - tworzy urządznie blokowe z obrazu z pliku  
 np montowanie obrazu iso
@@ -485,12 +485,12 @@ mount $(losetup -f --show plyta.iso) /mnt
 mount -o loop plyta.iso /mnt
 ```
 
-### szyfrowanie 
+## szyfrowanie 
 jacyś mądrzy ludzie wymyślili że jednym kluczem można zaszyfrować max 500MB danych, potem klucz ulega zmęczeniu; liczenie klucza trwa długo, wiec w jądrze jest zaimplementowane drzewo czerwono czarne pamiętające policzone już klucze  
 pote stwierdzono że jednym kluczem można zaszyfrować maxx 500GB danych, co by oznaczało max 32 klucze (16TB)  
 koniec końców w implementacji jądra jest bug: generowane są 32 klucze, ale referencja jest tylko do pierwszego wiec cały system jest sztfrowany jednym kluczem  
 
-### access control
+## access control
 - mandatory - scentralizowana, prawa przydziela właściciel
 - discretionary - rozproszona, obiekty mają właścicieli, którzy nimi zarządzają
 

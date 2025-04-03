@@ -27,6 +27,15 @@
 - [Wykład 5 - podstawowe czynności administracyjne](#wykład-5---podstawowe-czynności-administracyjne)
   - [Co to jest plik?](#co-to-jest-plik)
   - [Hierarchia](#hierarchia)
+  - [Wykład 6 - systemy plików (cd)](#wykład-6---systemy-plików-cd)
+    - [mount, fstab](#mount-fstab)
+    - [identyfikatory i nazwy urządzeń](#identyfikatory-i-nazwy-urządzeń)
+    - [urządzenia znakowe w katalogu `/dev/`](#urządzenia-znakowe-w-katalogu-dev)
+    - [urządzenia blokowe w katalogu `/dev/`](#urządzenia-blokowe-w-katalogu-dev)
+    - [chroot](#chroot)
+    - [loopback](#loopback)
+    - [szyfrowanie](#szyfrowanie)
+    - [access control](#access-control)
 
 
 # Some notes
@@ -385,3 +394,102 @@ procesy mogą się komunikować za pomocą:
 - `/srv/` - dane lokalne serwera (np apache, ftp, ...)
 - `/media/` `/mnt/` - montowanie systemów plików 
 
+
+## Wykład 6 - systemy plików (cd)
+system plików składa się z wielu części
+- namespace - potrzebujemy mechanizmu nazywania plików oraz katalogów
+- access control - atrybuty
+- api - w jaki sposób programy użytkownika mogą korzystać z systemu plików
+- implementacja
+
+
+### mount, fstab
+z racji iż mamy jedno drzewo plików (rootfs) to musimy mieć mechanizm montowania systemów plików w inne miejsca  
+ta warstwa abstrakcji musi umieć 'zmyślać' - np fat32 nie ma atrybutów  
+
+```bash
+mount -t <typ> -o <opcje> <źródło> <cel>
+```  
+> obserwacja: tak wygląda to też w fstabie (te 4 kolumny)
+
+konwencja folderów `XXX.d` - folder w którym na każdy obiekt jest jeden osobny plik konfiguracyjny (np `fstab.d` - folder w którym na każdy system plików jest jeden osobny plik konfiguracyjny)  
+
+
+**opcje:**
+- `defaults` - 'nic', potrzebne żeby dało się w fstab zaznaczyć brak opcji (nie zozstawiając pustej kolumny)
+- `ro` - read only, ale uwaga na journal (który mimo tej opcji będzie zapisywać do dysku)  
+- `discard` - return zero after trim
+- `noatime` - nie aktualizuj czasu dostępu do pliku (przydatne w systemach plików flash)
+- `umask` `fmask` `dmask` - maski uprawnień (umask - maska domyślna, fmask - maska dla plików, dmask - maska dla katalogów)
+
+
+### identyfikatory i nazwy urządzeń
+**urządzenia blokowe**  
+możemy skoczyć do dowolnego miejsca (seek)
+
+**urządzenia znakowe**  
+dostęp opraty na strumieniu (nie możemy skoczyć do dowolnego miejsca, musimy przejść przez wszystkie bajty)
+
+**numer urządzenia nadawany przez jądro**
+- majory - klasa urządzenia
+- minory - idnyfikator urządzenia w klasie (zależy od kolejności wykrywania urządzeń przez jądro)
+
+**plik urządzenia w katalogu `/dev/`**
+zamiast majorów i minorów (które mogą się zmieniać przy każdym uruchomieniu systemu) mamy nazwy urządzeń (które też w jakichś sytuacjach mogą się zmieniać), więc mamy jeszcze uuid przypisane do urządzenia (które się nie zmienia)
+
+### urządzenia znakowe w katalogu `/dev/`
+- `ttyn` - terminale wirtualne (symulowany przez jądro na karcie graficznej)
+- `tty` - termnial sterujący (dla każdego procesu)
+- `ttySn` - terminale szeregowe (np porty COM, RS232, USB)
+- pseudoterminale - zawsze wystąpują w parach (master i slave), wykorzystuje się je do komunikacji między procesami (np `ssh`), lub do emulatorów terminali w środowisku graficznym  
+
+
+- pseudourzadzenia:
+  - `full` - zawsze zapełniony
+  - `null` - zawsze pusty
+  - `zero` - zawsze zapełniony zerami
+  - `random` `urandom` - losowe bajty (z cache'u, lub z /dev/random)
+  - `kmsg` - kernel message
+
+### urządzenia blokowe w katalogu `/dev/`
+namespace w nvme - zwykle jest tylko 1  
+urządzenia loopbackowe są symulowane przez kernel  
+
+> historia o nagrywarkach i odtwarzaczach  
+> nie opłacało się osobno robić odtwarzaczy, więc były to tak na prawdę nagrywarki, które identyfikowały się w sata jako odtawrzacz (więc windows krzyczał że nie da się nagrywać, ale linux bez problemu mógł nagrywać)
+
+gdy padnie bateria rtc to system przy starcie ustawia czas na czas odmontowania rootfs, żeby zachować ciągłość  
+za pomocą `adjusttime` można zapobiegać dryfowi czasu   
+
+
+### chroot
+mamy zapisane *current working directory* oraz *root working directory* w struktórze procesu, więc możemy zmieniać root directory (ale nie current working directory); z konceptu root nie może przejść wyżej niż jego wrokign directory
+
+dodatkowo musismy stworzyć osobno pseudosystemy proc, sys, dev (np za pomocą mount rbind)  
+proc i sys możemy stworzyć osobne (nowe) `mount -t proc <cokolwiek - urządzenie blokowe, którego nie ma więc zosatnie zignorowane> /target/proc`, ale dev musi być współdzieloony `mount -o bind /dev /target/dev`  
+
+
+### loopback
+urządzenie blokowe, które symuluje urządzenie blokowe (np plik)  
+`losetup` - tworzy urządznie blokowe z obrazu z pliku  
+np montowanie obrazu iso
+```bash
+mount $(losetup -f --show plyta.iso) /mnt
+# lub krócej:
+mount -o loop plyta.iso /mnt
+```
+
+### szyfrowanie 
+jacyś mądrzy ludzie wymyślili że jednym kluczem można zaszyfrować max 500MB danych, potem klucz ulega zmęczeniu; liczenie klucza trwa długo, wiec w jądrze jest zaimplementowane drzewo czerwono czarne pamiętające policzone już klucze  
+pote stwierdzono że jednym kluczem można zaszyfrować maxx 500GB danych, co by oznaczało max 32 klucze (16TB)  
+koniec końców w implementacji jądra jest bug: generowane są 32 klucze, ale referencja jest tylko do pierwszego wiec cały system jest sztfrowany jednym kluczem  
+
+### access control
+- mandatory - scentralizowana, prawa przydziela właściciel
+- discretionary - rozproszona, obiekty mają właścicieli, którzy nimi zarządzają
+
+w uniksie korzysta się z obu metod (ale głównie z discretionary)   
+
+**tryb dostępu i typ pliku**  
+4 najstarsze bity to typ pliku (czyli czy jest to katalog, plik, socket, ...)   
+pozostałe 12 dzieli się na 4 grupy po 3 bity (szczególne tryby dostępu oraz tryb dostępu dla właściciela, grupy i innych)

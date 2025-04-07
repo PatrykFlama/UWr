@@ -1,3 +1,9 @@
+# POST
+too much text (and all at one time)  
+no debate about MAT, what could be the minimall possible counterexample   
+too fast skipping through text, no time to read  
+do not use synonyms for formal names  
+
 # Materials
 [Grammatical Inference: Learning Automata and Grammars](https://www.cambridge.org/core/books/grammatical-inference/CEEB229AC5A80DFC6436D860AC79434F)
 

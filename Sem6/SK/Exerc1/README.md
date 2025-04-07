@@ -124,3 +124,105 @@ równowaznie:
 
 ## Zadanie 6
 
+### krok 1
+* A
+| net id | cost | next hop |
+|--------|------|----------|
+| U | 1 | - |
+
+* B
+| net id | cost | next hop |
+|--------|------|----------|
+| U | 1 | - |
+| W | 1 | - |
+| X | 1 | - |
+
+* C
+| net id | cost | next hop |
+|--------|------|----------|
+| X | 1 | - |
+| Z | 1 | - |
+
+* D
+| net id | cost | next hop |
+|--------|------|----------|
+| W | 1 | - |
+| Z | 1 | - |
+| Y | 1 | - |
+
+* E
+| net id | cost | next hop |
+|--------|------|----------|
+| Y | 1 | - |
+
+### krok 2
+* A
+| net id | cost | next hop |
+|--------|------|----------|
+| U | 1 | - |
+| W | 2 | B |
+| X | 2 | B |
+
+* B
+| net id | cost | next hop |
+|--------|------|----------|
+| U | 1 | - |
+| X | 1 | - |
+| W | 1 | - |
+| Z | 2 | C |
+| Y | 2 | D |
+
+* C
+| net id | cost | next hop |
+|--------|------|----------|
+| X | 1 | - |
+| Z | 1 | - |
+| U | 2 | B |
+| W | 2 | B |
+| Y | 2 | D |
+
+* D
+| net id | cost | next hop |
+|--------|------|----------|
+| W | 1 | - |
+| Z | 1 | - |
+| Y | 1 | - |
+| U | 2 | B |
+| X | 2 | C |
+
+* E
+| net id | cost | next hop |
+|--------|------|----------|
+| Y | 1 | - |
+| W | 2 | D |
+| Z | 2 | D |
+
+## krok 3
+* A
+| net id | cost | next hop |
+|--------|------|----------|
+| U | 1 | - |
+| W | 2 | B |
+| X | 2 | B |
+| Z | 3 | B |
+| Y | 3 | B |
+
+* E
+| net id | cost | next hop |
+|--------|------|----------|
+| Y | 1 | - |
+| W | 2 | D |
+| Z | 2 | D |
+| X | 3 | D |
+| U | 3 | D |
+
+
+## Zadanie 7
+po dodaniu sieci $S_Q$ routery $A$ oraz $E$ zobaczą ją i zmienią swoje tablice routingu. rozstaną one rozgłoszone do sieci $B$ oraz $D$, które adekwatnie zmienią swoje tablice routingu i rozgłoszą je dalej. 
+
+<!-- TODO fill -->
+
+
+## Zadanie 8
+
+

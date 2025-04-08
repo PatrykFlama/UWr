@@ -120,109 +120,128 @@ równowaznie:
 
 
 ## Zadanie 5
-<!-- TODO: czym jest zasada najlepszego doapsowania? -->
+Zasada najlepszego dopasowania - wybieramy najdłuższy prefiks, który pasuje do adresu docelowego.  
+
+* rozwiązanie  
+Wystarczy posortować malejąco tablicę routingu według długości prefiksu (wartość CIDR malejąco) i wybrać ten, który ma najdłuższy prefiks.
+
+* d-d  
+Załóżmy że dla jakiegoś adresu docelowego wybraliśmy prefiks (metodą first match) o długości X, a w tablicy istniał pasujący prefiks o długości Y, tż X < Y.  
+Wiemy że tablica jest posortwana malejąco, więc szukając metodą first match musieliśmy przejść przez prefiks o długości Y.  
+Sprzeczność - jeżeli przeszliśmy przez ten prefiks, a jest on pasujący, to musiałby być wybrany.
 
 ## Zadanie 6
+puste pola są równoważne z nieskończonością
+
+### krok 0
+wszystkie tablice routingu są puste
 
 ### krok 1
-* A
-| net id | cost | next hop |
-|--------|------|----------|
-| U | 1 | - |
+routery wpisują do swoich tablic routingu sieci bezpośrednio podłączone do nich
 
-* B
-| net id | cost | next hop |
-|--------|------|----------|
-| U | 1 | - |
-| W | 1 | - |
-| X | 1 | - |
+|   | A | B | C | D | E |
+|---|---|---|---|---|---|
+| U | 1 | 1 |   |   |   |
+| W |   | 1 |   | 1 |   |
+| X |   | 1 | 1 |   |   |
+| Y |   |   |   | 1 | 1 |
+| Z |   |   | 1 | 1 |   |
 
-* C
-| net id | cost | next hop |
-|--------|------|----------|
-| X | 1 | - |
-| Z | 1 | - |
-
-* D
-| net id | cost | next hop |
-|--------|------|----------|
-| W | 1 | - |
-| Z | 1 | - |
-| Y | 1 | - |
-
-* E
-| net id | cost | next hop |
-|--------|------|----------|
-| Y | 1 | - |
 
 ### krok 2
-* A
-| net id | cost | next hop |
-|--------|------|----------|
-| U | 1 | - |
-| W | 2 | B |
-| X | 2 | B |
+routery rozgłaszają swoje tablice routingu do sąsiadów, a sąsiedzi aktualizują swoje tablice
 
-* B
-| net id | cost | next hop |
-|--------|------|----------|
-| U | 1 | - |
-| X | 1 | - |
-| W | 1 | - |
-| Z | 2 | C |
-| Y | 2 | D |
+|   | A | B | C | D | E |
+|---|---|---|---|---|---|
+| U | 1 | 1 |2 B|2 B|   |
+| W |2 B| 1 |2 B| 1 |2 D|
+| X |2 B| 1 | 1 |2 B|   |
+| Y |   |2 D|2 D| 1 | 1 |
+| Z |   |2 C| 1 | 1 |2 D|
 
-* C
-| net id | cost | next hop |
-|--------|------|----------|
-| X | 1 | - |
-| Z | 1 | - |
-| U | 2 | B |
-| W | 2 | B |
-| Y | 2 | D |
+### krok 3
+ponownie routery rozgłaszają swoje tablice routingu do sąsiadów, a sąsiedzi aktualizują swoje tablice  
 
-* D
-| net id | cost | next hop |
-|--------|------|----------|
-| W | 1 | - |
-| Z | 1 | - |
-| Y | 1 | - |
-| U | 2 | B |
-| X | 2 | C |
-
-* E
-| net id | cost | next hop |
-|--------|------|----------|
-| Y | 1 | - |
-| W | 2 | D |
-| Z | 2 | D |
-
-## krok 3
-* A
-| net id | cost | next hop |
-|--------|------|----------|
-| U | 1 | - |
-| W | 2 | B |
-| X | 2 | B |
-| Z | 3 | B |
-| Y | 3 | B |
-
-* E
-| net id | cost | next hop |
-|--------|------|----------|
-| Y | 1 | - |
-| W | 2 | D |
-| Z | 2 | D |
-| X | 3 | D |
-| U | 3 | D |
+|   | A | B | C | D | E |
+|---|---|---|---|---|---|
+| U | 1 | 1 |2 B|2 B|3 D|
+| W |2 B| 1 |2 B| 1 |2 D|
+| X |2 B| 1 | 1 |2 B|3 D|
+| Y |3 B|2 D|2 D| 1 | 1 |
+| Z |3 B|2 C| 1 | 1 |2 D|
 
 
 ## Zadanie 7
-po dodaniu sieci $S_Q$ routery $A$ oraz $E$ zobaczą ją i zmienią swoje tablice routingu. rozstaną one rozgłoszone do sieci $B$ oraz $D$, które adekwatnie zmienią swoje tablice routingu i rozgłoszą je dalej. 
+Po dodaniu sieci $S_Q$ routery $A$ oraz $E$ zobaczą ją i zmienią swoje tablice routingu. Tablice rozstaną rozgłoszone do sieci $B$ oraz $D$, które adekwatnie zmienią swoje tablice routingu i rozgłoszą je dalej. 
 
-<!-- TODO fill -->
+### krok 1
+|   | A | B | C | D | E |
+|---|---|---|---|---|---|
+| U | 1 | 1 |2 B|2 B|3 D|
+| W |2 B| 1 |2 B| 1 |2 D|
+| X |2 B| 1 | 1 |2 B|3 D|
+| Y |3 B|2 D|2 D| 1 | 1 |
+| Z |3 B|2 C| 1 | 1 |2 D|
+| Q | 1 |   |   |   | 1 |
 
+### krok 2
+|   | A | B | C | D | E |
+|---|---|---|---|---|---|
+| U | 1 | 1 |2 B|2 B|2 A|
+| W |2 B| 1 |2 B| 1 |2 D|
+| X |2 B| 1 | 1 |2 B|3 D|
+| Y |2 E|2 D|2 D| 1 | 1 |
+| Z |3 B|2 C| 1 | 1 |2 D|
+| Q | 1 |2 A|   |2 E| 1 |
+
+### krok 3
+|   | A | B | C | D | E |
+|---|---|---|---|---|---|
+| U | 1 | 1 |2 B|2 B|2 A|
+| W |2 B| 1 |2 B| 1 |2 D|
+| X |2 B| 1 | 1 |2 B|3 D|
+| Y |2 E|2 D|2 D| 1 | 1 |
+| Z |3 B|2 C| 1 | 1 |2 D|
+| Q | 1 |2 A|3 B|2 E| 1 |
 
 ## Zadanie 8
 
+### wersja bez wag
+* czas = 0 - tak sieć wygląda przed awarią
+* czas = 1 - psuje się łącze między D i E, D ustawia odległość na nieskończoność, rozgłasza to do sąsiadów ("mam do SX ścieżkę nieskończoną")
+* czas = 2 - router A nadal ma zapisaną trasę do E, nie wie że prowadzi ona przez D, więc nie zmienia tablicy routingu
+* czas = 3 - A rozgłasza swoją tablicę do sąsiadów
+* czas = 4 - B,C,D rozgłasza
+* czas = 3 - A rozgłasza
+* czas = 4 - B,C,D rozgłasza
+* ...
 
+| trasa do $S_X$ | A | B | C | D |
+|----------------|---|---|---|---|
+| czas = 0       |3 B|2 D|2 D| 1 |
+| czas = 1       |3 B|2 D|2 D|$\infty$|
+| czas = 2       |3 B|$\infty$|$\infty$|$\infty$|
+| czas = 3       |3 B|4 A|4 A|$\infty$|
+| czas = 4       |5 B|4 A|4 A|5 B|
+| czas = 5       |5 B|6 A|6 A|5 B|
+| czas = 6       |7 B|6 A|6 A|7 B|
+
+
+### wersja z wagami
+* załóżmy że router C znalazł najszybszą trasę do E: C->A->B->D->E (połączenie C->D jest powolne)  
+* wtedy poison reverse nie zadziała na C, ponieważ routuje się on przez A, a nie przez D  
+* wtedy D znajdzie alternatywną trasę do E przez C
+* ...
+
+| trasa do $S_X$ | A | B | C | D |
+|----------------|---|---|---|---|
+| czas = 0       |3 B|2 D|4 A| 1 |
+| czas = 1       |3 B|2 D|4 A|$\infty$|
+| czas = 2       |3 B|$\infty$|4 A|$\infty$|
+| czas = 3       |3 B|$\infty$|4 A|5 C|
+| czas = 4       |5 B|6 D|4 A|5 C|
+
+
+
+## Zadanie 10
+![TODO - niceyfy](image-2.png)

@@ -6,38 +6,38 @@ wyznacz odpowiadający mu adres sieci, rozgłoszeniowy i adres innego komputera 
 jest to adres komputera  
 > 255.0.0.0  
 
-adres sieci: 10.0.0.0  
-adres rozgłoszeniowy: 10.255.255.255  
-adres innego komputera: 10.1.2.4  
+adres sieci: 10.0.0.0/8  
+adres rozgłoszeniowy: 10.255.255.255/8  
+adres innego komputera: 10.1.2.4/8  
 
 - 156.17.0.0/16  
 jest to adres sieci  
 > 255.255.0.0  
 
-adres sieci: 156.17.0.0  
-adres rozgłoszeniowy: 156.17.255.255    
-adres innego komputera: 156.17.0.1  
+adres sieci: 156.17.0.0/16  
+adres rozgłoszeniowy: 156.17.255.255/16    
+adres innego komputera: 156.17.0.1/16  
 
 - 99.99.99.99/27    
 > 255.255.255.11100000  
 >    99.99.99.01100011   
 
 jest to adres komputera  
-adres sieci: 99.99.99.96  
-adres rozgłoszeniowy: 99.99.99.127  
-adres innego komputera: 99.99.99.100  
+adres sieci: 99.99.99.96/27  
+adres rozgłoszeniowy: 99.99.99.127/27  
+adres innego komputera: 99.99.99.100/27  
 
 - 156.17.64.4/30  
 jest to adres sieci  
 > 255.255.255.11111100  
 >   156.17.64.00000100
 
-adres sieci: 156.17.64.4  
-adres rozgłoszeniowy: 156.17.64.7  
-adres innego komputera: 156.17.64.5
+adres sieci: 156.17.64.4/30  
+adres rozgłoszeniowy: 156.17.64.7/30  
+adres innego komputera: 156.17.64.5/30
 
 - 123.123.123.123/32  
-jest to adres komputera  
+jest to adres komputera (jeden konkretny adres IP)   
 > 255.255.255.11111111  
 > 123.123.123.01111011
 
@@ -73,6 +73,8 @@ spróbujmy uzyskać jak najmniejszą podsieć:
 - 10.10.224.0/20 <=> 10.10.224.0 - 10.10.239.255
 - 10.10.240.0/20 <=> 10.10.240.0 - 10.10.255.255
 
+wtedy adresy /20 będą miały $2^12 - 2$ adresów 
+
 ## Zadanie 3
 - 0.0.0.0 - 255.255.255.255 (/0) → do routera A
 - 10.0.0.0 - 10.0.1.255 (/23) → do routera B
@@ -89,7 +91,7 @@ spróbujmy uzyskać jak najmniejszą podsieć:
 > 24 -> +255  
 > 23 -> +511  
 
-![img](image.png)
+<img src="image.png" alt="img" width="500"/>  
 
 równoważnie:
 - 0.0.0.0/0 -> A
@@ -105,11 +107,11 @@ równoważnie:
 - 10.3.0.0 - 10.3.0.255 (/24) → do routera C
 - 10.3.0.32 - 10.3.0.63 (/27) → do routera B
 - 10.3.0.64 - 10.3.0.95 (/27) → do routera B
-- 10.3.0.96 - 10.3.0.125 (/27) → do routera B
+- 10.3.0.96 - 10.3.0.127 (/27) → do routera B
 
 > 32 = .00100000
 
-![img](image-1.png)
+<img src="image-1.png" alt="img" width="500"/>  
 
 równowaznie:  
 - 0.0.0.0/0 -> A
@@ -244,4 +246,8 @@ Po dodaniu sieci $S_Q$ routery $A$ oraz $E$ zobaczą ją i zmienią swoje tablic
 
 
 ## Zadanie 10
-![TODO - niceyfy](image-2.png)
+wysyłamy wiadomość z wierzchołka po lewej, liczba wiadomości będzie się podwajała po przejściu przez każdy 'moduł' (fakt że przesyłamy max 1 wiadomość na krawędź nie przeszkodzi w tym)  
+liczba wiadomości będzie więc rosła wykładniczo wraz z liczbą modułów, a każdy moduł zajmuje 3 dodatkowe routery  
+
+<img src="image-2.png" alt="img" width="500"/>  
+

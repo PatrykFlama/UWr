@@ -41,6 +41,8 @@ jest to adres komputera (jeden konkretny adres IP)
 > 255.255.255.11111111  
 > 123.123.123.01111011
 
+### fun fact
+sieć /31 jest wyjątkiem i ma po prostu 2 komputery  
 
 
 ## Zadanie 2
@@ -212,10 +214,8 @@ Po dodaniu sieci $S_Q$ routery $A$ oraz $E$ zobaczą ją i zmienią swoje tablic
 * czas = 0 - tak sieć wygląda przed awarią
 * czas = 1 - psuje się łącze między D i E, D ustawia odległość na nieskończoność, rozgłasza to do sąsiadów ("mam do SX ścieżkę nieskończoną")
 * czas = 2 - router A nadal ma zapisaną trasę do E, nie wie że prowadzi ona przez D, więc nie zmienia tablicy routingu
-* czas = 3 - A rozgłasza swoją tablicę do sąsiadów
-* czas = 4 - B,C,D rozgłasza
-* czas = 3 - A rozgłasza
-* czas = 4 - B,C,D rozgłasza
+* czas = 3 - A rozgłasza swoją tablicę do sąsiadów, wartość nie zaktualizowana w B bo przez nie idzie (poison reverse)
+* C,D rozgłasza
 * ...
 
 | trasa do $S_X$ | A | B | C | D |
@@ -223,10 +223,10 @@ Po dodaniu sieci $S_Q$ routery $A$ oraz $E$ zobaczą ją i zmienią swoje tablic
 | czas = 0       |3 B|2 D|2 D| 1 |
 | czas = 1       |3 B|2 D|2 D|$\infty$|
 | czas = 2       |3 B|$\infty$|$\infty$|$\infty$|
-| czas = 3       |3 B|4 A|4 A|$\infty$|
-| czas = 4       |5 B|4 A|4 A|5 B|
-| czas = 5       |5 B|6 A|6 A|5 B|
-| czas = 6       |7 B|6 A|6 A|7 B|
+| czas = 3       |3 B|$\infty$|4 A|$\infty$|
+| czas = 4       |3 B|$\infty$|4 A|5 B|
+| czas = 5       |3 B|6 A|4 A|5 B|
+| czas = 6       |7 B|6 A|4 A|5 B|
 
 
 ### wersja z wagami
@@ -243,6 +243,44 @@ Po dodaniu sieci $S_Q$ routery $A$ oraz $E$ zobaczą ją i zmienią swoje tablic
 | czas = 3       |3 B|$\infty$|4 A|5 C|
 | czas = 4       |5 B|6 D|4 A|5 C|
 
+
+## Zadanie 9
+sieć poniżej, wagi w nawiasach (domyślnie 1)
+
+```
+D <--- C
+|      | (10)
+\/     |
+A ---> B
+
+z punktu widzenia C:
+D <--- C
+|      | (10)
+|      |
+A ---- B
+
+z punktu widzenia D:
+D ---> C
+|      | (10)
+|      |
+A      B
+```
+
+połącznie się psuje, A zacznie wysyłać do B przez D (powstaje cykl A-D)
+```
+D <--- C
+|      | (10)
+|      |
+A -x-> B
+```
+
+D zacznie wysyłać do B przez C (powstaje cykl D-C)
+```
+D ---- C
+/\     | (10)
+|      |
+A -x-> B
+```
 
 
 ## Zadanie 10

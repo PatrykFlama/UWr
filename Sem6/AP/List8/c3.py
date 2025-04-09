@@ -37,7 +37,7 @@ def brute_force_solution(n, m, q, ops):
             result.append("N")
     return result
 
-def check(iterations=100):
+def check(iterations=10000):
     for i in tqdm(range(1, iterations + 1), desc="Running tests"):
         n, m, q, ops = generate_test_case()
         try:
@@ -45,7 +45,7 @@ def check(iterations=100):
             actual = run_cpp_solution(n, m, q, ops)
 
             if actual != expected:
-                print(f"\n❌ Mismatch on test #{i}")
+                print(f"\nMismatch on test #{i}")
                 print(f"n = {n}, m = {m}, q = {q}")
                 print("Operations:")
                 for op in ops:
@@ -54,7 +54,7 @@ def check(iterations=100):
                 print("Actual:  ", actual)
                 return
         except Exception as e:
-            print(f"\n💥 Error on test #{i}: {e}")
+            print(f"\nError on test #{i}: {e}")
             return
     print("✅ All tests passed!")
 

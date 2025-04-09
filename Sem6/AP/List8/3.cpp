@@ -137,6 +137,8 @@ int32_t main() {
 
     while (q--) {
         int _from, _to, _seats; cin >> _from >> _to >> _seats;
+        _to--;
+
 
         Node res = st.query(_from, _to);
         if (res.max_val + _seats <= m) {

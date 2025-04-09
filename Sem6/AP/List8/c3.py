@@ -10,8 +10,13 @@ def generate_test_case(n_range=(1, MAXX), m_range=(1, MAXX), q_range=(1, MAXX)):
     q = random.randint(*q_range)
     ops = []
     for _ in range(q):
-        l = random.randint(0, n - 1)
-        r = random.randint(l, n - 1)
+        if(n < 3):
+            l = 1
+            r = 2
+        else:
+            l = random.randint(0, n - 2) + 1
+            r = random.randint(l, n - 1) + 1
+            
         seats = int(random.random() ** 2 * m) + 1
         ops.append((l, r, seats))
     return n, m, q, ops
@@ -28,9 +33,9 @@ def brute_force_solution(n, m, q, ops):
     bookings = [0] * (n + 1)
     result = []
     for l, r, s in ops:
-        max_now = max(bookings[l:r+1])
+        max_now = max(bookings[l:r])
         if max_now + s <= m:
-            for i in range(l, r+1):
+            for i in range(l, r):
                 bookings[i] += s
             result.append("T")
         else:
@@ -46,10 +51,9 @@ def check(iterations=10000):
 
             if actual != expected:
                 print(f"\nMismatch on test #{i}")
-                print(f"n = {n}, m = {m}, q = {q}")
-                print("Operations:")
+                print(f"{n} {m} {q}")
                 for op in ops:
-                    print(op)
+                    print(f"{op[0]} {op[1]} {op[2]}")
                 print("Expected:", expected)
                 print("Actual:  ", actual)
                 return

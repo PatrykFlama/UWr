@@ -66,7 +66,7 @@ namespace std {
 
 //* ------------- MAIN IMPL -----------------
 struct Network {
-    uint32_t ip;
+    uint32_t ip;    //? network byte order
     uint8_t prefix_len;
     uint8_t dist;
 
@@ -101,11 +101,16 @@ void receiveTables() {
     while (status > 0) {
         struct sockaddr_in sender;
         socklen_t sender_len = sizeof(sender);
-        u_int8_t buffer[IP_MAXPACKET+1];
+        uint8_t buffer[IP_MAXPACKET+1];
 
         ssize_t datagram_len = recvfrom(sock_fd, buffer, IP_MAXPACKET, 0, (struct sockaddr*)&sender, &sender_len);
         if (datagram_len < 0) {
             ERROR("recvfrom error");
+        }
+
+        if (datagram_len < 6) {
+            dprintf("Invalid packet size: %zd\n", datagram_len);
+            continue;
         }
 
         char sender_ip_str[INET_ADDRSTRLEN];
@@ -115,10 +120,12 @@ void receiveTables() {
         buffer[datagram_len] = 0;
         dprintf("%ld-byte message: +%s+\n", datagram_len, (char*)buffer);
     
-        uint32_t ip = (buffer[0] << 24) |
+        uint32_t network_ip = 
+                      (buffer[0] << 24) |
                       (buffer[1] << 16) |
                       (buffer[2] << 8)  |
                       (buffer[3]);
+        uint32_t ip = ntohl(network_ip); // store in host order
         uint8_t prefix_len = buffer[4];
         uint8_t dist = buffer[5];
         
@@ -128,7 +135,7 @@ void receiveTables() {
                          to_string(buffer[3]) + "/" + 
                          to_string(prefix_len);
 
-        dprintf("IP: %u, prefix_len: %d, dist: %d\n", ip, prefix_len, dist);
+        dprintf("IP: %u, prefix_len: %d, dist: %d\n", ip, prefix_len, (int)dist);
         dprintf("CIDR: %s\n", cidr_ip.c_str());
 
 
@@ -184,11 +191,12 @@ void broadcastTable() {
         for (const auto& [key, net] : routing_table) {
             if (net.dist == INF && !net.connected_directly) continue;
             
+            uint32_t network_ip = htonl(net.ip);
             uint8_t packet[6] = {
-                static_cast<uint8_t>((net.ip >> 24) & 0xFF),
-                static_cast<uint8_t>((net.ip >> 16) & 0xFF),
-                static_cast<uint8_t>((net.ip >> 8) & 0xFF),
-                static_cast<uint8_t>(net.ip & 0xFF),
+                static_cast<uint8_t>((network_ip >> 24) & 0xFF),
+                static_cast<uint8_t>((network_ip >> 16) & 0xFF),
+                static_cast<uint8_t>((network_ip >> 8) & 0xFF),
+                static_cast<uint8_t>(network_ip & 0xFF),
                 net.prefix_len,
                 net.dist
             };
@@ -221,7 +229,7 @@ void printTable(ostream& os) {
         if (net.dist == INF)
             os << "unreachable";
         else
-            os << net.dist;
+            os << (int)net.dist;
 
         if (net.connected_directly)
             os << " connected directly";
@@ -242,7 +250,7 @@ void runTasksOnTime() {
             timer_broadcast_table.reset();
         }
         
-        if (timer_receive_tables.elapsed() > 500) {
+        if (timer_receive_tables.elapsed() > RECEIVE_TABLES_INTERVAL) {
             receiveTables();
             timer_receive_tables.reset();
         }
@@ -264,9 +272,11 @@ void readStdinConfig() {
 
     for(int i = 0; i < n; i++) {
         string ip_cidr, trash;
-        uint8_t dist;
+        int idist;
 
-        cin >> ip_cidr >> trash >> dist;
+        cin >> ip_cidr >> trash >> idist;
+
+        uint32_t dist = static_cast<uint32_t>(idist);
 
         // parse CIDR notation and add to routing table
         size_t pos = ip_cidr.find('/');
@@ -278,12 +288,13 @@ void readStdinConfig() {
         uint8_t prefix_len = stoi(ip_cidr.substr(pos + 1));
 
         // convert IP string to uint32_t and check validity
-        uint32_t ip;
-        if (inet_pton(AF_INET, ip_str.c_str(), &ip) != 1) {
+        uint32_t ip_net;
+        if (inet_pton(AF_INET, ip_str.c_str(), &ip_net) != 1) {
             ERROR("Invalid IP address");
         }
+        uint32_t ip = ntohl(ip_net); // store in host order
 
-        dprintf("IP: %u, prefix_len: %d, dist: %d\n", ip, prefix_len, dist);
+        dprintf("IP: %u, prefix_len: %d, dist: %d\n", ip, prefix_len, (int)dist);
 
         routing_table[ip_cidr] = {
             .ip = ip,
@@ -300,14 +311,14 @@ void readStdinConfig() {
         uint32_t broadcast = (ntohl(ip) & mask) | ~mask;
 
         struct in_addr broadcast_addr;
-        broadcast_addr.s_addr = htonl(broadcast);
+        broadcast_addr.s_addr = broadcast;
 
         char broadcast_str[INET_ADDRSTRLEN];
         if (inet_ntop(AF_INET, &broadcast_addr, broadcast_str, sizeof(broadcast_str)) == nullptr) {
             ERROR("Failed to generate broadcast address");
         }
 
-        interfaces.push_back(broadcast_str);
+        interfaces.push_back(string(broadcast_str));
     }
 }
 

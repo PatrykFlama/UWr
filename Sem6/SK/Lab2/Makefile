@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -Wall -Wextra -std=c++17
-TARGET = traceroute
+TARGET = router
 SRC = main.cpp
 OBJ = $(SRC:.cpp=.o)
 

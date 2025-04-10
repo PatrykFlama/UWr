@@ -60,7 +60,7 @@ def check(iterations=10000):
         except Exception as e:
             print(f"\nError on test #{i}: {e}")
             return
-    print("✅ All tests passed!")
+    print("All tests passed!")
 
 if __name__ == "__main__":
     check()

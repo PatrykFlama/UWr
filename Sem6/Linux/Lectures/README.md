@@ -37,6 +37,16 @@
   - [loopback](#loopback)
   - [szyfrowanie](#szyfrowanie)
   - [access control](#access-control)
+- [Wykład 7 - podstawowe czynności administracyjne](#wykład-7---podstawowe-czynności-administracyjne)
+  - [Name Service Switch](#name-service-switch)
+  - [użytkownicy i grupy](#użytkownicy-i-grupy)
+    - [/etc/shadow](#etcshadow)
+    - [grupy](#grupy)
+    - [podużytkownicy i podgrupy](#podużytkownicy-i-podgrupy)
+    - [jak zmienić zapomniane hasło roota?](#jak-zmienić-zapomniane-hasło-roota)
+    - [zarządzanie użytkownikami](#zarządzanie-użytkownikami)
+    - [hasło roota](#hasło-roota)
+  - [logi systemowe](#logi-systemowe)
 
 
 # Some notes
@@ -499,3 +509,98 @@ w uniksie korzysta się z obu metod (ale głównie z discretionary)
 **tryb dostępu i typ pliku**  
 4 najstarsze bity to typ pliku (czyli czy jest to katalog, plik, socket, ...)   
 pozostałe 12 dzieli się na 4 grupy po 3 bity (szczególne tryby dostępu oraz tryb dostępu dla właściciela, grupy i innych)
+
+
+# Wykład 7 - podstawowe czynności administracyjne
+komputery wolą liczby, ludzie nazwy symboliczne => jest masa odwzorowań które przypisują liczby do nazw symbolicznych  
+np root to użytkownik z id 0  
+
+## Name Service Switch
+NSS - system, który pozwala na odwzorowanie nazw symbolicznych na liczby (i odwrotnie)  
+czerpie informacje z różnych źródeł (np plików, LDAP, DNS, ...)  
+
+> czemu /etc/passwd musi być dostępny dla każdego (skoro logowanie ma dostęp do roota)?  
+> wiele programów chce sprawdzić nazwę użytkownika, więc muszą mieć dostęp do /etc/passwd  
+> (dlatego też hasła są trzymane w osobym pliku /etc/shadow)  
+
+
+## użytkownicy i grupy
+logi były trzymane w `/var/log` (ale zostały przejęte przez systemd *journalem*)  
+`id` `whoami` - sprawdzają id użytkownika  
+`w` `who` - sprawdzają kto jest zalogowany  
+
+mechanizm `group` pomaga zarządzać uprawnieniami (przypisanie do odpowiedniej grupy nadaje jakieś uprawnienia)  
+np grupa `adm` - grupa administracyjna; `video` - dostęp do akceleraji graficznej (są pliki odpowiednich urządzeń w `/dev/` które mają tą grupę przypisaną)  
+
+kiedyś każdy daemon miał użytkownika `root`, ale to było niebezpieczne, więc dodano użytkownika `nobody` (o ostatnim numerze), przez to jednak że każdy miał tego użytkownika to był to bardzo _silny_ użytkonik, więc teraz każdy daemon ma swojego użytkonika (zaczynącego się od `_` aby łatwo rozróżnić)  
+
+### /etc/shadow
+pole hasła: konwencja jest taka że jeżeli dodamy `!` lub `*` to hasło jest zablokowane (ale nie usunięte)	 
+stara rekomendacja ubikey: hasło powinno się zmieniać często; nowa rekomendacja: jeżeli już zmieniać to nie częściej niż raz na rok (bo odchodzi się od uwierzytelniania hasłem)  
+
+### grupy
+2 sposoby aby użytkownik skorzystał z grupy: 
+* musi do niej należeć (w /etc/group)
+* musi znać do niej hasło (w /etc/gshadow)
+
+> np jeżeli chcemy żeby firefox miał dostęp do internetu ale libreoffice nie:  
+> moglibyśmy napisać regułkę do firewalla  
+> możemy założyć specjalną grupę net i w firewallu dać tylko jej dostęp do internetu  
+> jest polecenie set-group, wtedy możemy odpalić firefox w net, a libreoffice bez  
+> wada: wszystkie pobierane pliki były w grupie net
+
+### podużytkownicy i podgrupy
+`/etc/{subuid,subgid}` - pliki w których są zapisane podużytkownicy i podgrupy
+
+### jak zmienić zapomniane hasło roota?
+w przeciwieństwie do dostępu z internetu, ten kto ma fizyczny dostęp do maszyny to może zrobić z nią praktycznie wszystko (co jest dobre)  
+
+trzeba się wchrootować do systemu ratowanego i zmienić hasło roota (bo passwd nie pyta o hasło jeżeli to jest root)  
+można też po prostu usunąć hasło z `/etc/shadow`  
+
+> wg ustawy "nie ulega karze ten kto hakuje w zbożnym celu"  
+> też wg ustawy "podlega karze ten kto ma na swoim komputerze narzędzia do hakowania" (np wg jakiejś interpretacji przeglądarka)  
+
+są mechanizmy że to trochę utrudnić - np zahasłowany BIOS (hasło można zdjąć kompletnie odcinając zasilanie), GRUB, dysk  
+
+### zarządzanie użytkownikami
+usunięcie hasła użytkonikowi to nie to samo co zablokowanie użytkownika  
+żeby zablokować użytkownika możemy np usunąć mu shella (wtedy nadal możemy się na niego przełączyć, bo będziemy korzystać z własnego shella)  
+można też zablokować go ustawiając mu datę wygaśnięcia na 0 sekundę (czyli 1-01-1970), co jest preferowaną metodą
+
+`sudo su` - nope, lepiej `sudo -i` żeby mieć interaktywną powłokę  
+`su -` - zmienia środowisko użytkownika, bardzo ważne szczególnie przy przełączaniu się na roota (bo inaczej zostaje środowisko nierootowego użytkownika, w którym ktoś mógł coś namieszać)  
+
+różne ograniczenia dostępu do konta:
+- zablokowany - nie można uruchomić procesu z jego UID
+- domyślna powłoka zablokowana
+- domyślna powłoka ograniczona
+- hasło zablokowane
+
+
+sudo  
+`prog1 | prog1 > root_file` - gdzie dać sudo? `prog1 | prog2 | sudo tee root_file`
+
+> "jak wolisz su od sudo, to czy wolisz capslock'a od shift'a?"  
+> ~ hehehaha
+
+### hasło roota
+* czy wyłączać?
+w sumie jak się wie co robi, to nie trzeba
+
+* czy powinno być takie samo jak użytkownika? 
+zakładając że hasło jest silne, jedynym ryzykiem jest fakt, że hasło użytkownika się wypisuje o wiele częściej
+
+
+## logi systemowe
+katalog `/var/log/`, zazwyczaj dba o nie daemon `(r)syslog`   
+często serwer logów jest osobny i dobrze odizolowany (żeby nie można było go zhackować)  
+narzędzie `ccze` pozwala na kolorowanie logów  
+
+aczkolwiek systemd po wprowadzeniu `journalctl` kompletnie to zmienił (i często syslog nawet nie jest defaultowo instalowany)  
+opiera się on na bazie danych (a nie plikach tekstowych), więc do użycia wymaga on `journalctl`  
+warto więc się nauczyć korzysatnia z niego, bo jest on o wiele potężniejszy od sysloga  
+
+kernel się odpala tak jak program, więc możemy mu ustawić jakieś argumenty  
+np `quiet` - nie pokazuje logów na ekranie w trakcie startu systemu (bo i tak wyświetlają się tak szybko że nie jesteśmy w stanie ich przeczytać)  
+

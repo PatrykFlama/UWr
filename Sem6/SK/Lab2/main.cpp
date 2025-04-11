@@ -19,10 +19,11 @@ using namespace std;
 
 
 constexpr int PORT = 54321;
-constexpr int TABLE_BROADCAST_INTERVAL = 15; // seconds
-constexpr int PRINT_TABLE_INTERVAL = 5; // seconds
+constexpr int TABLE_BROADCAST_INTERVAL = 15 * 1000; // milliseconds
+constexpr int PRINT_TABLE_INTERVAL = 5 * 1000; // milliseconds
 constexpr int RECEIVE_TABLES_INTERVAL = 500; // milliseconds
 constexpr uint8_t INF = (1 << 8) - 1;
+constexpr int TIME_KEEP_UNREACHABLE = 30 * 1000; // milliseconds
 
 //* ------------- HELPER -----------------
 void ERROR(const char* str) {
@@ -72,6 +73,9 @@ struct Network {
 
     bool connected_directly = true;
     string next_hop = "";
+
+    bool reachable;
+    Time last_seen;
 };
 
 unordered_map<string, Network> routing_table;
@@ -79,6 +83,12 @@ vector<string> interfaces;
 unordered_map<string, string> iface_to_ip; //? interface name to IP address mapping
 
 
+uint32_t get_network_ip(uint32_t ip, uint8_t prefix_len) {
+    uint32_t mask = (prefix_len == 0) ? 0 : htonl(~0U << (32 - prefix_len));
+    return ip & mask;
+}
+
+//* -------------- MAIN FUNCTIONS -----------------
 //? listens for incoming routing tables
 void receiveTables() {
     int sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -119,7 +129,7 @@ void receiveTables() {
         dprintf("Received UDP packet from IP address: %s, port: %d\n", sender_ip_str, ntohs(sender.sin_port));
      
         buffer[datagram_len] = 0;
-        dprintf("%ld-byte message: +%s+\n", datagram_len, (char*)buffer);
+        // dprintf("%ld-byte message: +%s+\n", datagram_len, (char*)buffer);
     
         uint32_t network_ip = *reinterpret_cast<uint32_t*>(buffer); // parse received in network byte order
         uint8_t prefix_len = buffer[4];
@@ -131,19 +141,39 @@ void receiveTables() {
                          to_string(buffer[3]) + "/" + 
                          to_string(prefix_len);
 
-        dprintf("IP: %u, prefix_len: %d, dist: %d\n", network_ip, prefix_len, (int)dist);
-        dprintf("CIDR: %s\n", cidr_ip.c_str());
+        dprintf("CIDR: %s, dist: %d\n", cidr_ip.c_str(), (int)dist);
 
+
+        // convert sender ip to network byte order
+        in_addr sender_addr;
+        inet_pton(AF_INET, sender_ip_str, &sender_addr);
+        uint32_t sender_ip_net = sender_addr.s_addr;
+
+        // find best matching route to sender ip
+        uint8_t dist_from_sender = INF;
+        size_t best_prefix = 0;
+        for (const auto& [cidr, entry] : routing_table) {
+            // check if ip matches network
+            if (get_network_ip(sender_ip_net, entry.prefix_len) == 
+                get_network_ip(entry.ip, entry.prefix_len)) {
+                if (entry.prefix_len > best_prefix) {
+                    best_prefix = entry.prefix_len;
+                    dist_from_sender = entry.dist;
+                }
+            }
+        }
+
+        // If no route found, skip this packet
+        if (dist_from_sender == INF) {
+            dprintf("No route to sender %s\n", sender_ip_str);
+            continue;
+        }
 
         // if cidr is not in table or is further away, update it
-        // const uint8_t dist_from_sender = routing_table[iface_to_ip[sender_ip_str]].dist;
-        const uint8_t dist_from_sender = 1;
-        // TODO fix distances calculating
-
         if (routing_table.find(cidr_ip) == routing_table.end() || 
             (!routing_table[cidr_ip].connected_directly && 
-             dist != INF &&
-             routing_table[cidr_ip].dist > dist + dist_from_sender)) {
+                dist != INF &&
+                routing_table[cidr_ip].dist > (int)dist + (int)dist_from_sender)) {
             routing_table[cidr_ip] = {
                 .ip = network_ip,
                 .prefix_len = prefix_len,
@@ -205,6 +235,7 @@ void broadcastTable() {
             if (sendto(sock_fd, packet, sizeof(packet), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr)) != sizeof(packet)) {
                 // ERROR("sendto error");
                 dprintf("sendto error: %s\n", strerror(errno));
+                //TODO if sendto fails, it means the interface is down - unreachable
                 continue;
             }
         }
@@ -225,10 +256,10 @@ void printTable(ostream& os) {
 
         os << ip_str << "/" << static_cast<int>(net.prefix_len)
            << " distance " << static_cast<int>(net.dist)
-           << " via " << (net.connected_directly ? "direct" : net.next_hop)
-           << endl;
+           << (net.connected_directly ? " connected directly" : " via " + net.next_hop)
+           << '\n';
     }
-    os << "\n------------------------\n";
+    os << "------------------------\n";
 }
 
 
@@ -236,12 +267,12 @@ void runTasks() {
     Timer timer_print_table, timer_broadcast_table;
 
     while (true) {
-        if (timer_broadcast_table.elapsed() > TABLE_BROADCAST_INTERVAL * 1000) {
+        if (timer_broadcast_table.elapsed() > TABLE_BROADCAST_INTERVAL) {
             broadcastTable();
             timer_broadcast_table.reset();
         }
         
-        if (timer_print_table.elapsed() > PRINT_TABLE_INTERVAL * 1000) {
+        if (timer_print_table.elapsed() > PRINT_TABLE_INTERVAL) {
             printTable(cout);
             timer_print_table.reset();
         }
@@ -249,6 +280,28 @@ void runTasks() {
         // sleep for 100ms to avoid busy waiting
         receiveTables();
         this_thread::sleep_for(chrono::milliseconds(100)); 
+    }
+}
+
+void debugInteract() {
+    char op; cin >> op;
+
+    switch (op) {
+    case 'p':
+        printTable(cout);
+        break;
+    case 't':
+        printTable(cout);
+        break;
+    case 'b':
+        broadcastTable();
+        break;
+    case 'r':
+        receiveTables();
+        break;
+    case 'q':
+        cout << "Exiting..." << endl;
+        exit(0);
     }
 }
 
@@ -321,5 +374,10 @@ void readStdinConfig() {
 
 int main() {
     readStdinConfig();
+
+    // while(DEBUG) {
+    //     debugInteract();
+    // }
+
     runTasks();
 }

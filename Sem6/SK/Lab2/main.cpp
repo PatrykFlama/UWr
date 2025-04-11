@@ -14,7 +14,7 @@
 
 using namespace std;
 
-#define DEBUG 1     // debug stage; 0 = none, verbose = 3, minimal >= 4
+#define DEBUG 2     // debug stage
 #define dprintf if(DEBUG) printf
 
 //* ------------------ CONSTANTS ------------------
@@ -24,7 +24,9 @@ constexpr int PRINT_TABLE_INTERVAL = 5 * 1000; // milliseconds
 constexpr int RECEIVE_TABLES_INTERVAL = 500; // milliseconds
 constexpr uint8_t MAX_DIST = (1 << 4) - 1;   //TODO use it (max distance)
 constexpr uint8_t INF = (1 << 8) - 1;
+constexpr int TIME_TO_DIE = 60 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
 constexpr int TIME_KEEP_UNREACHABLE = 30 * 1000; // milliseconds
+constexpr int INF_BROADCAST_COUNT = 3; 
 
 //* ------------- HELPER -----------------
 void ERROR(const char* str) {
@@ -43,14 +45,14 @@ public:
         start_time = chrono::high_resolution_clock::now();
     }
 
-    int64_t elapsed() {
+    int64_t elapsed() const {
         return chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - start_time).count();
     }
 
-    int64_t now() {
+    int64_t now() const {
         return chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
     }
-    double now_precise() {
+    double now_precise() const {
         return chrono::duration<double, milli>(chrono::high_resolution_clock::now().time_since_epoch()).count();
     }
 };
@@ -75,13 +77,18 @@ struct Network {
     bool connected_directly = true;
     string next_hop = "";
 
-    // bool reachable;
-    // Timer last_reachable = Timer(); //? time since last received/socket working/dist not INF
+    Timer last_reachable = Timer(); //? time since last received/socket working/dist not INF
+    Timer last_updated = Timer(); //? time since last received/socket working/dist not INF
+};
+
+struct Interface {
+    uint8_t dist;
+    string cidr;
 };
 
 //* -------------- GLOBALS  ---------------
 unordered_map<string, Network> routing_table;
-vector<string> net_broadcast_adddr;
+vector<pair<string, Interface>> net_broadcast_adddr; //? {broadcast address, interface distance}
 
 int receive_sock = -1;
 int broadcast_sock = -1;
@@ -92,6 +99,7 @@ uint32_t get_network_ip(uint32_t ip, uint8_t prefix_len) {
     uint32_t mask = (prefix_len == 0) ? 0 : htonl(~0U << (32 - prefix_len));
     return ip & mask;
 }
+
 
 //* -------------- MAIN FUNCTIONS -----------------
 //? initializes sockets for receiving and broadcasting
@@ -128,6 +136,8 @@ void initSockets() {
                   &broadcast_enable, sizeof(broadcast_enable)) < 0) {
         ERROR("setsockopt error");
     }
+
+    dprintf("Port %d bound to %s\n", PORT, inet_ntoa(server_address.sin_addr));
 }
 
 
@@ -164,10 +174,10 @@ void receiveTables() {
         uint8_t dist = buffer[5];
         
         string cidr_net_ip = to_string(buffer[0]) + "." + 
-                         to_string(buffer[1]) + "." + 
-                         to_string(buffer[2]) + "." + 
-                         to_string(buffer[3]) + "/" + 
-                         to_string(prefix_len);
+                             to_string(buffer[1]) + "." + 
+                             to_string(buffer[2]) + "." + 
+                             to_string(buffer[3]) + "/" + 
+                             to_string(prefix_len);
 
         dprintf("CIDR: %s, dist: %d\n", cidr_net_ip.c_str(), (int)dist);
 
@@ -191,6 +201,22 @@ void receiveTables() {
             }
         }
 
+        // if sender is from direct interface, compare it with its distance and ensure iface marked as alive
+        for (const auto& [iface_broad, iface] : net_broadcast_adddr) {
+            if (sender_ip_net == inet_addr(iface_broad.c_str())) {
+                dist_from_sender = min(dist_from_sender, iface.dist);
+
+                routing_table[iface.cidr].last_reachable.reset(); // mark iface as reachable
+
+                if(routing_table[iface.cidr].dist == INF) {
+                    routing_table[iface.cidr].dist = iface.dist; // update distance to iface
+                    routing_table[iface.cidr].last_updated.reset(); // mark iface as reachable
+                }
+
+                break;
+            }
+        }
+
         // no route found - skip
         if (dist_from_sender == INF) {
             dprintf("No route to sender %s\n", sender_ip_str);
@@ -201,16 +227,18 @@ void receiveTables() {
         if (routing_table.find(cidr_net_ip) == routing_table.end() || 
             (!routing_table[cidr_net_ip].connected_directly && 
                 dist != INF &&
-                routing_table[cidr_net_ip].dist > (int)dist + (int)dist_from_sender)) {
+                routing_table[cidr_net_ip].dist > (int)dist + (int)dist_from_sender)) 
+        {
             routing_table[cidr_net_ip] = {
                 .ip = network_ip,
                 .prefix_len = prefix_len,
                 .dist = static_cast<uint8_t>(dist + dist_from_sender),
                 .connected_directly = false,
-                .next_hop = sender_ip_str
+                .next_hop = sender_ip_str,
+                .last_reachable = Timer(),
+                .last_updated = Timer(),
             };
         }
-
 
         status = poll(&fds, 1, RECEIVE_TABLES_INTERVAL - time_left.elapsed());
     }
@@ -224,7 +252,7 @@ void receiveTables() {
 //? sends routing table on broadcast address
 void broadcastTable() {
     // send to every interface connected
-    for (const auto& iface : net_broadcast_adddr) {
+    for (const auto& [iface, if_data] : net_broadcast_adddr) {
         struct sockaddr_in dest_addr;
         memset(&dest_addr, 0, sizeof(dest_addr));
         dest_addr.sin_family = AF_INET;
@@ -236,8 +264,12 @@ void broadcastTable() {
 
         // send every entry with different packet
         for (const auto& [cidr, net] : routing_table) {
-            if (net.dist == INF) continue;
+            // skip expired unreachable routes
+            if (net.dist == INF && net.last_updated.elapsed() > TIME_KEEP_UNREACHABLE) {
+                continue;
+            }
 
+            // prepare packet
             uint8_t packet[6];
             *reinterpret_cast<uint32_t*>(packet) = net.ip;  //? network byte order
             packet[4] = net.prefix_len;
@@ -248,10 +280,24 @@ void broadcastTable() {
                     packet[0], packet[1], packet[2], packet[3], packet[4], packet[5]);
                 
             if (sendto(broadcast_sock, packet, sizeof(packet), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr)) != sizeof(packet)) {
-                // ERROR("sendto error");
-                dprintf("sendto error: %s\n", strerror(errno));
-                //TODO if sendto fails, it means the interface is down - unreachable
+                dprintf("Interface %s sendto failed: %s\n", iface.c_str(), strerror(errno));
+
+                // mark all routes through this interface as unreachable
+                for (auto& [key, route] : routing_table) {
+                    if (route.next_hop == iface) {
+                        route.dist = INF;
+                        route.last_updated.reset();
+                    }
+                }
+
                 continue;
+            }
+
+            // update direct route timestamps
+            for (auto& [key, route] : routing_table) {
+                if (route.connected_directly && route.ip == net.ip) {
+                    route.last_reachable.reset();
+                }
             }
         }
     }
@@ -260,15 +306,40 @@ void broadcastTable() {
 
 //? removes old unreachable (excluding interfaces)
 void removeUnreachable() {
-    // for (auto it = routing_table.begin(); it != routing_table.end();) {
-    //     if (!it->second.connected_directly && 
-    //         (it->last_reachable).elapsed() > TIME_KEEP_UNREACHABLE) {
-    //         dprintf("Removing unreachable route: %s\n", it->first.c_str());
-    //         it = routing_table.erase(it);
-    //     } else {
-    //         ++it;
-    //     }
-    // }
+    for (auto it = routing_table.begin(); it != routing_table.end();) {
+        Network& net = it->second;
+        
+        // handle indirect routes
+        if (!net.connected_directly) {
+            // mark as INF (unreachable) if no updates received
+            if (net.last_reachable.elapsed() > TIME_TO_DIE && net.dist != INF) {
+                net.dist = INF;
+                net.last_updated.reset();
+                dprintf("Marked %s as unreachable (timeout)\n", it->first.c_str());
+            }
+            
+            // remove if INF expired (unreachable for too long)
+            if (net.dist == INF && net.last_updated.elapsed() > TIME_KEEP_UNREACHABLE) {
+                dprintf("Removing expired route: %s\n", it->first.c_str());
+                it = routing_table.erase(it);
+                continue;
+            }
+        }
+        
+
+        // TODO should i keep original distance?
+        // handle direct routes
+        if (net.connected_directly) {
+            // mark direct as INF if interface down, but keep in table
+            if (net.last_reachable.elapsed() > TIME_TO_DIE && net.dist != INF) {
+                net.dist = INF;
+                net.last_updated.reset();
+                dprintf("Marked direct route %s as down (timeout)\n", it->first.c_str());
+            }
+        }
+        
+        ++it;
+    }
 }
 
 
@@ -395,7 +466,10 @@ void readStdinConfig() {
         char broadcast_str[INET_ADDRSTRLEN];
         in_addr bc_addr = {broadcast};
         inet_ntop(AF_INET, &bc_addr, broadcast_str, INET_ADDRSTRLEN);
-        net_broadcast_adddr.push_back(broadcast_str);
+        net_broadcast_adddr.push_back({broadcast_str, Interface{
+            .dist = dist,
+            .cidr = network_cidr,
+        }});
     }
 }
 

@@ -76,6 +76,7 @@ struct Network {
 
 unordered_map<string, Network> routing_table;
 vector<string> interfaces;
+unordered_map<string, string> iface_to_ip; //? interface name to IP address mapping
 
 
 //? listens for incoming routing tables
@@ -135,14 +136,18 @@ void receiveTables() {
 
 
         // if cidr is not in table or is further away, update it
+        // const uint8_t dist_from_sender = routing_table[iface_to_ip[sender_ip_str]].dist;
+        const uint8_t dist_from_sender = 1;
+        // TODO fix distances calculating
+
         if (routing_table.find(cidr_ip) == routing_table.end() || 
             (!routing_table[cidr_ip].connected_directly && 
              dist != INF &&
-             routing_table[cidr_ip].dist > dist + 1)) {
+             routing_table[cidr_ip].dist > dist + dist_from_sender)) {
             routing_table[cidr_ip] = {
                 .ip = network_ip,
                 .prefix_len = prefix_len,
-                .dist = static_cast<uint8_t>(dist + 1),
+                .dist = static_cast<uint8_t>(dist + dist_from_sender),
                 .connected_directly = false,
                 .next_hop = sender_ip_str
             };
@@ -198,7 +203,9 @@ void broadcastTable() {
                     packet[0], packet[1], packet[2], packet[3], packet[4], packet[5]);
                 
             if (sendto(sock_fd, packet, sizeof(packet), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr)) != sizeof(packet)) {
-                ERROR("sendto error");
+                // ERROR("sendto error");
+                dprintf("sendto error: %s\n", strerror(errno));
+                continue;
             }
         }
     }
@@ -268,26 +275,40 @@ void readStdinConfig() {
         uint8_t prefix_len = stoi(cidr.substr(slash_pos + 1));
 
         // convert to network byte order
-        in_addr ip_net;
-        if (inet_pton(AF_INET, ip_str.c_str(), &ip_net) != 1) {
+        in_addr host_ip;
+        if (inet_pton(AF_INET, ip_str.c_str(), &host_ip) != 1) {
             ERROR("Invalid IP address");
         }
 
-        dprintf("IP: %u, prefix_len: %d, dist: %d\n", ip_net, prefix_len, (int)dist);
+        dprintf("IP: %u, prefix_len: %d, dist: %d\n", host_ip.s_addr, prefix_len, (int)dist);
 
-        routing_table[cidr] = {
-            .ip = ip_net.s_addr,
+        // generate broadcast address
+        // generate address mask in network order - start from all 1s and shift left by prefix_len
+        uint32_t mask = (prefix_len) ? (~0U << (32 - prefix_len)) : 0;
+        // broadcast is las addr in range - combine given ip and place 1 in all 0 of mask
+        mask = htonl(mask); // convert to network byte order
+        uint32_t network_addr = host_ip.s_addr & mask;
+        uint32_t broadcast = network_addr | ~mask;
+
+
+        char network_str[INET_ADDRSTRLEN];
+        in_addr network_ip = {network_addr};
+        inet_ntop(AF_INET, &network_ip, network_str, INET_ADDRSTRLEN);
+        string network_cidr = string(network_str) + "/" + to_string(prefix_len);
+        
+
+        iface_to_ip[cidr] = network_str; //? interface name to IP address mapping
+
+        // routing_table[cidr] = {
+            // .ip = host_ip.s_addr,
+        routing_table[network_cidr] = {
+            .ip = network_addr,
             .prefix_len = prefix_len,
             .dist = dist,
             .connected_directly = true,
             .next_hop = ""
         };
 
-        // generate broadcast address
-        // generate address mask in network order - start from all 1s and shift left by prefix_len
-        uint32_t mask = (prefix_len) ? htonl(~0U << (32 - prefix_len)) : 0;
-        // broadcast is las addr in range - combine given ip and place 1 in all 0 of mask
-        uint32_t broadcast = (ip_net.s_addr & mask) | ~mask;
 
         char broadcast_str[INET_ADDRSTRLEN];
         in_addr bc_addr = {broadcast};

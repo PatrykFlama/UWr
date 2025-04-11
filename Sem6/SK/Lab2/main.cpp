@@ -14,18 +14,27 @@
 
 using namespace std;
 
-#define DEBUG 3     // debug stage; 0 = none, verbose = 3, minimal >= 4
+#define DEBUG 0     // debug stage; 0 = none, verbose = 3, minimal >= 4
 #define dprintf if(DEBUG) printf
 
+// TODO dist should be uint32_t
 //* ------------------ CONSTANTS ------------------
 constexpr int PORT = 54321;
-constexpr int TABLE_BROADCAST_INTERVAL = 15 * 1000; // milliseconds
-constexpr int PRINT_TABLE_INTERVAL = 5 * 1000; // milliseconds
+constexpr int TABLE_BROADCAST_INTERVAL = 5 * 1000; // milliseconds
+constexpr int PRINT_TABLE_INTERVAL = 2 * 1000; // milliseconds
 constexpr int RECEIVE_TABLES_INTERVAL = 500; // milliseconds
 constexpr uint8_t MAX_DIST = (1 << 4) - 1;   //TODO use it (max distance)
 constexpr uint8_t INF = (1 << 8) - 1;
-constexpr int TIME_TO_DIE = 60 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
-constexpr int TIME_KEEP_UNREACHABLE = 30 * 1000; // milliseconds
+constexpr int TIME_TO_DIE = 10 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
+constexpr int TIME_KEEP_UNREACHABLE = 10 * 1000; // milliseconds
+// constexpr int PORT = 54321;
+// constexpr int TABLE_BROADCAST_INTERVAL = 15 * 1000; // milliseconds
+// constexpr int PRINT_TABLE_INTERVAL = 5 * 1000; // milliseconds
+// constexpr int RECEIVE_TABLES_INTERVAL = 500; // milliseconds
+// constexpr uint8_t MAX_DIST = (1 << 4) - 1;   //TODO use it (max distance)
+// constexpr uint8_t INF = (1 << 8) - 1;
+// constexpr int TIME_TO_DIE = 60 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
+// constexpr int TIME_KEEP_UNREACHABLE = 30 * 1000; // milliseconds
 
 //* ------------- HELPER -----------------
 void ERROR(const char* str) {
@@ -146,7 +155,7 @@ void receiveTables() {
     Timer time_left;
     int status;
     
-    // TODO: ensure packet is meant for us, not sent from us, and stuff
+    // TODO: ensure packet is meant for us
     while (true) {
         // wait for packet
         int timeout = RECEIVE_TABLES_INTERVAL - time_left.elapsed();
@@ -174,7 +183,7 @@ void receiveTables() {
             ERROR("recvfrom error");
         }
 
-        if (datagram_len < 6) {
+        if (datagram_len != 6) {
             dprintf("Invalid packet size: %zd\n", datagram_len);
             continue;
         }
@@ -207,14 +216,17 @@ void receiveTables() {
 
         if (DEBUG == 1) {
             dprintf("CIDR: %s, dist: %d\n", cidr_net_ip.c_str(), (int)dist);
-        } else if (DEBUG >= 2) {
+        } else if (DEBUG >= 2 && DEBUG < 4) {
             dprintf("Received: %s:%d, dist: %d\n", cidr_net_ip.c_str(), ntohs(sender.sin_port), (int)dist);
         }
 
 
         // convert sender ip to network byte order
         in_addr sender_addr;
-        inet_pton(AF_INET, sender_ip_str, &sender_addr);
+        if (inet_pton(AF_INET, sender_ip_str, &sender_addr) != 1) {
+            dprintf("Invalid sender IP address: %s\n", sender_ip_str);
+            continue;
+        }
         uint32_t sender_ip_net = sender_addr.s_addr;
 
         // find best matching route to sender ip
@@ -294,13 +306,13 @@ void broadcastTable() {
                 dprintf("Sending packet to %s\n", iface.c_str());
                 dprintf("Packet: %u.%u.%u.%u/%d %d\n", 
                         packet[0], packet[1], packet[2], packet[3], packet[4], packet[5]);
-            } else if (DEBUG >= 2) {
+            } else if (DEBUG >= 2 && DEBUG < 4) {
                 dprintf("Sending to %s: %u.%u.%u.%u/%d %d\n", 
                         iface.c_str(), packet[0], packet[1], packet[2], packet[3], packet[4], packet[5]);
             }
                 
             if (sendto(broadcast_sock, packet, sizeof(packet), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr)) != sizeof(packet)) {
-                // dprintf("sendto error: %s\n", strerror(errno));
+                if (DEBUG == 1) dprintf("sendto error: %s\n", strerror(errno));
                 send_success = false;
                 break;
             }
@@ -408,23 +420,24 @@ bool debugInteract() {
     char op; cin >> op;
 
     switch (op) {
-    case 'p':
+    case 'p':   // print routing table
         printTable(cout);
         break;
-    case 't':
+    case 't':   // print routing table
         printTable(cout);
         break;
-    case 'b':
+    case 'b':   // broadcast routing table
         broadcastTable();
         break;
-    case 'r':
+    case 'r':   // receive routing table
         receiveTables();
         break;
     case 'c':   // run continuously 
         return false;
-    case 'q':
+    case 'q':   // quit
         cout << "Exiting..." << endl;
         exit(0);
+        break;
     }
 
     return true;

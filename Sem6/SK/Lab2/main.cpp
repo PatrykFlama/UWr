@@ -14,7 +14,7 @@
 
 using namespace std;
 
-#define DEBUG 5
+#define DEBUG 0
 #define dprintf if(DEBUG) printf
 
 // TODO dist should be uint32_t
@@ -23,16 +23,16 @@ constexpr int PORT = 54321;
 constexpr int TABLE_BROADCAST_INTERVAL = 5 * 1000; // milliseconds
 constexpr int PRINT_TABLE_INTERVAL = 2 * 1000; // milliseconds
 constexpr int RECEIVE_TABLES_INTERVAL = 500; // milliseconds
-constexpr uint8_t MAX_DIST = (1 << 4) - 1;
-constexpr uint8_t INF = (1 << 8) - 1;
+constexpr uint32_t MAX_DIST = (1 << 4) - 1;
+constexpr uint32_t INF = (1 << 8) - 1;
 constexpr int TIME_TO_DIE = 10 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
 constexpr int TIME_KEEP_UNREACHABLE = 10 * 1000; // milliseconds
 // constexpr int PORT = 54321;
 // constexpr int TABLE_BROADCAST_INTERVAL = 15 * 1000; // milliseconds
 // constexpr int PRINT_TABLE_INTERVAL = 5 * 1000; // milliseconds
 // constexpr int RECEIVE_TABLES_INTERVAL = 500; // milliseconds
-// constexpr uint8_t MAX_DIST = (1 << 4) - 1;
-// constexpr uint8_t INF = (1 << 8) - 1;
+// constexpr uint32_t MAX_DIST = (1 << 4) - 1;
+// constexpr uint32_t INF = (1 << 8) - 1;
 // constexpr int TIME_TO_DIE = 60 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
 // constexpr int TIME_KEEP_UNREACHABLE = 30 * 1000; // milliseconds
 
@@ -80,7 +80,7 @@ namespace std {
 struct Network {
     uint32_t ip;    //? network byte order
     uint8_t prefix_len;
-    uint8_t dist = INF;
+    uint32_t dist = INF;
 
     bool connected_directly = false;
     string next_hop = "";
@@ -91,7 +91,7 @@ struct Network {
 
 struct Interface {
     bool up = true;
-    uint8_t dist = 0;
+    uint32_t dist = 0;
     Timer last_reachable = Timer();
     uint8_t prefix_len = 0;
     uint32_t iface_ip = 0;
@@ -247,7 +247,7 @@ void receiveTables() {
         }
 
         // ensure packet is valid
-        if (datagram_len != 6) {
+        if (datagram_len != 9) {
             dprintf("Invalid packet size: %zd\n", datagram_len);
             continue;
         }
@@ -271,7 +271,9 @@ void receiveTables() {
         // parse received packet
         uint32_t network_ip = *reinterpret_cast<uint32_t*>(buffer); // parse received in network byte order
         uint8_t prefix_len = buffer[4];
-        uint8_t dist = buffer[5];
+        uint32_t dist;
+        memcpy(&dist, buffer + 5, sizeof(dist));
+        dist = ntohl(dist); // Convert to host byte order
 
         // const string cidr_net_ip = string_format("%d.%d.%d.%d/%d",
         //             buffer[0], buffer[1], buffer[2], buffer[3], prefix_len);     
@@ -387,10 +389,11 @@ void broadcastTable() {
             }
 
             // prepare packet
-            uint8_t packet[6];
+            uint8_t packet[9];
             *reinterpret_cast<uint32_t*>(packet) = net.ip;  //? network byte order
             packet[4] = net.prefix_len;
-            packet[5] = net.dist;
+            uint32_t dist_network = htonl(net.dist);
+            memcpy(packet + 5, &dist_network, 4);
 
             if (DEBUG == 1) {
                 dprintf("Sending packet to %s\n", iface.c_str());
@@ -446,7 +449,7 @@ void removeUnreachable() {
 
 //? prints routing table
 void printTable(ostream& os) {
-    os << "----- Routing table -----\n";
+    if (DEBUG) os << "----- Routing table -----\n";
     for (const auto& [cidr, net] : routing_table) {
 
         char ip_str[INET_ADDRSTRLEN];
@@ -454,11 +457,12 @@ void printTable(ostream& os) {
         inet_ntop(AF_INET, &addr, ip_str, INET_ADDRSTRLEN);
 
         os << ip_str << "/" << static_cast<int>(net.prefix_len)
-           << (net.dist == INF ? " unreachable" : " distance " + to_string(static_cast<int>(net.dist)))
+           << (net.dist == INF ? " unreachable" : " distance " + to_string(net.dist))
            << (net.connected_directly ? " connected directly" : " via " + net.next_hop)
            << '\n';
     }
-    os << "-------------------------\n";
+    if (DEBUG) os << "-------------------------";
+    os << '\n';
 }
 
 
@@ -517,11 +521,11 @@ void readStdinConfig() {
 
     for(int i = 0; i < n; i++) {
         string cidr, trash;
-        int idist;
+        uint idist;
 
         cin >> cidr >> trash >> idist;
 
-        uint8_t dist = static_cast<uint8_t>(idist);
+        uint32_t dist = static_cast<uint32_t>(idist);
 
         // parse CIDR notation and add to routing table
         size_t slash_pos = cidr.find('/');

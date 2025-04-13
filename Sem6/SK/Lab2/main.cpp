@@ -14,7 +14,7 @@
 
 using namespace std;
 
-#define DEBUG 4
+#define DEBUG 5
 #define dprintf if(DEBUG) printf
 
 // TODO dist should be uint32_t
@@ -84,7 +84,7 @@ struct Network {
 
     bool connected_directly = false;
     string next_hop = "";
-    string interface_bcast = "";
+    string iface_bcast = "";
 
     Timer last_reachable = Timer(); //? time since last event on this route (receive/send/timeout/socket)
 };
@@ -94,6 +94,8 @@ struct Interface {
     uint8_t dist = 0;
     Timer last_reachable = Timer();
     uint8_t prefix_len = 0;
+    uint32_t iface_ip = 0;
+    string iface_net = "";
 };
 
 //* -------------- GLOBALS  ---------------
@@ -125,6 +127,30 @@ string get_broadcast_ip_str(uint32_t ip, uint8_t prefix_len) {
 }
 
 
+//? adds interface to routing table if not already present
+void addIfaceToRoutingTable(const string& iface, Interface& iface_details, bool only_nonexistent = false) {
+    if (routing_table.count(iface_details.iface_net) == 0) {
+        routing_table[iface_details.iface_net] = {
+            .ip = iface_details.iface_ip,
+            .prefix_len = iface_details.prefix_len,
+            .dist = (iface_details.up ? iface_details.dist : INF),
+            .connected_directly = true,
+            .next_hop = "",
+            .iface_bcast = iface,
+            .last_reachable = Timer(),
+        };
+    } else if (!only_nonexistent) {
+        auto& route = routing_table[iface_details.iface_net];
+        route.connected_directly = true;
+        route.next_hop = "";
+        route.iface_bcast = iface;
+        route.prefix_len = iface_details.prefix_len;
+        route.dist = (iface_details.up ? iface_details.dist : INF),
+        route.last_reachable.reset();
+    }
+}
+
+
 //? manages interface status based on send success
 void manageIfaceStatus(const string& iface, Interface& iface_details, bool is_up) {
     if (!is_up && iface_details.up) {
@@ -136,7 +162,7 @@ void manageIfaceStatus(const string& iface, Interface& iface_details, bool is_up
         
         // mark directly connected routes as INF
         for (auto& [key, route] : routing_table) {
-            if (route.connected_directly && route.interface_bcast == iface) {
+            if (route.connected_directly && route.iface_bcast == iface) {
                 route.dist = INF;
                 route.last_reachable.reset();
             }
@@ -144,14 +170,8 @@ void manageIfaceStatus(const string& iface, Interface& iface_details, bool is_up
     } else if (is_up && !iface_details.up) {
         // interface recovered
         iface_details.up = true;
-        
-        // restore directly connected routes
-        for (auto& [key, route] : routing_table) {
-            if (route.connected_directly && route.interface_bcast == iface) {
-                route.dist = iface_details.dist;
-                route.last_reachable.reset();
-            }
-        }
+
+        addIfaceToRoutingTable(iface, iface_details);
     }
 }
 
@@ -196,17 +216,6 @@ void initSockets() {
 
 //? listens for incoming routing tables
 void receiveTables() {
-    /*
-    ? what this function should be doing step by step:
-    1. wait for packet on receive_sock
-    2. receive packet, parse it and ensure it is valid/should be processed
-    3. packet (from some sender_addr thats connected to some iface) should bring us (in network byte order): 
-        - network ip
-        - prefix length
-        - distance to sender
-    4. 
-    */
-
     struct pollfd fds = {receive_sock, POLLIN, 0};
     Timer time_left;
     
@@ -318,20 +327,38 @@ void receiveTables() {
         }
 
 
-        const uint8_t new_dist = (dist >= INF - best_dist) 
+        const uint8_t new_dist = (dist >= MAX_DIST - best_dist) 
                                 ? INF 
                                 : dist + best_dist;
 
         // update routing table if better route found
         auto& existing = routing_table[cidr_net_ip];
-        if (!existing.connected_directly && 
+        // if (!existing.connected_directly && 
+        //     (existing.dist > new_dist || existing.next_hop == sender_ip_str)) {
+        //     existing.ip = network_ip;
+        //     existing.prefix_len = prefix_len;
+        //     existing.dist = new_dist;
+        //     existing.next_hop = sender_ip_str;
+        //     existing.last_reachable.reset();
+        // }
+        if (new_dist != INF && 
             (existing.dist > new_dist || existing.next_hop == sender_ip_str)) {
-            existing.ip = network_ip;
-            existing.prefix_len = prefix_len;
-            existing.dist = new_dist;
-            existing.next_hop = sender_ip_str;
-            existing.last_reachable.reset();
-        }
+             // preserve direct route status if still valid
+             bool keep_direct = existing.connected_directly && (existing.dist != INF);
+             
+             existing.connected_directly = keep_direct ? true : false;
+             existing.ip = network_ip;
+             existing.prefix_len = prefix_len;
+             existing.dist = new_dist;
+             existing.next_hop = keep_direct ? "" : sender_ip_str;
+             existing.last_reachable.reset();
+ 
+             if (DEBUG == 4) {
+                 string status = keep_direct ? " (direct preserved)" : "";
+                 dprintf("Updated %s via %s dist %d%s\n", 
+                        cidr_net_ip.c_str(), sender_ip_str, new_dist, status.c_str());
+             }
+         }    
     }
 }
 
@@ -409,6 +436,11 @@ void removeUnreachable() {
 
         ++it;
     }
+
+    // add interfaces to routing table if not already present
+    for (auto& [iface, iface_details] : interfaces) {
+        addIfaceToRoutingTable(iface, iface_details, true);
+    }
 }
 
 
@@ -422,7 +454,7 @@ void printTable(ostream& os) {
         inet_ntop(AF_INET, &addr, ip_str, INET_ADDRSTRLEN);
 
         os << ip_str << "/" << static_cast<int>(net.prefix_len)
-           << (net.dist == INF ? " unreachable " : " distance " + to_string(static_cast<int>(net.dist)))
+           << (net.dist == INF ? " unreachable" : " distance " + to_string(static_cast<int>(net.dist)))
            << (net.connected_directly ? " connected directly" : " via " + net.next_hop)
            << '\n';
     }
@@ -533,11 +565,19 @@ void readStdinConfig() {
             .dist = dist,
             .connected_directly = true,
             .next_hop = "",
-            .interface_bcast = broadcast_str,
+            .iface_bcast = broadcast_str,
             .last_reachable = Timer(),
         };
 
-        interfaces[broadcast_str] = { true, dist, Timer(), prefix_len };
+        // interfaces[broadcast_str] = { true, dist, Timer(), prefix_len, network_cidr };
+        interfaces[broadcast_str] = {
+            .up = true,
+            .dist = dist,
+            .last_reachable = Timer(),
+            .prefix_len = prefix_len,
+            .iface_ip = network_addr,
+            .iface_net = network_cidr,
+        };
 
         interface_to_bcast[ip_str] = broadcast_str; // map interface addr to broadcast addr
     }

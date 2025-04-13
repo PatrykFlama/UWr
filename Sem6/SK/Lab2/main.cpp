@@ -17,24 +17,26 @@ using namespace std;
 #define DEBUG 0
 #define dprintf if(DEBUG) printf
 
-// TODO dist should be uint32_t
 //* ------------------ CONSTANTS ------------------
-constexpr int PORT = 54321;
-constexpr int TABLE_BROADCAST_INTERVAL = 5 * 1000; // milliseconds
-constexpr int PRINT_TABLE_INTERVAL = 2 * 1000; // milliseconds
-constexpr int RECEIVE_TABLES_INTERVAL = 500; // milliseconds
-constexpr uint32_t MAX_DIST = (1 << 4) - 1;
-constexpr uint32_t INF = (1 << 8) - 1;
-constexpr int TIME_TO_DIE = 10 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
-constexpr int TIME_KEEP_UNREACHABLE = 10 * 1000; // milliseconds
+//? fast config for debug
 // constexpr int PORT = 54321;
-// constexpr int TABLE_BROADCAST_INTERVAL = 15 * 1000; // milliseconds
-// constexpr int PRINT_TABLE_INTERVAL = 5 * 1000; // milliseconds
+// constexpr int TABLE_BROADCAST_INTERVAL = 5 * 1000; // milliseconds
+// constexpr int PRINT_TABLE_INTERVAL = 2 * 1000; // milliseconds
 // constexpr int RECEIVE_TABLES_INTERVAL = 500; // milliseconds
 // constexpr uint32_t MAX_DIST = (1 << 4) - 1;
-// constexpr uint32_t INF = (1 << 8) - 1;
-// constexpr int TIME_TO_DIE = 60 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
-// constexpr int TIME_KEEP_UNREACHABLE = 30 * 1000; // milliseconds
+// constexpr uint32_t INF = (1ll << 32) - 1ll;
+// constexpr int TIME_TO_DIE = 10 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
+// constexpr int TIME_KEEP_UNREACHABLE = 10 * 1000; // milliseconds
+
+//? 'production' config
+constexpr int PORT = 54321;
+constexpr int TABLE_BROADCAST_INTERVAL = 15 * 1000; // milliseconds
+constexpr int PRINT_TABLE_INTERVAL = 5 * 1000; // milliseconds
+constexpr int RECEIVE_TABLES_INTERVAL = 500; // milliseconds
+constexpr uint32_t MAX_DIST = (1 << 4) - 1;
+constexpr uint32_t INF = (1ll << 32) - 1ll;
+constexpr int TIME_TO_DIE = 60 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
+constexpr int TIME_KEEP_UNREACHABLE = 30 * 1000; // milliseconds
 
 //* ------------- HELPER -----------------
 void ERROR(const char* str) {

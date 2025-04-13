@@ -14,7 +14,7 @@
 
 using namespace std;
 
-#define DEBUG 0     // debug stage; 0 = none, verbose = 3, minimal >= 4
+#define DEBUG 4
 #define dprintf if(DEBUG) printf
 
 // TODO dist should be uint32_t
@@ -23,7 +23,7 @@ constexpr int PORT = 54321;
 constexpr int TABLE_BROADCAST_INTERVAL = 5 * 1000; // milliseconds
 constexpr int PRINT_TABLE_INTERVAL = 2 * 1000; // milliseconds
 constexpr int RECEIVE_TABLES_INTERVAL = 500; // milliseconds
-constexpr uint8_t MAX_DIST = (1 << 4) - 1;   //TODO use it (max distance)
+constexpr uint8_t MAX_DIST = (1 << 4) - 1;
 constexpr uint8_t INF = (1 << 8) - 1;
 constexpr int TIME_TO_DIE = 10 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
 constexpr int TIME_KEEP_UNREACHABLE = 10 * 1000; // milliseconds
@@ -31,7 +31,7 @@ constexpr int TIME_KEEP_UNREACHABLE = 10 * 1000; // milliseconds
 // constexpr int TABLE_BROADCAST_INTERVAL = 15 * 1000; // milliseconds
 // constexpr int PRINT_TABLE_INTERVAL = 5 * 1000; // milliseconds
 // constexpr int RECEIVE_TABLES_INTERVAL = 500; // milliseconds
-// constexpr uint8_t MAX_DIST = (1 << 4) - 1;   //TODO use it (max distance)
+// constexpr uint8_t MAX_DIST = (1 << 4) - 1;
 // constexpr uint8_t INF = (1 << 8) - 1;
 // constexpr int TIME_TO_DIE = 60 * 1000; // milliseconds, time to mark as unreachable without receiving any packets
 // constexpr int TIME_KEEP_UNREACHABLE = 30 * 1000; // milliseconds
@@ -86,14 +86,14 @@ struct Network {
     string next_hop = "";
     string interface_bcast = "";
 
-    Timer last_reachable = Timer(); //? time since last received/socket working/dist not INF
-    Timer last_updated = Timer();   //? time since last update from other router
+    Timer last_reachable = Timer(); //? time since last event on this route (receive/send/timeout/socket)
 };
 
 struct Interface {
     bool up = true;
     uint8_t dist = 0;
     Timer last_reachable = Timer();
+    uint8_t prefix_len = 0;
 };
 
 //* -------------- GLOBALS  ---------------
@@ -110,6 +110,51 @@ uint32_t get_network_ip(uint32_t ip, uint8_t prefix_len) {
     uint32_t mask = (prefix_len == 0) ? 0 : htonl(~0U << (32 - prefix_len));
     return ip & mask;
 }
+
+uint32_t get_broadcast_ip(uint32_t ip, uint8_t prefix_len) {
+    uint32_t mask = (prefix_len == 0) ? 0 : htonl(~0U << (32 - prefix_len));
+    return ip | ~mask;
+}
+
+string get_broadcast_ip_str(uint32_t ip, uint8_t prefix_len) {
+    uint32_t broadcast = get_broadcast_ip(ip, prefix_len);
+    in_addr addr = {broadcast};
+    char buffer[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &addr, buffer, INET_ADDRSTRLEN);
+    return string(buffer);
+}
+
+
+//? manages interface status based on send success
+void manageIfaceStatus(const string& iface, Interface& iface_details, bool is_up) {
+    if (!is_up && iface_details.up) {
+        dprintf("Interface %s down\n", iface.c_str());
+
+        // interface down
+        iface_details.up = false;
+        iface_details.last_reachable.reset();
+        
+        // mark directly connected routes as INF
+        for (auto& [key, route] : routing_table) {
+            if (route.connected_directly && route.interface_bcast == iface) {
+                route.dist = INF;
+                route.last_reachable.reset();
+            }
+        }
+    } else if (is_up && !iface_details.up) {
+        // interface recovered
+        iface_details.up = true;
+        
+        // restore directly connected routes
+        for (auto& [key, route] : routing_table) {
+            if (route.connected_directly && route.interface_bcast == iface) {
+                route.dist = iface_details.dist;
+                route.last_reachable.reset();
+            }
+        }
+    }
+}
+
 
 //* -------------- MAIN FUNCTIONS -----------------
 //? initializes sockets for receiving and broadcasting
@@ -157,7 +202,7 @@ void receiveTables() {
     
     // TODO: ensure packet is meant for us
     while (true) {
-        // wait for packet
+        // ----- wait for packet ------
         int timeout = RECEIVE_TABLES_INTERVAL - time_left.elapsed();
 
         if (timeout <= 0) {
@@ -165,7 +210,7 @@ void receiveTables() {
         }
 
         status = poll(&fds, 1, timeout);
-        
+
         if (status < 0) {
             ERROR("poll error");
         } else if (status == 0) {
@@ -173,24 +218,29 @@ void receiveTables() {
         }
 
 
-        // receive packet
+        // ------ receive packet ------
         struct sockaddr_in sender;
         socklen_t sender_len = sizeof(sender);
         uint8_t buffer[IP_MAXPACKET+1];
 
+        // receive
         ssize_t datagram_len = recvfrom(receive_sock, buffer, IP_MAXPACKET, 0, (struct sockaddr*)&sender, &sender_len);
         if (datagram_len < 0) {
             ERROR("recvfrom error");
         }
 
+        // ensure packet is valid
         if (datagram_len != 6) {
             dprintf("Invalid packet size: %zd\n", datagram_len);
             continue;
         }
 
+        // calculate sender address
         char sender_ip_str[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
 
+        // ------ interpret packet -------
+        // drop self-originated packets
         if (interface_to_bcast.count(sender_ip_str)) {
             if (DEBUG == 2) {
                 dprintf("Dropping self-originated packet from %s\n", sender_ip_str);
@@ -202,17 +252,17 @@ void receiveTables() {
             dprintf("Received UDP packet from IP address: %s, port: %d\n", sender_ip_str, ntohs(sender.sin_port));
         }
      
-        buffer[datagram_len] = 0;
-    
+        
+        // parse received packet
         uint32_t network_ip = *reinterpret_cast<uint32_t*>(buffer); // parse received in network byte order
         uint8_t prefix_len = buffer[4];
         uint8_t dist = buffer[5];
         
         string cidr_net_ip = to_string(buffer[0]) + "." + 
-                         to_string(buffer[1]) + "." + 
-                         to_string(buffer[2]) + "." + 
-                         to_string(buffer[3]) + "/" + 
-                         to_string(prefix_len);
+                             to_string(buffer[1]) + "." + 
+                             to_string(buffer[2]) + "." + 
+                             to_string(buffer[3]) + "/" + 
+                             to_string(prefix_len);
 
         if (DEBUG == 1) {
             dprintf("CIDR: %s, dist: %d\n", cidr_net_ip.c_str(), (int)dist);
@@ -229,40 +279,78 @@ void receiveTables() {
         }
         uint32_t sender_ip_net = sender_addr.s_addr;
 
-        // find best matching route to sender ip
+        // ------ update routing table ------
+        if (dist == INF) {
+            dprintf("Received INF distance, skipping\n");
+            continue;
+        }
+
+        // find best matching route to sender ip and calculate distance
         uint8_t dist_from_sender = INF;
         size_t best_prefix = 0;
+        bool best_direct = false;
+
+        // direct interfaces are in routing table, so no need to check them here
+        // get route from direct interface
+        // for (const auto& [iface, iface_details] : interfaces) {
+        //     if (iface == get_broadcast_ip_str(sender_ip_net, iface_details.prefix_len)) {
+        //         // check if interface is up
+        //         if (iface_details.up) {
+        //             dist_from_sender = iface_details.dist;
+        //             best_direct = true;
+        //         }
+        //     }
+        // }
+
+        // get next hop from table
         for (const auto& [cidr, entry] : routing_table) {
+            if (entry.dist == INF) {
+                continue; // skip unreachable routes
+            }
+
             // check if ip matches network
             if (get_network_ip(sender_ip_net, entry.prefix_len) == 
                 get_network_ip(entry.ip, entry.prefix_len)) {
                 if (entry.prefix_len > best_prefix) {
                     best_prefix = entry.prefix_len;
                     dist_from_sender = entry.dist;
+                    best_direct = entry.connected_directly;
                 }
             }
         }
 
-        // no route found - skip
         if (dist_from_sender == INF) {
-            dprintf("No route to sender %s\n", sender_ip_str);
+            dprintf("Unable to route to %s (skipping)\n", sender_ip_str);
             continue;
         }
 
-        // if cidr is not in table or is further away, update it
-        if (routing_table.find(cidr_net_ip) == routing_table.end() || 
-            (!routing_table[cidr_net_ip].connected_directly && 
-                dist != INF &&
-                routing_table[cidr_net_ip].dist > (int)dist + (int)dist_from_sender)) {
+        // if sender cannot reach entry, check if we route thru sender
+        if (dist == INF) {
+            // if (routing_table.count(cidr_net_ip) != 0 &&
+            //     routing_table[cidr_net_ip].next_hop == sender_ip_str &&
+            //     routing_table[cidr_net_ip].dist != INF) 
+            // {
+            //     routing_table[cidr_net_ip].dist = INF;
+            //     routing_table[cidr_net_ip].last_reachable.reset();    
+            // }
+
+            dprintf("Sender cannot reach entry %s (skipping)\n", cidr_net_ip.c_str());
+            continue;
+        }
+
+        const uint8_t new_dist = dist + dist_from_sender > MAX_DIST ? INF : dist + dist_from_sender;
+
+        // check if route is better than existing one
+        if (routing_table.count(cidr_net_ip) == 0 ||
+            routing_table[cidr_net_ip].dist >= new_dist) {
             routing_table[cidr_net_ip] = {
                 .ip = network_ip,
                 .prefix_len = prefix_len,
-                .dist = static_cast<uint8_t>(dist + dist_from_sender),
+                .dist = new_dist,
                 .connected_directly = false,
                 .next_hop = sender_ip_str,
                 .interface_bcast = "",
                 .last_reachable = Timer(),
-                .last_updated = Timer()        
             };
         }
     }
@@ -292,7 +380,7 @@ void broadcastTable() {
             // dont send unreachable expired interfaces
             if (net.dist == INF && 
                 net.connected_directly && 
-                net.last_updated.elapsed() > TIME_KEEP_UNREACHABLE) {
+                net.last_reachable.elapsed() > TIME_KEEP_UNREACHABLE) {
                 continue;
             }
 
@@ -318,35 +406,7 @@ void broadcastTable() {
             }
         }
 
-        // update interface status
-        if (!send_success && iface_details.up) {
-            dprintf("Interface %s down\n", iface.c_str());
-
-            // interface down
-            iface_details.up = false;
-            iface_details.last_reachable.reset();
-            
-            // mark directly connected routes as INF
-            for (auto& [key, route] : routing_table) {
-                if (route.connected_directly && route.interface_bcast == iface) {
-                    route.dist = INF;
-                    route.last_updated.reset();
-                }
-            }
-        } else if (send_success && !iface_details.up) {
-            // interface recovered
-            iface_details.up = true;
-            
-            // restore directly connected routes
-            for (auto& [key, route] : routing_table) {
-                if (route.connected_directly && route.interface_bcast == iface) {
-                    route.dist = iface_details.dist;
-                    route.last_reachable.reset();
-                    route.last_updated.reset();
-                }
-            }
-        }
-        
+        manageIfaceStatus(iface, iface_details, send_success);
     }
 }
 
@@ -361,11 +421,11 @@ void removeUnreachable() {
             if(net.dist != INF && net.last_reachable.elapsed() > TIME_TO_DIE) {
                 dprintf("Marking unreachable route: %s\n", it->first.c_str());
                 net.dist = INF;
-                net.last_updated.reset();
+                net.last_reachable.reset();
             }
 
             // remove unreachable routes after TIME_KEEP_UNREACHABLE
-            if (net.dist == INF && net.last_updated.elapsed() > TIME_KEEP_UNREACHABLE) {
+            if (net.dist == INF && net.last_reachable.elapsed() > TIME_KEEP_UNREACHABLE) {
                 dprintf("Removing unreachable route: %s\n", it->first.c_str());
                 it = routing_table.erase(it);
                 continue;
@@ -387,11 +447,11 @@ void printTable(ostream& os) {
         inet_ntop(AF_INET, &addr, ip_str, INET_ADDRSTRLEN);
 
         os << ip_str << "/" << static_cast<int>(net.prefix_len)
-           << " distance " << static_cast<int>(net.dist)
+           << (net.dist == INF ? " unreachable " : " distance " + to_string(static_cast<int>(net.dist)))
            << (net.connected_directly ? " connected directly" : " via " + net.next_hop)
            << '\n';
     }
-    os << "------------------------\n";
+    os << "-------------------------\n";
 }
 
 
@@ -500,15 +560,13 @@ void readStdinConfig() {
             .next_hop = "",
             .interface_bcast = broadcast_str,
             .last_reachable = Timer(),
-            .last_updated = Timer()
         };
 
-        interfaces[broadcast_str] = { true, dist, Timer() };
+        interfaces[broadcast_str] = { true, dist, Timer(), prefix_len };
 
         interface_to_bcast[ip_str] = broadcast_str; // map interface addr to broadcast addr
     }
 }
-
 
 
 int main() {

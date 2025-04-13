@@ -80,9 +80,9 @@ namespace std {
 struct Network {
     uint32_t ip;    //? network byte order
     uint8_t prefix_len;
-    uint8_t dist;
+    uint8_t dist = INF;
 
-    bool connected_directly = true;
+    bool connected_directly = false;
     string next_hop = "";
     string interface_bcast = "";
 
@@ -196,21 +196,28 @@ void initSockets() {
 
 //? listens for incoming routing tables
 void receiveTables() {
+    /*
+    ? what this function should be doing step by step:
+    1. wait for packet on receive_sock
+    2. receive packet, parse it and ensure it is valid/should be processed
+    3. packet (from some sender_addr thats connected to some iface) should bring us (in network byte order): 
+        - network ip
+        - prefix length
+        - distance to sender
+    4. 
+    */
+
     struct pollfd fds = {receive_sock, POLLIN, 0};
     Timer time_left;
-    int status;
     
-    // TODO: ensure packet is meant for us
     while (true) {
         // ----- wait for packet ------
         int timeout = RECEIVE_TABLES_INTERVAL - time_left.elapsed();
-
         if (timeout <= 0) {
             break; // timeout
         }
 
-        status = poll(&fds, 1, timeout);
-
+        int status = poll(&fds, 1, timeout);
         if (status < 0) {
             ERROR("poll error");
         } else if (status == 0) {
@@ -224,7 +231,8 @@ void receiveTables() {
         uint8_t buffer[IP_MAXPACKET+1];
 
         // receive
-        ssize_t datagram_len = recvfrom(receive_sock, buffer, IP_MAXPACKET, 0, (struct sockaddr*)&sender, &sender_len);
+        ssize_t datagram_len = recvfrom(receive_sock, buffer, IP_MAXPACKET, 
+                                        0, (struct sockaddr*)&sender, &sender_len);
         if (datagram_len < 0) {
             ERROR("recvfrom error");
         }
@@ -235,34 +243,36 @@ void receiveTables() {
             continue;
         }
 
+
+        // ------ interpret packet -------
         // calculate sender address
         char sender_ip_str[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
 
-        // ------ interpret packet -------
         // drop self-originated packets
         if (interface_to_bcast.count(sender_ip_str)) {
-            if (DEBUG == 2) {
-                dprintf("Dropping self-originated packet from %s\n", sender_ip_str);
-            }
+            if (DEBUG == 2) dprintf("Dropping self-originated packet from %s\n", sender_ip_str);
             continue;
         }
 
         if (DEBUG == 1) {
             dprintf("Received UDP packet from IP address: %s, port: %d\n", sender_ip_str, ntohs(sender.sin_port));
         }
-     
         
         // parse received packet
         uint32_t network_ip = *reinterpret_cast<uint32_t*>(buffer); // parse received in network byte order
         uint8_t prefix_len = buffer[4];
         uint8_t dist = buffer[5];
-        
+
+        // const string cidr_net_ip = string_format("%d.%d.%d.%d/%d",
+        //             buffer[0], buffer[1], buffer[2], buffer[3], prefix_len);     
+                    
         string cidr_net_ip = to_string(buffer[0]) + "." + 
-                             to_string(buffer[1]) + "." + 
-                             to_string(buffer[2]) + "." + 
-                             to_string(buffer[3]) + "/" + 
-                             to_string(prefix_len);
+                    to_string(buffer[1]) + "." + 
+                    to_string(buffer[2]) + "." + 
+                    to_string(buffer[3]) + "/" + 
+                    to_string(prefix_len);
+
 
         if (DEBUG == 1) {
             dprintf("CIDR: %s, dist: %d\n", cidr_net_ip.c_str(), (int)dist);
@@ -270,93 +280,58 @@ void receiveTables() {
             dprintf("Received: %s:%d, dist: %d\n", cidr_net_ip.c_str(), ntohs(sender.sin_port), (int)dist);
         }
 
-
-        // convert sender ip to network byte order
-        in_addr sender_addr;
-        if (inet_pton(AF_INET, sender_ip_str, &sender_addr) != 1) {
-            dprintf("Invalid sender IP address: %s\n", sender_ip_str);
-            continue;
-        }
-        uint32_t sender_ip_net = sender_addr.s_addr;
-
         // ------ update routing table ------
+        // handle INF dist advertisement
         if (dist == INF) {
-            dprintf("Received INF distance, skipping\n");
-            continue;
-        }
-
-        // find best matching route to sender ip and calculate distance
-        uint8_t dist_from_sender = INF;
-        size_t best_prefix = 0;
-        bool best_direct = false;
-
-        // direct interfaces are in routing table, so no need to check them here
-        // get route from direct interface
-        // for (const auto& [iface, iface_details] : interfaces) {
-        //     if (iface == get_broadcast_ip_str(sender_ip_net, iface_details.prefix_len)) {
-        //         // check if interface is up
-        //         if (iface_details.up) {
-        //             dist_from_sender = iface_details.dist;
-        //             best_direct = true;
-        //         }
-        //     }
-        // }
-
-        // get next hop from table
-        for (const auto& [cidr, entry] : routing_table) {
-            if (entry.dist == INF) {
-                continue; // skip unreachable routes
+            // mark routes through this sender as INF
+            auto it = routing_table.find(cidr_net_ip);
+            if (it != routing_table.end() && 
+                it->second.next_hop == sender_ip_str &&
+                it->second.dist != INF) 
+            {
+                it->second.dist = INF;
+                it->second.last_reachable.reset();
             }
 
-            // check if ip matches network
-            if (get_network_ip(sender_ip_net, entry.prefix_len) == 
+            continue;
+        }
+
+
+        // find best path to sender
+        uint8_t best_dist = INF;
+        size_t best_prefix = 0;
+        for (const auto& [route_cidr, entry] : routing_table) {
+            if (entry.dist == INF) continue;
+            
+            if (get_network_ip(sender.sin_addr.s_addr, entry.prefix_len) ==
                 get_network_ip(entry.ip, entry.prefix_len)) {
                 if (entry.prefix_len > best_prefix) {
                     best_prefix = entry.prefix_len;
-                    dist_from_sender = entry.dist;
-                    best_direct = entry.connected_directly;
+                    best_dist = entry.dist;
                 }
             }
         }
 
-        if (dist_from_sender == INF) {
-            dprintf("Unable to route to %s (skipping)\n", sender_ip_str);
+        if (best_dist == INF) {
+            dprintf("No valid route to sender %s\n", sender_ip_str);
             continue;
         }
 
-        // if sender cannot reach entry, check if we route thru sender
-        if (dist == INF) {
-            // if (routing_table.count(cidr_net_ip) != 0 &&
-            //     routing_table[cidr_net_ip].next_hop == sender_ip_str &&
-            //     routing_table[cidr_net_ip].dist != INF) 
-            // {
-            //     routing_table[cidr_net_ip].dist = INF;
-            //     routing_table[cidr_net_ip].last_reachable.reset();    
-            // }
 
-            dprintf("Sender cannot reach entry %s (skipping)\n", cidr_net_ip.c_str());
-            continue;
+        const uint8_t new_dist = (dist >= INF - best_dist) 
+                                ? INF 
+                                : dist + best_dist;
+
+        // update routing table if better route found
+        auto& existing = routing_table[cidr_net_ip];
+        if (!existing.connected_directly && 
+            (existing.dist > new_dist || existing.next_hop == sender_ip_str)) {
+            existing.ip = network_ip;
+            existing.prefix_len = prefix_len;
+            existing.dist = new_dist;
+            existing.next_hop = sender_ip_str;
+            existing.last_reachable.reset();
         }
-
-        const uint8_t new_dist = dist + dist_from_sender > MAX_DIST ? INF : dist + dist_from_sender;
-
-        // check if route is better than existing one
-        if (routing_table.count(cidr_net_ip) == 0 ||
-            routing_table[cidr_net_ip].dist >= new_dist) {
-            routing_table[cidr_net_ip] = {
-                .ip = network_ip,
-                .prefix_len = prefix_len,
-                .dist = new_dist,
-                .connected_directly = false,
-                .next_hop = sender_ip_str,
-                .interface_bcast = "",
-                .last_reachable = Timer(),
-            };
-        }
-    }
-
-    if (status < 0) {
-        ERROR("poll error");
     }
 }
 

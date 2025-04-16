@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+while true; do
+    echo "Screen X Time: $(date '+%H:%M:%S')"
+    sleep 1
+done
+
+else
+while true; do
+    echo "Screen ${#1} Time: $(date '+%H:%M:%S')"
+    sleep 1
+done
+fi

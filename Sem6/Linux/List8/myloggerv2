@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# ignore SIGHUP, trap SIGUSR1
+trap '' HUP
+trap 'logger -t "monitor" "SIGUSR1 - terminating"; exit 0' USR1
+
+
+while true; do
+    logger -t "monitor" "Logging current date: $(date)"
+    sleep 2
+done

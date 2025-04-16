@@ -1,0 +1,8 @@
+#!/bin/bash
+
+while true; do
+    message="Logging current date: $(date)"
+    logger -t "monitor" "$message"  # syslog
+    echo "$message"                 # stdout
+    sleep 60
+done

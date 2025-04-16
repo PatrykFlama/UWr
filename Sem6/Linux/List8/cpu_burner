@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <number_of_processes>"
+    exit 1
+fi
+
+cpu_load() {
+    while true; do
+        # bc - An arbitrary precision calculator language
+        echo "sqrt(99999999)" | bc > /dev/null
+    done
+}
+
+for i in $(seq 1 "$1"); do
+    cpu_load &
+done
+
+trap 'kill $(jobs -p); exit' SIGINT
+echo "Ctrl+C to stop..."
+wait

@@ -6,6 +6,36 @@
 |   | X | X | X | X |   |   |   |   |    |  X |    |    |  X |  X |
 
 
+
+## Zad 1
+xterm - emulator terminala  
+tworzy pseudoterminale: mater (pts) i slave (`/dev/pts/0` zachowuje się jak urządzenie znakowe), które natomiast odpala basha (`/bin/bash`)  
+master i slave siedzą w kernelu (są przez niego obsługiwane)  
+
+> historia nazwy SIGHUP (signal hangup) (odłożenie słuchawki)   
+```text
+---------
+| modem ||D0-15|--------|D8-9 (RS282)| /dev/tty0 --- /bin/bash
+---------
+```
+
+
+eksperymenty:
+1. ---
+bash odpalił jak swój podproces okulara, po zamknięciu basha SIGHUP nie jest wysyłany do okulara  
+okular był dzieckiem basha, ale tego basha już nie ma, więc zostaje on przepięty do systemd.user (jest on ripperem), który jest przydzielony do zalogowanego użytkownika  
+czasem zdarza się że proces przejdzie do zwykłego systemd (zależy od konfiguracji)  
+> systemd jest odpowiedzialne za zarządzanie procesami  
+
+po zabiciu xterma, kernel wyśle okularowi SIGHUP
+
+więcej o sygnałach możemy znaleźć w *man bash(1)* w dziale *SIGNALS*  
+
+`shopt` - shell options (konfiguracja ustawień/zachowań shella)  
+
+`&!` - od razu wydziedzicza uruchomiony program
+
+
 ## Zad 2 - screen(1)
 screen - manager 'okien' terminala  
 
@@ -52,6 +82,7 @@ tmux - terminal multiplexer
 - zamknięcie karty `ctrl + b` `&` (kill) lub `tmux kill-session -t <nazwa>` 
 
 ### dołączanie/odłączanie od sesji
+- `tmux new-session -s <nazwa>` - tworzy nową sesję o nazwie <nazwa>
 - odłączanie od bieżącej sesji: `ctrl + b` `d`
 - dołączanie do sesji: 
   - `tmux attach` - dołącz do ostatniej sesji
@@ -69,8 +100,8 @@ tmux - terminal multiplexer
 ### zaznaczanie i kopiopwanie tekstu
 - wejdź w tryb kopiowania `ctrl + b` `[`
 - za pomocą strzałek zaznacz tekst
-- `spacja` - rozpocznij zaznaczanie
-- `enter` - skopiuj zaznaczony tekst (showek lokalny dla tmux)
+- `ctrl+spacja` - rozpocznij zaznaczanie
+- `alt+enter` - skopiuj zaznaczony tekst (showek lokalny dla tmux)
 - `ctrl + b` `]` - wklej skopiowany tekst
 
 ### dodatkowe funkcje
@@ -79,9 +110,15 @@ tmux - terminal multiplexer
   - pionowo `ctrl + b` `%`
   - przełączanie między panelami `ctrl + b` + strzałki
 
+tmux pozwala na połączenie się z wielu terminali do tego samego okna (sesji)  
 
 
 ## Zad 4
+
+- `trap <sygnał> <komenda>` - ustawia pułapkę na sygnał `<sygnał>` i wykonuje `<komenda>`
+- `trap -p` - pokazuje ustalone pułapki  
+- `trap -l` - pokazuje listę sygnałów
+
 ```bash
 #!/bin/bash
 
@@ -231,4 +268,17 @@ top - monitoruje procesy i zasoby systemowe
 - `pstree <user>` - procesy danego użytkownika
 - `-h` - podświetla aktualny proces i jego potomków
 - `-H <proces>` - podświetla dany proces i jego potomków
+
+
+
+
+# Side notes
+zazwyczaj powłoki kończąc pracę wysyłają do swoich dzieci SIGHUP (co ciekawe bash tego nie robi)  
+
+ogólnie zaleca się z korzystanie z xterma, a nie ze screena, bo screen za bardzo się już rozrósł  
+np przy screenie istnieje opcja (którą co prawda trzeba włączyć), która pozwala na współdzielenie terminala (obie osoby widzą to samo) - jest to całkiem niebezpieczne   
+
+`nohup` - execve nie zmienia masek sygnałów, więc wystarczy że nohup będzie maskować SIGHUP a potem wywoływać dany program za pomocą execve (+ przekierwanie wejście/wyjścia)
+
+## tmux fajny config
 

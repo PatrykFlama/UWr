@@ -47,6 +47,19 @@
     - [zarządzanie użytkownikami](#zarządzanie-użytkownikami)
     - [hasło roota](#hasło-roota)
   - [logi systemowe](#logi-systemowe)
+- [Wykład 8 - daemony, BSD init i SystemD](#wykład-8---daemony-bsd-init-i-systemd)
+  - [tldr końcówka poprzedniego wykładu](#tldr-końcówka-poprzedniego-wykładu)
+  - [init - proces o numerze 1](#init---proces-o-numerze-1)
+  - [BSD init](#bsd-init)
+  - [dygresja: metodologie programowania](#dygresja-metodologie-programowania)
+  - [SystemD](#systemd)
+    - [Targety](#targety)
+    - [jednoski systemd](#jednoski-systemd)
+    - [przykłady](#przykłady-1)
+      - [`fstrim`](#fstrim)
+      - [interfejsy sieciowe](#interfejsy-sieciowe)
+      - [`/tmp` w ramdysku](#tmp-w-ramdysku)
+    - [krytyka](#krytyka)
 
 
 # Some notes
@@ -603,4 +616,123 @@ warto więc się nauczyć korzysatnia z niego, bo jest on o wiele potężniejszy
 
 kernel się odpala tak jak program, więc możemy mu ustawić jakieś argumenty  
 np `quiet` - nie pokazuje logów na ekranie w trakcie startu systemu (bo i tak wyświetlają się tak szybko że nie jesteśmy w stanie ich przeczytać)  
+
+
+
+# Wykład 8 - daemony, BSD init i SystemD
+> czym się różnią dystrybucje linuxa od siebie?  
+> - managerem pakietów  
+> - systemem init - duży zbiór programów i daemonów zarządających startem i zamykaniem systemu  
+> - kernelem, ale tego nie widać
+
+
+> twi poleca debiana (bardzo rozbudowany i porządnie zrobiony)  
+> ma fajnego managera pakietów aptitude  
+
+## tldr końcówka poprzedniego wykładu
+- uruchamianie i zatrzymywanie serwisów
+polecenie `service` - uruchamia i zatrzymuje serwisy, dodatkowo działa wszędzie
+
+- jak się zdaemonizować?
+jest strona manuala `daemon(7)`, ale w systemd tak się nie robi  
+
+
+## init - proces o numerze 1
+init musi być od samego początku działania  
+wszystkie inne procesy (o numerze większym niż 1) pojawia się forkiem (np z inita), ale init nie ma od kogo się forkować, więc jest tworzony przez kernel  
+sam init nie tworzy systemu, ale uruchamia inne procesy, które tworzą system  
+po stworzeniu systemu, init staje się "domem nieżywego dziecka" - zajmuje się sprzątaniem nieżywych dzieci  (jest **ripperem** / żniwiarzem)    
+
+w systemd każdy użytkownik ma swój własny `init` (`systemd.user`)  
+
+kernel nie pozwala na wysyłanie sygnału do inita, którego on nie obsługuje (żeby np default action go nie zabił)  
+
+
+## BSD init
+- `/etc/rc` (run command) - będzie po kolei uruchamiał wszystkie skrypty  
+- `/etc/rc.shutdown` - uruchamiany przy zamykaniu systemu  
+- `/etc/rc.d/service` - po jednym na serwis
+
+`rcorder(8)` czyta skrypty i z ich specjalnych komentarzy odczytuje kolejność uruchamiania  
+wymaga to odczytu oraz posortowania tych skryptów, co spowalnia start systemu  
+
+zalety: bardzo prosty i łatwy do ogarnięcia (każdy skrypt jest zazwyczaj całkiem krótki i łatwy do przeczytania/zrozumienia)   
+wady: sekwencyjny, powolny i brak opieki nad postawionymi procesami  
+
+## dygresja: metodologie programowania
+programowanie imperatywne (polecenie-nakaz) vs deklaratywne (co chcemy osiągnąć, nie jak)  
+problem z programowaniem imperatywnym - jest gdzieś ukryty niejawny stan, ludzie często mają problem z wyobrażeniem soie tego stanu  
+
+to właśnie dało pomysł na systemd - zamiast pisać skrypty, które są imperatywne, napiszmy pliki konfiguracyjne, które będą deklaratywne  
+
+## SystemD
+wszystkie pliki konfiguracyjne mają tą samą składnię (ini)   
+
+katalogi z konfiguacjami są w `/{lib,run,etc}/systemd/system/` (uruchamiane w kolejności `lib` -> `run` -> `etc`)  
+
+> obrazek z warstwami; chcieli włożyć `dbus` do kernela (ale jeszcze tego nie zrobili)
+
+składnia plików konfiguracyjnych:
+- w kwadaatowych nawiasach mamy sekcje/rozdziały (np `[Unit]`)
+- w każdej sekcji mamy opisane jak dany daemon uruchamiać
+
+warto sobie obejrzeć `systemctl list-dependencies`  
+`systemctl show` jest mniej ciekawym poleceniem od `systemctl cat` (szczególnie że `show` pokaże informacje o danym procesie, nawet jeżeli on nie istnieje)  
+
+`systemctl`:  
+- enable/disable - uruchamia/wyłącza uruchamianie dany daemon przy starcie systemu
+- start/stop - uruchamia/zatrzymuje dany daemon
+- mask/unmask - zamaskowana usługa się nie odpali (nawet jakby była taka porzeba ze strony innej usługi) 
+
+### Targety
+jest jeden `/lib/systemd/system/default.target` - domyślny target, który jest uruchamiany przy starcie systemu  
+służą do grupowania usług (np `multi-user.target` - uruchamia wszystkie usługi związane z użytkownikami)  
+
+### jednoski systemd
+`X.service` opisuje serwis (przeważnie demon), zastępuje `/etc/rc.d/` z bsd  
+zastępują one wszystkie inne jednostki konfiguracyjne systemu  
+- `X.netdev` - konfiguracja interfejsów wirtualnych (zastępuje `/etc/network/interfaces`)
+
+### przykłady
+#### `fstrim`
+`fstrim.timer` - uruchamia fstrim.service co tydzień  
+`fstrim.service` - uruchamia fstrim na wszystkich zamontowanych systemach plików, które to obsługują (`ExecStart=/sbin/fstrim -av`)  
+
+ten serwis jest uruchamiany przez timer, który uruchamia go co tydzień - dlatego musimy dopisać mu timers.target  
+(takie wymaganie mają wszystkie usługi korzystające z [Timer])  
+
+> cron vs anacron - anacron uruchamia zadania, które nie zostały uruchomione w danym czasie (np jak komputer był wyłączony)
+
+#### interfejsy sieciowe
+zmieniona została konwencja nazywnictwa, przy starcie systemu przychodzi systemd i zmienia nazwy interfejsów sieciowych (np na `enp0s3` p - pci, 0 - pci bus, s - slot, 3 - numer slotu)   
+
+przykład konfiguracji zwiększający bezpieczństwo (przydziela losowy mac przy każdym starcie):  
+```ini
+; eth0.link
+
+[Link]
+MacAddressPolicy=random
+NamePolicy=kernel database onboard slot path mac
+```
+
+
+```ini
+; 99-default.link
+
+[Link]
+NamePolicy=kernel database onboard slot path mac
+MACAddressPolicy=persistent
+```
+
+#### `/tmp` w ramdysku
+normalnie jest on jednak trzymany na dysku, ale można przenieść do tmpfs kofigurując `tmp.service` ([Mount] Type=tmpfs)   
+
+
+### krytyka
+konceptem na unixa było zbudowanie go z małych klocków, ale czasem jednak warto zrobić jakiś większy moduł (np `zfs` lub właśnie `systemd`) - fajnie bo wszystko jest dobrze dograne   
+z wad jest on duży, a nie rozwiązuje problemu którego nie dałoby się rozwiązać małymi klockami  
+w przypadku systemd nie ma replacementów - nie mamy możliwości wymiany jeżeli coś nam sie nie podoba  
+przez to że jest to aż tak duży system, to nie ma wielu alternatyw tego całego systemu  
+natomias sam systemd narzuca już wszystko pozostałe, więc pozostaje nam niewiele wyboru w ogólności  
+
 

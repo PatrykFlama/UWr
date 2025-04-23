@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# PROVIDE: mystat
+# REQUIRE: LOGIN
+# KEYWORD: shutdown
+
+. /etc/rc.subr
+
+name="mystat"
+rcvar="${name}_enable"
+
+load_rc_config $name
+
+: ${mystat_enable:="NO"}
+: ${mystat_period:="1"}
+: ${mystat_interval:="60"}
+: ${mystat_logfile:="/var/log/mystat.log"}
+
+command="/usr/local/sbin/mystat"
+command_args="-p ${mystat_period} -i ${mystat_interval} -f ${mystat_logfile}"
+pidfile="/var/run/${name}.pid"
+
+start_precmd="mystat_prestart"
+
+mystat_prestart() {
+    install -d -m 755 $(dirname ${mystat_logfile})
+}
+
+extra_commands="rotate"
+rotate_cmd="mystat_rotate"
+
+mystat_rotate() {
+    check_pidfile ${pidfile} ${command}
+    if [ $? -eq 0 ]; then
+        kill -HUP $(cat ${pidfile})
+    fi
+}
+
+run_rc_command "$@"

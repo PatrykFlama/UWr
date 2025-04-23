@@ -1,0 +1,7 @@
+# Enable mystat service
+mystat_enable="YES"
+
+# Custom configuration
+mystat_period="1"
+mystat_interval="60"
+mystat_logfile="/var/log/mystat.log"

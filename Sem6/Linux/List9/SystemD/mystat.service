@@ -1,7 +1,6 @@
 # /etc/systemd/system/mystat.service
 [Unit]
 Description=CPU Usage Monitoring Service
-After=network.target
 
 [Service]
 Type=simple

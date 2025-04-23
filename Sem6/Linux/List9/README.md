@@ -63,8 +63,10 @@ systemctl status mystat.service
 journalctl -u mystat.service -n 50
 
 # wymuś wygenerwanie wykresu
-systemctl start mystat-graph.service
+sudo systemctl start mystat-graph.service
 
 # sprawdź timer
 systemctl list-timers mystat-graph.timer
 ```
+
+(wykresy są w folderze `/var/lib/mystat`)

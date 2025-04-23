@@ -58,17 +58,19 @@ int get_cpu_times(unsigned long long *total, unsigned long long *idle) {
 int main(int argc, char *argv[]) {
     int period_seconds = 1;
     int interval_seconds = 60;
-    char *logfile = "/var/log/mystat.log";
+    bool clean_log = false;
+    const char *logfile = "/var/log/mystat.log";
 
     struct option long_options[] = {
         {"period", required_argument, 0, 'p'},
         {"interval", required_argument, 0, 'i'},
         {"logfile", required_argument, 0, 'f'},
+        {"clean", no_argument, 0, 'c'},
         {0, 0, 0, 0}
     };
 
     int opt;
-    while ((opt = getopt_long(argc, argv, "p:i:f:", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "p:i:f:c", long_options, NULL)) != -1) {
         switch (opt) {
             case 'p':
                 period_seconds = atoi(optarg);
@@ -87,8 +89,11 @@ int main(int argc, char *argv[]) {
             case 'f':
                 logfile = optarg;
                 break;
+            case 'c':
+                clean_log = true;
+                break;
             default:
-                fprintf(stderr, "Usage: %s [-p period] [-i interval] [-f logfile]\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-p period] [-i interval] [-f logfile] [-c clean]\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
@@ -109,7 +114,7 @@ int main(int argc, char *argv[]) {
 
         if (now - last_sample_time >= period_seconds) {
             unsigned long long current_total, current_idle;
-            if (get_cpu_times(dt_total, dt_idle) == 0) {
+            if (get_cpu_times(&current_total, &current_idle) == 0) {
                 if (prev_total == 0) {
                     prev_total = current_total;
                     prev_idle = current_idle;
@@ -124,7 +129,7 @@ int main(int argc, char *argv[]) {
 
                     if (samples.size >= samples.capacity) {
                         size_t new_cap = samples.capacity == 0 ? 1 : samples.capacity * 2;
-                        double *new_data = realloc(samples.data, new_cap * sizeof(double));
+                        double *new_data = (double*)realloc(samples.data, new_cap * sizeof(double));
                         if (!new_data) {
                             perror("Failed to allocate memory for samples");
                             exit(EXIT_FAILURE);
@@ -157,9 +162,15 @@ int main(int argc, char *argv[]) {
                 char timestamp[20];
                 strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
 
-                fprintf(logfp, "[%s] CPU Usage: Avg=%.2f%%, Min=%.2f%%, Max=%.2f%%\n",
-                        timestamp, avg, min, max);
+                if (!clean_log) {
+                    fprintf(logfp, "[%s] CPU Usage: Avg=%.2f%%, Min=%.2f%%, Max=%.2f%%\n",
+                            timestamp, avg, min, max);
+                } else {
+                    fprintf(logfp, "%.2f %.2f %.2f\n",
+                            avg, min, max);
+                }
                 fflush(logfp);
+                
 
                 free(samples.data);
                 samples.data = NULL;

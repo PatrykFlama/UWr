@@ -1,0 +1,7 @@
+# /etc/systemd/system/mystat-graph.service
+[Unit]
+Description=Generate CPU Usage Graph
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/mystat-graph.sh

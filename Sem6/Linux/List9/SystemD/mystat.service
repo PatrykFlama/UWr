@@ -1,0 +1,16 @@
+# /etc/systemd/system/mystat.service
+[Unit]
+Description=CPU Usage Monitoring Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/mystat
+Restart=on-failure
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=mystat
+
+[Install]
+WantedBy=sysinit.target

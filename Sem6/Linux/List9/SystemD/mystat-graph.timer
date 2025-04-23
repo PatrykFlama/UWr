@@ -1,0 +1,11 @@
+# /etc/systemd/system/mystat-graph.timer
+[Unit]
+Description=Daily CPU Usage Graph Generator
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+Unit=mystat-graph.service
+
+[Install]
+WantedBy=timers.target

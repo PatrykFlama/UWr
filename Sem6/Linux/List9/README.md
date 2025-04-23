@@ -29,3 +29,42 @@ service mystat status
 ```
 
 
+
+## Zad 4
+Plik [mystat-graph.sh](./SystemD/mystat-graph.sh) `/usr/local/bin/mystat-graph.sh`
+
+Oraz pozostałe pliki w `/etc/systemd/system`
+
+
+```bash
+# skrypt
+sudo chmod +x /usr/local/bin/mystat-graph.sh
+
+# katalog wynikowy
+sudo mkdir -p /var/lib/mystat
+
+# przeładuj systemd aby wczytać konfigurację
+sudo systemctl daemon-reload
+
+# włącz i uruchmo mystat
+sudo systemctl enable mystat.service
+sudo systemctl start mystat.service
+
+# rysowanie na timer
+sudo systemctl enable mystat-graph.timer
+sudo systemctl start mystat-graph.timer
+```
+
+```bash
+# sprawdź status
+systemctl status mystat.service
+
+# ostatnie 50 linii logów
+journalctl -u mystat.service -n 50
+
+# wymuś wygenerwanie wykresu
+systemctl start mystat-graph.service
+
+# sprawdź timer
+systemctl list-timers mystat-graph.timer
+```

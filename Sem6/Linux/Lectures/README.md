@@ -60,6 +60,18 @@
       - [interfejsy sieciowe](#interfejsy-sieciowe)
       - [`/tmp` w ramdysku](#tmp-w-ramdysku)
     - [krytyka](#krytyka)
+- [Wykład 9 - rootfs](#wykład-9---rootfs)
+  - [Kernel boot time parameters](#kernel-boot-time-parameters)
+  - [Jak się montuje systemy plików?](#jak-się-montuje-systemy-plików)
+    - [ramdysk](#ramdysk)
+    - [buforowanie urządzeń blokowych (dygresja)](#buforowanie-urządzeń-blokowych-dygresja)
+    - [współczesne rozwiązanie początkowego systemu plików](#współczesne-rozwiązanie-początkowego-systemu-plików)
+  - [Systemy działające tylko w ram](#systemy-działające-tylko-w-ram)
+  - [eksperyment](#eksperyment)
+  - [initrd we współczesnych systemach](#initrd-we-współczesnych-systemach)
+  - [minimalistyczny initramfs](#minimalistyczny-initramfs)
+  - [initramfs-tools](#initramfs-tools)
+  - [dracut](#dracut)
 
 
 # Some notes
@@ -734,5 +746,92 @@ z wad jest on duży, a nie rozwiązuje problemu którego nie dałoby się rozwi�
 w przypadku systemd nie ma replacementów - nie mamy możliwości wymiany jeżeli coś nam sie nie podoba  
 przez to że jest to aż tak duży system, to nie ma wielu alternatyw tego całego systemu  
 natomias sam systemd narzuca już wszystko pozostałe, więc pozostaje nam niewiele wyboru w ogólności  
+
+
+# Wykład 9 - rootfs
+.....
+
+
+bootloader uruchamia jądro jako swoją aplikację, więc po jego uruchomieniu jądro prosi bootloader o ..., tryb chroniony bootloader się wyłącza i jądro zaczyna pracować w trybie nadzorczym  
+odpala się scheduler -> podstawowe wątki jądra -> init  
+ale do tego potrzebny jest rootfs i tu pojawia się problem - żeby go zamontować potrzebujemy dostępu do samego rootfs   
+rozwiązanie: initramfs - system plików w ramdysku, który jest montowany jako rootfs, a potem zamontowany jest rootfs  
+(chociaż freebsd ma na tyle zaawansowany bootloader że potrafi sobie poradzić bez initramfs)  
+
+## Kernel boot time parameters
+[omówienie opcji ze slajdów]  
+
+freebsd potrafi w bezpieczny sposób przekazać hasło z bootloadera do jądra, a w linuxie nie da się tego zrobić bezpiecznie (więc np initramfs musi jeszcze raz pytać o hasło)  
+
+rootfs na początku montuje się jako read-only, np bo chcemy jeszcze puścić fsck przed uruchomieniem systemu. potem system jest przemontowywany (`mount -no remount,rw`) jako read-write  
+jądro na początku nie ma terminala do którego mogłoby pisać, więc zapisuje to do swojego bufora, który później jest np odczytywany przez journal (flaga `-b`)  
+wartość `init=path`, jeżeli dojdzie do uruchomienia `/bin/sh` to zostaniemy poinformowany, a zamontowany zostanie shell jako root  
+
+## Jak się montuje systemy plików?
+mamy listę `file_systems` zamontowanych systemów plików (która nigdy nie może być pusta), na koniec uruchamiania powinien tam się znaleźć rootfs  
+
+### ramdysk
+jeżeli chcemy zamontować root za pomocą `root=/dev/sda1` to w jądrze musiałby się znaleźć sterownik sata/nvme  
+do tego mamy `initrd` - initial root disk  
+
+urządzenie blokowe tworzone i przechowywane w ramie, kiedyś nie miało nawet wsparcia trimowania (zajmowało tyle miejsca w ramie, ile mu się kazało, nawet jeżeli było puste)  
+zwykle wybierany jest jak najprostrzy system plików (np ext2), dodatkowo skompresowany    
+
+wtedy w initrd mamy `/linuxrc` którego zadaniem jest zamontowanie rootfs, a następnie wchrootowanie się do niego. 
+dzięki temu system widzi rootfs jako `/` (swój prawdziwy root), ale nadal zostają 'śmieci' w ramie po starym roocie. 
+do tego mamy polecenie pivot_root które zamienia rooty miejscami. potem chcemy wyrzucić stary root z pamięci
+
+**i tak się robiło (montowało system) kiedyś**
+
+
+### buforowanie urządzeń blokowych (dygresja)  
+aby przyspieszyć korzystanie z pamięci jest ona buforowana w ramie, 
+są też typy pamięci, np swap, które nigdy mają się nie synchronizować z fizycznym dyskiem - to się nazywa ramfs.  
+w efekcie tego powstał system plików tmpfs jest to urządzenie które znajduje się tylko w ramie (ale zużywa tylko tyle miejsca ile potrzebuje)  
+
+### współczesne rozwiązanie początkowego systemu plików
+> .tar też jest systemem plików (read-only)  
+
+nowy flow: zrobimy rootfs jako tmpfs -> zrobimy z tego archiwum   
+archiwum z początku miało być TAR, ale okazało się że jest zbyt dużo jego wersji (dodatkowo jego format jest duży i skomplikowany), więc zdecydowano się na format `cpio`, dodatkowo z kompresją (`gzip`, `xz`, ...)  
+
+teraz zamiast `pivot_root` mamy `switch_root`  
+
+
+## Systemy działające tylko w ram
+w zasadzie to nie musimy montować systemu plików, możemy po prostu odpalić programy z ramdysku  
+np programy z livecd, które są ładowane do ramdysku i uruchamiane z niego  
+
+
+## eksperyment
+`unshare -m` - uruchamia nowy proces w nowym namespace, ale nie zmienia mount namespace  
+po `pivot_root` odpalamy `chroot .` bo pivot root nie zmienia current working directory  
+
+## initrd we współczesnych systemach
+mamy system ssh w intitramfs, po co? np wake-on-lan - karta sieciowa odbiera ramki nawet gdy komputer jest wyłączony, jeżeli odbierze ona odpowiednią ramkę to wysyła do zasilacza sygnał, żeby się uruchomił.
+ale jeżeli komputer ma zaszyfrowany dysk, to się nie uruchomi, zatrzyma się na initramfs, więc możemy się do niego połączyć i odblokować dysk (ale jest to niebezpieczne, nie powinno się trzymać odpalonego initramfs, chyba że z secure boot)  
+
+> bardzo pouczające jest rozpakować swojego initramfs i zobaczyć co tam jest (`zcat /boot/initrd.img | cpio -i`) 
+
+
+## minimalistyczny initramfs
+tak na prawdę /proc i /sys były tylko po to potrzebne, żeby /dev/sda zamontować
+
+## initramfs-tools
+każdy feature składa się z hooka i ze skryptu (każdy w dedykowanym katalogu)   
+pomiędzy `local-block` i `local-premount` montowany jest rootfs
+
+**przykład ze zmianą czcionki**
+- wystarczą 2 skrypty
+- skrypt będzie ustawiał czcionkę w trakcie uruchamiania initramfs
+- hook będzie  kopiował czcionkę do odpowiedniego initramfs  
+
+
+## dracut
+dracut to alternatywa dla initramfs-tools, ma ogromną ilość modułów które można włączyć/wyłączyć  
+możemy dodawać swoje nowe moduły (które nie muszą być używane przy kompilacji jądra)  
+potrafi on zrobić `switch_root` w drugą stronę, żeby elegancko odmontować i zamknąć system (w debianie do tej pory przy zamykaniu systemd mówi że nie może odmontować rootfs)  
+
+
 
 

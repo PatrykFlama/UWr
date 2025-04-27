@@ -134,7 +134,7 @@ public:
 
 // Node.cnt = idx, Node.val = depth
 // segment tree will take min over depth, to find lca
-const int MAXN = 2e5 + 5;
+constexpr int MAXN = 2e5 + 5;
 vector<int> adj[MAXN];
 vector<int> euler;  // time of entry in euler tour
 int depth[MAXN];

@@ -80,10 +80,6 @@ struct Chunk {
     Chunk() : sent(false), acked(false), data(MAX_CHUNK_SIZE) {}
     Chunk(int size) : sent(false), acked(false), data(size) {}
 
-    void write_to_file() {
-        out_file.write(data.data(), data.size());
-    }
-
     void reset() {
         acked = false;
         sent = false;
@@ -93,96 +89,103 @@ struct Chunk {
 };
 
 struct Window {
-    const int n = WINDOW_SIZE;
+    const int window_size = WINDOW_SIZE;
     int ptr;
-    int n_chunks;
+    int total_chunks;
+    int file_size;
     vector<Chunk> data;
 
-    Window(int n_chunks) : ptr(0), n_chunks(n_chunks), data(WINDOW_SIZE) {}
+    Window(int file_size) : ptr(0), file_size(file_size), data(WINDOW_SIZE) {
+        total_chunks = (file_size + MAX_CHUNK_SIZE - 1) / MAX_CHUNK_SIZE;
+    }
 
 
     void send_request_chunk(int index) {
-        const int ptr_relative = (ptr + index) % n;
-        dprintf("request for %d sent \n", ptr_relative);
+        int chunk_index = ptr + index;
+        if (chunk_index >= total_chunks) return;
 
-        long start = (ptr + index) * MAX_CHUNK_SIZE;
-        int length = (ptr + index == n_chunks - 1) ? (n_chunks * MAX_CHUNK_SIZE - start) : MAX_CHUNK_SIZE;
-        string request = "DATA " + to_string(start) + " " + to_string(length) + "\n";
+        long start = chunk_index * MAX_CHUNK_SIZE;
+        int length = min(MAX_CHUNK_SIZE, static_cast<int>(file_size - start));
+        string request = "GET " + to_string(start) + " " + to_string(length) + "\n";
 
-        if (sendto(sock_fd, request.c_str(), request.size(), 0, (struct sockaddr*)&server_address, sizeof(server_address)) != (long int)request.size())
+        int data_index = index % window_size;
+        if (sendto(sock_fd, request.c_str(), request.size(), 0, 
+                  (struct sockaddr*)&server_address, sizeof(server_address)) < 0)
             ERROR("sendto error");
 
-        data[ptr_relative].last_sent.reset();
-        data[ptr_relative].sent = true;
+        data[data_index].last_sent.reset();
+        data[data_index].sent = true;
+        dprintf("Sent request for chunk %d\n", chunk_index);
     }
 
     void send_request_all() {
-        for (int i = 0; i < n; ++i) {
-            if (ptr + i >= n_chunks) break;
+        for (int i = 0; i < window_size; ++i) {
+            if (ptr + i >= total_chunks) break;
+            int data_index = i % window_size;
+            
+            if (data[data_index].acked) continue;
+            if (data[data_index].sent && 
+                data[data_index].last_sent.elapsed() < TIMEOUT_MS) continue;
 
-            const int ptr_relative = (ptr + i) % n;
-            if (data[i].acked || (data[i].sent && data[i].last_sent.elapsed() <= TIMEOUT_MS)) continue;
-
-            dprintf("Sending request for chunk %d ...", ptr_relative);
             send_request_chunk(i);
         }
     }
 
-
     void receive() {
         pollfd pfd = {sock_fd, POLLIN, 0};
-        int ret = poll(&pfd, 1, TIMEOUT_MS);
-        if (ret < 0) ERROR("poll error");
-        if (ret == 0) return; // timeout
+        if (poll(&pfd, 1, TIMEOUT_MS) <= 0) return;
 
         char buffer[MAX_CHUNK_SIZE + 1024];
         sockaddr_in from;
         socklen_t from_len = sizeof(from);
-        ssize_t len = recvfrom(sock_fd, buffer, sizeof(buffer), 0, (sockaddr*)&from, &from_len);
-        if (len < 0) ERROR("recvfrom error");
+        ssize_t len = recvfrom(sock_fd, buffer, sizeof(buffer), 0, 
+                             (sockaddr*)&from, &from_len);
+        if (len <= 0) return;
 
-        string header(buffer, strcspn(buffer, "\n"));
+        char* header_end = strstr(buffer, "\n");
+        if (!header_end) return;
+        string header(buffer, header_end - buffer);
+
         size_t space1 = header.find(' ');
         size_t space2 = header.rfind(' ');
-        if (space1 == string::npos || space2 == string::npos || space1 == space2) return;
+        if (space1 == string::npos || space2 == string::npos || space1 == space2) 
+            return;
 
         string cmd = header.substr(0, space1);
-        int start = stoi(header.substr(space1 + 1, space2 - space1 - 1));
-        int length = stoi(header.substr(space2 + 1));
+        int start = stoi(header.substr(space1+1, space2-space1-1));
+        int length = stoi(header.substr(space2+1));
 
-        if (cmd != "DATA" || start < 0 || length <= 0 || start + length > n_chunks * MAX_CHUNK_SIZE)
+        if (cmd != "DATA" || start < 0 || length <= 0 || 
+            start % MAX_CHUNK_SIZE != 0 ||
+            start + length > file_size)
             return;
 
         int chunk_index = start / MAX_CHUNK_SIZE;
-        if (chunk_index < ptr || chunk_index >= ptr + n) return;
+        if (chunk_index < ptr || chunk_index >= ptr + window_size || 
+            chunk_index >= total_chunks)
+            return;
 
-        const int ptr_relative = (ptr + chunk_index) % n;
-        
-        data[ptr_relative].data.resize(length);
-        memcpy(data[ptr_relative].data.data(), buffer + header.size() + 1, length);
-        
-        data[ptr_relative].acked = true;
-        
+        int data_index = (chunk_index - ptr) % window_size;
+        size_t data_len = len - (header_end - buffer + 1);
+        if (data_len < static_cast<size_t>(length)) return;
+
+        data[data_index].data.assign(header_end+1, header_end+1+length);
+        data[data_index].acked = true;
         dprintf("Received chunk %d\n", chunk_index);
-        dprintf("Data: %s\n", string(data[ptr_relative].data.begin(), data[ptr_relative].data.end()).c_str());
     }
 
-    
     void write_received() {
-        int offset = 0;
-
-        for (; offset < n; ++offset) {
-            const int ptr_relative = (ptr + offset) % n;
-
-            if (ptr >= n_chunks || !data[ptr_relative].acked)
-                break;
+        while (ptr < total_chunks) {
+            int data_index = ptr % window_size;
+            if (!data[data_index].acked) break;
             
-            data[ptr_relative].write_to_file();
-            data[ptr_relative].reset();
+            out_file.write(data[data_index].data.data(), 
+                          data[data_index].data.size());
+            data[data_index].reset();
+            ptr++;
         }
-
-        ptr = (ptr + offset) % n;
     }
+
 };
 
 
@@ -222,16 +225,17 @@ int main(int argc, char* argv[]) {
     if (inet_pton(AF_INET, ip.c_str(), &server_address.sin_addr) <= 0)
         ERROR("inet_pton error");
 
-    // create window
-    int total_chunks = (file_size + MAX_CHUNK_SIZE - 1) / MAX_CHUNK_SIZE;
-    Window window(total_chunks);
-
+    // main loop
+    Window window(file_size);
     
-    while (window.ptr < total_chunks) {
+    while (window.ptr < window.total_chunks) {
+        dprintf("Current base: %d\n", window.ptr);
+
         window.send_request_all();
-
         window.receive();
-
         window.write_received();
     }
+
+    close(sock_fd);
+    out_file.close();
 }

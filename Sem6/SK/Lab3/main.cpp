@@ -14,13 +14,13 @@
 
 using namespace std;
 
-#define DEBUG 1
+#define DEBUG 0
 #define dprintf if(DEBUG) printf
 
 //* ------------------ CONSTANTS ------------------
 constexpr int MAX_CHUNK_SIZE = 1000;
 constexpr int WINDOW_SIZE = 1000;
-constexpr int TIMEOUT_MS = 2000;
+constexpr int TIMEOUT_MS = 100;
 
 
 //* ------------- HELPER -----------------
@@ -72,12 +72,12 @@ struct sockaddr_in server_address;
 
 //* -------------- STRUCTURES ---------------
 struct Chunk {
-    bool sent;
-    bool acked;
+    bool sent = false;
+    bool acked = false;
     vector<char> data;
     Timer last_sent;
 
-    Chunk() : sent(false), acked(false), data(MAX_CHUNK_SIZE) {}
+    Chunk() : data(MAX_CHUNK_SIZE) {}
     Chunk(int size) : sent(false), acked(false), data(size) {}
 
     void reset() {
@@ -89,10 +89,10 @@ struct Chunk {
 };
 
 struct Window {
-    const int window_size = WINDOW_SIZE;
     int ptr;
     int total_chunks;
     int file_size;
+    int received_chunks = 0;
     vector<Chunk> data;
 
     Window(int file_size) : ptr(0), file_size(file_size), data(WINDOW_SIZE) {
@@ -100,34 +100,32 @@ struct Window {
     }
 
 
-    void send_request_chunk(int index) {
-        int chunk_index = ptr + index;
-        if (chunk_index >= total_chunks) return;
-
-        long start = chunk_index * MAX_CHUNK_SIZE;
+    void send_request_chunk(int chunk) {
+        long start = chunk * MAX_CHUNK_SIZE;
         int length = min(MAX_CHUNK_SIZE, static_cast<int>(file_size - start));
         string request = "GET " + to_string(start) + " " + to_string(length) + "\n";
 
-        int data_index = index % window_size;
+        // int data_index = (chunk - ptr) % WINDOW_SIZE;
+        int data_index = chunk % WINDOW_SIZE;
         if (sendto(sock_fd, request.c_str(), request.size(), 0, 
                   (struct sockaddr*)&server_address, sizeof(server_address)) < 0)
             ERROR("sendto error");
 
         data[data_index].last_sent.reset();
         data[data_index].sent = true;
-        dprintf("Sent request for chunk %d\n", chunk_index);
+        dprintf("Sent request for chunk %d\n", chunk);
     }
 
     void send_request_all() {
-        for (int i = 0; i < window_size; ++i) {
-            if (ptr + i >= total_chunks) break;
-            int data_index = i % window_size;
-            
-            if (data[data_index].acked) continue;
-            if (data[data_index].sent && 
-                data[data_index].last_sent.elapsed() < TIMEOUT_MS) continue;
+        const int window_end = min(total_chunks, ptr + WINDOW_SIZE);
+        for (int chunk = ptr; chunk < window_end; ++chunk) {
+            int idx = chunk % WINDOW_SIZE;
 
-            send_request_chunk(i);
+            if (data[idx].acked) continue;
+            if (data[idx].sent && 
+                data[idx].last_sent.elapsed() < TIMEOUT_MS) continue;
+
+            send_request_chunk(chunk);
         }
     }
 
@@ -161,29 +159,39 @@ struct Window {
             return;
 
         int chunk_index = start / MAX_CHUNK_SIZE;
-        if (chunk_index < ptr || chunk_index >= ptr + window_size || 
+        if (chunk_index < ptr || chunk_index >= ptr + WINDOW_SIZE || 
             chunk_index >= total_chunks)
             return;
 
-        int data_index = (chunk_index - ptr) % window_size;
+        int data_index = chunk_index % WINDOW_SIZE;
         size_t data_len = len - (header_end - buffer + 1);
         if (data_len < static_cast<size_t>(length)) return;
 
+        if (data[data_index].acked) return;
         data[data_index].data.assign(header_end+1, header_end+1+length);
         data[data_index].acked = true;
+        received_chunks++;
         dprintf("Received chunk %d\n", chunk_index);
     }
 
     void write_received() {
+        dprintf("Writing received data:");
+
         while (ptr < total_chunks) {
-            int data_index = ptr % window_size;
-            if (!data[data_index].acked) break;
+            dprintf(" %d", ptr);
+
+            int data_index = ptr % WINDOW_SIZE;
+            if (!data[data_index].acked) {
+                dprintf(" nah");
+                break;
+            }
             
             out_file.write(data[data_index].data.data(), 
-                          data[data_index].data.size());
+                           data[data_index].data.size());
             data[data_index].reset();
             ptr++;
         }
+        dprintf(" (%s, %d)\n", ptr >= total_chunks ? "done" : "not done", ptr);
     }
 
 };
@@ -227,13 +235,27 @@ int main(int argc, char* argv[]) {
 
     // main loop
     Window window(file_size);
+    int percent = 0;
+    const int percent_resolution = 5;
     
     while (window.ptr < window.total_chunks) {
         dprintf("Current base: %d\n", window.ptr);
 
         window.send_request_all();
-        window.receive();
+
+        Timer timer;
+        while (window.ptr < window.total_chunks && 
+               timer.elapsed() < TIMEOUT_MS) {
+            window.receive();
+        }
+
         window.write_received();
+
+        const int new_percent = ((100 * window.received_chunks) / window.total_chunks);
+        if (new_percent/percent_resolution > percent/percent_resolution) {
+            percent = new_percent;
+            cout << "\rProgress: " << percent << "% " << endl;
+        }
     }
 
     close(sock_fd);

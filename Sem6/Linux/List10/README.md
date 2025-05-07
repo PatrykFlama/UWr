@@ -109,16 +109,17 @@ framebuffer – dostęp do bufora ramki (pikselowego obrazu ekranu)
 mechanizm jądra umożliwiający dostęp do pamięci ekranu w trybie graficznym (nawet bez X11) 
 
 ### Kernel Mode Setting (KMS)	
-ustawienie rozdzielczości i trybu ekranu w jądrze zamiast przez użytkownika
+ustawienie rozdzielczości i trybu ekranu w jądrze zamiast przez użytkownika  
+czyli kernel potrafi już rozmawiać z kartą graficzną
 
 ### Hardware Text Mode	
 tryb sprzętowy, w którym tekst renderowany jest przez BIOS/kartę graficzną (np. VGA). szybki, ale ograniczony
 
 
 ## Dlaczego w konsoli tekstowej nie można używać czcionek wektorowych i antialiasingu?
-- konsola tekstowa (tty) pracuje w trybie rastrowym, bez możliwości wyświetlania pełnych pikseli RGB
+- konsola tekstowa (tty) pracuje w trybie rastrowym, nie ma bibliotek do wytwarzania rastru z wektorowego
 - nie obsługuje grafiki ani przez GPU, ani przez biblioteki font rendering (np. FreeType)
-- antialiasing i czcionki wektorowe wymagają renderowania pikseli o różnych odcieniach (możliwe tylko w trybie graficznym)
+- antialiasing i czcionki wektorowe wymagają znania kolorów terminala, zmiany kolorów pikseli, etc
 - (terminale graficzne działają na np X11 i mogą korzystać z czcionek TTF/OTF i antialiasingu)
 
 
@@ -199,3 +200,50 @@ sudo chmod +x /etc/initramfs-tools/scripts/init-top/z_cfont
 ```bash
 sudo update-initramfs -u
 ```
+
+
+
+____
+
+
+# Notes
+## Zad 1
+kiedyś jądro się nie zajmowało czcionkami, bo karta graficzna miała wbudowane czcionki - więc jądro tylko przesyłało do niej tekst  
+ale teraz sie tak nie robi, teraz mamy tylko framebuffer i jądro musi się zajmować czcionkami  
+
+- klikając w klawiaturę wysyłamy `scancode`'y (`iftest` - narzędzie wyświetlające kody skanowania)  
+- kody są odbierane przez jądro i wytwarzane są `keycode`'y (w kernelu)
+- `keycode`'y są mapowane za pomocą `keymap` 
+- ...
+- wytwarzane są znaki unicode (UTF-8) i wysyłane do aplikacji
+
+
+### `chvt` – zmiana terminala
+```bash
+chvt 1
+```
+przełącza na terminal 1 (tty1)
+
+### jak sprawdzić czy tty jest żywy?
+brzydka sztuczka - sprawdzamy czy jego vcs istnieje (`ls /dev/vcs*`)  
+
+
+## Zad 2
+'wszystko co niezaszyfrowane, jest podatne' 
+
+`lsblk -f` - wypisuje wszystkie urządzenia blokowe i ich informacje
+
+## Zad 4
+porzebujemy `init`a oraz `bin`a (jądro odpali inita, a bin jest potrzeby żeby 'mieć co robić')  
+w naszym binie chcemy `busybox`a  
+
+w inicie (który jest odpalany przez `excve /bin/sh`) przede wszystkim potrzebujemy mountów naszego initramfs  
+
+wszystko uruchomimy za pomocą grub'a (musimy stworzyć custom config)
+
+żeby dalej to rozwinąć możemy dodać jakieś moduły jądra do `lib`    
+
+
+## Zad 10
+'gentoo - wszystkie potrzebne moduły wkompilowane w kernel'  
+

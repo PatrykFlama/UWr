@@ -105,3 +105,11 @@ za pomocą jakiegoś hex edytora (np `xxd`) mozemy sprawdzić zmiany na naszym d
 żeby w fdisk założyć partycję przed 2048 sektorem musimy przedjść do trybu kompatybilności: w fdisk opcja `c`   
 
 
+EBR ma format MBR (podobnie jak wiele innych struktur ma format MBR), ponieważ wtedy tak samo się je wszystkie parsuje  
+
+loopback był od początku w linuxie, ale jest w nim mały problem:  
+w dysku są przechowywane dane oraz ich metadane, system journal działa tak że najpierw zmiana metadanych jest zapisywana do niego, potem do danych, a na koniec sukces zapisu jest zaznaczany w journalu  
+teraz jeżeli zrobimy system plików w danych tego dysku (które też mają swoje dane i metadane) i zamontujemy je loopbackiem, to nic nie chroni tych metadanych zagnieżdżonych 'pod' danymi  
+
+
+

@@ -2,7 +2,7 @@
 
 | 1 | 2 | 3 | 4 |
 |---|---|---|---|
-|   |   |   |   |
+| X |   |   |   |
 
 
 ## Zad 1
@@ -14,6 +14,8 @@
 
 - teoretycznie pozwala na skryptowanie za pomocą `ssfdisk(8)`
 
+- modyfikacje istnieją w ramie, muszą zosatć zapisane manualnie
+
 ### `parted(8)`
 - zaawansowane narzędzie z obsługą skryptów (np. -s dla trybu nienadzorowanego)
 - obsługuje więcej formatów tablic partycji, w tym GPT, MS-DOS, BSD, aix, amiga itd
@@ -23,7 +25,9 @@
 - posiada try skryptowy
 - bardziej intuicyjna składnia
 - umożliwia zmianę rozmiaru partycji bez utraty danych (w połączeniu z `resize2fs` lub `resizepart`)
-- pozwala określić typ systemu plików przy tworzeniu partycji
+- pozwala określić typ systemu plików przy tworzeniu partycji (ale jest to już depreceated, są tylko pozostałości)
+
+- zmiany są wykonywane na bieżąco na dysku
 
 ____
 
@@ -74,11 +78,30 @@ EOF
 za pomocą `losetup` tworzymy urządzenie blokowe, polecenia `partx`/`partprobe`/`kpartx` są używane do aktualizacji systemu o nowe partycje
 
 ```bash
-LOOPDEV=$(losetup --find --partscan disk.img)
+LOOPDEV=$(losetup --find --show --partscan disk.img)
 partprobe "$LOOPDEV"
 lsblk "$LOOPDEV"
 ```
 
 
+
+
+# Some notes
+w gpt są 2 kopie - z przodu oraz z tyłu, dodatkowo jest hash sha256 (więc 'ręczna' edycja w edytorze teksu nie jest prosta)  
+w mbr jest to możliwe, bo jest to ~ 512 B  
+fdisk pochodzi z bds unix, parted został stworzony w ramach projektu gnu  
+
+> "unix haters handbook" - taka se książka
+
+w mbr normalnie było tak, że w sektorach 1-62 był grub, a od 63 partycje  
+standard fdisk (spowodowany pojawieniem się gpt) sprawia że między grubem a parycjami jest parwie 1MB zmarnowanego miejsca  
+w xfs (np ext4) blok nie może być większy niż strona pamięci ram, czyli najczęściej 4kB - więc pamięć na dyskach powinna być wyrównana do 4kB aby nie ładować 2 stron do ramu aby odczytać/zapisać 1 sektor => w tym przypadku wyrównywanie do aż do 1MB nie ma sensu
+
+
+za pomocą jakiegoś hex edytora (np `xxd`) mozemy sprawdzić zmiany na naszym disk.img  
+
+> prinf "%d\n" 0xc2r000 | bc -l
+
+żeby w fdisk założyć partycję przed 2048 sektorem musimy przedjść do trybu kompatybilności: w fdisk opcja `c`   
 
 

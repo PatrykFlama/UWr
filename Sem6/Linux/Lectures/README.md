@@ -72,6 +72,23 @@
   - [minimalistyczny initramfs](#minimalistyczny-initramfs)
   - [initramfs-tools](#initramfs-tools)
   - [dracut](#dracut)
+- [Wykład 10 - środowisko uruchomieniowe procesorów x86-64 (Legacy BIOS)](#wykład-10---środowisko-uruchomieniowe-procesorów-x86-64-legacy-bios)
+  - [1. **Wstęp: BIOS i jego rola**](#1-wstęp-bios-i-jego-rola)
+  - [2. **Procesor 8088/8086**](#2-procesor-80888086)
+  - [3. **Rozruch systemu**](#3-rozruch-systemu)
+  - [4. **GRUB (Grand Unified Bootloader)**](#4-grub-grand-unified-bootloader)
+  - [5. **Tryby pracy procesora x86-64**](#5-tryby-pracy-procesora-x86-64)
+  - [6. **Proces przełączania trybów**](#6-proces-przełączania-trybów)
+  - [7. **Problemy Legacy BIOS**](#7-problemy-legacy-bios)
+  - [8. **Podsumowanie**](#8-podsumowanie)
+- [Wykład 11 - środowisko uruchomieniowe procesorów x86-64 (UEFI. Bootloadery)](#wykład-11---środowisko-uruchomieniowe-procesorów-x86-64-uefi-bootloadery)
+  - [1. **UEFI vs Legacy BIOS**](#1-uefi-vs-legacy-bios)
+  - [2. **GUID Partition Table (GPT)**](#2-guid-partition-table-gpt)
+  - [3. **Secure Boot**](#3-secure-boot)
+  - [4. **Problemy z implementacją UEFI**](#4-problemy-z-implementacją-uefi)
+  - [5. **Bootloadery w ekosystemie Linuksa**](#5-bootloadery-w-ekosystemie-linuksa)
+  - [6. **Konfiguracja GRUB-a w Debianie**](#6-konfiguracja-grub-a-w-debianie)
+  - [7. **Podsumowanie**](#7-podsumowanie)
 
 
 # Some notes
@@ -833,5 +850,207 @@ możemy dodawać swoje nowe moduły (które nie muszą być używane przy kompil
 potrafi on zrobić `switch_root` w drugą stronę, żeby elegancko odmontować i zamknąć system (w debianie do tej pory przy zamykaniu systemd mówi że nie może odmontować rootfs)  
 
 
+# Wykład 10 - środowisko uruchomieniowe procesorów x86-64 (Legacy BIOS)
+<!-- notes made by: deepseek (based on lecture) -->
+
+## 1. **Wstęp: BIOS i jego rola**
+- **BIOS** (*Basic Input/Output System*):
+  - Firmware zapisany w pamięci ROM na płycie głównej.
+  - Udostępnia warstwę abstrakcji sprzętowej (HAL) dla systemu operacyjnego.
+  - Zawiera procedury POST (*Power-On Self Test*), inicjalizuje urządzenia, ładuje bootloader z MBR.
+
+- **Proces uruchamiania**:
+  - Procesor zaczyna wykonywać kod z adresu `0xFFFF0` (BIOS).
+  - BIOS ładuje pierwszy sektor dysku (MBR, 512 B) do pamięci `0x7C00` i przekazuje sterowanie.
+
+---
+
+## 2. **Procesor 8088/8086**
+- **Architektura**:
+  - 16-bitowe rejestry ogólnego przeznaczenia (AX, BX, CX, DX).
+  - Rejestry segmentowe (CS, DS, SS, ES) i adresowanie: `adres = (seg << 4) + offset`.
+  - Przestrzeń adresowa: 20-bitowa (1 MiB), podzielona na:
+    - **Conventional memory**: 640 KiB (RAM).
+    - **Upper Memory Blocks (UMB)**: m.in. pamięć karty graficznej i BIOS (ROM).
+
+- **Ograniczenie pamięci**:
+  - "640 KiB wystarczy każdemu" – konwencjonalna pamięć ograniczona ze względu na mapowanie urządzeń w UMB.
+
+---
+
+## 3. **Rozruch systemu**
+- **Master Boot Record (MBR)**:
+  - Pierwszy sektor dysku (512 B).
+  - Struktura:
+    - **446 B**: kod bootloadera.
+    - **4 x 16 B**: wpisy partycji.
+    - **2 B**: sygnatura `0x55AA`.
+
+- **Partycjonowanie**:
+  - Typy partycji (np. `0x83` – Linux, `0xEE` – GPT).
+  - Partycja rozszerzona (typ `0x0F`) pozwala na więcej niż 4 partycje logiczne.
+
+- **Przykładowy MBR z GRUB2**:
+  - Kod ładujący jądro GRUB-a z wolnego obszaru między MBR a pierwszą partycją.
+  - Wymaga wyrównania partycji (np. 2048 sektorów dla 1 MiB).
+
+---
+
+## 4. **GRUB (Grand Unified Bootloader)**
+- **Fazy działania**:
+  1. **Faza 1**: Kod w MBR ładuje dodatkowe moduły.
+  2. **Faza 1.5**: Dostęp do systemu plików (np. ext4).
+  3. **Faza 2**: Pełne menu rozruchowe z pliku `grub.cfg`.
+
+- **Konfiguracja**:
+  - Plik `grub.cfg` definiuje menu i polecenia uruchamiające systemy.
+  - Moduły (np. sterowniki systemów plików) dodawane do jądra GRUB-a.
+
+---
+
+## 5. **Tryby pracy procesora x86-64**
+- **Real Mode**:
+  - 16-bitowy tryb rzeczywisty (domyślny po starcie).
+  - Brak ochrony pamięci, bezpośredni dostęp do sprzętu.
+
+- **Protected Mode**:
+  - 32-bitowy tryb chroniony z segmentacją i stronicowaniem.
+  - Wymaga konfiguracji GDT (*Global Descriptor Table*).
+
+- **Long Mode**:
+  - 64-bitowy tryb z rozszerzonymi rejestrami i większą przestrzenią adresową.
+  - Wymaga włączenia PAE (*Physical Address Extension*) i PML4.
+
+---
+
+## 6. **Proces przełączania trybów**
+- **Włączanie Protected Mode**:
+  1. Wyłącz przerwania (`cli`).
+  2. Włącz linię A20 (dostęp do pamięci powyżej 1 MiB).
+  3. Załaduj GDT.
+  4. Ustaw bit PE w rejestrze CR0.
+
+- **Włączanie Long Mode**:
+  1. Wyłącz stronicowanie.
+  2. Włącz PAE (CR4).
+  3. Załaduj PML4 (CR3).
+  4. Ustaw EFER.LME (MSR `0xC0000080`).
+  5. Włącz stronicowanie.
+
+---
+
+## 7. **Problemy Legacy BIOS**
+- **Ograniczenia**:
+  - MBR obsługuje tylko 4 partycje (rozszerzone są niewygodne).
+  - 32-bitowe LBA ogranicza dyski do 2 TiB.
+  - Brak wsparcia dla nowoczesnych standardów (np. NVMe, UEFI).
+
+- **Rozwiązania**:
+  - **GPT** (GUID Partition Table) – zastępuje MBR, obsługuje dyski >2 TiB.
+  - **UEFI** – nowszy firmware z graficznym interfejsem i wsparciem bezpiecznego rozruchu.
+
+---
+
+## 8. **Podsumowanie**
+- **BIOS** to przestarzały, ale wciąż używany standard rozruchu.
+- **GRUB** działa jako pośrednik między BIOS a jądrem systemu.
+- Współczesne procesory x86-64 zachowują kompatybilność wstecz z trybem rzeczywistym.
+- Przejście na UEFI/GPT eliminuje wiele ograniczeń BIOS/MBR.
 
 
+# Wykład 11 - środowisko uruchomieniowe procesorów x86-64 (UEFI. Bootloadery)
+<!-- notes made by: deepseek (based on lecture) -->
+
+
+## 1. **UEFI vs Legacy BIOS**
+- **BIOS** (przestarzały):
+  - Ograniczenia: MBR (4 partycje, dyski do 2 TiB), tryb 16-bitowy.
+  - Proces rozruchu: Ładuje kod z MBR, brak wsparcia dla nowoczesnych standardów.
+
+- **UEFI** (Unified Extensible Firmware Interface):
+  - Wprowadza GPT (GUID Partition Table) – obsługa dysków >2 TiB, do 128 partycji.
+  - Uruchamia bootloadery w trybie 64/32-bitowym (pominięcie trybu 16-bitowego).
+  - Wymaga partycji **ESP** (EFI System Partition) z systemem plików FAT.
+  - Zapewnia usługi: *boot services*, *runtime services*, *variable services* (przechowywanie kluczy i konfiguracji).
+
+---
+
+## 2. **GUID Partition Table (GPT)**
+- **Struktura**:
+  - **Protective MBR**: Zabezpiecza przed nadpisaniem przez starsze narzędzia.
+  - **Nagłówek GPT**: Zawiera sumę kontrolną i rozmiar tablicy partycji.
+  - **128 wpisów partycji**: Każdy zawiera GUID typu, nazwę (UTF-16), LBA początku i końca.
+
+- **Przykładowe typy partycji**:
+  - `C12A7328-F81F-11D2-BA4B-00A0C93EC93B` – partycja EFI (ESP).
+  - `0FC63DAF-8483-4772-8E79-3D69D8477DE4` – partycja danych Linux.
+
+---
+
+## 3. **Secure Boot**
+- **Cel**: Zabezpieczenie przed złośliwym oprogramowaniem podczas rozruchu.
+- **Klucze**:
+  - **PK (Platform Key)**: Główny klucz certyfikujący.
+  - **KEK (Key Exchange Key)**: Używany do podpisywania baz `db` i `dbx`.
+  - **db (Whitelist)**: Lista dozwolonych sygnatur/haszy.
+  - **dbx (Blacklist)**: Lista zablokowanych sygnatur/haszy.
+
+- **Tryby działania**:
+  - **Setup Mode**: Brak PK – możliwość modyfikacji kluczy.
+  - **User Mode**: PK aktywny – modyfikacje wymagają autoryzacji.
+  - **Deployed Mode**: Brak możliwości modyfikacji.
+
+- **Wsparcie w dystrybucjach Linuksa**:
+  - **Debian/Ubuntu**: Wykorzystują *shim* (podpisany przez Microsoft) do ładowania GRUB-a.
+  - **Fedora/RHEL**: Pełne podpisywanie jądra i modułów.
+
+---
+
+## 4. **Problemy z implementacją UEFI**
+- **Przykłady**:
+  - **Samsung (2013)**: Błędy w UEFI powodujące "brickowanie" laptopów przy bootowaniu Linuksa.
+  - **Lenovo**: Sprawdzanie nazwy boot entry (np. "Windows Boot Manager") przed uruchomieniem.
+  - **Boothole (2020)**: Luka w GRUB-ie umożliwiająca przejęcie kontroli przez złośliwy `grub.cfg`.
+
+---
+
+## 5. **Bootloadery w ekosystemie Linuksa**
+- **GRUB 2**:
+  - Obsługuje BIOS i UEFI.
+  - Modularna architektura, konfiguracja przez `grub.cfg`.
+  - W Debianie: Instalacja z pakietów `grub-efi-amd64` (UEFI) lub `grub-pc` (BIOS).
+
+- **EFI Stub**:
+  - Jądro Linuksa może być bezpośrednio uruchamiane przez UEFI (bez bootloadera).
+  - Wymaga skopiowania `vmlinuz` i `initrd.img` do partycji ESP.
+
+- **rEFInd**:
+  - Graficzny boot manager dla UEFI z możliwością tematycznego dostosowania.
+  - Wspiera automatyczne wykrywanie systemów operacyjnych.
+
+- **SYSLINUX**:
+  - Zbiór narzędzi do bootowania z różnych nośników (FAT, ext, CD, PXE).
+  - Proste menu konfigurowalne przez plik `syslinux.cfg`.
+
+---
+
+## 6. **Konfiguracja GRUB-a w Debianie**
+- **Struktura katalogów**:
+  - `/boot/grub/`: Moduły, tematy, konfiguracja.
+  - `/boot/efi/`: Partycja ESP z plikami `.efi`.
+
+- **Narzędzia**:
+  - `grub-install`: Instalacja bootloadera na dysk.
+  - `update-grub`: Generowanie `grub.cfg` na podstawie szablonów.
+
+- **Zaawansowane opcje**:
+  - **Tematy**: Zmiana wyglądu menu przez pliki graficzne w `/boot/grub/themes/`.
+  - **Własne skrypty**: Dodawanie wpisów do `grub.cfg` przez pliki w `/etc/grub.d/`.
+
+---
+
+## 7. **Podsumowanie**
+- **UEFI** eliminuje ograniczenia BIOS-u, ale wprowadza nowe wyzwania (Secure Boot, zależność od producentów).
+- **GPT** jest niezbędny dla dysków >2 TiB i nowoczesnych systemów.
+- **Secure Boot** wymaga dostosowania dystrybucji Linuksa, ale można go obejść przez własne klucze.
+- **Bootloadery** oferują różne podejścia: od prostych (EFI Stub) po zaawansowane (GRUB 2, rEFInd).

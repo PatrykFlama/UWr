@@ -89,6 +89,19 @@
   - [5. **Bootloadery w ekosystemie Linuksa**](#5-bootloadery-w-ekosystemie-linuksa)
   - [6. **Konfiguracja GRUB-a w Debianie**](#6-konfiguracja-grub-a-w-debianie)
   - [7. **Podsumowanie**](#7-podsumowanie)
+- [Wykład 12 - Wirtualizacja](#wykład-12---wirtualizacja)
+  - [Symulacja](#symulacja)
+  - [Emulacja](#emulacja)
+  - [Emulacja vs wirtualizacja](#emulacja-vs-wirtualizacja)
+  - [Jak zwirtualizować procesor?](#jak-zwirtualizować-procesor)
+  - [Pierwszy hypervisor](#pierwszy-hypervisor)
+  - [Parawirtualizacja](#parawirtualizacja)
+  - [Najpopularniejsze hypervisory](#najpopularniejsze-hypervisory)
+  - [chroot(2) i chroot(8)](#chroot2-i-chroot8)
+  - [Kontenery - bezpieczniejszy chroot](#kontenery---bezpieczniejszy-chroot)
+  - [Namespace i cgroups](#namespace-i-cgroups)
+  - [Sandboxing vs kontenery](#sandboxing-vs-kontenery)
+    - [Zwykłe vs nieuprzywilejowane konenery (LXC)](#zwykłe-vs-nieuprzywilejowane-konenery-lxc)
 
 
 # Some notes
@@ -1054,3 +1067,127 @@ potrafi on zrobić `switch_root` w drugą stronę, żeby elegancko odmontować i
 - **GPT** jest niezbędny dla dysków >2 TiB i nowoczesnych systemów.
 - **Secure Boot** wymaga dostosowania dystrybucji Linuksa, ale można go obejść przez własne klucze.
 - **Bootloadery** oferują różne podejścia: od prostych (EFI Stub) po zaawansowane (GRUB 2, rEFInd).
+
+
+
+# Wykład 12 - Wirtualizacja
+Na samym początku, w dos'ie,  większość rzeczy nie była wirtualizowana (może poza wyjątkiem pamięci, na której był system plików)  
+teraz bardzo często system wirtualizuje dla programu procesor, pamięć, etc  
+
+jak udawać?  
+- symulacja - bardzo szczegółowe odtwarzanie działania systemu (jak procesor coś źle robi, to jest to oddawane)
+- emulacja - ważny jest tylko efekt działania
+- wirtualizacja - zwielokrotnianie platformy (udawanie wyłączności)  
+
+## Symulacja
+symulować możemy procesor, hardware albo system operacyjny  
+przykład:
+- verilog (program do udawania obwodów elektronicznych)  
+- GNS3 (program do symulacji sieci komputerowych)
+
+## Emulacja
+procesory:
+- QEMU (Quick Emulator) - szybki 
+- MIPS - (fajne, bo można skonfigurować czy chcemy korzysać z big endian czy little endian)
+- mikrokontrolery - np Arduino, ale słabo idzie implementacja interfejsów
+
+systemy operacyjne:
+- Wine
+- WSL (ale nie WSL v2, który jest wirtualizowany)
+
+hardware:
+- FPGA (Field Programmable Gate Array) - programowalne układy scalone, które można skonfigurować do różnych zadań
+
+
+## Emulacja vs wirtualizacja
+> basic block - kawałek kodu maszynowego który ma jedno wejście i jedno wyjście (nie ma rozgałęzień)
+
+- **qemu** jako emulator - przekłada na bieżąco basic blocki jednego procesora na drugiego (jest to wydajne, ale nie aż tak jak z kvm)  
+- wirtualizacja **KVM**  
+nie musimy przekładać np x86 na x86, tworzymy usługę jądra pracującego w trybie użytkownika (te jądro nawet o tym nie wie), tkzw **hypervisor**  
+co jeżeli jądro chce skorzystać z rozkazów uprzywilejowanych?   
+później nawet pojawiło się wsparcie sprzętowe dla hypervisorów,  czyli dodatkowe rozkazy  
+
+
+## Jak zwirtualizować procesor?
+potrzebujemy hypervisora - oprogramowanie które pozwala tworzyć i uruchamiać maszyny wirtualne (OS nazywano kiedyś hypervisorem lub monitorem)   
+rodzaje:
+- bare metal - działa bezpośrednio na fizycznej maszynie, bardzo podstawowy system operacyjny zwykle o architekturze mikrojądra  
+  - zazwyczaj działa tak że się uruchamia (gospodarz) i od razu uruchamia maszynę wirtualną (gościa)
+  - przykład: Xen (jazda bez trzymanki, potrafi dużo, po uruchomieniu odpala linuksa, który może nim zarządzać), VMware ESXi (płatne ale wygodne), Microsoft Hyper-V
+- hosted - mamy system operacyjny pracujący na maszynie, a na nim uruchamiamy program do wirtualizacji
+  - np: VirtualBox, Qemu, VMware Workstation
+- hybrydowy - kompletny system operacyjny, który ma funkcjonalność hypervisora
+  - np: KVM, FreeBSD bhyve, UML
+
+## Pierwszy hypervisor
+koncept jest taki że programy wykonywuja się w trybie nieuprzywilejowanym na procesorze, i w momencie próby skorzystania z rozkazów uprzywilejowanych, procesor zatrzymuje wykonwywanie i przekazuje kontrolę do hypervisora  
+wtedy hyervisor może zmienić stan wirtualnego procesora i przekazać kontrolę z powrotem do procesora  
+
+## Parawirtualizacja
+do tej pory system gościa nie wiedział że jest gościem, ale można podejść do tego inaczej - stworzyć system operacyjny, który wie że jest gościem i nie korzysta z rozkazów uprzywilejowanych (zamiast nich może wywoływać SYSCALLE hypervisora)  
+to się pojawiło przed wsparciem sprzętowym, po jego wprowadzeniu okazało się że prawdziwa wirtualizacja jest szybsza (ale np Xen dalej potrafi pracować w tym trybie, dodatkowo wiele systemów nadal ją wspiera)  
+
+___
+
+do tej pory wirtualizowaliśmy OS oraz emulowaliśmy peryferia, cierpi na tym np prędkość połączenia sieciowego  
+wprowadzono więc wirtualizację w kartach sieciowych - w karcie tworzone są profile, tak że hypervisor nie musi uczestniczyć w komunikacji  
+
+## Najpopularniejsze hypervisory
+- stacje robocze
+  - quemu, kvm, aquemu
+  - sun, virtualbox
+  - vmware workstation player, vmware workstation pro
+- serwery
+  - xen (najprostrze, najfajniejsze)
+  - kvm (używają AWS, GCP, Azure)
+  - vmware server
+  - microsoft hyper-v
+- zarządzanie
+  - libvirt
+  - vagrant
+
+
+## chroot(2) i chroot(8)
+polecenie chroot(8) zmienia katalog roboczy procesu, ale syscall chroot(2) nie  
+po zrobieniu chroot idea jest taka, że nie możemy iść do góry  
+powstał atak _change root escape_ - po ponownym wywołaniu chroot(2) na poziom niżej a potem chdir(2) ale na `..` udaje się przejść wyżej (bo root został przesunięty, więc oryginalne działanie `..` w tym miejscu przywrócone)
+
+Zastosowanie off-label chroota - honeypots
+- idea: książka clifforda stolla "the cuckoo's egg"
+- wirtualne pułapki na atakujących, które mają ich zmylić
+- tworzy honeypot używając chroot
+
+
+## Kontenery - bezpieczniejszy chroot
+w linuxie **kontener** oparty jest na namespace i cgroups (LXC, LXD, Docker, Snap, Flatpak, AppImage)  
+mają one rozdzielone userlandy, ale współdzielą kernel  
+
+## Namespace i cgroups
+- **namespace** - przestrzeń nazw, która pozwala na izolację zasobów systemowych (PID, mount, network, IPC, user, UTS)
+- rodzaje
+  - `mnt`
+  - `pid`
+  - `net`
+  - `ipc`
+  - `uts`
+  - `user`
+  - `cgroup`
+
+- **cgroups** - grupy kontrolne, które pozwalają na ograniczenie zasobów (CPU, pamięć, I/O) dla procesów w kontenerze
+- rodzaje
+  - `cpu` - ograniczenie zużycia czasu procesora
+  - `memory` - ograniczenie zużycia pamięci
+  - `blkio` - ograniczenie I/O
+  - `devices`
+  - ...
+
+
+## Sandboxing vs kontenery
+sandboxing - uruchamianie aplikacji w izolowanym środowisku, które ogranicza dostęp do systemu operacyjnego i zasobów (np. SELinux, AppArmor)  
+kontenery nie zaperwniają bezpieczenistwa, dają inne środowisko (jailbreak - sposób na wyjście z kontenera)  
+
+### Zwykłe vs nieuprzywilejowane konenery (LXC)
+
+
+

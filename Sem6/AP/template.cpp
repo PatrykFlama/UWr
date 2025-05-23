@@ -6,6 +6,9 @@ using namespace std;
 #define snd second
 typedef long long ll;
 typedef pair<int, int> pii;
+typedef pair<int, ll> pill;
+typedef pair<ll, int> plli;
+typedef pair<ll, ll> pll;
 
 
 int main() {

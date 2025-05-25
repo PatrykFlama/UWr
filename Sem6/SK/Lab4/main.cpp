@@ -16,13 +16,14 @@
 
 using namespace std;
 
-constexpr int DEBUG = 0;
+constexpr int DEBUG = 4;
 #define dprintf if(DEBUG) printf
 #define ndprintf(...) if (([](){ int arr[] = {__VA_ARGS__}; for (int lvl : arr) if (DEBUG == lvl) return true; return false; })()) printf
 
 //* ------------------ CONSTANTS ------------------
-const int CONNECTION_TIMEOUT = 500; // ms
-const int BUFFER_SIZE = 4096;
+constexpr int CONNECTION_TIMEOUT = 500; // ms
+constexpr int BUFFER_SIZE = 2048;
+constexpr int MAX_CONNECTIONS = 100;
 
 unordered_map<string, string> mime_types = {
     {"txt", "text/plain; charset=utf-8"},
@@ -91,7 +92,7 @@ namespace std {
 
 
 //* ================ FUNCTIONS ===================
-string url_decode(const string& url) {
+string url_to_text(const string& url) {
     string result;
     for (size_t i = 0; i < url.size(); ++i) {
         if (url[i] == '%' && i + 2 < url.size()) {
@@ -109,7 +110,7 @@ string url_decode(const string& url) {
     return result;
 }
 
-string get_mime_type(const string& path) {
+string get_ext(const string& path) {
     size_t dot_pos = path.rfind('.');
     if (dot_pos == string::npos) return mime_types["default"];
     
@@ -119,14 +120,15 @@ string get_mime_type(const string& path) {
     return mime_types.count(ext) ? mime_types[ext] : mime_types["default"];
 }
 
-string resolve_path(const string& base_dir, const string& host, const string& request_path) {
-    string decoded_path = url_decode(request_path);
+string find_path(const string& base_dir, const string& host, const string& req_path) {
+    string decoded_path = url_to_text(req_path);
     string full_path = base_dir + "/" + host + decoded_path;
 
-    ndprintf(4)("Raw path: %s | Decoded path: %s\n", request_path.c_str(), decoded_path.c_str());
+    ndprintf(4)("Raw path: %s | Decoded path: %s\n", req_path.c_str(), decoded_path.c_str());
     
     // ensure there is no escape from base directory
-    if (full_path.find("..") != string::npos || full_path.find("~") != string::npos) {
+    if (full_path.find("..") != string::npos || 
+        full_path.find("~") != string::npos) {
         return "";
     }
 
@@ -135,9 +137,11 @@ string resolve_path(const string& base_dir, const string& host, const string& re
 
 
 //* ================ MAIN FUNCTIONS ===================
-void send_response(int client_fd, int code, const string& message, 
+void send_response(int client_fd, int code, 
                   const string& content_type = "", const string& body = "",
                   const map<string, string>& headers = {}) {
+    const string& message = status_messages.count(code) ? status_messages[code] : "Unknown Error";
+
     ostringstream response;
     response << "HTTP/1.1 " << code << " " << message << "\r\n";
     response << "Content-Type: " << content_type << "\r\n";
@@ -156,15 +160,16 @@ void send_error_response(int client_fd, int code,
                          const map<string, string>& headers = {}) {
 
     const string& message = status_messages.count(code) ? status_messages[code] : "Unknown Error";
-    send_response(client_fd, code, message, "text/html;charset=utf-8", 
+    send_response(client_fd, code, "text/html;charset=utf-8", 
                   "<html><body><h1>" + message + "</h1></body></html>",
                   headers);
 }
 
-void handle_request(int client_fd, const string& base_dir) {
+//? true = keep alive, false = close connection
+bool handle_request(int client_fd, const string& base_dir) {
     char buffer[BUFFER_SIZE];
     ssize_t bytes_read = read(client_fd, buffer, BUFFER_SIZE - 1);
-    if (bytes_read <= 0) return;
+    if (bytes_read <= 0) return false;
 
     buffer[bytes_read] = '\0';
     istringstream request(buffer);
@@ -180,7 +185,7 @@ void handle_request(int client_fd, const string& base_dir) {
     // not implemented methods
     if (method != "GET") {
         send_error_response(client_fd, 501);
-        return;
+        return false;
     }
 
     // parse header
@@ -198,12 +203,12 @@ void handle_request(int client_fd, const string& base_dir) {
     }
 
     if (host.empty() || path.empty()) {
-        ndprintf(4)("Invalid request: missing Host or Path\n");
+        ndprintf(4)("Invalid req: missing Host/Path\n");
         send_error_response(client_fd, 501);
-        return;
+        return connection == "keep-alive";
     }
 
-    string full_path = resolve_path(base_dir, host, path);
+    string full_path = find_path(base_dir, host, path);
 
     ndprintf(2, 3)("Base directory: %s, Host: %s\nResolved path: %s\n",
                 base_dir.c_str(), host.c_str(), full_path.c_str());
@@ -212,7 +217,7 @@ void handle_request(int client_fd, const string& base_dir) {
     if (full_path.empty()) {
         ndprintf(4)("Invalid path: %s %s\n", full_path.c_str(), path.c_str());
         send_error_response(client_fd, 403);
-        return;
+        return connection == "keep-alive";
     }
 
     // check if file exists and is accessible
@@ -220,28 +225,30 @@ void handle_request(int client_fd, const string& base_dir) {
     if (stat(full_path.c_str(), &st) != 0) {
         ndprintf(4)("File not found: %s\n", full_path.c_str());
         send_error_response(client_fd, 404);
-        return;
+        return connection == "keep-alive";
     }
 
     if (S_ISDIR(st.st_mode)) {
-        ndprintf(4)("Path is a directory: %s\n", full_path.c_str());
+        ndprintf(4)("Path is directory: %s\n", full_path.c_str());
         // Redirect to index.html in the directory
-        if (full_path.back() != '/') full_path += '/';
-        full_path += "index.html";
-        ndprintf(4)("Redirecting to directory: %s/\n", full_path.c_str());
-        send_error_response(client_fd, 301, {{"Location", path + "/"}});
-        return;
+        if (path.back() != '/') path += '/';
+        path += "index.html";
+        ndprintf(4)("Redirect to directory: %s\n", (path).c_str());
+        send_error_response(client_fd, 301, {{"Location", path}});
+        return connection == "keep-alive";
     }
 
     ifstream file(full_path, ios::binary);
     if (!file) {
         ndprintf(4)("Failed to open file: %s\n", full_path.c_str());
         send_error_response(client_fd, 500);
-        return;
+        return connection == "keep-alive";
     }
 
     string content((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
-    send_response(client_fd, 200, "OK", get_mime_type(full_path), content);
+    send_response(client_fd, 200, get_ext(full_path), content);
+
+    return connection == "keep-alive";
 }
 
 
@@ -255,7 +262,7 @@ int main(int argc, char* argv[]) {
 
     string base_dir = argv[2];
     DIR* dir = opendir(base_dir.c_str());
-    if (!dir) ERROR("Invalid directory");
+    if (!dir) ERROR("Invalid dir");
     closedir(dir);
 
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -272,7 +279,7 @@ int main(int argc, char* argv[]) {
     if (bind(server_fd, (sockaddr*)&address, sizeof(address)) < 0)
         ERROR("bind");
 
-    if (listen(server_fd, 10) < 0) ERROR("listen");
+    if (listen(server_fd, MAX_CONNECTIONS) < 0) ERROR("listen");
 
     printf("Server started on port %s\n", argv[1]);
 
@@ -285,6 +292,7 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
+        // serve only one connection at a time (until closed)
         pollfd pfd = {client_fd, POLLIN, 0};
         while (true) {
             int ret = poll(&pfd, 1, CONNECTION_TIMEOUT);
@@ -294,7 +302,11 @@ int main(int argc, char* argv[]) {
                 break;
             }
 
-            handle_request(client_fd, base_dir);
+            const bool connection_action = handle_request(client_fd, base_dir);
+            if (!connection_action) {
+                ndprintf(3)("Connection force-sloced\n");
+                break;
+            }
         }
 
         close(client_fd);

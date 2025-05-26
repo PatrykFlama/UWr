@@ -29,3 +29,27 @@ Word vectors:
 The Negative Sampling Loss:  
 ![img](./images/negative_sampling_loss.jpg)
 
+
+
+![alt text](encode_decoder.png)
+
+## Unsupservised learning with autoencoders
+- Autoencoders are a type of neural network used for unsupervised learning
+- They are used to learn efficient representations of data
+- They are trained to learn the identity function
+- They consist of two parts:
+- An encoder that maps the input to a hidden representation
+- A decoder that maps the hidden representation back to the input
+- The hidden representation is a compressed version of the input
+- The network is trained to minimize the difference between the input and the output
+- The network is trained using back propagation
+- The network can be used for:
+- Dimensionality reduction
+- Feature extraction
+- Data denoising
+- Data generation
+## Additional resources
+- Context encoders: Feature learning by inpainting, Pathak et al., 2016, https://arxiv.org/abs/1604.07379
+- Segnet: A deep convolutional encoder-decoder architecture for image segmentation, Badrinarayanan et al., 2017, https://arxiv.org/abs/1511.00561
+
+

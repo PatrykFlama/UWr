@@ -39,7 +39,7 @@ int main() {
     int x = -1;
     for (int i = 0; i <= n; i++) {
         x = -1;
-        for (int j = 0; j < m; ++j) {
+        for (int j = 0; j < m; j++) {
             auto [w, e] = edges[j];
             auto [u, v] = e;
             if (dist[u] != LLONG_MAX && dist[v] > dist[u] + w) {

@@ -10,8 +10,9 @@ typedef pair<int, ll> pill;
 typedef pair<ll, int> plli;
 typedef pair<ll, ll> pll;
 
-constexpr int MAXN = 2500;
-pair<ll, pii> edges[MAXN * MAXN];
+constexpr int MAXN = 2500+2;
+constexpr int MAXM = 5000+2;
+pair<ll, pii> edges[MAXM];
 int parent[MAXN];
 ll dist[MAXN];
 
@@ -26,13 +27,14 @@ int main() {
         int u, v;
         long long w;
         cin >> u >> v >> w;
-        edges[i] = {w, {u, v}};
+        edges[i] = {-w, {u, v}};
     }
 
     for (int i = 0; i <= n; i++) {
-        dist[i] = 0;
+        dist[i] = LLONG_MAX;
         parent[i] = -1;
     }
+    dist[1] = 0;
 
     int x = -1;
     for (int i = 0; i <= n; i++) {
@@ -41,7 +43,7 @@ int main() {
             auto [w, e] = edges[j];
             auto [u, v] = e;
             if (dist[u] != LLONG_MAX && dist[v] > dist[u] + w) {
-                dist[v] = max(LLONG_MIN, dist[u] + w);
+                dist[v] = dist[u] + w;
                 parent[v] = u;
                 x = v;
             }
@@ -50,25 +52,9 @@ int main() {
 
     if (x == -1) {
         // during last run no edge was relaxed
-        cout << "NO\n";
-    } else {
-        int y = x;
-        for (int i = 0; i < n; i++) // enter the cycle
-            y = parent[y];
-
-        // walk the cycle
-        vector<int> path;
-        for (int cur = y;; cur = parent[cur]) {
-            path.push_back(cur);
-            if (cur == y && path.size() > 1)
-                break;
-        }
-
-        reverse(path.begin(), path.end());
-
-        cout << "YES\n";
-        for (int u : path)
-            cout << u << ' ';
-        cout << '\n';
+        // no negtive (positive) cycle - we can obtain the best distance with simple path
+        cout << -dist[n] << "\n";
+    } else {    // there exists a negative cycle (which in original graph is a positive cycle)
+        cout << "-1\n";
     }
 }

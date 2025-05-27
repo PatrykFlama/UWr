@@ -12,3 +12,6 @@ simple.wiki.links.txt
 Task1_dim*.txt
 task3_polish*.txt
 temp
+
+input/
+output/

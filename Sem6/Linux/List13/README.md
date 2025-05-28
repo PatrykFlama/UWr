@@ -30,7 +30,10 @@ systemd-nspawn - narzędzie do uruchamiania kontenerów systemowych (chroot na s
 domyślnie izoluje przestrzenie nazw (pid, net, uts, ipc, mnt)
 
 ## systemd.resource-control(5)
-systemd.resource-control - plik konfiguracyjny dla kontrolowania zasobów w systemd
+systemd.resource-control - plik konfiguracyjny dla kontrolowania zasobów (per użytkownik?) w systemd  
+(można ustawiać limity CPU `CPUQuota`, pamięci `MemoryLimit`, itp.)  
+pliki konfiguracyjne znajdują się w `/{etc,lib,run}/systemd/system`
+
 
 
 ```bash
@@ -176,6 +179,11 @@ chcemy osiągnąć coś lepszego niż `chroot`
 
 > instalacja debiana wymaga odpalenia kilku skryptów w tworzonym systemie, co jest problematyczne gdy tworzym instalację na inną architekturę, niż ta z której korzsystamy  
 > dalatego bootstrap wtedy jest 2-poziomowy
+
+## Zadanie 2
+teraz mamy ogranieczenie nie jakościowe  (namespaces), ale ilościowe  
+cgroupy (informacje) znajdują się w `/sys/fs/cgroup`  
+są w nim katalogi odpowiadające różnym grupom, a w tych katalogach pliki konfiguracyjne grupy  
 
 
 

@@ -2,7 +2,7 @@
 
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 |---|---|---|---|---|---|---|---|---|----|
-|   |   |   | X |   |   |   |   |   |    |
+|   |   | X | X | X |   |   |   |   |    |
 
 ## Zadanie 1
 ```bash
@@ -103,5 +103,60 @@ właczanie usługi lxc (`lxc-autostart.service`)
 ```bash
 sudo systemctl enable lxc
 sudo systemctl start lxc
+```
+
+## Zadanie 5
+### tworzymy użytkownika `vm`
+```bash
+sudo adduser vm
+```
+
+### tworzymy podgrupy/podużytkowników
+w plikach `/etc/subuid` i `/etc/subgid` dodajemy `vm:<od>:<ile>`  
+```bash
+sudo nano /etc/subuid
+sudo nano /etc/subgid
+
+vm:100000:65536
+```
+
+### urządzenia sieciowe
+aby zezwolić użytkownikowi `vm` na tworzenie wirtualnych interfejsów sieciowych, dodajemy wpis do pliku `/etc/lxc/lxc-usernet`  
+```bash
+echo "$(id -un) veth br0 10" | sudo tee -a /etc/lxc/lxc-usernet
+```
+
+### lxc config
+tworzymy katalog `~/.config/lxc`  
+kopiujemy `/etc/lxc/default.conf` do `~/.config/lxc/default.conf` lub korzystamy z poniższej templatki  
+```bash
+lxc.include = /etc/lxc/default.conf
+lxc.idmap = u 0 100000 65536
+lxc.idmap = g 0 100000 65536
+lxc.net.0.type = veth
+lxc.net.0.link = br0
+lxc.net.0.flags = up
+```
+
+### tworzenie kontenera
+```bash
+lxc-create -n unguest -t download -- -d alpine -r edge -a amd64 --variant default
+```
+
+```bash
+systemd-run --unit=my-unit --user --scope -p "Delegate=yes" -- lxc-start -n unguest
+systemd-run --unit=my-unit --user --scope -p "Delegate=yes" -- lxc-attach -n unguest
+```
+
+### weryfikacja uid procesów i właściciea
+```bash
+# procesy w kontenerze
+ps aux | grep unguest
+
+# namespaces
+lsns | grep $(pgrep -u vm lxc-start)
+
+# monitor
+pgrep -a -u vm lxc
 ```
 

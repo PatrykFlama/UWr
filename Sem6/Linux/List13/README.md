@@ -4,6 +4,35 @@
 |---|---|---|---|---|---|---|---|---|----|
 |   |   |   | X |   |   |   |   |   |    |
 
+## Zadanie 1
+```bash
+sudo debootstrap bullseye /target/ http://deb.debian.org/debian
+sudo unshare -imnpuf --mount-proc chroot /target/ /bin/bash
+```
+```bash
+mount -t proc proc /proc
+ps -ef
+mount
+ip link
+```
+
+## Zadanie 3
+### systemd-cgls(1)
+control group ls - pokazuje hierarchię grup kontrolnych (cgroups) w systemie  
+- -M [MACHINE] - pokazuje hierarchię dla określonego kontenera
+
+### systemd-cgtop(1)
+control group top - monitoruje zużycie zasobów przez grupy kontrolne  
+- -M [MACHINE] - pokazuje hierarchię dla określonego kontenera
+
+## systemd-nspawn(1)
+systemd-nspawn - narzędzie do uruchamiania kontenerów systemowych (chroot na sterydach)  
+domyślnie izoluje przestrzenie nazw (pid, net, uts, ipc, mnt)
+
+```bash
+sudo systemd-nspawn -D /target
+```
+
 ## Zadanie 4
 - `lxc-create` - tworzy kontener
 - `lxc-start` - uruchamia kontener

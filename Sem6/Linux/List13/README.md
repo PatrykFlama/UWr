@@ -4,6 +4,8 @@
 |---|---|---|---|---|---|---|---|---|----|
 |   |   | X | X | X |   |   |   |   |    |
 
+https://linuxcontainers.org/lxc/getting-started/
+
 ## Zadanie 1
 ```bash
 sudo debootstrap bullseye /target/ http://deb.debian.org/debian
@@ -30,7 +32,7 @@ systemd-nspawn - narzędzie do uruchamiania kontenerów systemowych (chroot na s
 domyślnie izoluje przestrzenie nazw (pid, net, uts, ipc, mnt)
 
 ## systemd.resource-control(5)
-systemd.resource-control - plik konfiguracyjny dla kontrolowania zasobów (per użytkownik?) w systemd  
+systemd.resource-control - plik konfiguracyjny dla kontrolowania zasobów w systemd  
 (można ustawiać limity CPU `CPUQuota`, pamięci `MemoryLimit`, itp.)  
 pliki konfiguracyjne znajdują się w `/{etc,lib,run}/systemd/system`
 
@@ -92,7 +94,7 @@ sudo lxc-info -n guest1
 
 przestrzenie nazw kontenera  
 ```bash
-lsns | grep <PID_guest1>
+lsns -p <PID_guest1>
 ```
 
 cgroups
@@ -172,6 +174,10 @@ pgrep -a -u vm lxc
 
 
 # Some notes
+tldr:
+- namespaces - izolacja zasobów (procesy, sieć, pliki, itp.)
+- cgroups - kontrola zużycia zasobów (CPU, pamięć, itp.)
+
 ## Zadanie 1
 namespace pochodzą z `plan 9` (rozproszony system operacyjny), bo potrzebna była dobra separacja zasobów między procesami  
 chcemy osiągnąć coś lepszego niż `chroot`   
@@ -186,5 +192,22 @@ cgroupy (informacje) znajdują się w `/sys/fs/cgroup`
 są w nim katalogi odpowiadające różnym grupom, a w tych katalogach pliki konfiguracyjne grupy  
 
 
+## Zadanie 4
+LXC (firmy canonical), potem wydali LXD (miało być lepsze, takie podobne do dockera, ale coś nie wyszło i się nie przyjęło)  
+attachowanie się do kontenera nie powinno być głównym sposobem interakcji z kontenerem, lepiej używać ssh  
+
+> tty 'drop in'  
+> sudo systemctl edit getty@tty3
+
+
+## Zadanie 6
+firejail służy do sandboxowania aplikacji  
+ma on swój katalog `/etc/firejail` z plikami konfiguracyjnymi  
+pliki `.local` są dla konfiguracji użytkownika  
+
+
+mamy jeszcze (opócz firejaila) bubblewrap, nsjail
+
+"defense in depth" - nie polegać na jednym narzędziu, ale używać kilku różnych
 
 

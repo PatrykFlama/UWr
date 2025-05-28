@@ -1,5 +1,9 @@
 # Lista 13
 
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|----|
+|   |   |   | X |   |   |   |   |   |    |
+
 ## Zadanie 4
 - `lxc-create` - tworzy kontener
 - `lxc-start` - uruchamia kontener
@@ -16,52 +20,32 @@ sudo lxc-create -n guest1 -t download -- -d alpine -r edge -a amd64 --variant de
 ```
 
 ### konfiguracja sieci
+w `/etc/network/interfaces`  
 ```bash
-sudo ip link add name br0 type bridge
-sudo ip addr add 10.0.1.1/24 dev br0
-sudo ip link set br0 up
+auto br0
+iface br0 inet static
+    address 10.0.1.1
+    netmask 255.255.255.0
+    bridge_ports none
+    bridge_stp off
+    bridge_fd 0
+    bridge_maxwait 0
 ```
 
-lub netplan w `/etc/netplan/01-lxcbridge.yaml`
-```yaml
-network:
-  version: 2
-  renderer: networkd
-  ethernets:
-    ens18: {}
-  bridges:
-    br0:
-      interfaces: [ens18]
-      dhcp4: yes
-      addresses: [10.0.1.1/24]
-      parameters:
-        stp: false
-        forward-delay: 0
-```
-
-w `/etc/lxc/guest1.conf`
+w `/var/lib/lxc/guest1/config`
 ```bash
 lxc.net.0.type = veth
 lxc.net.0.link = br0
 lxc.net.0.flags = up
 lxc.net.0.name = eth0
-lxc.net.0.hwaddr = 00:16:3e:xx:xx:xx
-```
-
-w `/var/lib/lxc/guest1/rootfs/etc/network/interfaces`
-```bash
-auto eth0
-iface eth0 inet static
-    address 10.0.1.2
-    netmask 255.255.255.0
-    gateway 10.0.1.1
+lxc.net.0.ipv4.address = 10.0.1.2/24
 ```
 
 ### łączenie z kontenerem
 
 ```bash
 sudo lxc-start -n guest1
-ssh root@10.0.1.2
+sudo lxc-attach -n guest1
 ```
 
 ### przestrzenie nazw

@@ -29,6 +29,10 @@ control group top - monitoruje zużycie zasobów przez grupy kontrolne
 systemd-nspawn - narzędzie do uruchamiania kontenerów systemowych (chroot na sterydach)  
 domyślnie izoluje przestrzenie nazw (pid, net, uts, ipc, mnt)
 
+## systemd.resource-control(5)
+systemd.resource-control - plik konfiguracyjny dla kontrolowania zasobów w systemd
+
+
 ```bash
 sudo systemd-nspawn -D /target
 ```
@@ -159,4 +163,20 @@ lsns | grep $(pgrep -u vm lxc-start)
 # monitor
 pgrep -a -u vm lxc
 ```
+
+
+
+
+
+# Some notes
+## Zadanie 1
+namespace pochodzą z `plan 9` (rozproszony system operacyjny), bo potrzebna była dobra separacja zasobów między procesami  
+chcemy osiągnąć coś lepszego niż `chroot`   
+`dbootstrap` tworzy minimalny system debiana (tak aby apt działał)  
+
+> instalacja debiana wymaga odpalenia kilku skryptów w tworzonym systemie, co jest problematyczne gdy tworzym instalację na inną architekturę, niż ta z której korzsystamy  
+> dalatego bootstrap wtedy jest 2-poziomowy
+
+
+
 

@@ -102,6 +102,16 @@
   - [Namespace i cgroups](#namespace-i-cgroups)
   - [Sandboxing vs kontenery](#sandboxing-vs-kontenery)
     - [Zwykłe vs nieuprzywilejowane konenery (LXC)](#zwykłe-vs-nieuprzywilejowane-konenery-lxc)
+- [Wykład 13 - porty, pakiety i dystrybucje](#wykład-13---porty-pakiety-i-dystrybucje)
+  - [systemy kontroli wersji (VCS)](#systemy-kontroli-wersji-vcs)
+  - [GNU Toolchain](#gnu-toolchain)
+  - [proces instalacji](#proces-instalacji)
+  - [linux fire hierarchy standard (FHS)](#linux-fire-hierarchy-standard-fhs)
+  - [instalacja w debianie](#instalacja-w-debianie)
+  - [zadania twórcy i użytkownika](#zadania-twórcy-i-użytkownika)
+  - [jak wprowadzać i tworzyć zmiany](#jak-wprowadzać-i-tworzyć-zmiany)
+  - [systemy pakietów](#systemy-pakietów)
+  - [specjalne typy pakietów](#specjalne-typy-pakietów)
 
 
 # Some notes
@@ -1190,4 +1200,128 @@ kontenery nie zaperwniają bezpieczenistwa, dają inne środowisko (jailbreak - 
 ### Zwykłe vs nieuprzywilejowane konenery (LXC)
 
 
+# Wykład 13 - porty, pakiety i dystrybucje
+tworzenie i używanie oprogramowania FOSS skąłda się z:  
+- tworzenie 
+- pozyskiwanie 
+- instalacja
+
+## systemy kontroli wersji (VCS)
+- klient server (serwer przechowuje repozytorium)
+  - RCS
+  - CVS
+  - SVN
+- rozproszone (każdy ma swoje repozytorium ze zmianami)  
+  - bitkeeper
+  - darcs 
+  - gnu bazar (stworzony przez Canonical)
+  - git (najpopularniejszy)
+
+## GNU Toolchain
+- GNU Compiler Collection (GCC) - kompilator
+- GNU Debugger (GDB)
+- GNU Binutils - do przetwazrania plików binarnych
+- GNU Coreutils - podstawowe narzędzia systemowe (ls, cp, mv, rm, etc); po kompilacji chcemy poumieszczać pliki w odpowiednich katalogach w systemie (man, ikony, etc)
+- GNU Bison - do tworzenia parserów
+- GNU make (są 2 wersje: bsd make, linux make) - do wydajeniejszej kompilacji (tylko to co się zmieniło)
+- GNU m4 - ogólny preprocesor plików tekstowych (wiele języków ma własne preprocesory, ale często potrzebujemy jakiegoś globalnego preprocesora)
+- GNU build system (autotools) - do automatyzacji procesu budowania oprogramowania (autoconf, automake, libtool)  
+  - autoconf - tworzy plik konfiguracyjny
+  - automake - tworzy template Makefile'a
+  - libtool - robi to same, ale nie do programu wykonywalnego, a do bibliotek
+
+> nigdy nie kompuluje się programów ze źródeł jako root  
+> najlepiej stworzyć do tego osobnego użytkonika  
+
+## proces instalacji
+- pobieramy z jakiegoś źródła repozytorium spkowane do .tar
+- po rozpakuowaniu powinien  w nim być plik `configure` 
+- uruchamiamy `./configure` 
+  - sprawdza obecność wymaganych bibliotek i narzędzi
+  - sprawdza konfigurację systemu, możliwości konfiguratora
+  - powinien wyprodukować plik `Makefile` 
+  - wykonuje `sudo make install` (jest to jedyne miejsce gdzie wykonuje się to jako root)
+
+## linux fire hierarchy standard (FHS)
+- `/` główny system plików
+- `/bin /sbin` 
+- `/lib /lib64` - biblioteki
+<!-- TODO -->
+
+mamy 3 poziomy hierarchii
+`/usr/local` (drugi poziom) do pakietów zainstalowanych przez użytkownika  
+więc pierwszy poizom może być wykorzystywany do instalacji z palca (aczkolwiek niektóre pakiety też się tutaj automatyczni einstalują)  
+
+## instalacja w debianie
+możemy odseparować miejsce instalacji (wtedy nawet jeżeli make coś namiesza, to jest to w jednym dedykowanym katalogu) `./configure --prefix=/usr/local`  
+albo możemy skorzystać z pseudopakietyzacji (np `dpkg -i`)  
+
+
+## zadania twórcy i użytkownika 
+twórca:  
+- powinein najpierw stworzyć całą mapę includów (gdzie są jakie biblioteki) służy do tego `autoscan` -> `configure.ac`
+- potem za pomocą `autoheader` tworzymy plik headwrów -> `config.h.in`
+- `automake` - tworzymy template makefile'a na podstawie wygenerowanej mapy includów i zależności -> `Makefile.am`
+- `aclocal` - z wygenerowaj mapy zależności tworzy plik dla preprocesora (m4) -> `aclocal.m4`
+- `autoconf` - tworzy plik konfiguracyjny -> `configure`
+
+w efekcie mamy pliki `configure.ac` `config.h.in` `Makefile.am` i `aclocal.m4` `aclocal.m4` oraz `configure`  
+
+
+użytkownik:  
+- `configure`
+- `config.status` - bierze `config.h.in` `Makefile.in` i tworzy plik `config.h` `Makefile`
+- `make` - kompiluje program
+
+
+## jak wprowadzać i tworzyć zmiany  
+- `diff` - porównuje dwa pliki i wypisuje różnice (np ten output można wysłać na forum chcąc zaproponować zmianę)
+- `patch` - (narzędzie komplementarne do `diff`) - bierze plik z różnicami i wprowadza je do pliku docelowego
+
+> `patch -R` - revertuje zmiany patcha
+
+
+> `dbootstrap` - najlepszy sposób na instalację debiana  
+
+
+> `unattended upgrades` - daemon który automatyczne aktualizacje debiana (w tle, bez interakcji z użytkownikiem)
+
+
+## systemy pakietów
+- deb (debian  i pochodne)
+- rpm (redhat package manager)
+- apk (alpine linux)
+- pacman (arch linux)
+- portage (gentoo)
+- tgz/txz (slackware)
+- pkg (freebsd), pkgsrc (netbsd i wiele innych)
+
+popatrzmy na debiana:  
+pakiet źródłowy `foo_X.Y.Z.tar.xz` zawiera:
+- `foo_X.Y.Z-N.dsc` - metadane
+- `foo_X.Y.Z.orig.tar.bz2` - oryginalny upstream release
+- `foo_X.Y.Z-N.debian.tar.xz` - patch do debiana (patchlevel `N` - numer wersji paczki na debianie)
+
+pakiet binarny `foo_X.Y.Z-N_arch.deb` zawiera:
+- `debian-binary` - wersja formatu deb
+- `control.tar.xz` - metadane pakietu (nazwa, wersja, architektura, zależności, etc)
+- `data.tar.xz` - zawartość pakietu do instalacji (plik wykonywalny, biblioteki, etc)
+
+
+mamy różne resolvery (wybierają z lisy zależności jakie pakiety zainstalować, bo lista zależności to CNF pakietów):
+- apt (aczkolwiek można podmienić na własny)
+- aptitude
+
+mamy polecenia:
+- upgrade (jest to soft upgrade, który tylko podnosi wersję pakietu jeżeli można)
+- full-upgrade (jest to hard upgrade, który może usunąć pakiety, które nie są już potrzebne)
+
+
+## specjalne typy pakietów
+- pakiety wirtualne   
+takie pakiety, których tak na prawdę nie ma - np aplikacja okienkowa wymaga systemu okienkowego, ale nie konkretnego, więc jeżeli nasz window manager mówi że providuje `x-window-manager` to jest to pakiet wirtualny, z którego może skorzystać nasza aplikacja  
+
+- metapakiety - puste pakiety z depends
+- transitional - specjalne metapakiety, które mają ułatwić migrację z jednego pakietu do drugiego 
+- tasks - zbiory pakietów, które robią jakieś duże rzeczy (osobna infrastruktura)
 

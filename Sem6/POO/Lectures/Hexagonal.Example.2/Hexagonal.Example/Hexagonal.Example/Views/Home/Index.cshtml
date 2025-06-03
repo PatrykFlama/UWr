@@ -1,0 +1,26 @@
+﻿@model Hexagonal.Example.Models.IndexModel
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Person catalog</h2>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Surname</th>
+        <th></th>
+    </tr>
+    @foreach ( var person in Model.Persons )
+    { 
+    <tr>
+        <td>@person.Name</td>
+        <td>@person.Surname</td>
+        <td><a href="@this.Url.Action("Edit", new { ID = person.ID } )">Edit</a></td>
+    </tr>
+    }
+</table>
+
+<div>
+    <a href="@this.Url.Action("Create")">Add new</a>
+</div>

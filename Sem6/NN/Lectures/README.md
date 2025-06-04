@@ -1,3 +1,6 @@
+## Extra materialx
+- [rnoxy nn intyo course](https://github.com/rnoxy/nn-intro-course/tree/main)
+
 ## Slajdy Justin Johnson
 - [598_WI2022_lecture15.pdf](https://skos.ii.uni.wroc.pl/pluginfile.php/77148/mod_resource/content/2/598_WI2022_lecture15.pdf)
 

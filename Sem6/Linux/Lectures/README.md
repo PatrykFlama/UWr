@@ -112,6 +112,11 @@
   - [jak wprowadzać i tworzyć zmiany](#jak-wprowadzać-i-tworzyć-zmiany)
   - [systemy pakietów](#systemy-pakietów)
   - [specjalne typy pakietów](#specjalne-typy-pakietów)
+- [Wykład 14 - Systemy plików](#wykład-14---systemy-plików)
+  - [Wirtualizacja](#wirtualizacja)
+  - [System plików](#system-plików)
+  - [System plików `tar`](#system-plików-tar)
+  - [Dyski](#dyski)
 
 
 # Some notes
@@ -1324,4 +1329,49 @@ takie pakiety, których tak na prawdę nie ma - np aplikacja okienkowa wymaga sy
 - metapakiety - puste pakiety z depends
 - transitional - specjalne metapakiety, które mają ułatwić migrację z jednego pakietu do drugiego 
 - tasks - zbiory pakietów, które robią jakieś duże rzeczy (osobna infrastruktura)
+
+# Wykład 14 - Systemy plików
+są systemy które nie używają systemów plików (np ios, taki stary router)  
+
+## Wirtualizacja
+- proces - wirtualizacja procesora
+- plik - wirtualizacja pamięci masowej
+
+## System plików
+- zbiór danych - plik
+- katalogi - zbiory plików
+- drzewiasta struktura katalogów
+- ścieżka dostępu (path)
+
+## System plików `tar`
+system do przechowywania danych na taśmach magnetycznych  
+
+> nadal się korzysta z zapisu na taśmach, bo są one całkiem tanie i wydajne  
+> ciekawy przykład: _google glacier_
+
+tar dzieli dane na bloki po 10KiB, niewykorzystane miejsce jest wypełnione zerami - dlatego zawsze po zapakowania plików do .tar warto go skompresować, aby się pozbyć tych wielu zer  
+
+
+## Dyski
+urządzenia blokowe:  
+- zapis i odczyt buforowany w kernelu
+- userland ma dostęp do bufora, nie do samego dysku (izolacja)
+- jednostka adresowania - sektor (512B lub 4KiB)
+- urządzenia blokowe fizyczne i logiczne
+
+systemy plików:
+- read(2), write(2) - syscalle (przechodzą barierę userland-kernel), mogą zakończyć się niepowodzeniem
+- fread(3), fwrite(3) - to z nich powinniśmy korzystać, działają w buforze userlandu
+
+
+
+> gdy padnie zasilanie w dysku magnetycznym to wykorzystuje on rozpędzone talerze jako generatory żeby przeprowadzić bezpieczne zamknięcie swojego systemu, po czym hamuje dyski przeciwprądem  
+> podobne zabezpiecznie jest gdy dysk wykryje że upada - wtedy przeprowadza awaryjne hamowanie platerów i ściągnie z nich głowicy
+
+metadane: np przechowują informację 'co jest gdzie', z jakich bloków po kolei składa się plik, etc (superbloki)  
+
+> `fsck` - program do robienia porządku z systemem plików
+
+są pliki które nie mają nazw, mają one specjalne inode'y (np journal o numerze 8 tak na prawdęjest plikiem bez nazwy o rozmiarze 128MB)  
+
 

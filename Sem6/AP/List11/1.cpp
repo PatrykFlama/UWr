@@ -26,7 +26,7 @@ int main() {
         indeg[v]++;
     }
 
-    queue<int> q;
+    priority_queue<int, vector<int>, greater<int>> q;
     int vis = 0;
     for (int i = 1; i <= n; i++) {
         if (indeg[i] == 0) {
@@ -35,8 +35,12 @@ int main() {
         }
     }
 
+
+    vector<int> res;
+    res.reserve(n);
     while (!q.empty()) {
-        int u = q.front(); q.pop();
+        int u = q.top(); q.pop();
+        res.push_back(u);
 
         for (int v : adj[u]) {
             indeg[v]--;
@@ -48,7 +52,10 @@ int main() {
     }
 
     if (vis != n) {
-        cout << "impossible\n";
+        cout << "IMPOSSIBLE\n";
         return 0;
     }
+
+    for (int x : res) cout << x << ' ';
+    cout << '\n';
 }

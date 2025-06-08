@@ -8,12 +8,18 @@ typedef long long ll;
 typedef pair<int, int> pii;
 
 
+// scc->dag + topo + dp on topo from the end
+
+
+
 class Graph {
 public:
     vector<vector<int>> adj;
+    vector<int> cost;
 
     Graph(int n) {   
         adj.resize(n + 1);
+        cost.resize(n + 1);
     }
 
     void addEdge(int u, int v) {
@@ -26,6 +32,7 @@ class SCC {
 public:
     Graph g;
     vector<int> sccId;
+    int cnt = 0;
 
     SCC(int n) : g(n) {}
     SCC(Graph& g) : g(g) {}
@@ -49,11 +56,7 @@ public:
         }
 
         vis.assign(n, false);
-        // for (int i = 0; i < n; i++) cout << postOrder[i] << ' ';
-        // cout << '\n';
         reverse(postOrder.begin(), postOrder.end());
-        // for (int i = 0; i < n; i++) cout << postOrder[i] << ' ';
-        // cout << '\n';
 
         sccId.assign(n, -1);
 
@@ -66,6 +69,8 @@ public:
                     sccId[u] = i;
                 }
             }
+
+            cnt = i;
         }
     }
 
@@ -88,6 +93,10 @@ int main() {
     int n, m; cin >> n >> m;
     Graph g(n);
 
+    for (int v = 1; v <= n; v++) {
+        cin >> g.cost[v];
+    }
+
     for (int i = 0; i < m; i++) {
         int u, v; cin >> u >> v;
         g.addEdge(u, v);
@@ -100,24 +109,57 @@ int main() {
     // }
     // cout << '\n';
 
-    vector<int> reindex(n + 1, -1);
-    int index = 1;
-
-    for (int i = 1; i <= n; i++) {
-        if (reindex[scc.sccId[i]] == -1) {
-            reindex[scc.sccId[i]] = index++;
-        }
-        scc.sccId[i] = reindex[scc.sccId[i]];
+    // calc supernode coins
+    vector<ll> sccCoins(scc.cnt, 0);
+    for (int v = 1; v <= n; v++) {
+        sccCoins[scc.sccId[v]] += g.cost[v];
     }
 
-    // calc distances
-    vector<int> dist(index, 0);
+    // build DAG from SCC
+    vector<vector<int>> dag(scc.cnt);
+    vector<int> indegree(scc.cnt, 0);
+    set<pair<int, int>> edgeSet; // avoid duplicates
 
-    for (int i = 1; i <= n; i++) {
-        for (int v : g.adj[i]) {
-            if (scc.sccId[i] != scc.sccId[v]) {
-                dist[scc.sccId[v]] = max(dist[scc.sccId[v]], dist[scc.sccId[i]] + 1);
+    for (int u = 1; u <= n; u++) {
+        int cu = scc.sccId[u];
+
+        for (int v : g.adj[u]) {
+            int cv = scc.sccId[v];
+
+            if (cu != cv && edgeSet.emplace(cu, cv).second) {
+                dag[cu].push_back(cv);
+                indegree[cv]++;
             }
         }
     }
+
+    // toposort + DP
+    vector<ll> dp(scc.cnt, 0);
+    queue<int> q;
+
+    for (int i = 0; i < scc.cnt; i++) {
+        if (indegree[i] == 0) {
+            dp[i] = sccCoins[i];
+            q.push(i);
+        }
+    }
+
+    ll res = 0;
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        
+        for (int v : dag[u]) {
+            if (dp[v] < dp[u] + sccCoins[v]) {
+                dp[v] = dp[u] + sccCoins[v];
+            }
+
+            if (--indegree[v] == 0) {
+                q.push(v);
+            }
+        }
+
+        res = max(res, dp[u]);
+    }
+
+    cout << res << '\n';
 }

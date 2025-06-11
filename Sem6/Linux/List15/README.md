@@ -69,4 +69,7 @@ swap (szczególnie na osobnej partycji) powinien być zaszyfrowany (dzieje się 
 > warto triować dysk (`fstrim`) i montować dysk z opjcą discard (żeby system po zwolnieniu pamięci informował o tym dysk)
 
 
+> raz na rok/2 lata warto sobie odpalić fsck (w jakiś trybie rescue/single user mode, aby nie był zamontowany)  
+
+
 

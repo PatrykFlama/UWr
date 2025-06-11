@@ -62,3 +62,11 @@ dumpe2fs disk.img
 fsstat disk.img
 ```
 
+
+# Some notes
+swap (szczególnie na osobnej partycji) powinien być zaszyfrowany (dzieje się to podobnie do szyfrowania pokazanego w zad 3) ponieważ są tam bardzo wrażliwe dane (zrzuty ram)  
+
+> warto triować dysk (`fstrim`) i montować dysk z opjcą discard (żeby system po zwolnieniu pamięci informował o tym dysk)
+
+
+

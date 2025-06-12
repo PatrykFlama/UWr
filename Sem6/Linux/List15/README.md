@@ -66,7 +66,8 @@ fsstat disk.img
 # Some notes
 swap (szczególnie na osobnej partycji) powinien być zaszyfrowany (dzieje się to podobnie do szyfrowania pokazanego w zad 3) ponieważ są tam bardzo wrażliwe dane (zrzuty ram)  
 
-> warto triować dysk (`fstrim`) i montować dysk z opjcą discard (żeby system po zwolnieniu pamięci informował o tym dysk)
+> warto triować dysk (`fstrim`) i montować dysk z opjcą discard (żeby system po zwolnieniu pamięci informował o tym dysk)  
+> **ale czy aby na pewno?** internety i dokumnetacja twierdzi że lepiej nie montować z discardem, bo zażynamy dysk za pomocą trimowania; ale wsm to to zależy od dysku i już teraz nie powinno mieć negatywnego efektu
 
 
 > raz na rok/2 lata warto sobie odpalić fsck (w jakiś trybie rescue/single user mode, aby nie był zamontowany)  

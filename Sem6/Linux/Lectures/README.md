@@ -1,5 +1,5 @@
 
-- [Some notes](#some-notes)
+- [Wykład 1](#wykład-1)
   - [konwencja](#konwencja)
     - [konwencja wykonywania komend:](#konwencja-wykonywania-komend)
     - [konwencja programu wypisującego do terminala](#konwencja-programu-wypisującego-do-terminala)
@@ -117,9 +117,23 @@
   - [System plików](#system-plików)
   - [System plików `tar`](#system-plików-tar)
   - [Dyski](#dyski)
+- [Wykład 15 - systemy plików część 2](#wykład-15---systemy-plików-część-2)
+  - [urządzenia dyskowe](#urządzenia-dyskowe)
+    - [ROM](#rom)
+    - [PROM](#prom)
+    - [EPROM, EEPROM](#eprom-eeprom)
+    - [Flash](#flash)
+    - [jak działają dyski SMR?](#jak-działają-dyski-smr)
+    - [kontrolery dysku](#kontrolery-dysku)
+  - [Warstwy abstrakcji oferowane przez jądro Linuxa](#warstwy-abstrakcji-oferowane-przez-jądro-linuxa)
+  - [utrata danych z dysku](#utrata-danych-z-dysku)
+  - [RAID](#raid)
+    - [hardware RAID](#hardware-raid)
+    - [software RAID](#software-raid)
+    - [RAID a system plików - ZFS](#raid-a-system-plików---zfs)
 
 
-# Some notes
+# Wykład 1
 ## konwencja
 ### konwencja wykonywania komend: 
 ```bash
@@ -1374,4 +1388,113 @@ metadane: np przechowują informację 'co jest gdzie', z jakich bloków po kolei
 
 są pliki które nie mają nazw, mają one specjalne inode'y (np journal o numerze 8 tak na prawdęjest plikiem bez nazwy o rozmiarze 128MB)  
 
+
+
+
+
+# Wykład 15 - systemy plików część 2
+> pomysł na pobawienie się z ZFS/RAID: kupić huba oraz pendrive'y i na nich założyć
+
+
+## urządzenia dyskowe
+### ROM
+najpierw były pamięci **ROM** (read-only memory) - zapis dział się podczas tworzenie układu scalonego  
+
+### PROM
+potem tworzono pamięci, które użytkownik mógł zaprogramować, ale tylko raz **PROM** (field-programmable / ProgrammableROM)  
+
+### EPROM, EEPROM
+w zwykłym tranzystorze polowym możemy kontrolować oporowość przepływu prądu między źródłem a drenem za pomocą bramki; możemy zrobić izolowaną bramkę - wtedy przykładając odpowiednio duże napięci prąd może przeniknąć do izolatora (jest to oparte na 2 zjawiskach) i wtedy ten tranzystor pernamentnie przewodzi  
+w ten sposób powstał **EPROM** (ErasablePROM) oraz **EEPROM** (ElectricalEPROM) - są to powrzechnie używane pamięci, ale mają bardzo mało pojemności  
+
+### Flash
+zaczęsto więc produkować takie pamięci, że kasować można nie pojedynczy bit, ale całe bloki (1MB); a zapisywać można strony (64KB) **pamięć Flash**  
+przy takich pamięciach zawsze siedzi jakiś kontroler (np popularny 8502 w *pendrive'ach*), cały Flash jest podzielony na takie bloki, żeby z niego czytać/pisać to musimy skopiować blok do ramu (otworzyć go), wykonać modyfikacje i go zapisać (zamknąć go); często jest wiele kanałów które mogą robić te operacje na raz  
+w mądrzejszych dyskach (np *ssd*) wykorzystywane są struktury danych do zpaisywania gdzie jest jaka strona, przy modyfikacji zmieniona strona jest zapisywana gdzie indziej (do innej świeżej strony), a stara strona jest oznaczana jako brudna - wtedy potrzebny jest poboczny proces prania bloków - czyli przenoszenia z nich stron gdzieś indziej i czyszczenia bloku  
+w jeszcze mądrzejszych dyskach (np *nvme*) mamy wielowarstwowo położone tranzystory 3 stanach  
+
+> w dyskach magnetycznych ~15% to kody korygujące błędy, w dyskach ssd jest podobnie (bo tranzystory mogą się zepsuć)  - często teraz kontroler dysku ssd jak już tylko zobaczy że sektor jest niepewny (są jakieś błędy) to przenosi dane gdzieś indziej i wyłącza sektor z użytku
+
+
+
+### jak działają dyski SMR?
+dyski magnetyczne mają osobne głowice do odczytu i zapisu (bo mają one inne parametry)  
+nie potrafimy zapisać cieńkiej ścieżki, ale potrafimy taką odczytać - pomysł był taki żeby zapisać grubą ścieżkę, a potem zamazać jej połowę - wtedy otrzymamy cieńką ścieżką  
+problem jest taki że nie potrafimy 'naprawić' takiej ścieżki - pomysł jest taki aby na zewnątrz dysku zostawić CMR około 1GB i traktować to jako bufor (wtedy jak dysk się nudzi to zapisuje bufor powoli do dysku)  
+problem jest z random write'ami - dysk nie wyrabia bo ma za dużo 'żonglowania' między dyskiem i buforem (przykład: resilvering w macierzy dysków potrafił trwać zamiast 3 godziny to tygodnie)  
+
+### kontrolery dysku
+S.M.A.R.T. - dodatkowy protokół rozmawiania z dyskami, który pozwala na rozmawianie z samym kontrolerem dysku (temperatury, uszkodzone sektory), np daemon `smartd` wysyła maila gdy coś jest nie tak z dyskiem   
+tunelowanie USB - tunelowanie komend dyskowych przez USB  
+
+
+## Warstwy abstrakcji oferowane przez jądro Linuxa
+- mamy partycje - chcemy móc rozdzielic jeden dysk na wiele dysków logicznych; popularny GPT (lub stary MBR)  
+- mamy też partycje logiczne, np LVM2 - Logical Volume Manager, można dowolnie rozcinać albo sklejać dyski; w kernelu linuxa wymyślono `dm` (`device mapper`), jest to system który bierze wiele urządzeń blokowych i robi z nich wiele innych urządzeń blokowych  
+- softraid, korzysta ze sterownika `md` (multiple device driver)  
+
+
+## utrata danych z dysku
+- najczęstsza przyczyna: **nieatomowość zapisu** (bateria padła i lipa). jak to rozwiązać?  
+  - ext2 korzystał z fsck czyli na bieżąco naprawiał błędy
+  - teraz korzysta częściej się z journali
+  - soft updates - niespójności są drobne, więc naprawiamy je nawet na już uruchomionym systemie
+  - copy on write - dyski nigy nie piszą w tym samym miejscu, więc nawet w przypadku awarii nie zepsuliśmy informacji (więc w żadnym momencie informacje na dysku nie mogą być niespójne)
+
+
+- dodatkowo może jeszcze dojść do **uszkodzenia dysku**. jak to naprawić?
+  - jak dysk padnie to lipa, trzeba go wymienić
+  - musimy więc jakoś uodpornić się na utratę danych z dysku
+  - RAID
+  - backupy
+
+
+jakie mamy uszkodzenia fizyczne dysków?  
+- całkowita awaria, np padła elektronika (wtedy możemy próbować ją wymienić, np częściami z innego dysku)
+- *bad sectors* - dysk zgłasza błędy odczytu; czasem da się jeszcze to jakoś zbackupować, ale ważne żeby nie przeciążyć dysku (np nie przegrać)
+- *gnicie bitów* - dysk zgłasza niepoprawne sektory (najszęściej firmware ma bugi); jedyne rozwiązanie to sumy kontrolne, w tym np scrubbing (sprawdza sumy kontrolne na całym dysku i je/dane poprawia)
+
+
+## RAID
+RAID -  Redundant Array of Independent (or Inexpensive) Disks  
+
+oryginalnie wymyślono RAID jako kontroler, do którego można podłączyć dyski  
+
+
+poziomy raid:
+- RAID 0 - block level stripes: (n * zapis, n * odczyt) redundancja 0, pojemność 1 ; rozrzucamy zapisywane sektory po dyskach (szybkie, ale jeszcze bardziej niebezpieczne bo jak jeden dysk padnie to pada co n'ty sektor więc ppb większość naszych danych)
+- RAID 1 - mirror: (1 * zapis, n * odczyt) redundancja n-1, pojemność 1/n ; dyski są swoimi klonami
+- RAID 5 - block-level stripes with distributed parity: ((n-1) * zapis, n * odczyt) redundancja 1, pojemność 1 - 2/n
+- RAID 6 - RAID 5 with double parity
+
+poziomy można łączyć, np:
+- RAID 10 - stripes of mirrors (całkiem popularny)
+- RAID 01 - mirrors of stripes
+- RAID 100 - stripes of stripes of mirrors (trzeba się tylko zastanowić czy nie przesadziliśmy)
+
+
+### hardware RAID
+procesory były za wolne żeby pisać jeszcze po dyskach w systemie RAID, więc rozwiązaniem było dodanie kontrolera RAID który obsługiwał dyski i symulował systemowi normalny dysk  
+
+> są nawet kontrolery sprzętowe na RAID 2 kart SD
+
+### software RAID
+w miarę jak komputery stały się mocniejsze to zaczęto symulować RAID na komputerze  
+powstał sterownik `md` w jądrze  
+
+> "z systemami plików jest jak z kobietami - jedne starzeją się jak wino, a inne jak mleko"  
+> najelpiej dać systemowi jakieś 5 lat żeby zobaczyć jak się on zachowuje, jak wyglądają metadane, fragmentacja daynch
+
+
+### RAID a system plików - ZFS
+ZFS - Z File System  
+RAID potrzebuje bezpośredniego dostępu do dysku - musi wszystko o nim wiedzieć, o jego stronach, etc  
+powstał koncept stowrzenie monolitu, który łączy redudnancję operującym bezpośrednio na dyskach z systemami plików  
+jest on wydajny i popularny, jest bardzo rozbudowany (przez co otrzymuje on podobną krytykę, co systemd)  
+
+> przykładowo Netflix korzsyta z ZFS, upycha do skrzynki 64 dyski SSD i tworzy taki monolit z zainstalowanym FreeBSD serwujący filmy
+
+
+W ZFS mamy poole (czyli urządzenia blokowe) oraz Datasety (systemy plików)  
+sporą zaletą jest to że możemy mieć całą masę datasetów, które żyją w jednym poolu (przez co nie mamy problemów z rezerwowaniem miejsca)
 

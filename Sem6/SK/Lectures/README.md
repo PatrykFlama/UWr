@@ -1,8 +1,12 @@
 
-- [Notatki](#notatki)
-  - [Warstwowe modele](#warstwowe-modele)
-    - [Z szyfrowaniem](#z-szyfrowaniem)
+- [Notatki - zdjęcia](#notatki---zdjęcia)
+  - [Schemat warstwowego modelu](#schemat-warstwowego-modelu)
+  - [Warstwowy model z szyfrowaniem TCP](#warstwowy-model-z-szyfrowaniem-tcp)
+  - [Konstrukcja wysyłanych danych](#konstrukcja-wysyłanych-danych)
+    - [Segment TCP](#segment-tcp)
   - [Filtry](#filtry)
+  - [Stany TCP](#stany-tcp)
+- [Notatki - podsumowania](#notatki---podsumowania)
   - [Jednostki](#jednostki)
   - [Skrótologia](#skrótologia)
 - [Zagadnienia](#zagadnienia)
@@ -21,14 +25,26 @@
   - [Wykład 13](#wykład-13)
 
 
-# Notatki
-## Warstwowe modele
-### Z szyfrowaniem
+# Notatki - zdjęcia
+## Schemat warstwowego modelu
+![img](image-5.png)
+## Warstwowy model z szyfrowaniem TCP
+Wersja bez po prostu nie ma warstwy TCP  
 ![image](image.png)
+
+
+## Konstrukcja wysyłanych danych
+### Segment TCP
+![alt text](image-3.png)
 
 ## Filtry
 ![image](image-1.png)
 
+## Stany TCP
+![alt text](image-4.png) 
+
+
+# Notatki - podsumowania
 ## Jednostki
 - aplikacja: dane
 - transportowa: segment (TCP) / datagram (UDP)
@@ -39,22 +55,50 @@
 ## Skrótologia 
 | Skrót | Rozwinięcie | Wytłumaczenie |
 | --- | ---- | --- |
-| IP | Internet Protocol | Protokół warstwy sieci (adresacja i routing) |
 | DNS | Domain Name System | System nazw domenowych (IP <-> nazwa) |
 | RIP | Routing Information Protocol | Prosty protokół routingu |
 | ARP | Address Resolution Protocol | Protokół odwzorowania adresów IP <-> MAC |
+| DHCP | Dynamic Host Configuration Protocol | Pobieranie adresu IP oraz konfiguracji |
+| HTTP | Hypertext Transfer Protocol | Protokół oparty na TCP do przesyłania danych | 
+| SMTP | Simple Mail Transfer Protocol | Protokół do przekazywania poczty |
+| IMAP | Internet Message Access Protocol | Protokół umożliwiający dostęp do poczty |
+||||
+| TLS | Transport Layer Security | Warstwa zapewniająca szyfrowanie oraz uwierzytelnianie danych |
+||||
 | TCP | Transmission Control Protocol | Protokół transportowy zapewniający niezawodność |
-| UDP | User Datagram Protocol | Protokół bezstanowy |
+| UDP | User Datagram Protocol | Protokół bezpołączeniowe |
 | ICMP | Internet Control Message Protocol | Protokół kontrolny (np ping) |
+| QUIC | Quick UDP Internet Connections | Protokół warstwy transportowej, celujący w szybkość i poprawę niezawodności połączeń (przykryty pod warstwą UDP) |
+||||
+| IP | Internet Protocol | Protokół warstwy sieci (adresacja i routing) |
+||||
+| CIDR | Classles Inter-Domain Routing | Reprezentacja adresów IP i ich prefiksów sieciowych |
+| CDN | Content Distribution Networks | Utrzymuje proxy oraz serwery DNS |
 | RTT | Round Trip Time | Czas obiegu pakietu |
 | RTO | Retransmission TimeOut | Czas oczekiwania na potwierdzenie, po którym następuje retransmisja  |
 | BDP | Bandwith-Delay Product | Przepustowość * opóźnienie - ile danych może być "w locie" |
 | MSS | Maximum Segment Size | Maksymalny rozmiar segmentu TCP |
 | MTU | Maximum Transmission Unit | Maksymalny rozmiar pakietu na łączu |
 | TTL | Time To Live | Pozostała liczba przeskoków pakietu IP |
-| MAC | Message Authentication Code |  |
-| HMAC | Hash-based MAC |  |
-| MAC address | Media Access Control | Adres sprzętowy karty sieciowej |
+| LSA | Link State Advertisement | Informacja wysyłana przy stanie łącza, zawiera źródło i numer sekwencyjny |
+| AS | Autonomic System | AS to zbiór rouerów pod pewną administracją, stosujący jednolitą politykę routingu |
+| BGP | Border Gateway Protocol | Algorytm routingu pomiędzy AS | 
+| LPM | Longest Prefix Match | Metoda wybierania prefiksu (kolejnego skoku) do routowania pakietu |
+| TCAM | Ternary Content Addressable Memory | Pamięć trzymająca pary (prefix, maska) i zwracająca hardware'owo LPM |
+| CSMA/CD | Carrier Sense Multiple Access with Collision Detection | (Eth) Po wykryciu kolizji przestajemy nadawać |
+| CSMA/CS | Carrier Sense Multiple Access with Collision Avoidance | (Wifi) Brak wykrywania kolizji, próba jej uniknięcia |
+| VLAN  | Virtual Local Area Network | Logiczny odpowiednik fizycznego podziału na sieci lokalne |
+| MAC | Message Authentication Code | Zapewnia integralnośc i uwierzytelnienie wiadomości |
+| HMAC | Hash-based MAC | MAC oparty o funkcję skrótu i tajny klucz |
+| MAC address | Media Access Control | Adres sprzętowy karty sieciowej (6 bajtów, pierwsze 3 nadaje IEEE, pozostałe producent) |
+| URL | Uniform Resource Locator | \<schemat\>:\<część zależna od schematu/rodzaju zasobu\> |
+| TLD | Top Level Domains | Nazwy domen o wysokości 1 od korzenia (.com .pl) |
+| CNAME | Canonical Name | Typ rekordu DNS, zawiara alias oraz główną nazwę domeny |
+| MX | Mail Exchanger | Typ rekordu DNS, odpowiada za adres serwera pocztowego |
+| CRC | Cyclic Redundancy Check | Kody detekcyjne opartne na dzieleniu wielomianów |
+| ECB | Electronic Codeblock | Każdy blok wiadomości szyfrowany niezależnie |
+| CBC | Cipher Block Chaining | Klucz inicjalizacyjny + kolejna wiadomość szyfrowana wynikiem poprzedniej |
+| CA | Certificate Authority | Urząd certyfikacji - wydający certyfikaty |
 | SSH | Secure SHell | Bezpieczna komunikacja terminalowa |
 | VPN | Virtual Private Network | Logiczna sieć utworzona z wielu rozłącznych sieci |
 | RSA | Rivest-Shamir-Adleman | Algorytm asymetrycznego szyfrowania |
@@ -64,15 +108,21 @@
 | SWS | Sender Window Size | Rozmiar okna na komputerze wysyłającym metodą TCP |
 | RWS | Receiver Window Size | Rozmiar okna na komputerze odbierającym TCP |
 | NAT | Network Address Translation |  |
+| SNAT | Source NAT ||
+| DNAT | Destination NAT ||
 | CAM | Content Addressable Memory | Pamięć adresowana zawartością (stosowana np w przełącznikach) |
 | AIMD | Additive Increase / Multiplicative Decrease | Algorytm kontroli przeciążenia TCP |
 | cwnd | congestion window | Rozmiar okna przeciążeniowego (czyli tego które jest na łączy między komputerami) |
 | ssthresh | slow start threshold | Poziom do którego ma działać slow start |
 | RED | Random Early Detection | Losowe wyrzucanie pakietów z ppb ~ rozmiar kolejki |
 | ECN | Explicit Congestion Notification | Router zaznacza w pakiecie możliwe przeciążenie |
-
-
-
+||||
+| ACK || Flaga TCP potwierdzająca odbiór danych |
+| SYN || Flaga TCP rozpoczynająca połączenie |
+| RST || Flaga TCP resetująca połączenie (wymuszone zakończenie) |
+| FIN || Flaga TCP kończąca połączenie |
+| RTS | Request To Send | WiFi, do unikania kolizji |
+| CTS | Clear To Send | WiFi, do unikania kolizji |
 
 # Zagadnienia
 ## Wykład 1

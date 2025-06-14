@@ -1,9 +1,77 @@
-[TOC]
+
+- [Notatki](#notatki)
+  - [Warstwowe modele](#warstwowe-modele)
+    - [Z szyfrowaniem](#z-szyfrowaniem)
+  - [Filtry](#filtry)
+  - [Jednostki](#jednostki)
+  - [Skrótologia](#skrótologia)
+- [Zagadnienia](#zagadnienia)
+  - [Wykład 1](#wykład-1)
+  - [Wykład 2](#wykład-2)
+  - [Wykład 3](#wykład-3)
+  - [Wykład 4](#wykład-4)
+  - [Wykład 5](#wykład-5)
+  - [Wykład 6](#wykład-6)
+  - [Wykład 7](#wykład-7)
+  - [Wykład 8](#wykład-8)
+  - [Wykład 9](#wykład-9)
+  - [Wykład 10](#wykład-10)
+  - [Wykład 11](#wykład-11)
+  - [Wykład 12](#wykład-12)
+  - [Wykład 13](#wykład-13)
+
 
 # Notatki
 ## Warstwowe modele
 ### Z szyfrowaniem
 ![image](image.png)
+
+## Filtry
+![image](image-1.png)
+
+## Jednostki
+- aplikacja: dane
+- transportowa: segment (TCP) / datagram (UDP)
+- sieciowa: pakiet (IP)
+- łącza danych: ramka
+- fizyczna: bity
+
+## Skrótologia 
+| Skrót | Rozwinięcie | Wytłumaczenie |
+| --- | ---- | --- |
+| IP | Internet Protocol | Protokół warstwy sieci (adresacja i routing) |
+| DNS | Domain Name System | System nazw domenowych (IP <-> nazwa) |
+| RIP | Routing Information Protocol | Prosty protokół routingu |
+| ARP | Address Resolution Protocol | Protokół odwzorowania adresów IP <-> MAC |
+| TCP | Transmission Control Protocol | Protokół transportowy zapewniający niezawodność |
+| UDP | User Datagram Protocol | Protokół bezstanowy |
+| ICMP | Internet Control Message Protocol | Protokół kontrolny (np ping) |
+| RTT | Round Trip Time | Czas obiegu pakietu |
+| RTO | Retransmission TimeOut | Czas oczekiwania na potwierdzenie, po którym następuje retransmisja  |
+| BDP | Bandwith-Delay Product | Przepustowość * opóźnienie - ile danych może być "w locie" |
+| MSS | Maximum Segment Size | Maksymalny rozmiar segmentu TCP |
+| MTU | Maximum Transmission Unit | Maksymalny rozmiar pakietu na łączu |
+| TTL | Time To Live | Pozostała liczba przeskoków pakietu IP |
+| MAC | Message Authentication Code |  |
+| HMAC | Hash-based MAC |  |
+| MAC address | Media Access Control | Adres sprzętowy karty sieciowej |
+| SSH | Secure SHell | Bezpieczna komunikacja terminalowa |
+| VPN | Virtual Private Network | Logiczna sieć utworzona z wielu rozłącznych sieci |
+| RSA | Rivest-Shamir-Adleman | Algorytm asymetrycznego szyfrowania |
+| DoS | Denial of Service | Atak zmuszający serwer do nieobsługiwania klientów |
+| DDoS | Distributed DoS | Atak DoS przeprowadzony z wielu komputerów |
+| MIM | Man-In-the-Middle | Typ ataku |
+| SWS | Sender Window Size | Rozmiar okna na komputerze wysyłającym metodą TCP |
+| RWS | Receiver Window Size | Rozmiar okna na komputerze odbierającym TCP |
+| NAT | Network Address Translation |  |
+| CAM | Content Addressable Memory | Pamięć adresowana zawartością (stosowana np w przełącznikach) |
+| AIMD | Additive Increase / Multiplicative Decrease | Algorytm kontroli przeciążenia TCP |
+| cwnd | congestion window | Rozmiar okna przeciążeniowego (czyli tego które jest na łączy między komputerami) |
+| ssthresh | slow start threshold | Poziom do którego ma działać slow start |
+| RED | Random Early Detection | Losowe wyrzucanie pakietów z ppb ~ rozmiar kolejki |
+| ECN | Explicit Congestion Notification | Router zaznacza w pakiecie możliwe przeciążenie |
+
+
 
 
 # Zagadnienia
@@ -153,7 +221,7 @@ jest to wpis w tablicy routingu z adresem 0.0.0.0/0 który pasuje do wszystkich 
 
 ICMP - internet control message protocol, czyli protokół służący do wysyłania wiadomości diagnostycznych
     - ping
-    - traceroute
+    - echo reply
 
 - Jak działa polecenie ping?  
 
@@ -718,99 +786,419 @@ ma on zintegrowane szyfrowanie oraz nie wymaga nawiązania połączenia tak jak 
 
 ## Wykład 9
 - Jaki jest cel systemu nazw DNS?  
+
+DNS (Domain Name System) - łatwiejsze do zapamiętania dla ludzi, możliwość zmiany adresu IP serwera
+
 - Do czego służy plik /etc/hosts?  
+
+przechowuje on przypisania domena -> adres IP
+
 - Rozwiń skrót TLD (kontekst: DNS), podaj parę przykładów.  
+
+TLD - Top Level Domains są to nazwy domen o wysokości 1 od korzenia, np .com .pl
+
 - Czym są strefy i delegacje DNS?  
+
+strefy to spójny fragment drzewa hierarhi nazw  
+delegacje odsyłają do innego serwera nazw, który odpowie na pytanie do kogo należy dana nazwa
+
 - Czym różni się rekurencyjne odpytywanie serwerów DNS od iteracyjnego?  
+    - rekurencyjne - pytamy resolver dns, a on za nas przechodzi przez drzewo
+    - iteracyjne - kilent osobiście przechodzi przez drzewo
+
 - Jak działa odwrotny DNS? Jaki typ rekordów i jaką domenę wykorzystuje?  
-- Jakie znasz typy rekordów DNS? Co to jest rekord CNAME?  
+
+odwrócony adres zaczyna się od in-addr.arpa. do którego doklejany jest adres IP (w odpowiedniej kolejnosci), a wynikiem takiego zapytania jest nazwa domeny
+
+- Jakie znasz typy rekordów DNS? Co to jest rekord CNAME? 
+    - A - adresy IPv4
+    - AAAA - adresy IPv6
+    - CNAME (Canonical Name) - zawiara alias oraz główną nazwę domeny
+
 - Do czego służy protokół SMTP a do czego IMAP?  
+    - SMTP (Simple Mail Transfer Protocol) - protokół do przekazywania poczty
+    - IMAP (Internet Message Access Protocol) - protokół umożliwiający dostęp do poczty z różnych urządzeń
+
 - Co to są przekaźniki SMTP (relays)?  
+
+są to serwery które odbierają naszą wiadomość żeby przekazać ją dalej gdy tylko odbiorca będzie dostępny
+
 - Jaki rekord DNS jest sprawdzany przed wysłaniem poczty do danej domeny?  
+
+MX - Mail Exchanger
+
 - Wymień parę popularnych pól w nagłówku maila. Do czego służą pola Received i Bcc?  
+
+`MAIL FROM`, `RCPT TO`  
+Received - data odebrania wiadomości  
+Bcc - ślepa kopia  
+
 - Co umożliwia standard MIME?  
+
+określa typ zawartości pliku/danych  
+
 - Co to jest spam? Jakie znasz metody walki ze spamem?  
+
+spam to niechciane wiadomości pocztowe  
+metody walki:
+    - statystykla, ML
+    - blokowanie adresów IP
+    - spowalnianie połączeń
+    - zabezpiecznia przed podszywaniem, takie jak SPF
+
 - Na czym polega mechanizm SPF?  
+
+SPF definiuje jakie komputery są uprawnione do wysyłania poczty z danym polem `From`
+
 - Jaka jest rola trackera w sieci Bittorrent?  
+
+tracker to serwer który zna wszystkich członków sieci i udostępnia niektórych adresy - jest to taki koordynator
+
 - Po co w plikach .torrent stosuje się funkcje skrótu?  
+
+aby się upewnić że pobraliśmy poprawny plik/bez błędów
+
 - Jakie są różnice w postępowaniu seedera i leechera w sieci BitTorrent?  
+    - seeder posiada cały plik i go rozsyła  
+    - leecher ma tylko niektóre fragmenty  
+
 - Na czym polegają połączenia odwrócone? Jak stosuje się je w protokole FTP?  
+
+jest to połączenie do komputera, który jest za NAT; np za pomocą pośrednika  
+gdy mamy NAT to wykonujemy FTP w trybie pasywnym, czyli komputer który jest za NAT wysyła kanałem komunikacyjnym informację "chcę pobrać plik i słucham na tym porcie"  
+
+
 - Opisz podobieństwa i różnice asymetrycznych (cone) NAT (pełnego i ograniczonego) i symetrycznych NAT.  
+    - full cone - dowolny zewnętrzny komputer może wysłać pakiet do komputera za NAT o ile zna jego IP i port
+    - restricted cone - zewnętrzny komputer może wysłać pakiet, ale tylko jeżeli kiedyś nasz komputer się z nim komunikował i to jego portem
+    - symetryczny - przypisany port naszego komputera zależy od adresu i portu nadawcy i odbiorcy
+
 - Opisz technikę wybijania dziur (hole punching) w NAT. Po co konieczny jest serwer pośredniczący?  
 
+oboje klienci łączą się z serwerem pośredniczącym, który rejestruje ich adresy i porty, po czym odsyła im te dane  
+klienci wysyłają do siebie nawazajem pakiety, pierwszy zostanie odrzucony, ale drugi zostanie już uznany za odpowiedź zwrotną i zaakceptowany  
+w tern sposób stworzyliśmy dziurę  
 
 ## Wykład 10
 - Jakie znasz typy kodów detekcyjnych? Do czego służą i jakie są między nimi różnice?  
-- Jakie rodzaje błędów mają wykrywać kody detekcyjne? Z czego biorą się błędy przy przesyłaniu  
-danych?
+
+    - sumy kontrolne - suma słów w przesyłanej wiadomości, nie wykrywa zmian słów ale sa efektywnie obliczane
+    - bit parzystości - dodajemy tak bit, aby dla danego zakresu (np wszystkich) bitów suma zapalonych była parzysta; wykrywa przekłamania parzystej liczby bitów
+    - CRC (Cyclic Redundancy Check) - opartne na dzieleniu wielomianów, efektywnie obliczane sprzętowo
+
+- Jakie rodzaje błędów mają wykrywać kody detekcyjne? Z czego biorą się błędy przy przesyłaniu danych?
+
+kody detekcyjne mają wykryć błędy polegające na przekłąmaniu bitów  
+przekłamania bitów powstają w skutek błędów transmisji
+
 - Jak działa algorytm obliczania sum kontrolnych CRC?  
+
+ustalany jest wielomian *G* o stopniu _r_ znany obu stronom transmisji  
+do wiadomości doklejamy 'z prawej' taki wielomian, aby wynikowy był podzielny przez *G*
+
 - W jaki sposób działa wykrywanie błędów przy sumie kontrolnej CRC?  
+
+odbiorca dzieli dane przez ustalony wielomian, w wyniku otrzumuje resztę (suma CRC)  
+jeżeli reszta nie jest zerowa to wykryto błąd
+
 - Jakie znasz metody korygowania błędów w transmisji?  
+
+kody Hamminga ; (7,4)-kod (3,1)-kod
+
 - Co to jest (a,b)-kod? Podaj przykład.  
+
+a - liczba przesyłanych bitów  
+b - liczba bitów na dane  
+przykład to (3,1) kod który ma 1 bit danych powtórzony 3 razy   
+
 - Co to jest odległość Hamminga? Jak wpływa na możliwość detekcji i korekcji błędów?  
+
+odległość hamminga to najmniejsza liczba bitów jaką musimy zmienić żeby zrobić z liczby a liczbę b  
+do detekcji **k** błędów potrzebna jest odległość co najmniej **k+1** między dwoma kodami  
+do korekcji **k** błędów potrzebna jest odległość co najmniej **2k+1** między dwoma kodami
+
 - Do czego służą kody MAC? Co to jest HMAC?  
+
+    - MAC (Message Authentication Code) - zapewnia integralnośc i uwierzytelnienie wiadomości
+    - HMAC (Hash-based MAC) - oparty o funkcję skrótu i tajny klucz
+
 - Jakie własności powinna mieć kryptograﬁczna funkcja skrótu?  
+
+    - szybko obliczalna
+    - znalezienie kolizji dla danej wartości powinno być obliczeniowo trudne
+
 - Czym różni się poufność od integralności?  
+
+    - poufność - dane nie mogą zostać odczytane przez niuprawnione osoby
+    - integralnośc - dane nie zostały zmienione w nieautoryzowany sposób
+
 - Co to są szyfry monoalfabetyczne? Dlaczego łatwo je złamać?  
+
+są to szyfry stosujące jakieś podmienienie liter, łatwo je złamać np znając częstość występowania lister w danym korpusie
+
+
 - Na czym polegają ataki z wybranym tekstem jawnym, znanym tekstem jawnym i znanym  
 szyfrogramem?
+    - atak z wybranym tekstem jawnym - adwersarz wybiera tekst i otrzymuje jego szyfrogram
+    - atak ze znanym tekstem jawnym - adwersarz zna fragment tekstu i jego szyfrogram
+    - atak ze znanym szyfrogramem - adwersarz zna szyfrogram
+
 - Co to jest szyfrowanie one-time pad?  
+
+szyfrowanie symetryczne, klucz tak samo długi jak tekst jawny, zakodowanie wiadomości to xor wiadomości i klucza
+
 - Na czym polega szyfrowanie blokowe? Czym różni się tryb ECB od CBC?  
+    - szyfrowanie blokowe dzieli dane na bloki i każdy blok szyfruje osobno
+    - ECB (Electronic Codeblock) - każdy blok szyfrowany niezależnie, może być szyfrowany z wygenerowanym bitem losowości dla każdego bitu wiadomości
+    - CBC (Cipher Block Chaining) - mamy wektor inicjalizacyjny, pierwszy blok jest szyfrowany tak jak w ECB, potem wynik szyfrowania jest używany do szyfrowania kolejnej wiadomości
 
 ## Wykład 11
 - Czym szyfrowanie symetryczne różni się od asymetrycznego?  
+
 w szyfrowaniu symetrycznym obie strony muszą znać ten sam klucz, mogą zarówno szyforwać jak i deszyforować wiadomości  
 w szyfrowaniu asymetrycznym do zaszyfrowania i odszyfrowania wiadomości używa się dwóch różnych kluczy (publiczny i prywatny), więc np tylko jedna strona może odczytać zaszyfrowaną wiadomość  
 
 - Na czym polega bezpieczeństwo przy szyfrowaniu asymetrycznym?  
+
 klucz deszyfrujący może zostać u odbiorcy - nie ma problemu z tym jak go przekazać, a klucz szyfrujący może być publiczny tak aby każdy mógł zaszyfrować wiadomość do odbiorcy
 
 - Opisz algorytm RSA.  
+    - wybieramy dwie duże różne liczby pierwsze *p* oraz *q*   
+    - niech n = p\*q
+    - wybieramy liczbę *e* względnie pierwszą z $\Phi(n) = (p-1) * (q-1)$
+    - znajdujemy takie *d* że d\*e mod $\Phi(n) = 1$
+    - klucz publiczny to (e, n) a prywatny to (d, p, q)
+
 - Czy różni się szyfrowanie od uwierzytelniania?  
+
 szyfrowanie zapewnia poufność wiadomości, a uwierzytelnianie zapewnia tożsamość nadawcy  
 
 - Co to jest atak powtórzeniowy?  
+
+polega on na przechwyceniu zaszyfrowanej wiadomości po to, aby ją później nadać ponownie podszywając się pod nadającego
+
 - Czy w szyfrowaniu asymetrycznym szyfrujemy kluczem publicznym czy prywatnym?  
+
 szyfrujemy kluczem publicznym, a odszyfrowujemy kluczem prywatnym
 
 - Na czym polega podpisywanie wiadomości? Jakim kluczem to robimy?
+
 podpisujemy wiadomość kluczem prywatnym, aby każdy mógł ją zweryfikować kluczem publicznym kto ją podpisał (czyli ma dostęp do klucza prywatnego) - dowodzi to że nadawca wiadomości ma poprawny klucz prywatny do klucza publicznego
 
 - Jak można wykorzystać podpisy cyfrowe do uwierzytelniania?  
+
+jeżeli podpis cyfrowy jest poprawny i został zweryfikowany kluczem publicznym danej osoby, to wiadomo że podpisała go ta osoba, bo tylko ona miała klucz prywatny
+
 - Czy HMAC można wykorzystać do uwierzytelniania? Czy HMAC jest podpisem cyfrowym?  
+
+HMAC można wykorzystać do zapewnienia integralności oraz znajomości sekretu _s_  
+ale HMAC nie jest podpisem cyfrowym bo może go wykorzystać każda osoba znająca _s_, a zweryfikować tylko ta znająca _s_
+
 - Dlaczego lepiej podpisywać funkcję skrótu wiadomości niż samą wiadomość? Z jakim ryzykiem się to wiąże?  
+
 gdybyśmy podpisywali wiadomość to nasz podpis byłby tak samo długi jak wiadomość, a po zastosowaniu funkcji skrótu mamy krótszą wiadomość do podpisania (więc nie marnujemy przepustowości łącza)  
-wiąże się to z ryzykiem kolizji - funkcja skrótu jest znana każdemu więc można np przeprowadzić atak urodzinowy lub
+wiąże się to z ryzykiem kolizji - funkcja skrótu jest znana każdemu więc można np przeprowadzić atak urodzinowy  
 
 - Co to są certyﬁkaty? Co to jest ścieżka certyﬁkacji?  
+
+certyfikat to dokument cyfrowy, który potwierdza tożsamość właściciela klucza publicznego, podpisany przez Urząd Certyfikacji (CA)  
+ścieżka certyfikacji to ciąg certyfikatów od serwera do zaufanego CA  
+
 - Co to jest urząd certyﬁkacji (CA)?  
+
+zaufany urząd generujący certyfikaty i poświadcza tożsamość  
+
 - Jak TLS zapewnia bezpieczeństwo połączenia?  
+    - TLS (Transport Layer Security) to dodatkowa warstwa między aplikacji a transportową
+    - zapewnia szyfrowanie oraz uwierzytelnianie danych
+
 - W jaki sposób w TLS następuje uwierzytelnienie serwera, z którym się łączymy?  
+
+przeglądarka weryfikuje certyfikat serwera z podpisem CA
+
 - Co to są klucze sesji? Po co się je stosuje?  
+
+symetryczne klucze ustanawiane po nawiązaniu połączenia TLS do szyfrowania danych - jest to wydajeniejsza i nadal bezpieczna metoda komunikacji, która jest szybsza od szyfrowania asymetrycznego
+
 - Co to są kolizje kryptograﬁcznej funkcji skrótu?  
+
+gdy dwie wiadomości mają taki sam skrót to mamy kolizję
+
 - Na czym polega atak urodzinowy?  
+
 znalezienie wiadomości m' dla danej wiadomości m, o takim samym skrócie jest 2-krotnie cięższe niż znalezienie takich dwóch wiadomości m i m', które mają ten sam skrót (atakujący więc może wtedy łatwo poprosić o podpisanie wiadomości m, a wysłać wiadomość m')
 
 
 ## Wykład 12
 - Co to jest pamięć CAM i jak stosuje się ją w przełącznikach? Jak można ją przepełnić?
+
+CAM (Content Addressable Memory) - pamięć w przełączniku z przypisaniem adres MAC -> port
+
 - Opisz atak typu ARP spoofing.
+
+atakujący wysyła zfałszowane odpowiedzi ARP, przypisując swój MAC do cudzego IP - wtedy wiadomości wysłane do ofirary trafiają do atakującego
+
 - Co oznacza termin IP spoofing? Na czym polega metoda weryfikacji tak zmodyfikowanych pakietów (ingress filtering)?
+
+IP spoofing - fałszowanie źródłowego adresu IP w pakiecie   
+Ingress filtering - technika stosowana w routerach, która weryfikuje czy podany adres źródłowy jest poprawny 
+
 - Na czym polega atak RIP spoofing?
+
+RIPv1 nie ma uwierzytelniania, więc wystarczy rozgłaszać trasy do różnych sieci o małym koszcie
+
 - Na czym polega zatruwanie pamięci podręcznej serwera DNS?
+
+polega na podszywaniu się pod serwer DNS - kiedyś można było podając adres do swojej domeny, podać też adres do dowolnej innej, teraz po prostu po zadaniu pytania atakujący wysyła podrobione odpowiedzi DNS (które mają 16-bitowe ID identyfikujące odpowiedź, ale możemy wysłać 2^16 odpowiedzi i trafić w poprawne)  
+
 - Jak wygląda uwierzytelnianie serwera SSH?
+
+po pierwszym połączeniu się serwer wysyła nam swój klucz publiczny - powinniśmy zerwyfikować funkcję skrótu  
+po pierwszym połączeniu klucz publiczny jest zapisywany  
+
 - Na czym polega uwierzytelnianie użytkownika przez SSH z wykorzystaniem kluczy RSA?
+
+serwer ma zapisany klucz publiczny użytkownika, po połączeniu się z nim wysyła użytkownikowi dane do podpisania, a użytkownik zwarca mu podpisane dane do weryfikacji
+
 - Podaj przykłady tunelowania.
+
+tunelowanie - przesyłanie pewnych usług sieciowych za pomocą innych usług sieciowych  
+przykład: tunelowanie ssh pozwala na przekazywanie w zaszyfrowany sposób segmentów TCP; lub tunelowanie IPv6 za pomocą IPv4  
+
 - Rozwiń skrót VPN. Do czego służy?
+
+VPN (Virtual Private Network) - mamy 2 sieci połączone z internetem i chcemy z nich zrobić jedną logiczną sieć; transmisja lokalna jest bezpieczna, ale w internecie nie  
+
 - Porównaj wady i zalety filtrów pakietów: prostych, stanowych i działających w warstwie aplikacji.
+        - proste: analizują tylko nagłówki IP i porty - są tanie i szybkie  
+        - stanowe: analizują też warstwę transportową - śledzą połączenia TCP i pamiętają jego stan
+        - w warstwie aplikacji: analizują zawartość segmentów i datagramów
+
+im bardziej zaawansowany filtr, tym droższy/wolniejszy ale zarazem daje on większe możliwości na rozbudowanie firewalla i zwiększenie bezpieczeństwa/kontroli
+
 - Do czego służą moduły input, output, forward w filtrze Netfilter/nftables?
+
+    - input - dzieje się po routingu ale przed dostarczeniem do procesu/komputera
+    - output - dzieje się po zakończeniu procesu/wyjściu z komputera ale przed routingiem
+    - forward - dzieje się po routingu i służy do przekierowania pakietu (a nie dostarczenia do lokalnej sieci)
+
+
 - W jakich łańcuchach zapory Linuksa wykonywany jest źródłowy a w jakich docelowy NAT?
+
+    - SNAT (source NAT): w łańcuchu postrouting
+    - DNAT (destination NAT): w łańcuchu prerouting lub output
+
 - Przedstaw przykładowe ataki wykorzystujące brak sprawdzania poprawności wprowadzanych danych.
+
+    - SQL Injection - atakujący podaje zapytanie do aplikacji, która przeszuka bazę danych i zwróci znaleziony wynik, ale po podaniu odpowiedniego zapytania atakujący jest w stanie przekazać dowolne zapytanie do bazy danych
+    - przepełnienie bufora - gdy atakujący jest w stanie podać na tyle dużo danych do aplikacji, które zosatną umieszczone na stosie, że przepełni się on
+
 - Wyjaśnij pojęcia: robak internetowy, botnet.
+
+    - robak internetowy - samopowielający się program, rozprzestrzeniający się przez sieć
+    - botnet - sieć zainfekowanych urządzeń sterowanych zdalnie przez atakującego
+
 - Na czym polega phishing?
+
+technika ataku na człowieka, podszywając się pod inną osobę/instytucję próbując wyłudzić dane
+
 - Co to jest skanowanie portów? Po co się je wykonuje?
+
+sprawdzenie które porty na hoście są otwarte (i np jak reagują na jakie zapytania), służy do identyfikacji usług i szukaniu podatności
+
 - Co to są ataki DoS i DDoS?
+
+DoS (Denial of Service), DDoS (Distributed DoS) - ataki polegające na przeciążenie usługi ofiary w taki sposób, aby nie była ona w stanie obsłużyć klientów, atak rozproszony jest wykonywany z wielu komputerów (np z botnetu)
+
 - Na czym polega atak typu odbity (reflected) DoS?
 
+zapytanie z adresem źródłowym ofiary, wysyłane do serwera DNS (odpowiedź może być znacznie większa niż zapytanie); taki atak ciężej wyśledzić
 
+
+## Wykład 13
+
+- Czym różni się kontrola przepływu od kontroli przeciążenia?  
+    - kontrola przepływu - nie chcemy zalać odbiorcy danymi
+    - kontrola przeciążenia - nie chcemy zalać sieci danymi
+
+- Co to jest przeciążenie?  
+
+przepełnienie bufora w routerze
+
+- Na czym polega mechanizm opóźnionych potwierdzeń?  
+
+zamiast wysyłać osobne ACK na każdy odebrany segment, wysyłamy kumulacyjne ACK raz na jakiś czas potwierdzając wszystkie odebrane segmenty
+
+- Jaka jest zależność między rozmiarem okna nadawcy a prędkością transmisji?  
+
+dane wysyłane są ze średnią prędkością SWS/RTT  
+okno powinno być większe od BDP = przepustowość \* RTT aby w pełni wykorzystać łącze
+
+- Czy nieskończone bufory rozwiązałyby problem przeciążenia?  
+
+nie, ponieważ przepustowość zostaje ta sama, dodatkowo większe kolejki to większe opóźnienia
+
+- Jak zależy średni rozmiar kolejki od średniej prędkości nadchodzenia pakietów?  
+
+przy zbliżaniu się do pojemności łącza rozmiar kolejki rośnie gwałtownie
+
+- Jakie są cele kontroli przeciążenia?  
+    - wysokie wykorzystanie łączy (szybkie wysyłanie danych)
+    - sprawiedliwy podział łącza
+    - rozproszony algorytm
+    - szybko reaguje na zmianę warunków
+
+- Jak można definiować sprawiedliwy podział łącza? Co to jest max-min fairness?  
+
+możemy zdefiniować sprawiedliwy podział łącza jako taki, w którym nie można zwiększyć szybkości żadnego strumienia bez zmniejszenia prędkości nieszybszego strumienia - jest to właśnie zasada max-min fairness  
+(maksymalizuj minimalną przepustowość)
+
+- Na jakiej podstawie zmienia się rozmiar okna przeciążenia?  
+    - odebrane ACK
+    - utracone pakiety
+
+- Kiedy TCP wnioskuje, że pakiet zaginął?  
+    - przekroczony timeout
+    - podwójne potwierdzenie
+
+- Opisz algorytm ustalania rozmiaru okna przeciążenia  
+    - za każde ACK cwnd += 1/cwnd (czyli co RTT cwnd+=1)
+    - przy zbubieniu pakiety cwnd /= 2
+
+- Rozwiń skrót AIMD. Czego dotyczy?  
+
+AIMD (Additive Increase Multiplicative Decrease) - metoda aktualizacji okna przeciążenia w TCP
+
+- W jaki sposób AIMD gwarantuje sprawiedliwy podział łącza?  
+
+jeżeli mamy wielu nadawców używających AIMD to ich przepustowości zbiegają do tej samej wartości 
+
+- Opisz fazy unikania przeciążenia i wolnego startu w TCP.  
+    - za każde ACK pakietu zwiększamy cwnd o MSS * MSS/cwnd (czyli co RTT zwiększamy cwnd o MSS)
+    - jeżeli wystąpi utrata cwnd zmiejszamy dwukrotnie
+    - mamy jeszcze fazę wolnego startu 
+        - zaczynamy od cwnd = MSS
+        - po każdym ACK zwiększamy cwnd o MSS (co RTT cwnd rośnie dwukrotnie)
+        - faza trwa do utraty pierwszego pakietu lub przekroczenia ssthresh
+        - ssthresh = końcowe cwnd / 2
+
+- Opisz mechanizm szybkiej retransmisji i szybkiego przywracania.  
+    - szybka retransmisja - wysyłamy brakujący segment bez czekania na timeout (po 3-krotnym odebraniu ACK)
+    - szybkie przywracanie - pomijamy fazę krótkiego startu (ssthresh = cwnd / 2; cwnd = ssthresh)
+
+- Na czym polega mechanizm RED?  
+
+RED (Random Early Detection) - router losowo wyrzuca pakiety z ppb ~ rozmiarowi kolejki
+
+- Opisz działanie mechanizmu ECN (explicit congestion notification).  
+
+zaznacza on w przechodzących pakietach, jeżeli istnieje ryzyko że za chwilę ulegnie on przeciążeniu (wtedy informacja ta jest wysyłana do odbiorcy, który zachowuje się tak jakby utracił pakiet)
+
+- Jaka jest relacja w AIMD między przepustowością a traconymi pakietami?  
+
+liczba utraconych segmetów to $p = 8/3 (1/W^2)$ gdzie W to max przepustowość
+
+- Jakie modyfikacje wprowadza FastTCP do AIMD? Dlaczego?  
+
+FastTCP zastępuje klasyczne AIMD bardziej precyzyjną kontrolą opartą na pomiarze opóźnień RTT, co pozwala lepiej wykrywać przeciążenia i szybciej odzyskiwać przepustowość w sieciach o dużym opóźnieniu
 

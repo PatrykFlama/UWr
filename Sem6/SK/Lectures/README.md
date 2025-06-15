@@ -47,7 +47,7 @@ Wersja bez po prostu nie ma warstwy TCP
 # Notatki - podsumowania
 ## Jednostki
 - aplikacja: dane
-- transportowa: segment (TCP) / datagram (UDP)
+- transportowa: TPDU (Transport Protocol Data Unit) / segment (TCP) / datagram (UDP)
 - sieciowa: pakiet (IP)
 - łącza danych: ramka
 - fizyczna: bity
@@ -57,7 +57,8 @@ Wersja bez po prostu nie ma warstwy TCP
 | --- | ---- | --- |
 | DNS | Domain Name System | System nazw domenowych (IP <-> nazwa) |
 | RIP | Routing Information Protocol | Prosty protokół routingu |
-| ARP | Address Resolution Protocol | Protokół odwzorowania adresów IP <-> MAC |
+| ARP | Address Resolution Protocol | Protokół do odwzorowania adresów IP -> MAC |
+| RARP | Reverse ARP | Protokół do odwzorowania MAC -> adres IP |
 | DHCP | Dynamic Host Configuration Protocol | Pobieranie adresu IP oraz konfiguracji |
 | HTTP | Hypertext Transfer Protocol | Protokół oparty na TCP do przesyłania danych | 
 | SMTP | Simple Mail Transfer Protocol | Protokół do przekazywania poczty |
@@ -72,6 +73,7 @@ Wersja bez po prostu nie ma warstwy TCP
 ||||
 | IP | Internet Protocol | Protokół warstwy sieci (adresacja i routing) |
 ||||
+| APIPA | Automatic Private IP Addressing | Mechanizm do samoistnego przypisania sobie adresu IP  w sieci lokalnej, gdy nie ma dostępu do DHCP |
 | CIDR | Classles Inter-Domain Routing | Reprezentacja adresów IP i ich prefiksów sieciowych |
 | CDN | Content Distribution Networks | Utrzymuje proxy oraz serwery DNS |
 | RTT | Round Trip Time | Czas obiegu pakietu |
@@ -80,9 +82,11 @@ Wersja bez po prostu nie ma warstwy TCP
 | MSS | Maximum Segment Size | Maksymalny rozmiar segmentu TCP |
 | MTU | Maximum Transmission Unit | Maksymalny rozmiar pakietu na łączu |
 | TTL | Time To Live | Pozostała liczba przeskoków pakietu IP |
+| DT | Dont Fragment | Flaga pakietu, po jej ustawieniu pakiet nie będzie fragmentowany tylko zwróci ICMP _destination unreachable, can't fragment_ |
 | LSA | Link State Advertisement | Informacja wysyłana przy stanie łącza, zawiera źródło i numer sekwencyjny |
 | AS | Autonomic System | AS to zbiór rouerów pod pewną administracją, stosujący jednolitą politykę routingu |
 | BGP | Border Gateway Protocol | Algorytm routingu pomiędzy AS | 
+| OSPF | Open Shortest Path First | Dynamiczny protokół routingu typu "link-state", który jest używany do wymiany informacji o trasach w sieciach IP |
 | LPM | Longest Prefix Match | Metoda wybierania prefiksu (kolejnego skoku) do routowania pakietu |
 | TCAM | Ternary Content Addressable Memory | Pamięć trzymająca pary (prefix, maska) i zwracająca hardware'owo LPM |
 | CSMA/CD | Carrier Sense Multiple Access with Collision Detection | (Eth) Po wykryciu kolizji przestajemy nadawać |

@@ -3,7 +3,13 @@
   - [Schemat warstwowego modelu](#schemat-warstwowego-modelu)
   - [Warstwowy model z szyfrowaniem TCP](#warstwowy-model-z-szyfrowaniem-tcp)
   - [Konstrukcja wysyłanych danych](#konstrukcja-wysyłanych-danych)
-    - [Segment TCP](#segment-tcp)
+    - [IP](#ip)
+    - [IPv6](#ipv6)
+    - [UDP](#udp)
+    - [TCP](#tcp)
+    - [ICMP](#icmp)
+    - [Fragmentacja](#fragmentacja)
+    - [Ethernet](#ethernet)
   - [Filtry](#filtry)
   - [Stany TCP](#stany-tcp)
 - [Notatki - podsumowania](#notatki---podsumowania)
@@ -34,8 +40,28 @@ Wersja bez po prostu nie ma warstwy TCP
 
 
 ## Konstrukcja wysyłanych danych
-### Segment TCP
+### IP
+![alt text](image-6.png)
+
+### IPv6
+![alt text](image-9.png)
+
+### UDP
+![alt text](image-7.png)
+
+### TCP
 ![alt text](image-3.png)
+
+### ICMP
+![alt text](image-2.png)
+
+### Fragmentacja
+![alt text](image-8.png)
+
+### Ethernet
+![alt text](image-10.png)
+
+
 
 ## Filtry
 ![image](image-1.png)
@@ -64,7 +90,8 @@ Wersja bez po prostu nie ma warstwy TCP
 | SMTP | Simple Mail Transfer Protocol | Protokół do przekazywania poczty |
 | IMAP | Internet Message Access Protocol | Protokół umożliwiający dostęp do poczty |
 ||||
-| TLS | Transport Layer Security | Warstwa zapewniająca szyfrowanie oraz uwierzytelnianie danych |
+| SSL | Secure Sockets Layer | Protokół sieciowy, który zapewnia bezpieczne połączenia internetowe |
+| TLS | Transport Layer Security | Warstwa zapewniająca szyfrowanie oraz uwierzytelnianie danych, następca SSL |
 ||||
 | TCP | Transmission Control Protocol | Protokół transportowy zapewniający niezawodność |
 | UDP | User Datagram Protocol | Protokół bezpołączeniowe |
@@ -103,7 +130,7 @@ Wersja bez po prostu nie ma warstwy TCP
 | ECB | Electronic Codeblock | Każdy blok wiadomości szyfrowany niezależnie |
 | CBC | Cipher Block Chaining | Klucz inicjalizacyjny + kolejna wiadomość szyfrowana wynikiem poprzedniej |
 | CA | Certificate Authority | Urząd certyfikacji - wydający certyfikaty |
-| SSH | Secure SHell | Bezpieczna komunikacja terminalowa |
+| SSH | Secure SHell | Bezpieczny dostęp do powłoki na zdalnym komupterze |
 | VPN | Virtual Private Network | Logiczna sieć utworzona z wielu rozłącznych sieci |
 | RSA | Rivest-Shamir-Adleman | Algorytm asymetrycznego szyfrowania |
 | DoS | Denial of Service | Atak zmuszający serwer do nieobsługiwania klientów |

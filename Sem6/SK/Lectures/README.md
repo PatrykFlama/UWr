@@ -100,9 +100,10 @@ Wersja bez po prostu nie ma warstwy TCP
 ||||
 | IP | Internet Protocol | Protokół warstwy sieci (adresacja i routing) |
 ||||
+| TDM | Time Division Multiplexing | Metoda multiplesacji, gdzie dzielimy łącze na kawałki czasu |
+| FDM | Frequency Division Multiplexing | Metoda multipleksacji, gdzie dzielimy częstotliwość |
 | APIPA | Automatic Private IP Addressing | Mechanizm do samoistnego przypisania sobie adresu IP  w sieci lokalnej, gdy nie ma dostępu do DHCP |
 | CIDR | Classles Inter-Domain Routing | Reprezentacja adresów IP i ich prefiksów sieciowych |
-| CDN | Content Distribution Networks | Utrzymuje proxy oraz serwery DNS |
 | RTT | Round Trip Time | Czas obiegu pakietu |
 | RTO | Retransmission TimeOut | Czas oczekiwania na potwierdzenie, po którym następuje retransmisja  |
 | BDP | Bandwith-Delay Product | Przepustowość * opóźnienie - ile danych może być "w locie" |
@@ -112,12 +113,14 @@ Wersja bez po prostu nie ma warstwy TCP
 | DT | Dont Fragment | Flaga pakietu, po jej ustawieniu pakiet nie będzie fragmentowany tylko zwróci ICMP _destination unreachable, can't fragment_ |
 | LSA | Link State Advertisement | Informacja wysyłana przy stanie łącza, zawiera źródło i numer sekwencyjny |
 | AS | Autonomic System | AS to zbiór rouerów pod pewną administracją, stosujący jednolitą politykę routingu |
+| CDN | Content Distribution Networks | Jak AS, ale celem jest dostarczanie treści jak najbliżej użytkowników końcowych (utrzymuje proxy oraz serwery DNS) |
+| IXP | Internet Exchange Point | Punkt wymiany ruchu, łączy ze sobą wiele routerów brzegowych, często w relacji peering |
 | BGP | Border Gateway Protocol | Algorytm routingu pomiędzy AS | 
 | OSPF | Open Shortest Path First | Dynamiczny protokół routingu typu "link-state", który jest używany do wymiany informacji o trasach w sieciach IP |
 | LPM | Longest Prefix Match | Metoda wybierania prefiksu (kolejnego skoku) do routowania pakietu |
 | TCAM | Ternary Content Addressable Memory | Pamięć trzymająca pary (prefix, maska) i zwracająca hardware'owo LPM |
 | CSMA/CD | Carrier Sense Multiple Access with Collision Detection | (Eth) Po wykryciu kolizji przestajemy nadawać |
-| CSMA/CS | Carrier Sense Multiple Access with Collision Avoidance | (Wifi) Brak wykrywania kolizji, próba jej uniknięcia |
+| CSMA/CA | Carrier Sense Multiple Access with Collision Avoidance | (Wifi) Brak wykrywania kolizji, próba jej uniknięcia |
 | VLAN  | Virtual Local Area Network | Logiczny odpowiednik fizycznego podziału na sieci lokalne |
 | MAC | Message Authentication Code | Zapewnia integralnośc i uwierzytelnienie wiadomości |
 | HMAC | Hash-based MAC | MAC oparty o funkcję skrótu i tajny klucz |
@@ -126,6 +129,7 @@ Wersja bez po prostu nie ma warstwy TCP
 | TLD | Top Level Domains | Nazwy domen o wysokości 1 od korzenia (.com .pl) |
 | CNAME | Canonical Name | Typ rekordu DNS, zawiara alias oraz główną nazwę domeny |
 | MX | Mail Exchanger | Typ rekordu DNS, odpowiada za adres serwera pocztowego |
+| PTR | Pointer Record | W systemie DNS służy do odwrotnego tłumaczenia adresu IP na nazwę domeny |
 | CRC | Cyclic Redundancy Check | Kody detekcyjne opartne na dzieleniu wielomianów |
 | ECB | Electronic Codeblock | Każdy blok wiadomości szyfrowany niezależnie |
 | CBC | Cipher Block Chaining | Klucz inicjalizacyjny + kolejna wiadomość szyfrowana wynikiem poprzedniej |
@@ -133,6 +137,7 @@ Wersja bez po prostu nie ma warstwy TCP
 | SSH | Secure SHell | Bezpieczny dostęp do powłoki na zdalnym komupterze |
 | VPN | Virtual Private Network | Logiczna sieć utworzona z wielu rozłącznych sieci |
 | RSA | Rivest-Shamir-Adleman | Algorytm asymetrycznego szyfrowania |
+| AES | Advanced Encryption Standard | Symetryczny szyfr blokowy |
 | DoS | Denial of Service | Atak zmuszający serwer do nieobsługiwania klientów |
 | DDoS | Distributed DoS | Atak DoS przeprowadzony z wielu komputerów |
 | MIM | Man-In-the-Middle | Typ ataku |

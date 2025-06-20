@@ -14,11 +14,17 @@
     - [2.1 Hierarchia modeli](#21-hierarchia-modeli)
     - [2.2 Strategie mapowania dziedziczenia na tabele](#22-strategie-mapowania-dziedziczenia-na-tabele)
     - [2.3 Kluczowe pojęcia](#23-kluczowe-pojęcia)
+      - [Przykład diagramu klas (Mermaid):](#przykład-diagramu-klas-mermaid)
   - [3. Diagramy Obiektów (Object Diagram)](#3-diagramy-obiektów-object-diagram)
+      - [Przykład (Mermaid):](#przykład-mermaid)
   - [4. Diagramy Stanów (State Diagram)](#4-diagramy-stanów-state-diagram)
+      - [Przykład (Mermaid):](#przykład-mermaid-1)
   - [5. Diagramy Czynności (Activity Diagram)](#5-diagramy-czynności-activity-diagram)
+      - [Przykład (Mermaid):](#przykład-mermaid-2)
   - [6. Diagramy Sekwencji (Sequence Diagram)](#6-diagramy-sekwencji-sequence-diagram)
+      - [Przykład (Mermaid):](#przykład-mermaid-3)
   - [7. Diagramy Komponentów (Component Diagram)](#7-diagramy-komponentów-component-diagram)
+      - [Przykład (Mermaid):](#przykład-mermaid-4)
   - [8. Diagrams-as-Code](#8-diagrams-as-code)
 - [Wykład 3 - SOLID GRASP](#wykład-3---solid-grasp)
   - [1. Responsibility-Driven Development (RDD)](#1-responsibility-driven-development-rdd)
@@ -40,6 +46,73 @@
     - [2.8 Builder](#28-builder)
 - [Wykład 5: Wzorce Strukturalne](#wykład-5-wzorce-strukturalne)
   - [1. Fasada (Facade)](#1-fasada-facade)
+  - [2. Interfejs Tylko-do-Odczytu (Read-only Interface)](#2-interfejs-tylko-do-odczytu-read-only-interface)
+  - [3. Pyłek (Flyweight)](#3-pyłek-flyweight)
+  - [4. Dekorator (Decorator)](#4-dekorator-decorator)
+  - [5. Pełnomocnik (Proxy)](#5-pełnomocnik-proxy)
+  - [6. Adapter](#6-adapter)
+  - [7. Most (Bridge)](#7-most-bridge)
+- [Notatka - Wzorce czynnościowe (Wykład 6)](#notatka---wzorce-czynnościowe-wykład-6)
+  - [📌 1. Null Object](#-1-null-object)
+  - [🔄 2. Iterator](#-2-iterator)
+  - [🌳 3. Composite](#-3-composite)
+  - [🧩 4. Interpreter (Little Language)](#-4-interpreter-little-language)
+  - [👣 5. Visitor](#-5-visitor)
+    - [🔧 Implementacje:](#-implementacje)
+    - [🧪 Przykład z .NET:](#-przykład-z-net)
+  - [⚙️ Double Dispatch](#️-double-dispatch)
+    - [Kluczowe wnioski](#kluczowe-wnioski)
+- [Notatka – Wzorce czynnościowe 2 (Wykład 7)](#notatka--wzorce-czynnościowe-2-wykład-7)
+  - [🤝 1. Mediator](#-1-mediator)
+  - [🔍 2. Observer](#-2-observer)
+  - [📡 3. Event Aggregator](#-3-event-aggregator)
+  - [⏪ 4. Memento](#-4-memento)
+    - [🔄 Rozszerzenie: Undo/Redo](#-rozszerzenie-undoredo)
+  - [Kluczowe wnioski](#kluczowe-wnioski-1)
+- [Notatka - Wzorce czynnościowe 3 (Wykład 8)](#notatka---wzorce-czynnościowe-3-wykład-8)
+  - [⛓️ 1. Chain of Responsibility](#️-1-chain-of-responsibility)
+  - [📜 2. Command](#-2-command)
+  - [📐 3. Template Method](#-3-template-method)
+    - [3.2 Operacje](#32-operacje)
+  - [Kluczowe wnioski](#kluczowe-wnioski-2)
+- [Notatka - Inversion of Control / Dependency Injection (Wykład 10)](#notatka---inversion-of-control--dependency-injection-wykład-10)
+  - [🔄 1. IoC vs DI](#-1-ioc-vs-di)
+  - [⚖️ 2. Twarde vs miękkie zależności](#️-2-twarde-vs-miękkie-zależności)
+  - [🧩 3. Kluczowe techniki DI (na przykładzie Unity)](#-3-kluczowe-techniki-di-na-przykładzie-unity)
+    - [3.1 Składanie obiektów](#31-składanie-obiektów)
+    - [3.2 Zarządzanie cyklem życia](#32-zarządzanie-cyklem-życia)
+    - [3.3 Konfiguracja](#33-konfiguracja)
+    - [3.4 Przechwytywanie (AOP)](#34-przechwytywanie-aop)
+- [Notatka - Repository i Unit of Work (Wykład 11)](#notatka---repository-i-unit-of-work-wykład-11)
+  - [🗄️ 1. Repository Pattern](#️-1-repository-pattern)
+  - [🔗 2. Unit of Work (UoW)](#-2-unit-of-work-uow)
+  - [🧩 3. Kluczowe problemy i rozwiązania](#-3-kluczowe-problemy-i-rozwiązania)
+    - [3.1 Abstrakcja modeli](#31-abstrakcja-modeli)
+    - [3.2 Architektura projektu](#32-architektura-projektu)
+    - [3.3 Local Factory](#33-local-factory)
+      - [4.1 Konfiguracja w Composition Root](#41-konfiguracja-w-composition-root)
+      - [4.2 Przykład użycia w kliencie](#42-przykład-użycia-w-kliencie)
+      - [4.3 Implementacja dla Linq2SQL](#43-implementacja-dla-linq2sql)
+  - [⚠️ 5. Ostrzeżenia](#️-5-ostrzeżenia)
+    - [Generic vs Concrete Repository](#generic-vs-concrete-repository)
+    - [Uwaga na IQueryable](#uwaga-na-iqueryable)
+  - [Kluczowe wnioski](#kluczowe-wnioski-3)
+- [Notatka - Wzorce architektury aplikacji (Wykład 12)](#notatka---wzorce-architektury-aplikacji-wykład-12)
+  - [🏗️ 1. Architektura aplikacji](#️-1-architektura-aplikacji)
+    - [1.1 Stos aplikacyjny](#11-stos-aplikacyjny)
+    - [1.2 Typy architektur](#12-typy-architektur)
+    - [1.3 Kryteria oceny](#13-kryteria-oceny)
+  - [🖥️ 2. Wzorce warstwy UI](#️-2-wzorce-warstwy-ui)
+    - [2.1 Model-View-Controller (MVC)](#21-model-view-controller-mvc)
+    - [2.2 Model-View-Presenter (MVP)](#22-model-view-presenter-mvp)
+    - [2.3 Model-View-ViewModel (MVVM)](#23-model-view-viewmodel-mvvm)
+  - [🔷 3. Architektura Heksagonalna](#-3-architektura-heksagonalna)
+    - [3.1 Porty i adaptery](#31-porty-i-adaptery)
+    - [3.2 Zasady](#32-zasady)
+  - [🛠️ 4. Praktyczne zastosowania](#️-4-praktyczne-zastosowania)
+    - [4.1 MVP w aplikacji desktopowej](#41-mvp-w-aplikacji-desktopowej)
+    - [4.2 Architektura heksagonalna w web](#42-architektura-heksagonalna-w-web)
+  - [Kluczowe wnioski](#kluczowe-wnioski-4)
 
 # Wykład 1 - Unified Process
 <!-- generated by aiaiai -->
@@ -110,21 +183,24 @@ Feature: Zarządzanie kontrahentami
 
 
 
-
 # Wykład 2 - UML
+
 <!-- again - aiaiai -->
+
 ## 1. Wprowadzenie do UML
+
 - **Rodzaje diagramów**:  
   - **Strukturalne** (np. diagram klas, komponentów) – dokumentują statyczne elementy systemu.  
   - **Behawioralne** (np. diagram sekwencji, stanów) – dokumentują dynamikę systemu.  
 - **Narzędzia**:  
-  - draw.io, yuml.me (lekkie), Enterprise Architect, Visual Paradigm (zaawansowane).  
+  - draw.io, yuml.me (lekkie), Enterprise Architect, Visual Paradigm (zaawansowane).
 
 ---
 
 ## 2. Diagramy Klas (Class Diagram)
 
 ### 2.1 Hierarchia modeli
+
 | Typ modelu      | Opis                                                        | Przykłady elementów                                 |
 |-----------------|-------------------------------------------------------------|-----------------------------------------------------|
 | **Pojęciowy**   | Reprezentuje pojęcia i relacje w dziedzinie.                | Pojęcia, asocjacje (bez metod).                     |
@@ -132,6 +208,7 @@ Feature: Zarządzanie kontrahentami
 | **Relacyjny**   | Mapowanie klas na tabele w bazie danych.                    | Tabele, klucze obce, strategie mapowania dziedziczenia. |
 
 ### 2.2 Strategie mapowania dziedziczenia na tabele
+
 | Strategia               | Opis                                                                 | Przykład                                         |
 |-------------------------|----------------------------------------------------------------------|--------------------------------------------------|
 | **Table per concrete**  | Każda klasa potomna ma własną tabelę.                               | `Footballer`, `Cricketer` – osobne tabele.       |
@@ -139,44 +216,70 @@ Feature: Zarządzanie kontrahentami
 | **Table per type**      | Tabela dla klasy bazowej + tabele dla klas potomnych z relacjami.   | Tabela `Players` + `Footballers`, `Cricketers`.  |
 
 ### 2.3 Kluczowe pojęcia
+
 - **Agregacja vs kompozycja**:  
   - **Agregacja** (pusta kreska): Część może istnieć niezależnie od całości.  
-  - **Kompozycja** (wypełniony romb): Część jest ściśle powiązana z całością (np. cykl życia).  
-- **Liczebność**: `1`, `*`, `0..1`, `1..*`.  
-- **Klasa asocjacyjna**: Używana do modelowania relacji wiele-wiele z dodatkowymi atrybutami.  
+  - **Kompozycja** (wypełniony romb): Część jest ściśle powiązana z całością (np. cykl życia).
+- **Liczebność**: `1`, `*`, `0..1`, `1..*`.
+- **Klasa asocjacyjna**: Używana do modelowania relacji wiele-wiele z dodatkowymi atrybutami.
+
+#### Przykład diagramu klas (Mermaid):
+
+```mermaid
+classDiagram
+  class Osoba {
+    +String imię
+    +String nazwisko
+  }
+  class Samochód {
+    +String model
+  }
+  Osoba "1" -- "0..*" Samochód : posiada
+```
 
 ---
 
 ## 3. Diagramy Obiektów (Object Diagram)
-- **Cel**: Migawka stanu systemu w konkretnym momencie.  
-- **Elementy**: Instancje klas (obiekty) z wartościami atrybutów i powiązaniami.  
-- **Przykład**:
-  ```plaintext
-  obiekt1: Osoba
+
+- **Cel**: Migawka stanu systemu w konkretnym momencie.
+- **Elementy**: Instancje klas (obiekty) z wartościami atrybutów i powiązaniami.
+
+#### Przykład (Mermaid):
+
+```mermaid
+classDiagram
+  class Osoba {
     imię = "Jan"
     nazwisko = "Kowalski"
-  obiekt2: Samochód
+  }
+  class Samochód {
     model = "Tesla"
-  obiekt1 -- obiekt2 : posiada
-  ```
+  }
+  Osoba "1" -- "1" Samochód : posiada
+```
 
 ---
 
 ## 4. Diagramy Stanów (State Diagram)
+
 - **Cel**: Modelowanie maszyn stanowych.
 - **Elementy**:
   - **Stany**: Bloczki (np. Oczekiwanie, Przetwarzanie).
   - **Przejścia**: Strzałki z warunkami/akcjami (np. `[zatwierdzone] -> Zakończ`).
-- **Przykład**:
-  ```plaintext
-  [Start] --> Oczekiwanie
-  Oczekiwanie --> Przetwarzanie : [zdarzenie]
-  Przetwarzanie --> Zakończ : [sukces]
-  ```
+
+#### Przykład (Mermaid):
+
+```mermaid
+stateDiagram-v2
+  [*] --> Oczekiwanie
+  Oczekiwanie --> Przetwarzanie : zdarzenie
+  Przetwarzanie --> Zakończ : sukces
+```
 
 ---
 
 ## 5. Diagramy Czynności (Activity Diagram)
+
 - **Cel**: Dokumentacja procesów biznesowych lub algorytmów.
 - **Elementy**:
   - **Czynności**: Długotrwałe kroki (np. Przetwórz zamówienie).
@@ -184,40 +287,62 @@ Feature: Zarządzanie kontrahentami
   - **Partycje**: Podział na role (np. Klient, System).
 - **Różnica od diagramu sekwencji**: Brak jednoznacznej osi czasu – skupia się na przepływie kroków.
 
+#### Przykład (Mermaid):
+
+```mermaid
+flowchart TD
+  Start([Start]) --> PrzetworzZamowienie[Przetwórz zamówienie]
+  PrzetworzZamowienie --> SprawdzDostepnosc[Sprawdź dostępność]
+  SprawdzDostepnosc --> Stop([Stop])
+```
+
 ---
 
 ## 6. Diagramy Sekwencji (Sequence Diagram)
+
 - **Cel**: Pokazanie interakcji między obiektami w czasie.
 - **Elementy**:
   - **Linie życia**: Reprezentują obiekty (np. `:Klient`, `:System`).
   - **Komunikaty**: Strzałki z opisem (np. `wyślijZamówienie()`).
   - **Ramki**: Obszary warunkowe (np. `loop`, `alt`).
-- **Przykład**:
-  ```plaintext
-  Klient -> System : wyślijZamówienie()
-  System -> BazaDanych : sprawdźDostępność()
-  BazaDanych --> System : dostępność=true
-  System --> Klient : potwierdźZamówienie()
-  ```
+
+#### Przykład (Mermaid):
+
+```mermaid
+sequenceDiagram
+  participant Klient
+  participant System
+  participant BazaDanych
+  Klient->>System: wyślijZamówienie()
+  System->>BazaDanych: sprawdźDostępność()
+  BazaDanych-->>System: dostępność=true
+  System-->>Klient: potwierdźZamówienie()
+```
 
 ---
 
 ## 7. Diagramy Komponentów (Component Diagram)
+
 - **Cel**: Modelowanie struktury systemu z komponentami i ich zależnościami.
 - **Elementy**:
   - **Komponenty**: Moduły (np. Serwer, Baza Danych).
   - **Porty**: Punkty interakcji (np. `dostawca_danych`, `odbiorca_danych`).
-- **Przykład**:
-  ```plaintext
-  [Komponent A] --(port1)--> [Komponent B]
-  ```
+
+#### Przykład (Mermaid):
+
+```mermaid
+flowchart LR
+  KomponentA[Komponent A] -- port1 --> KomponentB[Komponent B]
+```
 
 ---
 
 ## 8. Diagrams-as-Code
+
 - **Narzędzia**: PlantUML, Mermaid.js – generują diagramy z tekstu.
 - **Zalety**: Łatwa integracja z repozytoriami kodu.
 - **Przykład (Mermaid)**:
+
   ```mermaid
   classDiagram
     class Samochod
@@ -401,121 +526,759 @@ Przykład: Fluent API (np. StringBuilder)
 var builder = new HtmlBuilder();
 builder.AddTag("div").AddClass("container").SetContent("Hello");
 ```
-
 # Wykład 5: Wzorce Strukturalne
 
 ## 1. Fasada (Facade)
 - **Cel**: Uproszczony interfejs dla złożonego podsystemu  
 - **Zastosowanie**: Ukrywa złożoność systemu, udostępniając klientowi jeden uproszczony punkt dostępu  
 - **Przykład**:  
+    ```csharp
+    public class SmtpFacade {
+            public void Send(string From, string To, string Subject, 
+                                            string Body, Stream Attachment, string AttachmentMimeType) {
+                    // Kompleksowa logika wysyłki maila ukryta za fasadą
+            }
+    }
+    ```
+
+## 2. Interfejs Tylko-do-Odczytu (Read-only Interface)
+- **Cel**: Ograniczenie dostępu do modyfikacji stanu obiektu  
+- **Zastosowanie**: Bezpieczne udostępnianie obiektów wielu klientom  
+- **Implementacja**:  
+    ```
+    [ReadOnlyInterface] ---> [Pełny interfejs z get/set]
+                    ↑                      ↑
+    [Klient tylko do odczytu]  [Klient z uprawnieniami do zapisu]
+    ```
+- **Przykład**: `ReadOnlyCollection` w .NET (`AsReadOnly()`)
+
+## 3. Pyłek (Flyweight)
+- **Cel**: Efektywne zarządzanie wieloma drobnymi obiektami  
+- **Kluczowe koncepcje**:  
+    - Stan wewnętrzny (intrinsic): Współdzielony (np. kolor bierki)  
+    - Stan zewnętrzny (extrinsic): Unikalny (np. pozycja X/Y)  
+- **Przykład (Plansza do warcabów)**:  
+    ```csharp
+    public class Board {
+            private Dictionary<PieceColor, Piece> _pieces = new();
+            
+            public Piece GetPiece(int x, int y) {
+                    PieceColor key = (x + y) % 2 == 0 ? PieceColor.White : PieceColor.Black;
+                    if (!_pieces.ContainsKey(key)) 
+                            _pieces.Add(key, new Piece { Color = key });
+                    return _pieces[key];
+            }
+    }
+    ```
+
+## 4. Dekorator (Decorator)
+- **Cel**: Dynamiczne rozszerzanie funkcjonalności obiektów  
+- **Zastosowanie**: Alternatywa dla dziedziczenia, szczególnie w strumieniach danych  
+- **Przykład (Dodatki do napojów)**:  
+    ```csharp
+    public class SugarDecorator : IDrink {
+            private IDrink _drink;
+            public SugarDecorator(IDrink drink) => _drink = drink;
+            
+            public decimal Cost => _drink.Cost + 1;
+            public string Name => _drink.Name + " with sugar";
+    }
+    // Użycie:
+    IDrink tea = new SugarDecorator(new SugarDecorator(new Tea()));
+    ```
+
+## 5. Pełnomocnik (Proxy)
+- **Typy**:  
+    - Wirtualny: Tworzy obiekt na żądanie (`Lazy<T>`)  
+    - Ochronny: Kontrola dostępu  
+    - Zdalny: Reprezentacja obiektu w innej domenie  
+    - Logujący: Rejestracja dostępu  
+    - Circuit Breaker: Specjalny typ proxy do obsługi błędów:  
+        ```
+        [Zamknięty] → (błąd) → [Otwarty] → (timeout) → [Półotwarty]
+                ↑______________________(sukces)___________________↓
+        ```
+        Biblioteki: Polly (.NET), resilience4j (Java)
+
+## 6. Adapter
+- **Cel**: Uzgadnianie niezgodnych interfejsów  
+- **Struktura**:  
+    ```
+    [Klient] → [Target] ← (adaptuje) ← [Adapter] → [Adaptee]
+    ```
+- **Zastosowanie**: Integracja starszych systemów z nowymi komponentami
+
+## 7. Most (Bridge)
+- **Cel**: Oddzielenie abstrakcji od implementacji  
+- **Zastosowanie**: Niezależne rozwijanie hierarchii funkcjonalności  
+- **Przykład (Rejestr osób)**:  
+    ```csharp
+    public abstract class AbstractPersonRegistry {
+            public IMessenger messenger; // Implementacja wyniesiona
+            public abstract void LoadPersons(); // Abstrakcja
+            public void NotifyPersons() => /* ... używa messenger ... */
+    }
+    public interface IMessenger { void Notify(Person p); }
+    ```
+
+---
+
+**Literatura:**
+- Gamma i in. - Wzorce projektowe
+- Martin i Martin - Zasady, wzorce i praktyki zwinnego wytwarzania...
+- Freeman i in. - Head First Design Patterns
+- OODesign.com
+
+
+# Notatka - Wzorce czynnościowe (Wykład 6)
+
+## 📌 1. Null Object
+- **Cel**: Zastąpienie `null` bezpiecznym obiektem z pustą implementacją.
+- **Zasada**: Klient zawsze otrzymuje obiekt implementujący kontrakt (nawet "pusty").
+- **Praktyka**: Często używany z **Fabryką** – przy błędnych parametrach zwraca Null Object zamiast `null`.
+- **Zaleta**: Eliminuje konieczność sprawdzania `if (obiekt == null)`.
+
+---
+
+## 🔄 2. Iterator
+- **Cel**: Umożliwienie sekwencyjnego dostępu do elementów kolekcji **bez ujawniania jej struktury**.
+- **Elementy**:
+  - `Iterator`: Interfejs z metodami `getNext()`, `hasNext()`.
+  - `Aggregate`: Interfejs do tworzenia iteratora (`CreateIterator()`).
+- **Nowoczesne języki**: Wbudowany w Java (`Iterator<>`), C# (`IEnumerator<>`), obsługuje pętle `foreach`.
+
+---
+
+## 🌳 3. Composite
+- **Cel**: Tworzenie hierarchii drzewiastych (obiekty + ich podskładniki).
+- **Struktura**:
+  - **Component** (abstrakcyjna klasa bazowa).
+  - **Leaf**: Element bez dzieci.
+  - **Composite**: Element z dziećmi (przechowuje listę `Component`).
+- **Uwaga**: Stanowi bazę dla **Interpretera** i **Visitora**.
+
+---
+
+## 🧩 4. Interpreter (Little Language)
+- **Cel**: Interpretacja gramatyki języka (np. wyrażeń matematycznych).
+- **Elementy**:
+  - `AbstractExpression`: Metoda `Interpret(Context)`.
+  - `TerminalExpression`: Liść drzewa (np. stała, zmienna).
+  - `NonTerminalExpression`: Węzeł (np. operacja binarna).
+- **Kontekst**: Przechowuje stan (np. wartości zmiennych).
+- **Przykład**: Drzewo wyrażenia `x + y` interpretowane z kontekstem `{x:1, y:2}`.
+
+---
+
+## 👣 5. Visitor
+- **Cel**: Dodawanie **nowych operacji** do istniejącej hierarchii bez modyfikacji klas.
+- **Problem rozwiązywany**: Unikanie dodawania wielu metod (np. `Print()`, `Evaluate()`) do każdej klasy w hierarchii.
+
+### 🔧 Implementacje:
+1. **Visitor z metodą `Accept`**:
+   - Odpowiedzialność za **przejście po strukturze** leży w klasach `Element`.
+   - Każdy element implementuje `Accept(Visitor v)`, który wywołuje `v.VisitX(this)`.
+   - *Zaleta*: Visitor nie zna struktury wewnętrznej kompozytu.
+
+2. **Visitor bez `Accept`**:
+   - Odpowiedzialność za przejście po strukturze leży w **Visitorze**.
+   - Visitor sam decyduje, jak przechodzić po obiektach (np. rekurencyjnie).
+   - *Wada*: Ścisłe powiązanie ze strukturą kompozytu.
+
+### 🧪 Przykład z .NET:
+- `ExpressionVisitor`: Odwiedza drzewa wyrażeń LINQ.
+```csharp
+public class PrintVisitor : ExpressionVisitor {
+    protected override Expression VisitBinary(BinaryExpression node) {
+        Console.WriteLine($"{node.Left} {node.NodeType} {node.Right}");
+        return base.VisitBinary(node);
+    }
+}
+```
+
+
+## ⚙️ Double Dispatch
+
+**Mechanism:**  
+Wybór metody zależy od dwóch typów (obiektu + visitora).
+
+**Realizacja:**  
+Poprzez `Accept` w obiekcie i `VisitX` w visitorze.
+
+---
+
+### Kluczowe wnioski
+
+- Null Object zapobiega `NullReferenceException`.
+- Iterator/Composite są podstawą struktur danych.
+- Visitor to potężne narzędzie rozszerzania kodu (używane m.in. w LINQ).
+
+
+# Notatka – Wzorce czynnościowe 2 (Wykład 7)
+
+## 🤝 1. Mediator
+
+- **Cel:** Centralizacja komunikacji między **ściśle powiązanymi obiektami**.
+- **Zasada:** Obiekty komunikują się tylko przez mediatora (nie znają się bezpośrednio).
+- **Elementy:**
+  - `Mediator`: Koordynuje komunikację, zna wszystkich uczestników.
+  - `AbstractColleague`: Klasa bazowa dla obiektów współpracujących.
+- **Różnica od Observera:** Ograniczona grupa obiektów, mediator ma jawne referencje do kolaborantów.
+- **Przykład:** Okno GUI jako mediator między kontrolkami.
+
+---
+
+## 🔍 2. Observer
+
+- **Cel:** Powiadamianie **dowolnej liczby obiektów** o zmianie stanu obserwowanego obiektu.
+- **Elementy:**
+  - `IObservable`: Interfejs do rejestracji/odrejestrowania obserwatorów.
+  - `IObserver`: Interfejs z metodą `Notify()`.
+- **Implementacja:** Lista obserwatorów w obiekcie obserwowanym.
+- **Nowoczesne języki:** Wbudowane mechanizmy (np. zdarzenia w C#).
+
+---
+
+## 📡 3. Event Aggregator
+
+- **Cel:** Uogólnienie Observera dla **różnych typów powiadomień**.
+- **Zaleta:** Redukuje zależności między modułami (nadawcy i odbiorcy znają tylko agregator).
+- **Elementy:**
+  - `IEventAggregator`: Metody `AddSubscriber()`, `RemoveSubscriber()`, `Publish()`.
+  - `ISubscriber<T>`: Interfejs z metodą `Handle(T notification)`.
+- **Implementacja:** Słownik mapujący typy zdarzeń na listy subskrybentów.
+
+---
+
+## ⏪ 4. Memento
+
+- **Cel:** Zapamiętywanie i przywracanie **stanu obiektu** (np. dla funkcji Undo/Redo).
+- **Elementy:**
+  - `Originator`: Tworzy/przywraca memento (`CreateMemento()`, `RestoreMemento()`).
+  - `Memento`: Przechowuje stan (`GetState()`, `SetState()`).
+  - `Caretaker`: Zarządza historią stanów.
+
+### 🔄 Rozszerzenie: Undo/Redo
+
+- **Mechanizm:**
+
   ```csharp
-  public class SmtpFacade {
-      public void Send(string From, string To, string Subject, 
-                      string Body, Stream Attachment, string AttachmentMimeType) {
-          // Kompleksowa logika wysyłki maila ukryta za fasadą
+  Stack<Memento> undoStates = new Stack<Memento>();
+  Stack<Memento> redoStates = new Stack<Memento>();
+  ```
+
+- **Zasady:**
+  - Nowa zmiana: `undoStates.Push(memento)`, `redoStates.Clear()`.
+  - `Undo()`: Przenosi stan z `undoStates` do `redoStates`.
+  - `Redo()`: Przenosi stan z `redoStates` do `undoStates`.
+  - Nowa zmiana po `Undo()` usuwa możliwość `Redo()`.
+
+---
+
+## Kluczowe wnioski
+
+- **Mediator** dla małych, powiązanych grup obiektów.
+- **Observer/Event Aggregator** do luźnych powiązań między modułami.
+- **Memento** to podstawa mechanizmów historii/cofania.
+
+
+
+
+# Notatka - Wzorce czynnościowe 3 (Wykład 8)
+
+## ⛓️ 1. Chain of Responsibility
+- **Cel**: Przekazywanie żądania przez **łańcuch potencjalnych obsługiwaczy**.
+- **Zasada**: 
+  - Każdy handler decyduje, czy przetworzyć żądanie czy przekazać dalej.
+  - Dynamiczne łączenie handlerów (`AttachHandler()`).
+- **Elementy**:
+  - `AbstractHandler`: Metody `ProcessRequest()` i `DispatchRequest()`.
+  - `ConcreteHandler`: Implementuje logikę przetwarzania (np. `LessThanZeroHandler`).
+- **Zastosowanie**: Skomplikowana logika biznesowa z wieloma warunkami.
+
+---
+
+## 📜 2. Command
+- **Cel**: **Enkapsulacja żądań** jako obiektów o jednolitym interfejsie.
+- **Zalety**:
+  - Oddziela nadawcę (`Invoker`) od odbiorcy (`Receiver`).
+  - Umożliwia operacje dodatkowe (np. `Undo`).
+- **Struktura**:
+  - `Command`: Interfejs z `Execute()`.
+  - `ConcreteCommand`: Deleguje wykonanie do `Receiver`.
+- **Uwaga**: Unikać implementowania logiki bezpośrednio w komendzie!
+
+---
+
+## 📐 3. Template Method
+- **Cel**: Definiowanie **szkieletu algorytmu** w klasie bazowej.
+- **Zasada**: 
+  - Metody abstrakcyjne/przesłaniane implementowane w podklasach.
+  - Sekwencja kroków ustalona w `TemplateMethod()`.
+- **Schemat**:
+  ```csharp
+  abstract class AbstractClass {
+      void TemplateMethod() {
+          Step1();
+          Step2(); // Abstrakcyjny
+      }
+      abstract void Step2();
+  }
+Różnica od Strategy: Dziedziczenie vs. kompozycja.
+
+## 🎯 4. Strategy
+- **Cel**: Enkapsulacja rodziny algorytmów o wspólnym interfejsie.
+- **Zasada**:
+  - Wymienialne strategie w runtime.
+  - Delegacja logiki do zewnętrznego obiektu.
+- **Elementy**:
+  - `Context`: Używa strategii (`strategy.AbstractMethod()`).
+  - `IStrategy`: Interfejs strategii.
+- **Refaktoryzacja z Template Method**: Zamiana dziedziczenia na kompozycję.
+
+---
+
+## 🔄 5. State
+- **Cel**: Zmiana zachowania obiektu w zależności od stanu.
+- **Zaleta**: Eliminacja wielkich instrukcji `if`/`switch`.
+- **Implementacja**:
+  - Stan jako zmienna (proste przypadki).
+  - Wzorzec State (złożone maszyny stanowe):
+    - `State`: Interfejs z metodami dla akcji.
+    - `ConcreteState`: Implementuje logikę dla danego stanu.
+    - `Context`: Przechowuje bieżący stan, deleguje akcje.
+- **Przykład**: Sterowanie taksówką (`TaxiFreeState`, `OccupiedTaxiState`).
+
+---
+
+## 📌 Kluczowe wnioski
+
+- **Chain of Responsibility** do sekwencyjnego przetwarzania.
+- **Command** idealny dla operacji undo/redo.
+- **Template Method/Strategy** – wybór zależy od potrzeb (dziedziczenie vs. kompozycja).
+- **State** upraszcza zarządzanie złożonymi zachowaniami.
+
+
+
+# Notatka - Wzorce architektury aplikacji (Wykład 9)
+
+## 🛠️ 1. Automated Code Generation
+
+- **Cel**: Automatyczne generowanie kodu z deklaratywnych szablonów.
+- **Narzędzia**: Text Template Transformation Toolkit (T4).
+- **Strategie**:
+  - **Jednostopniowa**: Szablon → wynikowy dokument (np. `.cs`).
+  - **Dwustopniowa**: Szablon → kod pośredni (np. klasa C#) → wynik po wykonaniu.
+- **Elementy szablonu**:
+  - **Deklaratywne**: Kopiowane bezpośrednio do wyniku.
+  - **Imperatywne**: Bloki `<# ... #>` z kodem (np. C#) przetwarzanym w czasie generacji.
+- **Zastosowania**: Generowanie klas z XML/DB, tworzenie zapytań SQL z Excel.
+
+---
+
+## 🗄️ 2. Object-Relational Mapping (ORM)
+
+### 2.1 Strategie mapowania
+
+- **Database First**: Schemat DB → generowanie klas.
+- **Model First**: Abstrakcyjny model → generowanie DB i klas.
+- **Code First**: Klasy → generowanie/migracje DB (np. Entity Framework Migrations).
+
+### 2.2 Kluczowe techniki
+
+- **Metadata Mapping**:  
+  Atrybuty w klasach lub konfiguracja zewnętrzna (XML/API).
+- **Navigation Properties**:  
+  Mapowanie kluczy obcych na referencje między obiektami.
+- **Lazy Loading**:
+  - **Lazy Initialization**: Ładowanie przy pierwszym dostępie.
+  - **Virtual Proxy**: Automatyczne proxy ORM.
+  - **Value Holder**: Delegacja do zewnętrznego obiektu.
+- **Soft Delete**:  
+  Oznaczanie rekordów jako usunięte (np. kolumna `IsDeleted`) zamiast fizycznego usuwania.
+
+### 2.3 Mapowanie relacji
+
+| Typ relacji      | Strategie                                   |
+|------------------|---------------------------------------------|
+| **One-to-One**   | Split entity lub dwie klasy z referencjami  |
+| **Many-to-Many** | Automatyczna tabela asocjacyjna             |
+
+### 2.4 Dziedziczenie (strategie)
+
+| Strategia               | Opis                                            | Plusy/Minusy                    |
+|-------------------------|-------------------------------------------------|---------------------------------|
+| **Concrete Table (TPC)**| Każda klasa → osobna tabela                     | Proste, ale problemy z JOIN     |
+| **Single Table (TPH)**  | Cała hierarchia → jedna tabela z dyskryminatorem| Efektywne zapytania, NULL-e     |
+| **Class Table (TPT)**   | Każda klasa → tabela + JOIN do bazowej          | Znormalizowane, wolne zapytania |
+
+### 2.5 Dodatkowe mechanizmy
+
+- **Cache**:
+  - **1st Level**: Cache sesji (Identity Map).
+  - **2nd Level**: Cache współdzielony (konfigurowalny).
+- **Query Language**: LINQ (C#), HQL (Java), Criteria API.
+- **Global Filter**: Automatyczne filtry (np. dla Soft Delete).
+
+---
+
+## 🧩 3. Przykład: Entity Framework
+
+### 3.1 Konfiguracja mapowania
+
+```csharp
+// TPH (Table per Hierarchy)
+modelBuilder.Entity<TPHBase>()
+    .ToTable("TPHBase")
+    .Map<TPHChild1>(m => m.Requires("Dyskryminator").HasValue("c1"))
+    .Map<TPHChild2>(m => m.Requires("Dyskryminator").HasValue("c2"));
+
+// Many-to-Many
+modelBuilder.Entity<ManyToManyLeft>()
+    .HasMany(r => r.Rights)
+    .WithMany(l => l.Lefts)
+    .Map(cs => {
+        cs.ToTable("ManyToManyLeftRight");
+    });
+```
+
+### 3.2 Operacje
+
+```csharp
+// Soft Delete (przykład)
+public override int SaveChanges() {
+    foreach (var entry in ChangeTracker.Entries()) {
+        if (entry.State == EntityState.Deleted && entry.Entity is ISoftDelete) {
+            entry.State = EntityState.Modified;
+            entry.Entity.IsDeleted = true;
+        }
+    }
+    return base.SaveChanges();
+}
+```
+
+---
+
+## Kluczowe wnioski
+
+- Generatory kodu (T4) automatyzują tworzenie powtarzalnych fragmentów.
+- ORM rozwiązuje problem "object-relational impedance mismatch".
+- Entity Framework oferuje elastyczne mapowania (TPH/TPT/Code First).
+
+
+# Notatka - Inversion of Control / Dependency Injection (Wykład 10)
+
+## 🔄 1. IoC vs DI
+
+- **Inversion of Control (IoC)**: Zasada odwrócenia kontroli (luźne powiązania, późne wiązanie).
+- **Dependency Injection (DI)**: Implementacja IoC w językach OOP.
+- **Zalety**:
+  - Rozszerzalność (OCP)
+  - Testowalność (mocki/stuby)
+  - Konserwowalność
+  - Równoległy rozwój modułów
+
+---
+
+## ⚖️ 2. Twarde vs miękkie zależności
+
+| Typ                | Charakterystyka                                 |
+|--------------------|-------------------------------------------------|
+| **Twarde**         | Stabilne, znane z góry (np. biblioteki)         |
+| **Miękkie**        | Zmienne, wymagające "spoiny" (interfejs)        |
+| **Spoina (seam)**  | Miejsce zastąpienia zależności interfejsem      |
+
+> **Uwaga**: DI redukuje zależności miękkie, ale sama zależność od kontenera DI jest zwykle "twarda".
+
+---
+
+## 🧩 3. Kluczowe techniki DI (na przykładzie Unity)
+
+### 3.1 Składanie obiektów
+
+- **Rejestracja typów**:
+  ```csharp
+  container.RegisterType<IFoo, Foo>();
+  ```
+
+- **Rozwiązywanie zależności**:
+  - Przez konstruktor (zalecane)
+  - Przez właściwości (`[Dependency]`)
+  - Przez metody (`[InjectionMethod]`)
+
+- **Zaawansowane**:
+  - Rejestracja instancji (`RegisterInstance`)
+  - Fabryki (`RegisterFactory`)
+
+### 3.2 Zarządzanie cyklem życia
+
+| Strategia            | Opis                                 |
+|----------------------|--------------------------------------|
+| Transient            | Nowa instancja za każdym razem       |
+| ContainerControlled  | Singleton (jedna instancja)          |
+| PerThread            | Instancja per wątek                  |
+| PerHttpContext       | Instancja per żądanie HTTP           |
+
+### 3.3 Konfiguracja
+
+- Deklaratywna (XML): Późne wiązanie, modyfikacja bez rekompilacji.
+- Imperatywna (kod): W Composition Root.
+- Automatyczna: Skanowanie assembly.
+
+### 3.4 Przechwytywanie (AOP)
+
+Interceptory do cross-cutting concerns:
+
+# Notatka - Repository i Unit of Work (Wykład 11)
+
+## 🗄️ 1. Repository Pattern
+
+- **Cel**: Abstrakcja dostępu do danych dla **pojedynczej kategorii danych** (np. tabeli).
+- **Zalety**:
+  - Izolacja logiki biznesowej od technologii dostępu do danych (ORM, ADO.NET, NoSQL).
+  - Łatwe testowanie z użyciem stubów/fake'ów.
+- **Typy implementacji**:
+  - **Generic Repository**: Jeden interfejs dla wszystkich encji (`IGenericRepository<T>`).
+
+    ```csharp
+    public interface IGenericRepository<T> {
+        T New();
+        void Insert(T item);
+        IQueryable<T> Query { get; }
+    }
+    ```
+
+  - **Concrete Repository**: Specyficzny interfejs per encja (np. `IUserRepository` z metodami typu `FindAllUsersForStartingLetter()`).
+
+---
+
+## 🔗 2. Unit of Work (UoW)
+
+- **Cel**: Koordynacja **wielu repozytoriów** i zarządzanie transakcjami.
+- **Struktura**:
+
+    ```csharp
+    public interface IUnitOfWork {
+        IGenericRepository<User> UserRepository { get; }
+        IGenericRepository<Account> AccountRepository { get; }
+        void SaveChanges();
+        void BeginTransaction();
+    }
+    ```
+
+- **Zalety**:
+  - Wspólny kontekst dla wszystkich repozytoriów.
+  - Zarządzanie transakcjami w jednym miejscu.
+
+---
+
+## 🧩 3. Kluczowe problemy i rozwiązania
+
+### 3.1 Abstrakcja modeli
+
+- **Problem**: Różne ORM-y wymagają różnych implementacji modeli (np. EF → virtual properties, Linq2SQL → wygenerowane klasy).
+- **Rozwiązanie**: Interfejsy modeli zamiast konkretnych klas.
+
+    ```csharp
+    public interface IUser {
+        int ID { get; set; }
+        string Name { get; set; }
+    }
+    ```
+
+### 3.2 Architektura projektu
+
+| Warstwa        | Zawartość                                         |
+| -------------- | ------------------------------------------------ |
+| Abstractions   | Interfejsy IUser, IGenericRepository, IUnitOfWork|
+| Client Code    | Logika biznesowa korzystająca z fabryk           |
+| Implementations| Konkretne repozytoria (EF/Linq2SQL)              |
+
+### 3.3 Local Factory
+
+- **Cel**: Dynamiczne tworzenie UoW bez zależności od konkretnej implementacji.
+
+    ```csharp
+    public class UnitOfWorkFactory {
+        private static Func<IUnitOfWork> _provider;
+        public static void SetProvider(Func<IUnitOfWork> provider) => _provider = provider;
+        public IUnitOfWork Create() => _provider();
+    }
+    ```
+
+#### 4.1 Konfiguracja w Composition Root
+
+```csharp
+void CompositionRoot() {
+    UnitOfWorkFactory.SetProvider(() => {
+        var context = new ParentChildDataContext(connectionString);
+        return new Linq2SqlUnitOfWork(context); // lub EF
+    });
+}
+```
+
+#### 4.2 Przykład użycia w kliencie
+
+```csharp
+var uow = new UnitOfWorkFactory().Create();
+var user = uow.UserRepository.Query.First(u => u.Name == "Admin");
+```
+
+#### 4.3 Implementacja dla Linq2SQL
+
+```csharp
+public class Linq2SqlUserRepository : IGenericRepository<IUser> {
+    private DataContext _context;
+    public IQueryable<IUser> Query => _context.Users.Cast<IUser>();
+    public void Insert(IUser item) => _context.Users.InsertOnSubmit((User)item);
+}
+```
+
+---
+
+## ⚠️ 5. Ostrzeżenia
+
+### Generic vs Concrete Repository
+
+- **Generic**: Mniej kodu, ale ryzyko niespójności w zapytaniach między różnymi ORM-ami.
+- **Concrete**: Więcej boilerplate, ale precyzyjne metody dostępu.
+
+### Uwaga na IQueryable
+
+- Zwracanie `IQueryable` z repozytorium może przenosić logikę biznesową do warstwy danych.
+
+---
+
+## Kluczowe wnioski
+
+- Repository + UoW = izolacja warstwy danych.
+- Interfejsy modeli umożliwiają wymianę ORM-ów.
+- Local Factory + Composition Root utrzymują czystą architekturę.
+
+
+# Notatka - Wzorce architektury aplikacji (Wykład 12)
+
+## 🏗️ 1. Architektura aplikacji
+
+### 1.1 Stos aplikacyjny
+
+- **Warstwy**: UI → Logika prezentacji → Logika biznesowa → Dostęp do danych
+- **Elementy kluczowe**: 
+  - Komponenty UI
+  - Fasada aplikacji
+  - Encje biznesowe
+  - Komponenty dostępu do danych
+
+### 1.2 Typy architektur
+
+| Typ               | Charakterystyka                                 |
+|-------------------|------------------------------------------------|
+| **Klient-Serwer** | Separacja klienta i serwera                    |
+| **Warstwowa**     | Podział na warstwy (prezentacja, biznes, dane) |
+| **MVC**           | Separacja Model-Widok-Kontroler                |
+| **SOA**           | Komunikacja przez usługi i kontrakty           |
+| **Heksagonalna**  | Porty i adaptery (izolacja rdzenia)            |
+
+### 1.3 Kryteria oceny
+
+- **Testowalność**: Łatwość tworzenia testów jednostkowych
+- **Utrzymywalność**: Możliwość modyfikacji bez efektów ubocznych
+- **Skalowalność**: Obsługa rosnącego obciążenia
+- **Bezpieczeństwo**: Ochrona danych i systemu
+
+---
+
+## 🖥️ 2. Wzorce warstwy UI
+
+### 2.1 Model-View-Controller (MVC)
+
+- **Dla**: Aplikacje webowe (ASP.NET MVC, Spring)
+- **Elementy**:
+  - **Model**: Dane + logika biznesowa
+  - **Widok**: Prezentacja danych (HTML/XML)
+  - **Kontroler**: Przyjmuje żądania, aktualizuje Model, wybiera Widok
+- **Cykl życia**:
+
+  ```mermaid
+  graph LR
+    U[Użytkownik] --> C[Kontroler]
+    C --> M[Model]
+    M --> V[Widok]
+    V --> U
+  ```
+
+### 2.2 Model-View-Presenter (MVP)
+
+- **Dla**: Aplikacje desktopowe (Windows Forms, WPF)
+- **Elementy**:
+  - **Model**: Dane
+  - **Widok**: UI + delegacja logiki do Presentera
+  - **Prezenter**: Logika prezentacji (mediator)
+- **Implementacja**:
+
+  ```csharp
+  // Widok implementuje interfejs
+  public interface IUserView {
+      UserPresenter Presenter { get; set; }
+  }
+
+  // Prezenter wstrzykuje się do Widoku
+  public class UserPresenter {
+      public UserPresenter(IUserView view) {
+          view.Presenter = this;
       }
   }
   ```
 
-2. Interfejs Tylko-do-Odczytu (Read-only Interface)
-Cel: Ograniczenie dostępu do modyfikacji stanu obiektu
+### 2.3 Model-View-ViewModel (MVVM)
 
-Zastosowanie: Bezpieczne udostępnianie obiektów wielu klientom
+- **Dla**: Technologie z data-bindingiem (WPF, Xamarin)
+- **Różnica od MVP**:
+  - Widok wiąże się deklaratywnie z ViewModel
+  - Brak imperatywnej logiki w Widoku
 
-Implementacja:
+---
 
-plaintext
-[ReadOnlyInterface] ---> [Pełny interfejs z get/set]
-        ↑                      ↑
-[Klient tylko do odczytu]  [Klient z uprawnieniami do zapisu]
-Przykład: ReadOnlyCollection w .NET (AsReadOnly())
+## 🔷 3. Architektura Heksagonalna
 
-3. Pyłek (Flyweight)
-Cel: Efektywne zarządzanie wieloma drobnymi obiektami
+### 3.1 Porty i adaptery
 
-Kluczowe koncepcje:
+| Typ portu  | Rola                       | Implementacja                  |
+|------------|----------------------------|-------------------------------|
+| Pierwotny  | Wejście (np. HTTP, CLI)    | Klasy (np. Command)           |
+| Wtórny     | Wyjście (np. DB, e-mail)   | Interfejsy (wstrzykiwane)     |
 
-Stan wewnętrzny (intrinsic): Współdzielony (np. kolor bierki)
+### 3.2 Zasady
 
-Stan zewnętrzny (extrinsic): Unikalny (np. pozycja X/Y)
+- **Rdzeń aplikacji**: Izolowany od zewnętrznych systemów
+- **Testowalność**: Mockowanie portów wtórnych
+- **Połączenie z DDD**: Heksagonalna + DDD = Architektura Czysta
 
-Przykład (Plansza do warcabów):
+---
 
-csharp
-public class Board {
-    private Dictionary<PieceColor, Piece> _pieces = new();
-    
-    public Piece GetPiece(int x, int y) {
-        PieceColor key = (x + y) % 2 == 0 ? PieceColor.White : PieceColor.Black;
-        if (!_pieces.ContainsKey(key)) 
-            _pieces.Add(key, new Piece { Color = key });
-        return _pieces[key];
-    }
-}
-4. Dekorator (Decorator)
-Cel: Dynamiczne rozszerzanie funkcjonalności obiektów
+## 🛠️ 4. Praktyczne zastosowania
 
-Zastosowanie: Alternatywa dla dziedziczenia, szczególnie w strumieniach danych
+### 4.1 MVP w aplikacji desktopowej
 
-Przykład (Dodatki do napojów):
+- **Refaktoryzacja**:
+  - Wydziel interfejsy Widoków
+  - Utwórz Prezentery
+  - Wiąż Widok ↔ Prezenter
+- **Testy**: Mockowane Widoki bez UI
 
-csharp
-public class SugarDecorator : IDrink {
-    private IDrink _drink;
-    public SugarDecorator(IDrink drink) => _drink = drink;
-    
-    public decimal Cost => _drink.Cost + 1;
-    public string Name => _drink.Name + " with sugar";
-}
-// Użycie:
-IDrink tea = new SugarDecorator(new SugarDecorator(new Tea()));
-5. Pełnomocnik (Proxy)
-Typy:
+### 4.2 Architektura heksagonalna w web
 
-Wirtualny: Tworzy obiekt na żądanie (Lazy<T>)
+- **Porty pierwotne**: Kontrolery ASP.NET
+- **Porty wtórne**: Repozytoria (np. Entity Framework)
+- **Korzyść**: Łatwa wymiana bazy danych bez zmiany rdzenia
 
-Ochronny: Kontrola dostępu
+---
 
-Zdalny: Reprezentacja obiektu w innej domenie
+## Kluczowe wnioski
 
-Logujący: Rejestracja dostępu
+- MVC idealny dla web, MVP dla desktopu, MVVM dla technologii z bindingiem.
+- Architektura heksagonalna izoluje logikę biznesową od infrastruktury.
+- Wzorce poprawiają testowalność i utrzymywalność kodu.
 
-Circuit Breaker: Specjalny typ proxy do obsługi błędów:
 
-plaintext
-[Zamknięty] → (błąd) → [Otwarty] → (timeout) → [Półotwarty]
-    ↑______________________(sukces)___________________↓
-Biblioteki: Polly (.NET), resilience4j (Java)
 
-6. Adapter
-Cel: Uzgadnianie niezgodnych interfejsów
-
-Struktura:
-
-plaintext
-[Klient] → [Target] ← (adaptuje) ← [Adapter] → [Adaptee]
-Zastosowanie: Integracja starszych systemów z nowymi komponentami
-
-7. Most (Bridge)
-Cel: Oddzielenie abstrakcji od implementacji
-
-Zastosowanie: Niezależne rozwijanie hierarchii funkcjonalności
-
-Przykład (Rejestr osób):
-
-csharp
-public abstract class AbstractPersonRegistry {
-    public IMessenger messenger; // Implementacja wyniesiona
-    public abstract void LoadPersons(); // Abstrakcja
-    public void NotifyPersons() => /* ... używa messenger ... */
-}
-public interface IMessenger { void Notify(Person p); }
-Literatura:
-
-Gamma i in. - Wzorce projektowe
-
-Martin i Martin - Zasady, wzorce i praktyki zwinnego wytwarzania...
-
-Freeman i in. - Head First Design Patterns
-
-OODesign.com

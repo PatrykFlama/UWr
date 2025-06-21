@@ -11,17 +11,10 @@ typedef pair<ll, int> plli;
 typedef pair<ll, ll> pll;
 
 
-constexpr int L = 2e6+4;
+constexpr int L = 1e6+4;
 int pi[L];
-int pat_n = 0;
 
-int calc_pref(string &s) {
-    for (auto c : s) cerr << c << " ";
-    cerr << '\n';
-    cerr << "0 ";
-
-    int cnt = 0;
-
+void calc_pref(string &s) {
     for (int i = 1; i < s.size(); i++) {
         int ptr = pi[i - 1];
 
@@ -34,15 +27,7 @@ int calc_pref(string &s) {
         }
 
         pi[i] = ptr;
-        if (i > pat_n && ptr == pat_n) {
-            cnt++;
-        }
-
-        cerr << ptr << ' ';
     }
-    cerr << '\n';
-
-    return cnt;
 }
 
 
@@ -50,10 +35,18 @@ int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
 
-    string t, p; cin >> t >> p;
-    string s = p + "#" + t;
-    pat_n = p.size();
+    string s; cin >> s;
 
-    int res = calc_pref(s);
-    cout << res << '\n';
+    calc_pref(s);
+
+    vector<int> res;
+    int ptr = pi[s.size()-1];
+    while (ptr > 0) {
+        res.push_back(ptr);
+        ptr = pi[ptr - 1];
+    }
+
+    for (int i = res.size()-1; i >= 0; i--) cout << res[i] << ' ';
+    cout << '\n';
 }
+

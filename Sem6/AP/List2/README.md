@@ -61,8 +61,8 @@ Dla każdej liczby $i$ od 1 do $L$ (gdzie $L = 10^6+2$), przechodzimy po wszystk
 ```py
 def preprocess():
     for i in range(1, L):
-        for j in range (i, L, i):
-            res[j]++
+          for j in range (i, L, i):
+              res[j]++
 
 res[X]  # liczba dzielników liczby X
 ```

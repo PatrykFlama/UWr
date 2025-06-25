@@ -29,6 +29,7 @@ constexpr int L = 1e6+4;
 constexpr int MOD = 1e9+7;
 constexpr int ALPHABET_SIZE = 2;
 constexpr int ALPHABET_CHAR_START = '0';
+constexpr int MAX_BIT = 20;
 
 
 class Trie {
@@ -85,26 +86,23 @@ public:
     }
 
     void addWord(const int s) {
-        cerr << "Adding word: " << s << '\n';
-
         int curr = root;
 
-        for (int mask = 1 << 8; mask > 0; mask >>= 1) {
-            int i = (s & mask) ? 1 : 0;
-            
+        for (int bit = MAX_BIT; bit >= 0; --bit) {
+            int i = (s >> bit) & 1;
+
             if (!nextNode(curr, i)) {
                 addNode(curr, i);
             }
-            
+
             nodes[curr].subtree_size++;
-            cerr << "bit: " << i << ", current node: " << curr << ", subtree size: " << nodes[curr].subtree_size << '\n';
-            
             curr = nextNode(curr, i);
         }
 
         nodes[curr].word_ends = true;
         nodes[curr].subtree_size++;
     }
+
 
     int findNextWord(int node, const string &s, int &ptr) const {
         if (!nextNode(node, s[ptr]))
@@ -130,38 +128,29 @@ int cnt_greater_numbers(int a, int k, const Trie &trie) {
     int node = trie.root;
     int cnt = 0;
 
-    cerr << "Calculating for a: " << a << ", k: " << k << "\n";
-    cerr << "a in binary: " << bitset<32>(a).to_string() << "\n";
-    for (int mask = 1 << 8; mask > 0; mask >>= 1) {
-        int abit = (a & mask) ? 1 : 0;
-        int kbit = (k & mask) ? 1 : 0;
-
-        cerr << "mask: " << bitset<32>(mask).to_string();
+    for (int bit = MAX_BIT; bit >= 0; --bit) {
+        int abit = (a >> bit) & 1;
+        int kbit = (k >> bit) & 1;
 
         for (int bbit = 0; bbit < 2; ++bbit) {
             int xorbit = abit ^ bbit;
-            cerr << "bbit: " << bbit << ", abit: " << abit << ", kbit: " << kbit << ", xorbit: " << xorbit << "\n";
 
-            if (xorbit > kbit && trie.nextNode(node, bbit)) {
-                cnt += trie.nodes[trie.nextNode(node, bbit)].subtree_size;
-                cerr << "Adding subtree size: " << trie.nodes[trie.nextNode(node, bbit)].subtree_size << "\n";
+            if (xorbit > kbit) {
+                if (trie.nextNode(node, bbit)) {
+                    cnt += trie.nodes[trie.nextNode(node, bbit)].subtree_size;
+                }
             }
         }
 
+        int bbit = abit ^ kbit;
+        if (!trie.nextNode(node, bbit)) break;
 
-        int next = trie.nextNode(node, (abit ^ kbit ? 1 : 0));
-        if (!next) {
-            cerr << "No next node for bit: " << (abit ^ kbit ? 1 : 0) << " and node: " << node << "\n"; 
-
-            cnt += trie.nodes[node].word_ends ? 1 : 0;
-            break;
-        }
-
-        node = next;
+        node = trie.nextNode(node, bbit);
     }
 
     return cnt;
 }
+
 
 
 

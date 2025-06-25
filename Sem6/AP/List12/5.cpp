@@ -45,7 +45,7 @@ vector<Point> convexHull(vector<Point>& pts) {
 
     // lower part
     for (const auto& p : pts) {
-        while (hull.size() >= 2 && cross(hull[hull.size()-2], hull.back(), p) <= 0)
+        while (hull.size() >= 2 && cross(hull[hull.size()-2], hull.back(), p) < 0)
             hull.pop_back();
         hull.push_back(p);
     }
@@ -54,7 +54,7 @@ vector<Point> convexHull(vector<Point>& pts) {
     int lower_size = hull.size();
     for (int i = n - 2; i >= 0; --i) {
         const auto& p = pts[i];
-        while (hull.size() > lower_size && cross(hull[hull.size()-2], hull.back(), p) <= 0)
+        while (hull.size() > lower_size && cross(hull[hull.size()-2], hull.back(), p) < 0)
             hull.pop_back();
         hull.push_back(p);
     }

@@ -1,7 +1,7 @@
 ---
 title: Notatki z wykładu z Algorytmiki Praktycznej 2025
-
 ---
+
 
 - [Przydatne w rozwiązywaniu zadań](#przydatne-w-rozwiązywaniu-zadań)
   - [Linijki przyspieszające w C++](#linijki-przyspieszające-w-c)
@@ -201,9 +201,9 @@ Omówiony materiał:
 
 ### Rozszerzony algorytm Euklidesa
 
-:::success
+
 Zadanie. Dla danych liczb $a,b$ znajdź takie $k, l$, że $ak + bl = nwd(a,b)$.
-:::
+
 
 Użyjemy zmodyfikowanego algorytmu Euklidesa. Będziemy zwracać oprócz nwd parę liczb $k$, $l$.
 
@@ -255,11 +255,11 @@ Zatem pierwszą liczbą z pary zwróconej przez rozszerzony algorytm Euklidesa j
 
 **W tym przypadku będziemy zakładać, że $m$ jest pierwsze.**
 
-:::info
+
 Twierdzenie. Jeśli $p$ jest liczbą pierwszą względnie pierwszą z pewną liczbą $a$, to zachodzi:
 
 $$ a^{p-1} \equiv 1 \mod p $$
-:::
+
 
 Zatem
 
@@ -269,9 +269,9 @@ Więc $a^{m-2}$ jest odwrotnością $a$ modulo $m$.
 
 ### Funkcja Eulera
 
-:::info
+
 Definicja. Funkcja Eulera $\phi(n)$ jest równa liczbie liczb ze zbioru $\{1, 2, \dots, n\}$, które są względnie pierwsze z $n$.
-:::
+
 
 Przykłady:
 
@@ -310,7 +310,7 @@ Gdzie $k$ jest względnie pierwsze z $a$, a $l$ jest względnie pierwsze z $b$. 
 
 ### Chińskie twierdzenie o resztach
     
-:::success
+
 Zadanie. Dane jest $N$ względnie pierwszych liczb $p_1, \dots, p_N$ oraz liczby $a_1, \dots, a_N$, takie że $0 \leq a_i < p_i$. 
 Znajdź najmniejszą nieujemną liczbę $x$ spełniającą warunki:
 	
@@ -320,7 +320,7 @@ x \text{ mod } p_2 &= a_2, \\
 \dots & \\
 x \text{ mod } p_N &= a_N. \\
 \end{align*}
-:::
+
 Ze względu, że liczby $p_i$ są względnie pierwsze, wszystkimi odpowiedziami na ten układ równań są liczby postaci $x + k \cdot p_1 \cdot \ldots \cdot p_N$, dla dowolnego całkowitego $k$.
 	
 #### Rozwiązanie
@@ -828,13 +828,13 @@ Oczywiście stany powinny być dobrane w taki sposób, żeby finalnie dało się
 
 ## Szukanie średnicy drzewa
 
-:::info
-**Średnicą drzewa** nazywamy najdłuższą ścieżkę w grafie.
-:::
 
-:::success
+**Średnicą drzewa** nazywamy najdłuższą ścieżkę w grafie.
+
+
+
 Zadanie. Policz długość średnicy podanego drzewa o $N$ wierzchołkach. 
-:::
+
 
 Aby to zrobić znowu zapamiętamy wyniki dla mniejszych poddrzew, by zbudować z nich wyniki dla większych.
 
@@ -879,9 +879,9 @@ Złożoność takiego rozwiązania to $O(n)$, ponieważ wywołamy się na każdy
 
 ## Maksymalne skojarzenie na drzewie
 
-:::info
+
 **Skojarzenie** to zbiór krawędzi, gdzie żadna para krawędzi nie łączy tego samego wierzchołka. 
-:::
+
 Zobaczmy to na przykładzie:
 
 ![image](https://hackmd.io/_uploads/HJPMOpz6kg.png)
@@ -892,9 +892,9 @@ Na grafach, **maksymalne skojarzenie** oznacza takie skojarzenie, które zawiera
 
 
 
-:::success
+
 Zadanie. Policz liczbę krawędzi w największym skojarzeniu w podanym drzewie o $N$ wierzchołkach. 
-:::
+
 
 Podobnie jak w poprzednich zadaniach, możemy obliczać **maksymalne skojarzenie** na drzewie, składając wyniki z poddrzew.
 
@@ -973,9 +973,9 @@ Używając powyższych operatorów możemy na przykład sprawdzić czy $k$-ty bi
 
 ## Ludzie i maszyny
 
-:::success
+
 Dane jest $N$ pracowników i $N$ maszyn. Dostajemy na wejściu tabelę $N \times N$ wydajności pracownika $L$ na maszynie $M$ i naszym zadaniem jest wybrać ich najefektywniejszy przydział (każdy pracownik musi być przydzielony do dokładnie jednej maszyny, każdy do innej).
-:::
+
 
 | $L \backslash M$ | 0  | 1  | 2  | 3  |
 |---|---|---|---|---|
@@ -1025,9 +1025,9 @@ Złożoność tego rozwiązania to $O(n^2 \cdot 2^n)$, ale da się to oszacować
 
 ## Liczba ścieżek Hamiltona
 
-:::success
+
 Zadanie. Mamy dany graf skierowany o wierzchołkach $[1, n]$. Chcemy policzyć takie ścieżki, które zaczynają się w wierzchołku $1$, kończą w wierzchołku $n$ i przechodzą dokładnie raz przez każdy wierzchołek.
-:::
+
 
 Zastanówmy się najpierw, jak napisać rozwiązanie wykorzystujące metodę nawrotów (backtracking).
 
@@ -1056,12 +1056,12 @@ dla każdej maski m
 
 ## Sumy prefiksowe
 
-:::success
+
 Zadanie. Mamy sumy prefiksowe i dwie operacje:
 
 - **policz(k)**: $a_1 + a_2 + ... + a_k$
 - **zamień(k, x)**: $a_k = x$
-:::
+
 
 Weźmy ciąg: $1, 7, 2, 4, 3, 9, 8, 8$. Ustawimy jego elementy na liściach drzewa binarnego zrównoważonego, a każdy następny węzeł zbudujemy z sumy jego dzieci. Wyglądałoby ono w ten sposób. Możemy na nim przykładowo obliczyć **policz(7)**. Widać, że nasza struktura pozwala wybrać gotową sumę czterech elementów, dwóch i jednego.
 
@@ -1098,9 +1098,9 @@ Ten sposób działa poprawnie, gdy liczba elementów ciągu jest potęgą dwójk
 
 ## Inwersje w ciągu
 
-:::info
+
 **Inwersją** w ciągu nazwiemy parę dwóch elementów, w której element znajdujący się po lewej stronie jest większy od elementu po prawej.
-:::
+
 
 Rozważmy ciąg: **5, 3, 7, 6, 4**. Policzmy inwersje sprawdzając dla każdego elementu ile jest elementów większych od niego, które są po jego lewej stronie.
 
@@ -1171,12 +1171,12 @@ Ogólnym zamysłem jest rozdzielenie podproblemów na przedziały, które potraf
 
 ## Modyfikacja na przedziale
 
-:::success
+
 Zadanie
 Mamy dany ciąg $a_1, a_2, ..., a_N$ i dwie operacje:
 - zwiększ wartości na przedziale $[x,y]$ o $v$,
 - podaj aktualną wartość $a_k$.
-:::
+
 
 Możemy łatwo zmodyfikować wcześniej napisaną funkcję rekurencyjną, by rozdzielała odpowiednio modyfikacje.  Będziemy je sumować dopiero wtedy, kiedy musimy je wypisać.  
 
@@ -1188,11 +1188,11 @@ Przykładowo mogłoby wyglądać to tak:
 
 ## Maksymalne prefiksy
 
-:::success
+
 Zadanie. Mamy dany ciąg $a_1, a_2, ..., a_N$ i dostępne dwie operacje:
 - zmień wartość $a_k$,
 - policz maksymalną sumę prefiksową na przedziale $[x,y]$.
-:::
+
 
 Weźmy taki ciąg:
 | $i$   | 1  | 2  | 3  | 4  | 5  | 6  | 7  | 8  |
@@ -1218,9 +1218,9 @@ Można to łatwo zaimplementować, odpowiednio modyfikując wcześniejszą funkc
 ## Maksymalne sumy
 
 
-:::success
+
 Zadanie. Dany jest ciąg $a_1, a_2, ..., a_k$ i operacja zmiany wartości $k$-tego elementu ciągu. Naszym zadaniem jest znaleźć największą sumę spójnego podciągu po każdej zmianie wartości.
-:::
+
 
 Przykładowo, dla poniższego ciągu największa suma wynosi **9** na przedziale $[5,8]$:
 
@@ -1249,11 +1249,11 @@ Ponownie możemy wykorzystać naszą funkcję rekurencyjną, ale tym razem musim
 # Wykład 7: Drzewa przedziałowe cd.
 
 ## Pierwsza mniejsza lub równa wartość
-:::success
+
 Zadanie. Dany jest ciąg $a_1,...,a_n$ oraz zapytania:
 * $\text{znajdz(x)}$: znajdź indeks pierwszej wartości mniejszej lub równej $x$
 * $\text{zamien(i, x)}$: zamień $a_i$ na $x$
-:::
+
 
 Dla przykładowego ciągu i zapytań:
 
@@ -1279,10 +1279,10 @@ Można zauważyć, że poruszamy się w drzewie w następujący sposób:
 -----
 ## Usuwanie z listy
 
-:::success
+
 Zadanie. Dana jest **lista** $a_1, a_2, \dots, a_n$ oraz zapytanie:
 - $\text{usun(i)}$: wypisz oraz usuń $i$-ty element z listy.
-:::
+
 
 ### Przykład
 
@@ -1323,11 +1323,11 @@ Szukanie $k$-tego elementu wygląda w ten sposób:
 
 ## Modyfikacja i maksimum
 
-:::success
+
 Zadanie. Dany jest ciąg $a_1, ..., a_n$ oraz operacje:
 - $\text{dodaj(p, k, x)}$: dodaj $x$ do przedziału $[p, k]$
 - $\text{max(p, k)}$: znajdź maksimum na przedziale $[p, k]$
-:::
+
 
 Można rozwiązać to zadanie na dwa sposoby - korzystając z leniwej propagacji całkowicie lub z jej części. Przedstawimy tutaj drugie podejście.
 
@@ -1356,11 +1356,11 @@ policz_max(nr, z, p, ścieżka)
 
 ## Ustawianie wartości i maksimum
 
-:::success
+
 Zadanie. Dany jest ciąg $a_1, ..., a_n$ oraz operacje:
 - $\text{ustaw(p, k, x)}$: ustaw wartość $x$ na przedziale $[p, k]$,
 - $\text{max(p, k)}$: znajdź maksimum na przedziale $[p, k]$.
-:::
+
 
 Wcześniejsze podejście, którego używaliśmy do modyfikacji przedziałów (np. dodawania wartości), nie zadziała w przypadku **ustawiania**, ponieważ tutaj znaczenie ma kolejność,w  jakiej były wykonywane modyfikacje. Zobaczmy na taki przykład:
 
@@ -1418,11 +1418,11 @@ Każdy węzeł będzie oznaczony jako **leniwy**, jeśli musi jeszcze przekazać
 
 ## Binary Lifting
 
-:::success
+
 Zadanie. Dane jest drzewo ukorzenione oraz zapytania:
 
 - $\text{przodek(v,k)}$: przodek $k$-tego stopnia wierzchołka $v$
-:::
+
 
 Oczywiście, możemy za każdym razem $k$-razy przechodzić po rodzicach. Jednak byłoby to rozwiązanie liniowe, my będziemy szukać czegoś znacznie szybszego.
 
@@ -1443,11 +1443,11 @@ Teraz, aby znaleźć $k$-tego przodka wystarczy spojrzeć na zapis binarny liczb
 
 ## Najniższy wspólny przodek
 
-:::success
+
 Zadanie. Dane jest drzewo ukorzenione i zapytanie:
 
 - $\text{LCA(u, v)}$: najniższy wspólny przodek $u$ i $v$
-:::
+
 
 Zobaczmy na przykład.  
 
@@ -1480,11 +1480,11 @@ Na przykładzie:
 
 ## Odległość wierzchołków
 
-:::success
+
 Zadanie. Dane jest drzewo (nieukorzenione) oraz zapytanie:
 
 - $\text{odleglosc(u, v)}$: odległość wierzchołka $u$ od $v$
-:::
+
 
 To zadanie jest bardzo łatwe, kiedy mamy już algorytm do znajdowania LCA. Na początku wybierzmy dowolny korzeń w drzewie. Następnie zauważmy, że ścieżka między wierzchołkami $u$ i $v$ musi przechodzić przez ich najniższego wspólnego przodka. Dzięki temu możemy podzielić zapytanie na $\text{odleglosc(u, LCA(u, v))}$ oraz $\text{odleglosc(v, LCA(u, v))}$, a to są już odległości na ścieżce, które można łatwo policzyć **odejmując głębokości**.
 
@@ -1518,9 +1518,9 @@ Aby znaleźć najmniejszą głębokość na danym przedziale, możemy skorzysta�
 
 ## Zliczanie ścieżek
 
-:::success
+
 Zadanie. Dane jest drzewo ukorzenione oraz zbiór ścieżek. Dla każdego wierzchołka określ ilość ścieżek przechodzących przez niego.
-:::
+
 
 Dla przykładu mamy takie ścieżki:
 
@@ -1549,10 +1549,10 @@ Aby odpowiednio rozprowadzić te modyfikacje, wystarczy przejść **DFS-em po ca
 
 ## Sumy w poddrzewach
 
-:::success
+
 Zadanie. Dane jest drzewo ukorzenione, wartości wierzchołków oraz zapytanie:
 - $\text{suma(v)}$: suma wartości wierzchołków z poddrzewa $v$
-:::
+
 
 Weźmy dla przykładu takie drzewko:
 
@@ -1576,11 +1576,11 @@ Przykłady:
 
 ## Sumy na ścieżkach
 
-:::success
+
 Zadanie. Dane jest drzewo ukorzenione oraz zapytanie:
 
 - $\text{sciezka(v)}$: suma wartości ścieżki od korzenia do $v$
-:::
+
 
 Dla przykładu drzewko z $\text{sciezka(6)}$: 
 
@@ -1604,9 +1604,9 @@ Aby wydobyć sumę wartości ścieżki od korzenia do wierzchołka $v$, wystarcz
 
 ## Algorytm Dijkstry
 
-:::success
+
 Zadanie. Dany jest graf z wagami (nieujemnymi). Znajdź najkrótszą ścieżkę z $u$ do $v$.
-:::
+
 
 Dla przykładu:
 
@@ -1689,9 +1689,9 @@ Warto zauważyć, że powyższy algorytm jest poprawny, gdyż nasz graf nie zawi
 
 ## Liczba ścieżek
 
-:::success
+
 Zadanie. Dany jest graf z wagami (nieujemnymi). Podaj ilość najkrótszych ścieżek z $u$ do $v$. 
-:::
+
 
 Dla przykładu:
 
@@ -1705,10 +1705,10 @@ Są tutaj trzy ścieżki między $u$ i $v$, których długości to $3$.
 
 ## Najkrótsza ścieżka z kuponem
 
-:::success
+
 Zadanie. Dany jest graf z wagami (nieujemnymi) oraz kupon, który pozwala nam zmniejszyć wagę jednej krawędzi dwukrotnie (dzieląc całkowicie). 
 Znajdź najkrótszą ścieżkę z $u$ do $v$.
-:::
+
 
 Dla przykładu:
 
@@ -1728,9 +1728,9 @@ Teraz z dwóch grafów robi nam się jeden duży graf. Jedyne co musimy zrobić 
 
 ## Algorytm Bellmana-Forda
 
-:::success
+
 Zadanie. Dany jest graf skierowany z wagami, które mogą być ujemne. Znajdź najkrótszą ścieżkę z $u$ do $v$.
-:::
+
 
 Teraz nie mamy gwarancji, że nasze wagi są nieujemne, więc algorytm Dijkstry może nie działać poprawnie. Na przykład:
 
@@ -1854,13 +1854,13 @@ Skoro budujemy nową ścieżkę z dwóch mniejszych optymalnych ścieżek, to mu
 
 ## Sortowanie topologiczne
 
-:::success
-Zadanie. Dany jest acykliczny graf skierowany. Wyznacz jego uporządkowanie topologiczne.
-:::
 
-:::info
+Zadanie. Dany jest acykliczny graf skierowany. Wyznacz jego uporządkowanie topologiczne.
+
+
+
 Definicja. Porządek topologiczny, to taki, w którym dla każdej krawędzi $u \rightarrow v$ wierzchołek $u$ stoi przed $v$.
-:::
+
 
 Na przykładzie:
 
@@ -1920,13 +1920,13 @@ A to jest oczywiście odwrotne do tego, co chcieliśmy uzyskać. Wystarczy wypis
 
 ## Silnie spójne składowe
 
-:::success
-Zadanie. Dany jest graf skierowany. Wyznacz w nim takie zbiory, że każdy tworzy jedną maksymalną silnie spójną składową.
-:::
 
-:::info
+Zadanie. Dany jest graf skierowany. Wyznacz w nim takie zbiory, że każdy tworzy jedną maksymalną silnie spójną składową.
+
+
+
 Definicja. Silnie spójna składowa to grupa wierzchołków w grafie skierowanym, gdzie każdy jest osiągalny z każdego innego.
-:::
+
 
 Na przykład:
 
@@ -1991,13 +1991,13 @@ Przejdźmy do algorytmu.
 
 ## Cykl Eulera
 
-:::success
-Zadanie. Dany jest graf. Wyznacz dla niego cykl Eulera.
-:::
 
-:::info
+Zadanie. Dany jest graf. Wyznacz dla niego cykl Eulera.
+
+
+
 Definicja. Cykl Eulera to przejście po wszystkich krawędziach dokładnie raz, z wierzchołka $v$ do $v$.
-:::
+
 
 Przykład:
 
@@ -2064,9 +2064,9 @@ Można to zrealizować np. trzymając dodatkową tablicę globalną i odznaczaj�
 
 ## Iloczyn wektorowy
 
-:::success
+
 Zadanie. Dane są dwa punkty na płaszczyźnie $A(x_A, y_A), B(x_B, y_B)$, gdzie prosta przechodząca przez środek układu i punkt $A$ tworzy z osią $OX$ kąt $\alpha$, a $B$ tworzy kąt $\beta$. Czy $\alpha > \beta$?
-:::
+
 
 ![image](https://hackmd.io/_uploads/ByMhA0h-el.png)
 
@@ -2107,9 +2107,9 @@ Wystarczy przesunąć wszystko o wektor $P$, wtedy będziemy znów w punkcie $(0
 
 ## Pole trójkąta
 
-:::success
+
 Zadanie. Dane są punkty $A(x_A, y_A), B(x_B, y_B)$. Oblicz pole trójkąta $AOB$, gdzie $O$ to punkt $(0,0)$.
-:::
+
 
 Korzystając z iloczynu wektorowego, mamy:
 
@@ -2153,9 +2153,9 @@ $$
 
 ## Pole wielokąta
 
-:::success
+
 Zadanie. Danych jest $N$ punktów $P_1, ..., P_N$ oznaczających kolejne wierzchołki wielokąta wypukłego. Oblicz jego pole.
-:::
+
 
 Jednym z rozwiązań jest podzielić wielokąt na trójkąty, wybierając do tego jeden z wierzchołków, i obliczać kolejne pola z pozostałymi.
 
@@ -2199,13 +2199,13 @@ Znowu złe pola to te, w których maleją kąty, czyli jeśli po prostu zsumujem
 
 ## Otoczka wypukła
 
-:::success
-Zadanie. Danych jest $N$ punktów na płaszczyźnie. Znajdź ich otoczkę wypukłą.
-:::
 
-:::info
+Zadanie. Danych jest $N$ punktów na płaszczyźnie. Znajdź ich otoczkę wypukłą.
+
+
+
 Definicja. Otoczka wypukła to wielokąt wypukły składający się z wierzchołków z danego zbioru i zawierający wewnątrz pozostałe.
-:::
+
 
 Na przykładzie:
 
@@ -2217,9 +2217,9 @@ Otoczka wypukła tego zbioru to:
 
 ### Sortowanie kątowe
 
-:::info
+
 Definicja. Sortowanie kątowe to taka permutacja punktów $P_1, ..., P_N$, że każdy iloczyn wektorowy $W(P_i, P_{i+1}) > 0$ względem punktu $(0,0)$.
-:::
+
 
 Weźmiemy stos i punkty posortowane kątowo:
 
@@ -2377,9 +2377,9 @@ $f(s[i,j]) = \sum_{k=i}^{j} s[k] \cdot A^{k-i+1} \% M = \frac{f(s[1, j]) - f(s[1
 
 ## Porównanie zbiorów liczb
 
-:::success
+
 Zadanie. Dane są dwa ciągi liczb i dwa przedziały. Czy w danym przedziale występują te same wartości?
-:::
+
 
 Do rozwiązania tego zadania wystarczy prosta funkcja haszująca.
 
@@ -2391,9 +2391,9 @@ Wartości są zupełnie losowe, jednak mają pewną ważną zaletę — są znac
 
 ## Hasze prefiksowe
 
-:::success
+
 Zadanie. Dane są dwa słowa — tekst $T$ o długości $n$ oraz wzorzec $W$ o długości $m$. Znajdź wzorzec w tekście.
-:::
+
 
 Sztuczką w tym zadaniu będzie odpowiedni **preprocessing**. Załóżmy, że mamy już policzone wartości odwrotności modularnych oraz wszystkie prefiksowe wartości funkcji haszującej dla tekstu $T$.
 
@@ -2411,9 +2411,9 @@ Mając wcześniej obliczone hasze prefiksowe, możemy błyskawicznie sprawdzić,
 
 ## Najmniejszy leksykograficznie sufiks
 
-:::success
+
 Zadanie. Dane jest słowo. Podaj najmniejszy leksykograficznie sufiks.
-:::
+
 
 Dla przykładu:
 
@@ -2428,9 +2428,9 @@ W tym zadaniu wystarczy wykorzystać $n$ razy funkcję do porównywania leksykog
 
 ## Najdłuższy palindrom
 
-:::success
+
 Zadanie. Dane jest słowo $T$ o długości $n$. Znajdź najdłuższy palindrom.
-:::
+
 
 Wyszukiwanie najdłuższego wspólnego prefiksu możemy wykorzystać również w tym zadaniu. Dla każdej pozycji $i$:
 
@@ -2441,17 +2441,17 @@ Wyszukiwanie najdłuższego wspólnego prefiksu możemy wykorzystać również w
 
 ## Wyszukiwanie wzorca (KMP)
 
-:::success
+
 Zadanie. Dane są słowa $W$, $T$. Sprawdź, czy $W$ występuje w $T$.
-:::
+
 
 **Algorytm KMP** pozwala wyznaczyć wszystkie wzorce w tekście w złożoności liniowej wykorzystując **prefikso-sufiksy**.
 
 ### Prefikso-sufiksy
 
-:::info
+
 Definicja. Prefikso-sufiks słowa, to podsłowo, które jest jednocześnie jego prefiksem i sufiksem, a przy tym jest krótsze niż całe słowo.
-:::
+
 
 Na przykład:
 
@@ -2572,9 +2572,9 @@ Wzorzec jest tam, gdzie udało nam się znaleźć prefikso-sufiks o jego długo�
 
 ### Wszystkie wystąpienia wzorca
 
-:::success
+
 Zadanie. Dane są słowa $T$ i $W$. Znajdź wszystkie wystąpienia $W$ w $T$.
-:::
+
 
 Wykorzystamy do tego **drzewo trie**. Zobaczmy na przykład.
 
@@ -2591,9 +2591,9 @@ Dzięki temu możemy przejść liniowo po każdym początku słowa i porównać 
 
 ### Słowa spełniające warunek
 
-:::success
+
 Zadanie. Dana jest wartość $K$. Sprawdź, ile jest takich par $A, B$, że $A$ ^ $B \geq K$?
-:::
+
 
 Weźmy $K = 1010$ oraz taki zbiór liczb:
 
@@ -2617,9 +2617,9 @@ Lewa strona odpada z automatu, bo wszystkie liczby zacznają się od $0$. W praw
 
 ## Przykłady gier
 
-:::info
+
 Definicja. Nim to gra, w której ruch polega na zdejmowaniu przedmiotów ze stosu. Przegrywa ten, kto nie może wykonać ruchu.
-:::
+
 
 Weźmy taki stosik.
 
@@ -2629,9 +2629,9 @@ Aby wygrać tę grę, wystarczy zdjąć od razu wszystkie kamienie.
 
 Teraz zmodyfikujmy nieco zasady.
 
-:::info
+
 Definicja. $T$ to gra, w której ruch polega na zdejmowaniu **1**, **2** lub **3** przedmiotów ze stosu. Przegrywa ten, kto nie może wykonać ruchu.
-:::
+
 
 Mamy teraz taką sytuację.
 
@@ -2641,9 +2641,9 @@ Aby wygrać taką grę, wystarczy utrzymywać sytuację, w której liczba kamien
 
 Zobaczmy na przykład jeszcze jednej gry.
 
-:::info
+
 Definicja. $S$ to gra, w której ruch polega na zdejmowaniu **1**, **3** lub **4** przedmiotów ze stosu. Przegrywa ten, kto nie może wykonać ruchu.
-:::
+
 
 Dla stosu z siedmioma kamieniami.
 
@@ -2671,14 +2671,14 @@ Podobnie możemy uzupełnić resztę. Jeśli w odległości $1$, $3$ lub $4$ jes
 
 ## Uogólnienie
 
-:::info
+
 Definicja. Niech $G$ będzie grą spełniającą warunki:
 - gracze wykonują naprzemienne ruchy
 - ruchy zależą tylko od pozycji
 - jest skończona
 - przegrywa ten, kto nie ma ruchu
 - pełna informacja
-:::
+
 
 Inaczej ujmując to jest graf skończony, acykliczny i spójny, w którym zaznaczona jest wygrana/przegrana.
 
@@ -2692,9 +2692,9 @@ Jest jeszcze jeden problem. Wygrana wygranej nie równa. Gdyby połączyć dwie 
 
 ## Podobieństwo gier
 
-:::info
+
 Twierdzenie. Każda gra $G$ jest podobna do jakiegoś Nima.
-:::
+
 
 Indukcja.
 

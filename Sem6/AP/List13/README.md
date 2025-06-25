@@ -132,3 +132,53 @@ def longest_palindrome(T):
 
     return T[best[0] : best[0] + best[1]]
 ```
+
+
+
+## Zad 4 - Porównanie podzbiorów
+
+### Opis zadania
+
+Mamy dwa ciągi liczb długości $N$, zawierające unikalne liczby. Otrzymujemy $Q$ zapytań, z których każde sprawdza, czy pewne dwa podciągi (z pierwszego i drugiego ciągu) są permutacjami tych samych elementów.
+
+### Koncept rozwiązania
+
+Ponieważ liczby są unikalne w każdym ciągu, porównywanie permutacji dwóch podciągów można zredukować do porównania multizbiorów wartości.
+
+Najlepszym sposobem, by to zrobić efektywnie, jest użycie haszowania zbiorów:
+
+- Wylosujemy unikalne liczby (duże, losowe) dla każdej wartości z zakresu $[0, 1\,000\,000]$.
+- Każdy element mapujemy do tej wartości i zamiast sumować wartości elementów, tworzymy prefiksową sumę hashy (lub używamy operacji XOR).
+- Dla danego przedziału $[l, r]$ wartość hasza to $\text{pref}[r] - \text{pref}[l-1]$.
+- Porównując dwie takie wartości — z dużym prawdopodobieństwem stwierdzimy, czy są to te same zbiory.
+
+### Dlaczego działa?
+
+Elementy są unikalne — więc permutacja to po prostu zbiór liczb w innym porządku.
+
+Hash wartości zapewnia unikalność (z dużym prawdopodobieństwem).
+
+XOR jest dobry, ale suma losowych hashy z modulo (np. $10^{18}+7$) daje mniejsze ryzyko kolizji.
+
+Prefiksy pozwalają odpowiadać na każde zapytanie w czasie stałym.
+
+### Złożoność
+
+- **Czas:** $O(N + Q)$
+- **Pamięć:** $O(N + \max(a_i))$
+
+### Pseudokod
+
+```python
+# hash_val[a] = losowa wartość z zakresu 64-bit (dla każdej wartości 0..1e6)
+for oba ciągi:
+    pref[i] = pref[i-1] + hash_val[a[i]]
+
+for każde zapytanie (l1, r1, l2, r2):
+    hash1 = pref1[r1] - pref1[l1-1]
+    hash2 = pref2[r2] - pref2[l2-1]
+    if hash1 == hash2:
+        wypisz "TAK"
+    else:
+        wypisz "NIE"
+```

@@ -17,6 +17,10 @@ ll powers[L];
 
 string pattern, text;
 
+int char_to_int(char c) {
+    return c - 'a' + 1;
+}
+
 void calc_powers() {
     powers[0] = 1;
     for (int i = 1; i < L; i++) {
@@ -27,14 +31,14 @@ void calc_powers() {
 ll calc_hash(const string &s, int sz) {
     ll res = 0;
     for (int i = 0; i < sz; i++) {
-        res = (((res * EXP) % MOD) + (s[i] - 'a')) % MOD;
+        res = (((res * EXP) % MOD) + (char_to_int(s[i]))) % MOD;
     }
     return res;
 }
 
 ll move_next(const string &s, int ptr, ll h, int pat_len) {
-    h = (((h - (powers[pat_len - 1] * (s[ptr] - 'a')) % MOD) + MOD) % MOD);
-    h = (((h * EXP) % MOD) + (s[ptr + pat_len] - 'a')) % MOD;
+    h = (((h - (powers[pat_len - 1] * (char_to_int(s[ptr]))) % MOD) + MOD) % MOD);
+    h = (((h * EXP) % MOD) + (char_to_int(s[ptr + pat_len]))) % MOD;
     return h;
 }
 

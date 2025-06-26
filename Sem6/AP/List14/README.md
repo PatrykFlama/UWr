@@ -2,29 +2,26 @@
 
 # Lista 14 - algorytmy tekstowe
 ## Zad 1 – Wyszukiwanie wzorca
-
 **Cel:** Policz, ile razy wzorzec $P$ występuje jako ciągły fragment w tekście $T$.
 
-**Koncept rozwiązania:** Rabin-Karp (haszowanie tekstów)
+**Koncept rozwiązania:** Algorytm Knutha-Morrisa-Pratta (KMP)
 
-Wykorzystujemy rolling hash (Rabin-Karp), aby:
+Wykorzystujemy algorytm KMP, aby:
 
-- obliczyć hash wzorca $P$,
-- policzyć hashe wszystkich spójnych fragmentów długości $|P|$ w $T$,
-- porównać je w czasie stałym.
+- preobliczyć tablicę prefiksową $\pi$ dla wzorca $P$,
+- przejść liniowo po tekście $T$, dopasowując wzorzec znak po znaku,
+- w przypadku niezgodności korzystać z tablicy $\pi$, by uniknąć powtarzania porównań.
 
-Ponieważ chcemy znaleźć wszystkie wystąpienia $P$ w $T$, przesuwamy "okno" długości $|P|$ po $T$ i sprawdzamy, czy hash się zgadza.
+Za każdym razem, gdy dopasujemy cały wzorzec $P$ w $T$, inkrementujemy licznik wystąpień.
 
 **Dlaczego to działa?**
 
-Haszowanie zamienia stringi na liczby, które można szybko porównywać.
-
-Rabin-Karp umożliwia obliczanie kolejnych hashy w czasie stałym, wykorzystując rekurencyjną formułę i preobliczone potęgi podstawy modulo.
+Tablica $\pi$ pozwala efektywnie "cofać się" we wzorcu, gdy wystąpi niezgodność, dzięki czemu nie porównujemy ponownie tych samych fragmentów tekstu i wzorca.
 
 **Złożoność czasowa:**
 
-- Preprocessing hashów: $O(n)$
-- Iteracja i porównania: $O(n)$
+- Preprocessing tablicy $\pi$: $O(m)$
+- Przejście po tekście: $O(n)$
 
 Łącznie: $O(n + m)$, gdzie $n = |T|$, $m = |P|$.
 

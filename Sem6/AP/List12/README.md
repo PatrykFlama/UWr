@@ -47,14 +47,14 @@ for each test (x1, y1, x2, y2, x3, y3):
 Policz pole nieprzecinającego się wielokąta z zadanymi wierzchołkami.
 
 **Koncept:**  
-Użycie wzoru Shoelace (sznurowadła):
+Użycie wzoru na pole trójkąta, względem punktu $(0, 0)$:
 
 $$
 \text{Pole} = \frac{1}{2} \left| \sum_{i=0}^{n-1} (x_i y_{i+1} - x_{i+1} y_i) \right|
 $$
 
 **Dlaczego działa:**  
-To standardowy wzór wywodzący się z całki oznaczonej po konturze (twierdzenie Greena) dla wielokąta.
+Liczymy pole każdego trójkąta składającego się na wielokąt. Dodatkowo wzór daje wartość ujemną gdy kąty są malejące, więc *złe* pola się odejmują.
 
 **Złożoność:**  
 $O(N)$

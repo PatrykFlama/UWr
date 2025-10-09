@@ -3,6 +3,13 @@
 
 [\[Polish\]](README.md)
 
+## [Term 7](Sem7/)
+- [AI workshop](Sem7/WAI/)
+- [Embedded Systems](Sem7/Embedded/)
+- [Course: Practical aspects of computer networks](Sem7/PrASK/)
+- [Course: Basic tools of DevOps](Sem7/DevOps)
+- [Language models](Sem7/LM/)
+
 ## [Term 6](Sem6/)
 * [Computer Networks](Sem6/SK/)
 * [Neural Networks (theory and practice)](Sem6/NN/)

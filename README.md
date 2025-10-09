@@ -2,6 +2,13 @@
 
 [\[English\]](README.en.md)
 
+## [Semestr 7](Sem7/)
+- [Warsztat AI](Sem7/WAI/)
+- [Systemy Wbudowane](Sem7/Embedded/)
+- [Kurs: Praktyczne aspekty sieci komputerowych](Sem7/PrASK/)
+- [Kurs: Podstawowe narzędzia DevOps](Sem7/DevOps)
+- [Modele językowe](Sem7/LM/)
+
 ## [Semestr 6](Sem6/)
 <!-- 
 <details>

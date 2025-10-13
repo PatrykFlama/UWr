@@ -30,12 +30,24 @@ static void print_sep(const char *title) {
     printf("\r\n--- %s ---\r\n", title);
 }
 
+#define PRINT_INT_OPS(type, scan_fmt, print_fmt, a, b) \
+    print_sep(#type); \
+    if (scanf(scan_fmt " " scan_fmt, &a, &b) == 2) { \
+        type sum = a + b; \
+        type prod = a * b; \
+        printf("a=" print_fmt ", b=" print_fmt "\r\n", a, b); \
+        printf("sum=" print_fmt ", prod=" print_fmt "\r\n", sum, prod); \
+        if (b != 0) \
+            printf("div=" print_fmt "\r\n", a / b); \
+        else \
+            printf("div=undefined (division by zero)\r\n"); \
+    }
+
 int main(void) {
     uart_init();
     fdev_setup_stream(&uart_file, uart_transmit, uart_receive, _FDEV_SETUP_RW);
     stdin = stdout = stderr = &uart_file;
 
-    // Buffer for user input prompts
     int8_t a8, b8;
     int16_t a16, b16;
     int32_t a32, b32;
@@ -43,45 +55,13 @@ int main(void) {
     float af, bf;
 
     // int8_t
-    print_sep("int8_t\n");
-    if (scanf("%" SCNd8 " %" SCNd8, &a8, &b8) == 2) {
-        int8_t sum = a8 + b8;
-        int8_t prod = a8 * b8;
-        printf("a=%" PRId8 ", b=%" PRId8 "\r\n", a8, b8);
-        printf("sum=%" PRId8 ", prod=%" PRId8 "\r\n", sum, prod);
-
-        if (b8 != 0)
-            printf("div=%" PRId8 "\r\n", a8 / b8);
-        else
-            printf("div=undefined (division by zero)\r\n");
-    }
+    PRINT_INT_OPS(int8_t, "%" SCNd8, "%" PRId8, a8, b8);
 
     // int16_t
-    print_sep("int16_t\n");
-    if (scanf("%" SCNd16 " %" SCNd16, &a16, &b16) == 2) {
-        int16_t sum = a16 + b16;
-        int16_t prod = a16 * b16;
-        printf("a=%" PRId16 ", b=%" PRId16 "\r\n", a16, b16);
-        printf("sum=%" PRId16 ", prod=%" PRId16 "\r\n", sum, prod);
-
-        if (b16 != 0)
-            printf("div=%" PRId16 "\r\n", a16 / b16);
-        else
-            printf("div=undefined (division by zero)\r\n");
-    }
+    PRINT_INT_OPS(int16_t, "%" SCNd16, "%" PRId16, a16, b16);
 
     // int32_t
-    print_sep("int32_t\n");
-    if (scanf("%" SCNd32 " %" SCNd32, &a32, &b32) == 2) {
-        int32_t sum = a32 + b32;
-        int32_t prod = a32 * b32;
-        printf("a=%" PRId32 ", b=%" PRId32 "\r\n", a32, b32);
-        printf("sum=%" PRId32 ", prod=%" PRId32 "\r\n", sum, prod);
-        if (b32 != 0)
-            printf("div=%" PRId32 "\r\n", a32 / b32);
-        else
-            printf("div=undefined (division by zero)\r\n");
-    }
+    PRINT_INT_OPS(int32_t, "%" SCNd32, "%" PRId32, a32, b32);
 
     // int64_t
     print_sep("int64_t (use 32-bit for input)");
@@ -113,11 +93,5 @@ int main(void) {
             printf("div=undefined (division by zero)\r\n");
     }
 
-    // End
-    printf("\r\nAll done.\r\n");
-
-    // Keep MCU running
     while (1) _delay_ms(1000);
-
-    return 0;
 }

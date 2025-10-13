@@ -1,5 +1,8 @@
-zad1
-zad2
-zad3
-zad4
-helloworld.map
+.bootloader-pad
+.padded-*.elf
+*.bin
+*.hex
+*.lst
+*.map
+*.srec
+*.elf

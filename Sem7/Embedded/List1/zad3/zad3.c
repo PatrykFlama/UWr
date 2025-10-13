@@ -1,25 +1,23 @@
 #include <avr/io.h>
-#include <stdio.h>
 #include <inttypes.h>
+#include <stdio.h>
 #include <util/delay.h>
 
-
 #define BAUD 9600
-#define UBRR_VALUE ((F_CPU)/16/(BAUD)-1)
-
+#define UBRR_VALUE ((F_CPU) / 16 / (BAUD) - 1)
 
 static const uint8_t digits[10] = {
     // DP G F E D C B A
-    0b11000000, // 0
-    0b11111001, // 1
-    0b10100100, // 2
-    0b10110000, // 3
-    0b10011001, // 4
-    0b10010010, // 5
-    0b10000010, // 6
-    0b11111000, // 7
-    0b10000000, // 8
-    0b10010000  // 9
+    0b11000000,  // 0
+    0b11111001,  // 1
+    0b10100100,  // 2
+    0b10110000,  // 3
+    0b10011001,  // 4
+    0b10010010,  // 5
+    0b10000010,  // 6
+    0b11111000,  // 7
+    0b10000000,  // 8
+    0b10010000   // 9
 };
 
 int main(void) {
@@ -34,6 +32,4 @@ int main(void) {
         i++;
         if (i >= 10) i = 0;
     }
-
-    return 0;
 }

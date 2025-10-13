@@ -1,5 +1,5 @@
 
-PRG            = zad1
+PRG            = blink
 OBJ            = ${PRG}.o
 PROGRAMMER     = arduino
 PORT           = /dev/ttyUSB0
@@ -7,7 +7,7 @@ MCU_TARGET     = atmega328p
 AVRDUDE_TARGET = atmega328p
 OPTIMIZE       = -O3
 DEFS           =
-LIBS           = 
+LIBS           =
 BAUDRATE       = 115200
 
 HZ          = 16000000

@@ -6,45 +6,56 @@
 #define BAUD 9600                               // baudrate
 #define UBRR_VALUE ((F_CPU) / 16 / (BAUD) - 1)  // zgodnie ze wzorem
 
-FILE uart_file;
-
+// inicjalizacja UART
 void uart_init() {
+    // ustaw baudrate
     UBRR0 = UBRR_VALUE;
+    // wyczyść rejestr UCSR0A
     UCSR0A = 0;
+    // włącz odbiornik i nadajnik
     UCSR0B = _BV(RXEN0) | _BV(TXEN0);
+    // ustaw format 8n1
     UCSR0C = _BV(UCSZ00) | _BV(UCSZ01);
 }
 
+// transmisja jednego znaku
 int uart_transmit(char data, FILE *stream) {
+    // czekaj aż transmiter gotowy
     while (!(UCSR0A & _BV(UDRE0)));
     UDR0 = data;
     return 0;
 }
 
+// odczyt jednego znaku
 int uart_receive(FILE *stream) {
+    // czekaj aż znak dostępny
     while (!(UCSR0A & _BV(RXC0)));
     return UDR0;
 }
+
+FILE uart_file;
 
 static void print_sep(const char *title) {
     printf("\r\n--- %s ---\r\n", title);
 }
 
-#define PRINT_INT_OPS(type, scan_fmt, print_fmt, a, b) \
-    print_sep(#type); \
-    if (scanf(scan_fmt " " scan_fmt, &a, &b) == 2) { \
-        type sum = a + b; \
-        type prod = a * b; \
-        printf("a=" print_fmt ", b=" print_fmt "\r\n", a, b); \
+#define PRINT_INT_OPS(type, scan_fmt, print_fmt, a, b)                  \
+    print_sep("Write a and b for " #type);                              \
+    if (scanf(scan_fmt " " scan_fmt, &a, &b) == 2) {                    \
+        type sum = a + b;                                               \
+        type prod = a * b;                                              \
+        printf("a=" print_fmt ", b=" print_fmt "\r\n", a, b);           \
         printf("sum=" print_fmt ", prod=" print_fmt "\r\n", sum, prod); \
-        if (b != 0) \
-            printf("div=" print_fmt "\r\n", a / b); \
-        else \
-            printf("div=undefined (division by zero)\r\n"); \
+        if (b != 0)                                                     \
+            printf("div=" print_fmt "\r\n", a / b);                     \
+        else                                                            \
+            printf("div=undefined (division by zero)\r\n");             \
     }
 
-int main(void) {
+int main() {
+    // zainicjalizuj UART
     uart_init();
+    // skonfiguruj strumienie wejścia/wyjścia
     fdev_setup_stream(&uart_file, uart_transmit, uart_receive, _FDEV_SETUP_RW);
     stdin = stdout = stderr = &uart_file;
 
@@ -92,6 +103,4 @@ int main(void) {
         else
             printf("div=undefined (division by zero)\r\n");
     }
-
-    while (1) _delay_ms(1000);
 }

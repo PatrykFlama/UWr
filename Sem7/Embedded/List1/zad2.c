@@ -1,6 +1,8 @@
 #include <avr/io.h>
+#include <stdio.h>
+#include <inttypes.h>
 #include <util/delay.h>
-#include <stdint.h>
+
 
 #define BAUD 9600
 #define UBRR_VALUE ((F_CPU)/16/(BAUD)-1)

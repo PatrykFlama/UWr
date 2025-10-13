@@ -65,42 +65,81 @@ int main() {
     int64_t a64 = 0, b64 = 0;
     float af, bf;
 
-    // int8_t
-    PRINT_INT_OPS(int8_t, "%" SCNd8, "%" PRId8, a8, b8);
+    // // int8_t
+    // PRINT_INT_OPS(int8_t, "%" SCNd8, "%" PRId8, a8, b8);
 
-    // int16_t
-    PRINT_INT_OPS(int16_t, "%" SCNd16, "%" PRId16, a16, b16);
+    // // int16_t
+    // PRINT_INT_OPS(int16_t, "%" SCNd16, "%" PRId16, a16, b16);
 
-    // int32_t
-    PRINT_INT_OPS(int32_t, "%" SCNd32, "%" PRId32, a32, b32);
+    // // int32_t
+    // PRINT_INT_OPS(int32_t, "%" SCNd32, "%" PRId32, a32, b32);
 
-    // int64_t
-    print_sep("int64_t (use 32-bit for input)");
-    int tmp1, tmp2;
-    if (scanf("%" SCNd32 " %" SCNd32, &tmp1, &tmp2) == 2) {
-        a64 = (int64_t)tmp1;
-        b64 = (int64_t)tmp2;
-        int64_t sum = a64 + b64;
-        int64_t prod = a64 * b64;
-        printf("a=%" PRId32 ", b=%" PRId32 "\r\n", (int32_t)a64, (int32_t)b64);
-        printf("sum=%" PRId32 ", prod=%" PRId32 "\r\n", (int32_t)sum, (int32_t)prod);
-
-        if (b64 != 0)
-            printf("div=%" PRId32 "\r\n", (int32_t)(a64 / b64));
+    // start of int8_t function
+    print_sep("Write a and b for int8_t");
+    if (scanf("%" SCNd8 " %" SCNd8, &a8, &b8) == 2) {                // int8_t: read values a and b
+        int8_t sum8 = a8 + b8;                                       // int8_t: calculate sum
+        int8_t prod8 = a8 * b8;                                      // int8_t: calculate product
+        printf("a=%" PRId8 ", b=%" PRId8 "\r\n", a8, b8);            // int8_t: print a and b
+        printf("sum=%" PRId8 ", prod=%" PRId8 "\r\n", sum8, prod8);  // int8_t: print sum and product
+        if (b8 != 0)                                                 // int8_t: check for division by zero
+            printf("div=%" PRId8 "\r\n", a8 / b8);                   // int8_t: print division result
         else
-            printf("div=undefined (division by zero)\r\n");
+            printf("div=undefined (division by zero)\r\n");  // int8_t: print division by zero message
     }
 
-    // float
-    print_sep("float");
-    if (scanf("%f %f", &af, &bf) == 2) {
-        float sumf = af + bf;
-        float prodf = af * bf;
-        printf("a=%f, b=%f\r\n", af, bf);
-        printf("sum=%f, prod=%f\r\n", sumf, prodf);
-        if (bf != 0.0f)
-            printf("div=%f\r\n", af / bf);
+    // start of int16_t function
+    print_sep("Write a and b for int16_t");
+    if (scanf("%" SCNd16 " %" SCNd16, &a16, &b16) == 2) {                // int16_t: read values a and b
+        int16_t sum16 = a16 + b16;                                       // int16_t: calculate sum
+        int16_t prod16 = a16 * b16;                                      // int16_t: calculate product
+        printf("a=%" PRId16 ", b=%" PRId16 "\r\n", a16, b16);            // int16_t: print a and b
+        printf("sum=%" PRId16 ", prod=%" PRId16 "\r\n", sum16, prod16);  // int16_t: print sum and product
+        if (b16 != 0)                                                    // int16_t: check for division by zero
+            printf("div=%" PRId16 "\r\n", a16 / b16);                    // int16_t: print division result
         else
-            printf("div=undefined (division by zero)\r\n");
+            printf("div=undefined (division by zero)\r\n");  // int16_t: print division by zero message
+    }
+
+    // start of int32_t function
+    print_sep("Write a and b for int32_t");
+    if (scanf("%" SCNd32 " %" SCNd32, &a32, &b32) == 2) {                // int32_t: read values a and b
+        int32_t sum32 = a32 + b32;                                       // int32_t: calculate sum
+        int32_t prod32 = a32 * b32;                                      // int32_t: calculate product
+        printf("a=%" PRId32 ", b=%" PRId32 "\r\n", a32, b32);            // int32_t: print a and b
+        printf("sum=%" PRId32 ", prod=%" PRId32 "\r\n", sum32, prod32);  // int32_t: print sum and product
+        if (b32 != 0)                                                    // int32_t: check for division by zero
+            printf("div=%" PRId32 "\r\n", a32 / b32);                    // int32_t: print division result
+        else
+            printf("div=undefined (division by zero)\r\n");  // int32_t: print division by zero message
+    }
+
+    // start of int64_t function
+    print_sep("int64_t (use 32-bit for input)");
+    int32_t tmp1, tmp2;                             // int64_t: read values a and b
+    if (scanf("%" SCNd32 " %" SCNd32, &tmp1, &tmp2) == 2) {  // int64_t: calculate sum
+        a64 = (int64_t)tmp1;        // int64_t: cast to int64_t
+        b64 = (int64_t)tmp2;        // int64_t: cast to int64_t
+        int64_t sum = a64 + b64;    // int64_t: calculate sum
+        int64_t prod = a64 * b64;   // int64_t: calculate product
+        printf("a=%" PRId32 ", b=%" PRId32 "\r\n", (int32_t)a64, (int32_t)b64);   // int64_t: print a and b
+        printf("sum=%" PRId32 ", prod=%" PRId32 "\r\n", (int32_t)sum, (int32_t)prod);   // int64_t: print sum and product
+        
+        if (b64 != 0)   // int64_t: check for division by zero
+            printf("div=%" PRId32 "\r\n", (int32_t)(a64 / b64));  // int64_t: print division result
+        else
+            printf("div=undefined (division by zero)\r\n");  // int64_t: print division by zero message
+    }
+
+    // start of float function
+    print_sep("float");
+    if (scanf("%f %f", &af, &bf) == 2) {             // int64_t: read values a and b
+            float sumf = af + bf;                    // int64_t: calculate sum
+            float prodf = af * bf;                   // int64_t: calculate product
+            printf("a=%f, b=%f\r\n", af, bf);        // int64_t: print a and b
+            printf("sum=%f, prod=%f\r\n", sumf, prodf);  // int64_t: print sum and product
+            if (bf != 0.0f)                              // int64_t: check for division by zero
+                printf("div=%f\r\n", af / bf);           // int64_t: print division result
+            else
+                printf("div=undefined (division by zero)\r\n");  // int64_t: print division by zero message
     }
 }

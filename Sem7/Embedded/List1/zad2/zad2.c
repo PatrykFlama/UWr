@@ -15,7 +15,7 @@ int main() {
     DDRD = 0xFF;
 
     // start pattern: single lit LED on the left
-    uint8_t pattern = 0x01;
+    uint8_t pattern = 0b00000001;
     // direction: 1 = shift left, 0 = shift right
     uint8_t dir_left = 1;
 
@@ -25,14 +25,14 @@ int main() {
         _delay_ms(STEP_DELAY_MS);
 
         if (dir_left) {
-            if (pattern == 0x80) {
+            if (pattern == 0b10000000) {
                 dir_left = 0;
                 pattern >>= 1;
             } else {
                 pattern <<= 1;
             }
         } else {
-            if (pattern == 0x01) {
+            if (pattern == 0b00000001) {
                 dir_left = 1;
                 pattern <<= 1;
             } else {

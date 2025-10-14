@@ -3,12 +3,11 @@
 #include <stdio.h>
 #include <util/delay.h>
 
-#define BAUD 9600
-#define UBRR_VALUE ((F_CPU) / 16 / (BAUD) - 1)
-
 #define STEP_DELAY_MS 100
 
+
 int main() {
+    // disable RX/TX 
     UCSR0B &= ~_BV(RXEN0) & ~_BV(TXEN0);
 
     // set PD0..PD7 as outputs (whole PORTD)
@@ -24,20 +23,10 @@ int main() {
 
         _delay_ms(STEP_DELAY_MS);
 
-        if (dir_left) {
-            if (pattern == 0b10000000) {
-                dir_left = 0;
-                pattern >>= 1;
-            } else {
-                pattern <<= 1;
-            }
-        } else {
-            if (pattern == 0b00000001) {
-                dir_left = 1;
-                pattern <<= 1;
-            } else {
-                pattern >>= 1;
-            }
+        pattern = dir_left ? (pattern << 1) : (pattern >> 1);
+
+        if (pattern == 0b10000000 || pattern == 0b00000001) {
+            dir_left = 1 - dir_left;
         }
     }
 }

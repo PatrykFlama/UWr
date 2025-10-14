@@ -12,13 +12,63 @@
 #define LED_DDR DDRC
 #define LED_PORT PORTC
 
-const int DELAY_BETWEEN_WORDS = 500;
-const int DELAY_BETWEEN_LETTERS = 50;
+const int DELAY_BETWEEN_WORDS = 700;
+const int DELAY_BETWEEN_LETTERS = 100;
 const int DELAY_LONG = 300;
 const int DELAY_SHORT = 100;
 
-const char *morse_code[256] = {
-    ['A'] = ".-", ['B'] = "-...", ['C'] = "-.-.", ['D'] = "-..", ['E'] = ".", ['F'] = "..-.", ['G'] = "--.", ['H'] = "....", ['I'] = "..", ['J'] = ".---", ['K'] = "-.-", ['L'] = ".-..", ['M'] = "--", ['N'] = "-.", ['O'] = "---", ['P'] = ".--.", ['Q'] = "--.-", ['R'] = ".-.", ['S'] = "...", ['T'] = "-", ['U'] = "..-", ['V'] = "...-", ['W'] = ".--", ['X'] = "-..-", ['Y'] = "-.--", ['Z'] = "--..", ['0'] = "-----", ['1'] = ".----", ['2'] = "..---", ['3'] = "...--", ['4'] = "....-", ['5'] = ".....", ['6'] = "-....", ['7'] = "--...", ['8'] = "---..", ['9'] = "----.", [' '] = "/"};
+//! to jest obrzydliwe - tak nie chcemy pisać
+const char* morse_code[256] = {
+    [ 'A'] = ".-",   [ 'B'] = "-...", [ 'C'] = "-.-.", [ 'D'] = "-..",  [ 'E'] = ".",
+    [ 'F'] = "..-.", [ 'G'] = "--.",  [ 'H'] = "....", [ 'I'] = "..",   [ 'J'] = ".---",
+    [ 'K'] = "-.-",  [ 'L'] = ".-..", [ 'M'] = "--",   [ 'N'] = "-.",   [ 'O'] = "---",
+    [ 'P'] = ".--.", [ 'Q'] = "--.-", [ 'R'] = ".-.",  [ 'S'] = "...",  [ 'T'] = "-",
+    [ 'U'] = "..-",  [ 'V'] = "...-", [ 'W'] = ".--",  [ 'X'] = "-..-", [ 'Y'] = "-.--",
+    [ 'Z'] = "--..",
+    [ '0'] = "-----",[ '1'] = ".----",[ '2'] = "..---",[ '3'] = "...--",[ '4'] = "....-",
+    [ '5'] = ".....",[ '6'] = "-....",[ '7'] = "--...",[ '8'] = "---..",[ '9'] = "----.",
+    [ ' '] = ""
+};
+const int L = 'z'-'a'+1+10;
+// 3 bits for size and rest for code
+const int morse_code_better[L] = {
+    0b00000000,
+    0b11111000,
+    0b01111000,
+    0b00111000,
+    0b00011000,
+    0b00001000,
+    0b00000000,
+    0b10000000,
+    0b11000000,
+    0b11100000,
+    0b11110000,
+    0b01000000,
+    0b10000000,
+    0b10100000,
+    0b10000000,
+    0b00000000,
+    0b00100000,
+    0b11000000,
+    0b00000000,
+    0b00000000,
+    0b01110000,
+    0b10100000,
+    0b01000000,
+    0b11000000,
+    0b10000000,
+    0b11100000,
+    0b01100000,
+    0b11010000,
+    0b01000000,
+    0b00000000,
+    0b10000000,
+    0b00100000,
+    0b00010000,
+    0b01100000,
+    0b10010000,
+    0b10110000
+}
 
 #define blink_led(ms)     \
     LED_PORT |= _BV(LED); \
@@ -30,16 +80,25 @@ void blink_morse(const char *text) {
         unsigned char uc = (unsigned char)*p;
         char c = (char)toupper(uc);
 
-        const char *code = morse_code[(unsigned char)c];
-        if (code == NULL) continue;
+        // const char *code = morse_code[(unsigned char)c];
+        int code;
+        if (c >= 'A' && c <= 'Z') code = morse_code_better[c-'A'];
+        else if (c >= '0' && c <= '9') code = morse_code_better[c-'0'];
+        else continue;
 
-        for (const char *q = code; *q != '\0'; q++) {
-            char symbol = *q;
-            if (symbol == '.') {
+        int len = (code & 0b11100000) >> 5;
+        for (int i = 0; i < len; i++) {
+            int symbol = (code & (1 << (len - 1 - i)));
+            if (!symbol) {
                 blink_led(DELAY_SHORT);
-            } else if (symbol == '-') {
+            } else {
                 blink_led(DELAY_LONG);
             }
+            // if (symbol == '.') {
+            //     blink_led(DELAY_SHORT);
+            // } else if (symbol == '-') {
+            //     blink_led(DELAY_LONG);
+            // }
             _delay_ms(DELAY_BETWEEN_LETTERS);
         }
 
@@ -97,6 +156,7 @@ int main() {
         if (scanf("%127s", buf) != 1) {
             continue;
         }
+
         printf("Odczytano: %s\r\n", buf);
         printf("Nadawanie... ");
         blink_morse(buf);

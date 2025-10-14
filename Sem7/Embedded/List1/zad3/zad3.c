@@ -3,9 +3,6 @@
 #include <stdio.h>
 #include <util/delay.h>
 
-#define BAUD 9600
-#define UBRR_VALUE ((F_CPU) / 16 / (BAUD) - 1)
-
 static const uint8_t digits[10] = {
     // DP G F E D C B A
     0b11000000,  // 0

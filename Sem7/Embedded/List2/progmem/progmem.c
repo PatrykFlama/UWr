@@ -1,3 +1,5 @@
+// Program przykładowy: odczyt pamięci flash
+
 #include <avr/pgmspace.h>
 #include <avr/io.h>
 #include <stdio.h>

@@ -1,3 +1,5 @@
+// Program przykładowy: syrena alarmowa
+
 #include <avr/io.h>
 #include <util/delay.h>
 

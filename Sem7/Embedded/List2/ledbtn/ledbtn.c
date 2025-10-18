@@ -1,3 +1,5 @@
+// Program przykładowy: zapalanie diody przyciskiem
+
 #include <avr/io.h>
 #include <util/delay.h>
 

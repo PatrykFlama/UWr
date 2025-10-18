@@ -1,0 +1,7 @@
+FROM ubuntu:24.04
+
+COPY wersja-x /root
+RUN chmod +x /root/wersja-x
+
+WORKDIR /root
+CMD /root/wersja-x

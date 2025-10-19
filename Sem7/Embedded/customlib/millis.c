@@ -8,13 +8,13 @@
 #define CTC_MATCH_OVERFLOW ((F_CPU / 1000) / 64)
 
 // https://gist.github.com/adnbr/2439125
-volatile unsigned long timer_millis = 0;
+volatile unsigned long long timer_millis = 0;
 ISR (TIMER1_COMPA_vect) {
     timer_millis++;
 }
 
-unsigned long millis(void) {
-    unsigned long m;
+unsigned long long millis(void) {
+    unsigned long long m;
     ATOMIC_BLOCK(ATOMIC_FORCEON) {
         m = timer_millis;
     }

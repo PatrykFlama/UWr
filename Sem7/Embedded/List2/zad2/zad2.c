@@ -13,7 +13,11 @@
 #define BTN_PIN PINB
 #define BTN_PORT PORTB
 
-#define dprintf if (1) printf
+#ifndef DEBUG
+#define dprintf(...) ((void)0)
+#else
+#define dprintf(...) printf(__VA_ARGS__)
+#endif
 
 #define UNIT_MS 200 // base unit in ms (dot length)
 #define BUFFER_SIZE 16
@@ -63,28 +67,20 @@ static const uint8_t morse_digits[10] = {
 
 
 static char decode_morse(int press_pattern, int len) {
-    for (int i = len; i < 5; i++) {
-        press_pattern <<= 1;
-    }
-    const int pattern = (len << 5) | press_pattern;
-    dprintf("Decoding pattern: ");
-    for (int i = 7; i >= 0; --i) dprintf("%c", (press_pattern & (1 << i)) ? '1' : '0');
-    dprintf(" %d ", len);
-    for (int i = 7; i >= 0; --i) dprintf("%c", (pattern & (1 << i)) ? '1' : '0');
-    dprintf("\r\n");
+    if (len <= 0 || len > 5) return '?';
+    const uint8_t pattern = (uint8_t)((len << 5) | (press_pattern & 0b00011111));
+    dprintf("Decoding pattern: 0x%02X (len=%d)\r\n", pattern, len);
+
     // try letters
     for (int i = 0; i < 26; i++) {
-        if (morse_letters[i] == pattern) {
-            return 'A' + i;
-        }
+        if (morse_letters[i] == pattern) return 'A' + i;
     }
 
     // try digits
-    for (int i = 0; i < 10; i++) {
-        if (morse_digits[i] == pattern) {
-            return '0' + i;
-        }
+    for (int i = 0; i < 9; i++) {
+        if (morse_digits[i] == pattern) return '1' + i;
     }
+    if (morse_digits[9] == pattern) return '0';
 
     return '?';
 }
@@ -107,7 +103,7 @@ int main(void) {
 
     int buffer = 0;
     int buffer_len = 0;
-    int word_gapped = 0;
+    int word_gapped = 1;
 
     printf("Morse decoder started\r\n");
 
@@ -128,11 +124,11 @@ int main(void) {
             const unsigned long press_dur = now - last_event_time;
             
             if (press_dur <= dot_time) {
-                buffer = (buffer << 1) | 0b00000001;
+                buffer = buffer << 1;
                 buffer_len++;
                 dprintf(".");
             } else {
-                buffer = buffer << 1;
+                buffer = (buffer << 1) | 1;
                 buffer_len++;
                 dprintf("-");
             }
@@ -143,14 +139,15 @@ int main(void) {
         // if button not pressed, check gaps to determine separation
         if (btn) {
             const unsigned long gap_dur = now - last_event_time;
-            if (buffer > 0 && gap_dur >= inter_char_time) {
+            if (buffer_len > 0 && gap_dur >= inter_char_time) {
                 // end of character
                 const char ch = decode_morse(buffer, buffer_len);
                 printf("%c ", ch);
                 buffer = 0;
                 buffer_len = 0;
                 last_event_time = now;
-            } else if (word_gapped && buffer == 0 && gap_dur >= inter_word_time) {
+                word_gapped = 0;
+            } else if (!word_gapped && buffer == 0 && gap_dur >= inter_word_time) {
                 // word gap
                 printf("\r\n");
                 last_event_time = now;
@@ -159,5 +156,6 @@ int main(void) {
         }
 
         last_btn = btn;
+        _delay_ms(10);
     }
 }

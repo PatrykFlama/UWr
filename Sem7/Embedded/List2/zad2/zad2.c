@@ -86,7 +86,7 @@ static char decode_morse(int press_pattern, int len) {
 }
 
 
-int main(void) {
+int main() {
     BTN_PORT |= _BV(BTN); // pull-up
     LED_DDR |= _BV(LED);  // LED output
 
@@ -116,6 +116,7 @@ int main(void) {
             LED_PORT |= _BV(LED);
             last_event_time = now;
             word_gapped = 0;
+            _delay_ms(10);
         }
 
         // button released
@@ -134,6 +135,7 @@ int main(void) {
             }
 
             last_event_time = now;
+            _delay_ms(10);
         }
 
         // if button not pressed, check gaps to determine separation
@@ -156,6 +158,5 @@ int main(void) {
         }
 
         last_btn = btn;
-        _delay_ms(10);
     }
 }

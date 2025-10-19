@@ -53,12 +53,12 @@ Sem3/WEPPO/Lista7/certificate.pfx
 *.bak
 
 # VScode
-.vscode
-.vscode/c_cpp_properties.json
-.vscode/launch.json
-.vscode/tasks.json
-.vscode/*
-.vscode/settings.json
+# .vscode
+# .vscode/c_cpp_properties.json
+# .vscode/launch.json
+# .vscode/tasks.json
+# .vscode/*
+# .vscode/settings.json
 
 # CMake
 build/

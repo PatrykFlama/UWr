@@ -58,10 +58,11 @@ int main() {
 
         // handle button presses
         for (int i = 0; i < 3; i++) {
-            if (newly_pressed & button_to_function[i].btn_mask) {
+            if (pressed & button_to_function[i].btn_mask) {
                 button_to_function[i].function();
             }
         }
+
         // // handle button presses with a small debounce: re-sample after 20 ms
         // if (newly_pressed) {
         //     _delay_ms(20);
@@ -80,6 +81,10 @@ int main() {
         LEDS_PORT = out & LEDS;
 
         last_pressed = pressed;
-        _delay_ms(10);
+
+        if (pressed) {
+            // _delay_ms(10);
+            _delay_ms(200);
+        }
     }
 }

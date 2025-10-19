@@ -6,22 +6,6 @@
 #define BAUD 9600
 #define UBRR_VALUE ((F_CPU) / 16 / (BAUD) - 1)
 
-// inicjalizacja UART
-void uart_init() {
-    // ustaw baudrate
-    UBRR0 = UBRR_VALUE;
-    // wyczyść rejestr UCSR0A
-    UCSR0A = 0;
-    // włącz odbiornik i nadajnik
-    UCSR0B = _BV(RXEN0) | _BV(TXEN0);
-    // ustaw format 8n1
-    UCSR0C = _BV(UCSZ00) | _BV(UCSZ01);
-
-    // skonfiguruj strumienie wejścia/wyjścia
-    fdev_setup_stream(&uart_file, uart_transmit, uart_receive, _FDEV_SETUP_RW);
-    stdin = stdout = stderr = &uart_file;
-}
-
 // transmisja jednego znaku
 int uart_transmit(char data, FILE *stream) {
     // czekaj aż transmiter gotowy
@@ -38,3 +22,19 @@ int uart_receive(FILE *stream) {
 }
 
 FILE uart_file;
+
+// inicjalizacja UART
+void uart_init() {
+    // ustaw baudrate
+    UBRR0 = UBRR_VALUE;
+    // wyczyść rejestr UCSR0A
+    UCSR0A = 0;
+    // włącz odbiornik i nadajnik
+    UCSR0B = _BV(RXEN0) | _BV(TXEN0);
+    // ustaw format 8n1
+    UCSR0C = _BV(UCSZ00) | _BV(UCSZ01);
+
+    // skonfiguruj strumienie wejścia/wyjścia
+    fdev_setup_stream(&uart_file, uart_transmit, uart_receive, _FDEV_SETUP_RW);
+    stdin = stdout = stderr = &uart_file;
+}

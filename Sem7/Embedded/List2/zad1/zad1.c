@@ -18,9 +18,9 @@ struct State
     unsigned long timestamp; // millis when to play this event
 };
 
-int bufor_begin = 0; // index of oldest event
-int bufor_end = 0;   // index one past last event (empty when equal to begin)
-struct State bufor[BUFOR_SIZE];
+int buffer_begin = 0; // index of oldest event
+int buffer_end = 0;   // index one past last event (empty when equal to begin)
+struct State buffer[BUFOR_SIZE];
 
 
 int main() {
@@ -29,9 +29,7 @@ int main() {
     LED_DDR |= _BV(LED);
 
     // initialize timer
-    cli();
     timer_init_ms();
-    sei();
 
     uint8_t last_state = (BTN_PIN & _BV(BTN)) ? 1 : 0;
 
@@ -43,26 +41,26 @@ int main() {
 
             unsigned long play_time = timer_millis + TIME_OFFSET;
 
-            int next_end = (bufor_end + 1) % BUFOR_SIZE;
+            int next_end = (buffer_end + 1) % BUFOR_SIZE;
             // if buffer full, drop oldest (advance begin)
-            if (next_end == bufor_begin) {
-                bufor_begin = (bufor_begin + 1) % BUFOR_SIZE;
+            if (next_end == buffer_begin) {
+                buffer_begin = (buffer_begin + 1) % BUFOR_SIZE;
             }
 
-            bufor[bufor_end].btn_state = curr_state;
-            bufor[bufor_end].timestamp = play_time;
-            bufor_end = next_end;
+            buffer[buffer_end].btn_state = curr_state;
+            buffer[buffer_end].timestamp = play_time;
+            buffer_end = next_end;
         }
 
         // replay events when their timestamp has passed
-        if (bufor_begin != bufor_end) {
-            if (timer_millis >= bufor[bufor_begin].timestamp) {
-                if (bufor[bufor_begin].btn_state)
+        if (buffer_begin != buffer_end) {
+            if (timer_millis >= buffer[buffer_begin].timestamp) {
+                if (buffer[buffer_begin].btn_state)
                     LED_PORT &= ~_BV(LED);
                 else
                     LED_PORT |= _BV(LED);
 
-                bufor_begin = (bufor_begin + 1) % BUFOR_SIZE;
+                buffer_begin = (buffer_begin + 1) % BUFOR_SIZE;
             }
         }
     }

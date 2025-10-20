@@ -1,0 +1,16 @@
+FROM debian:13 AS build
+
+RUN apt-get update && apt-get install -y g++ make
+
+WORKDIR /app
+COPY main.cpp .
+
+RUN g++ -O2 -static -o hello main.cpp
+
+
+FROM debian:13-slim
+
+COPY --from=build /app/hello /usr/local/bin/hello
+
+ENTRYPOINT ["hello"]
+

@@ -1,0 +1,10 @@
+services:
+  app1:
+    image: zad3:v0
+    ports: ["2200:22"]
+  app2:
+    image: zad3:v0
+    ports: ["2201:22"]
+  app3:
+    image: zad3:v0
+    ports: ["2202:22"]

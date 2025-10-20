@@ -1,0 +1,11 @@
+FROM debian:13
+
+RUN apt-get update && \
+    apt-get install -y ssh vim iproute2 curl
+
+COPY id_ed25519.pub /root/.ssh/authorized_keys
+
+RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+
+ENTRYPOINT service ssh start && bash
+WORKDIR /root

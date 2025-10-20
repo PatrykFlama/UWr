@@ -111,7 +111,7 @@ RUN apt install -y vim
 ```dockerfile
 FROM ubuntu:24.04
 
-RUN apt update && apt install -y iproute-2 vim ssh cur1
+RUN apt update && apt install -y iproute-2 vim ssh curl
 COPY id_ed25519.pub /root/.ssh/authorized_keys
 
 WORKDIR /root

@@ -32,3 +32,23 @@ Score: -4.48, Sentence: miała dwa koziołki babuleńka rogate
 Score: -4.49, Sentence: miała babuleńka rogate koziołki dwa
 ```
 
+
+
+## Zad 3
+```
+Method 1 Accuracy: 0.63
+Method 2 Accuracy: 0.58
+Method 3 Accuracy: 0.73
+```
+
+## Zad 4
+grupy:
+- tak/nie
+- liczby słownie / cyfrowo (uwaga: mamy 'dwa' != 'dwie' ale oba == '2')
+  - daty
+  - wagi
+  - czas
+  - metry
+- imiona nazwiska / nazwiska - hitoria / autorzy / bohaterowie
+- miejsca (lokalizacje)
+- cytaty

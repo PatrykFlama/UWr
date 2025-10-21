@@ -7,6 +7,7 @@ from tqdm.auto import tqdm
 
 QNA_SAMPLE = 0.1
 SAVE_ANSWERS = True
+SAVE_QUESTIONS = True
 
 FEWSHOT = {
     "OSOBY": """Pytanie: Kto napisał Pana Tadeusza?
@@ -124,6 +125,11 @@ if SAVE_ANSWERS:
     with open("correct_answers.txt", "w", encoding="utf-8") as f:
         for a in real_answers:
             f.write(a + "\n")
+        
+if SAVE_QUESTIONS:
+    with open("task4_questions_sampled.txt", "w", encoding="utf-8") as f:
+        for q in questions:
+            f.write(q + "\n")
 
 answers = []
 for q in tqdm(questions, desc="Odpowiadanie na pytania"):

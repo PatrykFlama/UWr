@@ -19,11 +19,11 @@ def match(ans, cor):
 found_answers = []
 correct_answers = []
 
-for x in open('correct_answers.txt'):
+for x in open('correct_answers.txt', encoding="utf-8"):
     x = x.strip()
     correct_answers.append(x.lower().split('\t'))
-    
-for x in open('found_answers.txt'):    
+
+for x in open('found_answers.txt', encoding="utf-8"):
     x = x.strip()
     found_answers.append(x.lower())
     

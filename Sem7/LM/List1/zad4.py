@@ -35,7 +35,7 @@ Odpowiedź: Główne miasto kraju.
 
 # === Model ===
 model_name = 'eryk-mazus/polka-1.1b-chat'
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
 print("Model loaded on", device)
@@ -111,17 +111,17 @@ def heuristic_answer(q):
     return ask_model(q)
 
 # ====== MAIN ======
-with open("task4_questions.txt") as f:
+with open("task4_questions.txt", encoding="utf-8") as f:
     questions = [x.strip() for x in f if x.strip()]
     questions_idx = random.sample(range(len(questions)), int(len(questions) * QNA_SAMPLE))
     questions = [questions[i] for i in questions_idx]
 
 if SAVE_ANSWERS:
-    with open("task4_answers.txt", "r") as f:
+    with open("task4_answers.txt", "r", encoding="utf-8") as f:
         real_answers = [x.strip() for x in f if x.strip()]
         real_answers = [real_answers[i] for i in questions_idx]
-        
-    with open("correct_answers.txt", "w") as f:
+
+    with open("correct_answers.txt", "w", encoding="utf-8") as f:
         for a in real_answers:
             f.write(a + "\n")
 
@@ -130,6 +130,6 @@ for q in tqdm(questions, desc="Odpowiadanie na pytania"):
     ans = heuristic_answer(q)
     answers.append(ans)
 
-with open("found_answers.txt", "w") as f:
+with open("found_answers.txt", "w", encoding="utf-8") as f:
     for a in answers:
         f.write(a.strip() + "\n")

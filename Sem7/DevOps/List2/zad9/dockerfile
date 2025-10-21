@@ -1,0 +1,7 @@
+FROM ubuntu:latest
+
+RUN groupadd -r smok && useradd --no-log-init -r -g smok smok
+COPY smok.sh /home/smok/smok.sh
+
+USER smok
+CMD ./smok.sh

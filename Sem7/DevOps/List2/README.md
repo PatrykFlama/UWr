@@ -1,7 +1,7 @@
 # List 2
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 |---|---|---|---|---|---|---|---|---|----|
-| x | x | x | x | x |   |   |   |   |    |
+| x | x | x | x | x |   | x | x |   |    |
 
 
 ## Zadanie 1
@@ -56,5 +56,50 @@ RUN unset ADMIN_USER
 
 
 ## Zadanie 6
+
+## Zadanie 7
+[Resource constraints docs](https://docs.docker.com/engine/containers/resource_constraints/#cpu) - 
+nakłada ograniczenie na używane procesory oraz ich rdzenie  
+(po co? obv)
+
+[Docker build cache](https://docs.docker.com/build/cache/)  
+Cache budowania obrazów zapisuje każdą warstwę jako osobny obraz - więc jeżeli zmienimy instrukcję budowania warstwy, to docker zaznaczy że jej obraz nie jest już aktualny     
+- `docker image ls --all`
+wypisuje wszystkie obrazy  
+
+- `docker image history <obraz>`
+wypisuje historię warstw obrazu (przez jaką instrukcję została stworzona oraz id tej wersji)
+
+- `docker image inspect <obraz>`
+wypisuje metadane obrazu
+
+
+## Zadanie 8
+[Docker bake docs](https://docs.docker.com/build/bake/) - abstrakcja do `docker build`.  
+Bake to plik do **deklaratywnego** budowania **wielu obrazów** jednocześnie. Dzięki temu, jeżeli nasza aplikacja składa się z wielu obrazów (np frontend, backend, baza danych), to możemy je zbudować jednym poleceniem (oraz deklaratywnie).  
+
+po co?  
+- deklaratywne
+- wiele obrazów na raz
+- np gdy budujemy na wiele platform (amd64, arm64)
+
+`docker buildx bake`
+
+```h
+target "myapp" {
+  context = "."
+  dockerfile = "Dockerfile"
+  tags = ["myapp:latest"]
+  args = {
+    foo = "bar"
+  }
+  no-cache = true
+  platforms = ["linux/amd64", "linux/arm64"]
+}
+```
+
+
+## Zadanie 9
+
 
 

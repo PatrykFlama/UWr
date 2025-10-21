@@ -1,0 +1,7 @@
+FROM debian:13
+
+
+RUN dd if=/dev/urandom of=duzyPlik bs=1M count=100
+RUN rm duzyPlik
+
+WORKDIR /root

@@ -1,7 +1,10 @@
 FROM ubuntu:latest
 
 RUN groupadd -r smok && useradd --no-log-init -r -g smok smok
+RUN mkdir -p /home/smok && chown smok:smok /home/smok
 COPY smok.sh /home/smok/smok.sh
+RUN chown smok:smok /home/smok/smok.sh
 
 USER smok
-CMD ./smok.sh
+WORKDIR /home/smok
+CMD ["./smok.sh"]

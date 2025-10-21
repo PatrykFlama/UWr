@@ -1,7 +1,7 @@
 # List 2
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 |---|---|---|---|---|---|---|---|---|----|
-| x | x | x | x | x |   | x | x |   |    |
+| x | x | x | x | x |   | x | x | x | x  |
 
 
 ## Zadanie 1
@@ -100,6 +100,13 @@ target "myapp" {
 
 
 ## Zadanie 9
+- katalog w home stworzony jako root - użytkownik nie ma do niego uprawnień
+- CMD uruchamiane w katalogu `/`
+- `JSON arguments recommended for ENTRYPOINT/CMD to prevent unintended behavior related to OS signals (JSON arguments recommended for CMD to prevent unintended behavior related to OS signals)Docker DX (docker-language-server)JSONArgsRecommended`
 
-
+## Zadanie 10
+optymalizacja rozmiaru obrazu:
+- czyszczenie cache apt: `RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*`
+- mniejszy obraz: np `alpine`
+- budowanie aplikacji w dużym obrazie, a uruchamianie w osobnym, tylko kompilatów
 

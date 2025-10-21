@@ -34,4 +34,6 @@ for ans, cor in zip(found_answers, correct_answers):
     if match(ans, cor):
         score += 1
         
-print ('TOTAL SCORE:', score)        
+print ('TOTAL SCORE:', score)
+print ('TOTAL QUESTIONS:', N)
+print ('ACCURACY:', score / N)

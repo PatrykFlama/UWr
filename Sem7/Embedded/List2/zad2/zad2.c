@@ -22,67 +22,66 @@
 #define UNIT_MS 200 // base unit in ms (dot length)
 #define BUFFER_SIZE 16
 
-// 3 bits for length, 5 bits for sequence (dot=0, dash=1)
-static const uint8_t morse_letters[26] = {
-    0b01000001, /* A  .-    */
-    0b10001000, /* B  -...  */
-    0b10001010, /* C  -.-.  */
-    0b01100100, /* D  -..   */
-    0b00100000, /* E  .     */
-    0b10000010, /* F  ..-.  */
-    0b01100110, /* G  --.   */
-    0b10000000, /* H  ....  */
-    0b01000000, /* I  ..    */
-    0b10000111, /* J  .---  */
-    0b01100101, /* K  -.-   */
-    0b10000100, /* L  .-..  */
-    0b01000011, /* M  --    */
-    0b01000010, /* N  -.    */
-    0b01100111, /* O  ---   */
-    0b10000110, /* P  .--.  */
-    0b10001101, /* Q  --.-  */
-    0b01100010, /* R  .-.   */
-    0b01100000, /* S  ...   */
-    0b00100001, /* T  -     */
-    0b01100001, /* U  ..-   */
-    0b10000001, /* V  ...-  */
-    0b01100011, /* W  .--   */
-    0b10001001, /* X  -..-  */
-    0b10001011, /* Y  -.--  */
-    0b10001100  /* Z  --..  */
+static const char trie[] = {
+    0, 
+    0,
+    'E', 'T', 
+    'I', 'A', 'N', 'M', 
+    'S', 'U', 'R', 'W', 'D', 'K', 'G', 'O', 
+    0, 'H', 'V', 'F', 0, 'L', 'P', 'J', 'B', 'X', 'C', 'Y', 'Z', 'Q', 0, 0, 0, 0
 };
 
-static const uint8_t morse_digits[10] = {
-    0b10101111, /* 1 .---- */
-    0b10100111, /* 2 ..--- */
-    0b10100011, /* 3 ...-- */
-    0b10100001, /* 4 ....- */
-    0b10100000, /* 5 ..... */
-    0b10110000, /* 6 -.... */
-    0b10111000, /* 7 --... */
-    0b10111100, /* 8 ---.. */
-    0b10111110, /* 9 ----. */
-    0b10111111  /* 0 ----- */
-};
-
+/*
+A  .-   
+B  -... 
+C  -.-. 
+D  -..  
+E  .    
+F  ..-. 
+G  --.  
+H  .... 
+I  ..   
+J  .--- 
+K  -.-  
+L  .-.. 
+M  --   
+N  -.   
+O  ---  
+P  .--. 
+Q  --.- 
+R  .-.  
+S  ...  
+T  -    
+U  ..-  
+V  ...- 
+W  .--  
+X  -..- 
+Y  -.-- 
+Z  --.. 
+1 .----
+2 ..---
+3 ...--
+4 ....-
+5 .....
+6 -....
+7 --...
+8 ---..
+9 ----.
+0 -----
+*/
 
 static char decode_morse(int press_pattern, int len) {
-    if (len <= 0 || len > 5) return '?';
-    const uint8_t pattern = (uint8_t)((len << 5) | (press_pattern & 0b00011111));
-    dprintf("Decoding pattern: 0x%02X (len=%d)\r\n", pattern, len);
-
-    // try letters
-    for (int i = 0; i < 26; i++) {
-        if (morse_letters[i] == pattern) return 'A' + i;
+    int pos = 1;
+    for (int i = 0; i < len; i++) {
+        if (press_pattern & (1 << (len - 1 - i))) {
+            // dash
+            pos = (pos << 1) | 1;
+        } else {
+            // dot
+            pos = (pos << 1) | 0;
+        }
     }
-
-    // try digits
-    for (int i = 0; i < 9; i++) {
-        if (morse_digits[i] == pattern) return '1' + i;
-    }
-    if (morse_digits[9] == pattern) return '0';
-
-    return '?';
+    return trie[pos];
 }
 
 
@@ -98,7 +97,7 @@ int main() {
     const unsigned inter_char_time = 3 * UNIT_MS;
     const unsigned inter_word_time = 7 * UNIT_MS;
 
-    unsigned long last_event_time = millis();
+    unsigned int last_event_time = millis();
     int last_btn = (BTN_PIN & _BV(BTN)) ? 1 : 0; // 1 = not pressed (pull-up)
 
     int buffer = 0;
@@ -109,10 +108,13 @@ int main() {
 
     while (1) {
         const int btn = (BTN_PIN & _BV(BTN)) ? 1 : 0;
-        const unsigned long now = millis();
+        const unsigned int now = millis();
 
         // button pressed
         if (!btn && last_btn) {
+            _delay_ms(10);
+            if ((BTN_PIN & _BV(BTN)) ? 1 : 0 != btn) continue;
+
             LED_PORT |= _BV(LED);
             last_event_time = now;
             word_gapped = 0;
@@ -122,7 +124,7 @@ int main() {
         // button released
         if (btn && !last_btn) {
             LED_PORT &= ~_BV(LED);
-            const unsigned long press_dur = now - last_event_time;
+            const unsigned int press_dur = now - last_event_time;
             
             if (press_dur <= dot_time) {
                 buffer = buffer << 1;
@@ -140,7 +142,7 @@ int main() {
 
         // if button not pressed, check gaps to determine separation
         if (btn) {
-            const unsigned long gap_dur = now - last_event_time;
+            const unsigned int gap_dur = now - last_event_time;
             if (buffer_len > 0 && gap_dur >= inter_char_time) {
                 // end of character
                 const char ch = decode_morse(buffer, buffer_len);

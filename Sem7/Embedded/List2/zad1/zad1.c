@@ -9,13 +9,14 @@
 #define BTN_PIN PINB
 #define BTN_PORT PORTB
 
-#define BUFOR_SIZE 16
+// avg human reaction is 200ms => to record it 10 entries should be enough
+#define BUFOR_SIZE 10
 #define TIME_OFFSET 1000   // milliseconds
 
 struct State
 {
-    uint8_t btn_state; // 0 or 1
-    unsigned long timestamp; // millis when to play this event
+    uint8_t btn_state; // 0 or 1 (we could use separate integer, to use only 1 bit per btn state)
+    unsigned int timestamp; // millis when to play this event
 };
 
 int buffer_begin = 0; // index of oldest event

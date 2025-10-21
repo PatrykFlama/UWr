@@ -47,7 +47,7 @@ int main() {
 
     timer_init_ms();
 
-    unsigned long long start_time = millis();
+    unsigned int start_time = millis();
     int number = 0;
     while (1) {
         if (millis() - start_time >= 1000) {
@@ -60,9 +60,10 @@ int main() {
             digit2 = (number / 10) % 10;
         }
 
-        _delay_ms(10);
+        _delay_ms(5);
         swap_displays();
 
+        // --- debug ---
         // DISPLAYS_PORT = _BV(DISPLAY1);
         // LEDS_PORT = digits[8];
         // _delay_ms(500);

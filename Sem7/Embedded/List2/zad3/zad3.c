@@ -56,25 +56,18 @@ int main() {
         int pressed = (~raw) & BTNS;
         int newly_pressed = pressed & ~last_pressed;
 
-        // handle button presses
-        for (int i = 0; i < 3; i++) {
-            if (pressed & button_to_function[i].btn_mask) {
-                button_to_function[i].function();
+        // handle button presses with a small debounce: re-sample after 20 ms
+        if (newly_pressed) {
+            _delay_ms(20);
+            int raw2 = BTN_PIN & BTNS;
+            int pressed2 = (~raw2) & BTNS;
+            int newly2 = newly_pressed & pressed2; // only keep still-pressed
+            for (int i = 0; i < 3; i++) {
+                if (newly2 & button_to_function[i].btn_mask) {
+                    button_to_function[i].function();
+                }
             }
         }
-
-        // // handle button presses with a small debounce: re-sample after 20 ms
-        // if (newly_pressed) {
-        //     _delay_ms(20);
-        //     int raw2 = BTN_PIN & BTNS;
-        //     int pressed2 = (~raw2) & BTNS;
-        //     int newly2 = newly_pressed & pressed2; // only keep still-pressed
-        //     for (int i = 0; i < 3; i++) {
-        //         if (newly2 & button_to_function[i].btn_mask) {
-        //             button_to_function[i].function();
-        //         }
-        //     }
-        // }
 
         // update LEDs with Gray code (only LED bits)
         const uint8_t out = to_gray(gray_number);
@@ -83,8 +76,7 @@ int main() {
         last_pressed = pressed;
 
         if (pressed) {
-            // _delay_ms(10);
-            _delay_ms(200);
+            _delay_ms(10);
         }
     }
 }

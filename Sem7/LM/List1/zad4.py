@@ -72,6 +72,29 @@ def sentence_prob(sentence_txt):
         seq_log_probs = torch.sum(log_probs)
     return seq_log_probs.cpu().numpy()  
 
+def roman_to_numeraic(value):
+    roman_numerals = {"I" : 1,
+                    "V" : 5,
+                    "X" : 10,
+                    "L" : 50,
+                    "C" : 100,
+                    "D" : 500,
+                    "M" : 1000
+                    }
+
+    int_value = 0
+
+    for i in range(len(value)):
+        if value[i] in roman_numerals:
+            if i + 1 < len(value) and roman_numerals[value[i]] < roman_numerals[value[i + 1]]:
+                int_value -= roman_numerals[value[i]]
+            else:
+                int_value += roman_numerals[value[i]]
+        else:
+            return False
+        
+    return int_value
+
 
 def ask_model(question, shots=None):
     base_prompt = ""
@@ -154,6 +177,13 @@ def classify_question(q):
 
     return "INNE"
 
+def classify_question_model_based(q):
+    types = [(k.lower().replace('_', ' '), idx)  for (k, _), idx in zip(FEWSHOT, range(len(FEWSHOT)))]
+    questions = [f"To jest pytanie typu {t[0]}: {q}" for t in types]
+    question_probs = [sentence_prob(question) for question in questions]
+    best = max(zip(question_probs, types), key=lambda x: x[0])
+    return best[1][0].replace(' ', '_').upper()
+
 def answer_question(q):
     group = classify_question(q)
 
@@ -178,6 +208,11 @@ def answer_question(q):
         for w, d in word_to_digit.items():
             if re.search(rf"\b{w}\b", ans.lower()):
                 nums += d
+
+        for w in ans.split():
+            from_roman = roman_to_numeraic(w)
+            if from_roman != False:
+                nums += str(from_roman)
 
         if nums:
             return max(set(nums), key=nums.count)

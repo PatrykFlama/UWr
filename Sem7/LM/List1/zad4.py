@@ -10,6 +10,13 @@ SAVE_ANSWERS = True
 SAVE_QUESTIONS = True
 
 FEWSHOT = {
+    "TAK_NIE": """Pytanie: Czy Mount Everest jest najwyższą górą na Ziemi?
+Odpowiedź: Tak.
+Pytanie: Czy Albert Einstein napisał „Odyseję kosmiczną”?
+Odpowiedź: Nie.
+Pytanie: Czy chomik jest ssakiem?
+Odpowiedź: Tak.
+""",
     "OSOBY": """Pytanie: Kto napisał Pana Tadeusza?
 Odpowiedź: Adam Mickiewicz.
 Pytanie: Kto był pierwszym prezydentem Polski?
@@ -31,12 +38,8 @@ Odpowiedź: Adam Mickiewicz.
 Odpowiedź: Urządzenie elektroniczne do przetwarzania danych.
 Pytanie: Co to jest stolica?
 Odpowiedź: Główne miasto kraju.
-"""
-}
-
-# Add a few-shot template for short factual Q/A and yes/no questions to improve
-# model conditioning for factoid responses.
-FEWSHOT_FACT = """Pytanie: Który stan USA ma największą powierzchnię?
+""",
+    "FACT": """Pytanie: Który stan USA ma największą powierzchnię?
 Odpowiedź: Alaska.
 Pytanie: Kto był autorem powieści "Ziemia obiecana"?
 Odpowiedź: Władysław Reymont.
@@ -45,6 +48,7 @@ Odpowiedź: Nie.
 Pytanie: Ile jest 12 podzielić na 4?
 Odpowiedź: 3.
 """
+}
 
 # === Model ===
 model_name = 'eryk-mazus/polka-1.1b-chat'
@@ -59,7 +63,7 @@ def log_probs_from_logits(logits, labels):
     logp = F.log_softmax(logits, dim=-1)
     logp_label = torch.gather(logp, 2, labels.unsqueeze(2)).squeeze(-1)
     return logp_label
-             
+
 def sentence_prob(sentence_txt):
     input_ids = tokenizer(sentence_txt, return_tensors='pt')['input_ids'].to(device)
     with torch.no_grad():
@@ -70,16 +74,12 @@ def sentence_prob(sentence_txt):
 
 
 def ask_model(question, shots=None):
-    # Build prompt with optional few-shot examples
     base_prompt = ""
     if shots:
         base_prompt = shots.strip() + "\n\n"
     prompt = f"{base_prompt}Pytanie: {question}\nOdpowiedź:"
     inputs = tokenizer(prompt, return_tensors="pt").to(device)
 
-    # Use more deterministic generation for short, factual answers
-    # when prompt looks like a factoid (few-shot provided) - lower temp, beams.
-    # Generation parameters (explicit to satisfy static analysis)
     max_new_tokens = 20
     pad_token_id = tokenizer.eos_token_id
     do_sample = True
@@ -126,7 +126,6 @@ def ask_model(question, shots=None):
         )
     text = tokenizer.decode(output[0], skip_special_tokens=True)
     ans = text.split("Odpowiedź:")[-1].strip().split('\n')[0]
-    # basic cleaning
     ans = ans.strip()
     # remove leading punctuation/quotes
     ans = re.sub(r'^["\'"`\\s:.–—\-]+', '', ans)
@@ -141,17 +140,17 @@ def classify_question(q):
 
     # numeric questions
     if any(tok in q for tok in ["ile", "ile wynosi", "ile jest", "którym roku", "kiedy", "data"]):
-        return "LICZBA"
+        return "LICZBY"
 
     # definition-like
     if q.startswith("co") or "oznacza" in q or q.startswith("jak nazywa się"):
-        return "DEFINICJA"
+        return "DEFINICJE"
 
     # person/place detection heuristics
     if q.startswith("kto") or "który" in q and any(w in q for w in ["napisał", "był", "autor", "dowódca", "prezydent", "kto"]):
-        return "OSOBA"
+        return "OSOBY"
     if any(w in q for w in ["miasto", "kraj", "województwie", "gdzie", "stan", "wyspa", "rzeka", "na terenie"]):
-        return "MIEJSCE"
+        return "MIEJSCA"
 
     return "INNE"
 
@@ -160,8 +159,7 @@ def heuristic_answer(q):
 
     # TAK/NIE
     if group == "TAK_NIE":
-        # Use a short few-shot and score the two options using sentence probability
-        few = FEWSHOT_FACT
+        few = FEWSHOT["FACT"]
         yes = "Tak."
         no = "Nie."
         # Score full prompt + candidate answer
@@ -170,32 +168,31 @@ def heuristic_answer(q):
         return yes if p_yes >= p_no else no
 
     # ILE / KTÓRY ROK
-    if group == "LICZBA":
+    if group == "LICZBY":
         # Ask with factual few-shot and prefer extracted numbers
-        ans = ask_model(q, shots=FEWSHOT_FACT)
+        ans = ask_model(q, shots=FEWSHOT["FACT"])
         nums = re.findall(r"\d+", ans)
         if nums:
             return nums[0]
-        # also try to parse simple written numbers (one, dwa, trzy) - keep minimal
-        word_to_digit = {"jeden": "1", "dwa": "2", "trzy": "3", "cztery": "4", "pięć": "5", "sześć": "6"}
+        word_to_digit = {"jeden": "1", "dwa": "2", "trzy": "3", "cztery": "4", "pięć": "5", 
+                         "sześć": "6", "siedem": "7", "osiem": "8", "dziewięć": "9", "zero": "0"}
         for w, d in word_to_digit.items():
             if re.search(rf"\b{w}\b", ans.lower()):
                 return d
         return ans
 
     # CO TO JEST / CO OZNACZA
-    if group == "DEFINICJA":
+    if group == "DEFINICJE":
         few_shot = FEWSHOT.get(group, "")
         return ask_model(q, shots=few_shot)
 
     # For person/place try targeted few-shot to improve accuracy
-    if group == "OSOBA":
-        return ask_model(q, shots=FEWSHOT.get("OSOBY", ""))
+    if group == "OSOBY":
+        return ask_model(q, shots=FEWSHOT[group])
     if group == "MIEJSCE":
-        return ask_model(q, shots=FEWSHOT.get("MIEJSCA", ""))
+        return ask_model(q, shots=FEWSHOT[group])
 
-    # fallback: use general factual few-shot to bias concise answers
-    return ask_model(q, shots=FEWSHOT_FACT)
+    return ask_model(q, shots=FEWSHOT["FACT"])
 
 # ====== MAIN ======
 with open("task4_questions.txt", encoding="utf-8") as f:

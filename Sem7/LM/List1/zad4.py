@@ -154,7 +154,7 @@ def classify_question(q):
 
     return "INNE"
 
-def heuristic_answer(q):
+def answer_question(q):
     group = classify_question(q)
 
     # TAK/NIE
@@ -162,6 +162,7 @@ def heuristic_answer(q):
         few = FEWSHOT["FACT"]
         yes = "Tak."
         no = "Nie."
+        # return yes
         # Score full prompt + candidate answer
         p_yes = sentence_prob(f"{few}\nPytanie: {q} Odpowiedź: {yes}")
         p_no = sentence_prob(f"{few}\nPytanie: {q} Odpowiedź: {no}")
@@ -169,16 +170,18 @@ def heuristic_answer(q):
 
     # ILE / KTÓRY ROK
     if group == "LICZBY":
-        # Ask with factual few-shot and prefer extracted numbers
         ans = ask_model(q, shots=FEWSHOT["FACT"])
         nums = re.findall(r"\d+", ans)
-        if nums:
-            return nums[0]
+
         word_to_digit = {"jeden": "1", "dwa": "2", "trzy": "3", "cztery": "4", "pięć": "5", 
                          "sześć": "6", "siedem": "7", "osiem": "8", "dziewięć": "9", "zero": "0"}
         for w, d in word_to_digit.items():
             if re.search(rf"\b{w}\b", ans.lower()):
-                return d
+                nums += d
+
+        if nums:
+            return max(set(nums), key=nums.count)
+
         return ans
 
     # CO TO JEST / CO OZNACZA
@@ -186,7 +189,6 @@ def heuristic_answer(q):
         few_shot = FEWSHOT.get(group, "")
         return ask_model(q, shots=few_shot)
 
-    # For person/place try targeted few-shot to improve accuracy
     if group == "OSOBY":
         return ask_model(q, shots=FEWSHOT[group])
     if group == "MIEJSCE":
@@ -216,7 +218,7 @@ if SAVE_QUESTIONS:
 
 answers = []
 for q in tqdm(questions, desc="Odpowiadanie na pytania"):
-    ans = heuristic_answer(q)
+    ans = answer_question(q)
     answers.append(ans)
 
 with open("found_answers.txt", "w", encoding="utf-8") as f:

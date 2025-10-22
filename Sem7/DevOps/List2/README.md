@@ -111,6 +111,8 @@ target "myapp" {
 - `JSON arguments recommended for ENTRYPOINT/CMD to prevent unintended behavior related to OS signals (JSON arguments recommended for CMD to prevent unintended behavior related to OS signals)Docker DX (docker-language-server)JSONArgsRecommended`
 
 ## Zadanie 10
+można też skorzystać z opcij `squash` która skleja kilka warstw w jedną
+
 optymalizacja rozmiaru obrazu:
 - czyszczenie cache apt: `RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*`
 - mniejszy obraz: np `alpine`

@@ -54,3 +54,47 @@ wywołanie powłoki `nix-shell` domyślnie szuka pliku `.nix` w bieżącym katal
 
 ## nixos
 
+
+
+# Lecture 3
+## DNS
+> uwaga na cloudflare jako dns provider, bo business plan jest drogi  
+
+jak bezpiecznie przeprowadzić wymianę nameserwerów? jak mamy serwery primary i secondary (master i slave) to najpierw zmieniamy secondary, który to powinien wykryć i zapytać nowy serwer o konfigurację  
+
+TSIG:   
+jak zwiększyć bezpieczeństwo? korzystamy z klucza symetrycznego TSIG na obu serwerach (primary, sercondary) - będą one wymagać potwierdzenia tożsamości, więc tylko serwery z kluczem będą mogły się synchronizować (zapytanie o konfigurację i odpowiedź są podpisywane/szyfrowane nim) - pytanie tylko jak dystrybuować klucz?  
+
+
+DNSSEC:  
+informacje o dns nie są w żaden sposób weryfikowane - np możemy sobie postawić serwer który wskazuje na google.com  
+
+> niby nikt nie będzie wskazywać na nasz serwer, ale np kraj może wymusić korzystanie z jednego serwera (taka forma inwigilacji)  
+
+> duzi dostawcy internetu w polsce mają blacklisty stron hazardowych i przekazują do strony informacyjnej że strona jest zablokowana  
+
+wymyślono więc DNSSEC, żeby chroniż zapytania DNS - zaczyna się on od root serwerów (które mają swoje klucze, trzymane również bezpiecznie w sejfach, są one też regularnie rotowane - co może powodować problemy, gdy ktoś jeszcze nie zaktualizował kluczy na serwerze)   
+
+```
+.         <-- DS (klucz prywatny)
+pl.       <-- DS
+piwo.pl.  
+```
+
+`piwo.pl.` autoryzuje się w serwerze poziom wyżej - więc musi przekazać mu swój klucz???  
+
+
+problem z DNSSEC: NSEC - jeżeli zarejestrujemy sobie domenę `piwo.pl` i zrobimy poddomenę `dobre.piwo.pl` - to odpowiedź musi być podpisywana    
+natomiast jeżeli jakiejś domeny nie ma, to potencjalnie ktoś mógłby się pod nią podszyć - więc odpowiedź na brak domeny też musi być podpisana  
+problem ten został rozwiązany przez NSEC3, NSEC5  
+
+______
+
+## Sieci bezprzewodowe (wifi) i sieci przewodowe
+> podobno coś o wifi było  na pierwszym wykładzie
+
+- w sieciach przewodowych gdy 2 komputery nadają na raz to jest zwiększona amplituda (powstaje przepięcie) i wykrywamy kolizję
+- w sieciach bezprzewodowych nie jesteśmy w staanie wykryć takiego przepięcia, ale możemy wykryć gdy ktoś nadaje więc będziemy starali się uniknąć kolizji
+
+
+

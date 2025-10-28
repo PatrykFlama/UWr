@@ -26,6 +26,7 @@ void adc_init() {
 static uint16_t adc_read_blocking() {
     ADCSRA |= _BV(ADSC);
     while (ADCSRA & _BV(ADSC));
+    ADCSRA |= _BV(ADIF);
     return ADC;
 }
 
@@ -37,14 +38,14 @@ int main() {
         uint16_t adc = adc_read_blocking();
 
         // calc thermistor resistance (viva la resistance!)
-        double r_ntc = (R_REF_OHM * (double)adc) / (1023.0 - (double)adc);
+        float r_ntc = (R_REF_OHM * (float)adc) / (1023.0 - (float)adc);
 
         // calc temp in kelvin:
         // 1/T = 1/T0 + (1/B) * ln(R/R0)
-        double ln_ratio = log(r_ntc / R0_OHM);
-        double invT = (1.0 / (T0_K + 25)) + (ln_ratio / B_CONST);
-        double T_K = 1.0 / invT;
-        double T_C = T_K - 273.15;
+        float ln_ratio = log(r_ntc / R0_OHM);
+        float invT = (1.0 / (T0_K + 25)) + (ln_ratio / B_CONST);
+        float T_K = 1.0 / invT;
+        float T_C = T_K - 273.15;
 
 
         long temp_c_x100 = (long)(T_C * 100.0 + (T_C >= 0 ? 0.5 : -0.5));

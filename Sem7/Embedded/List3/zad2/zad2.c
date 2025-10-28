@@ -19,12 +19,10 @@ void adc_init() {
     ADCSRA |= _BV(ADEN);
 }
 
-// measure internal 1.1V bandgap with AVcc as reference
 static uint16_t read_internal_1v1_adc() {
-    // conversion
     ADCSRA |= _BV(ADSC);
     while (ADCSRA & _BV(ADSC));
-
+    ADCSRA |= _BV(ADIF);
     return ADC;
 }
 
@@ -38,11 +36,10 @@ int main() {
 
     while (1) {
         uint16_t adc = read_internal_1v1_adc();
-        // Vcc (mV) = 1.1V * 1023 * 1000 / ADC
-        unsigned long vcc_mV = 1125300UL / adc;  // 1.1 * 1023 * 1000 = 1125300
-        unsigned long v = vcc_mV / 1000;
-        unsigned long mv = vcc_mV % 1000;
-        printf("Vcc = %lu.%03luv\r\n", v, mv);
+        // Vin (mV) = 1.1V * 1024 * 1000 / ADC
+        double vcc_mV = (1.1 * 1024. * 1000) / (double)adc;
+        // printf("Vcc = %lu.%03luv\r\n", vcc_mV / 1000, vcc_mV % 1000);
+        printf("Vcc = %.3f V\r\n", vcc_mV / 1000.0);
 
         // toggle LED between measurements
         _delay_ms(500);

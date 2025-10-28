@@ -6,9 +6,9 @@
 #define LED_DDR DDRB
 #define LED_PORT PORTB
 
-// PWM period (mikrosekundy) -> ~500 Hz
+// PWM period (~500 Hz)
 #define PERIOD_US 2000UL
-// szacowany czas konwersji ADC przy prescaler=128 (~100..130 us)
+// expected ADC conversion time
 #define ADC_CONV_US 130UL
 
 static inline void delay_us(uint32_t us) {
@@ -27,6 +27,7 @@ static void adc_init() {
 static uint16_t adc_read_blocking() {
     ADCSRA |= _BV(ADSC);         // start conversion
     while (ADCSRA & _BV(ADSC));  // wait
+    ADCSRA |= _BV(ADIF);         // clear start conversion flag
     return ADC;
 }
 
@@ -41,7 +42,8 @@ int main() {
         static uint16_t adc = 512;
 
         // perceptual correction: approximate gamma by squaring input
-        uint32_t corr = ((uint32_t)adc * (uint32_t)adc) >> 12;
+        // uint32_t corr = ((uint32_t)adc * (uint32_t)adc) >> 12;
+        uint32_t corr = (((uint32_t)adc << 2) * 1024) >> 2;
 
         // calculate on time in microseconds
         uint32_t on_us = (corr * PERIOD_US) / 1023UL;
@@ -57,7 +59,7 @@ int main() {
             delay_us(on_us);
         }
 
-        // OFF phase start (LED must be off during ADC)
+        // OFF phase
         LED_PORT &= ~_BV(LED_PIN);
 
         adc = adc_read_blocking();

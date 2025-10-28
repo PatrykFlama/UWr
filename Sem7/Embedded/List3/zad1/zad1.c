@@ -26,13 +26,14 @@ static const int fSH = 740;
 static const int gH = 784;
 static const int gSH = 830;
 static const int aH = 880;
+static const int dSH = 622;
 
 typedef struct {
     uint16_t freq;  // Hz, 0 = pauza
     uint16_t dur;   // ms
 } Note;
 
-// Melodia w PROGMEM: 8-nutowy motyw powtórzony 8 razy -> 8*8*0.5s = 32s
+// https://projecthub.arduino.cc/HiHiHiHiiHiiIiH/star-wars-on-a-buzzer-e70139
 const Note melody[] PROGMEM = {
     // section 1
     {a, 500},
@@ -80,7 +81,7 @@ const Note melody[] PROGMEM = {
     {b, 125},
     {cH, 250},
 
-    {silent, 350},9
+    {silent, 350},
 
     // variant 1
     {f, 250},

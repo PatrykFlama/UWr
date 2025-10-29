@@ -143,3 +143,154 @@ CMD vs ENTRYPOINT
 
 RUN - wykonuje polecenie podczas budowania obrazu
 
+
+## Lecture 3: Docker
+yeah
+
+
+## Lecture 4: Ansible
+co jak chcemy konfigurować wiele maszyn naraz (np 1000 komputerów)? co jeżeli chcemy zaktuoalizować aplikację, gdzie proces jest opary na zarządzaniu 3 serwerami?  
+chcemy osiągnąć efekt IaC, przykładowe narzędzia: 
+- puppet, konfiguracja we własnym języku, wymagają klienta na zarządzanych maszynach (niewygodne - bo żeby automatycznie zarządzać musimy najpierw automatycznie zainstalować klienta/agenta) - konfiguracja pull
+- chef, podobne do puppet - konfiguracja pull
+- ansible, python i ssh są już domyślnie na większości systemów, więc ansible się łączy po ssh i uruchamia skrypt pythona - konfiguracja push
+- terraform, rozwiązanie stricte chmurowe
+- open tofu, fork terraforma
+
+konfiguracja:
+- pull - konfigurowany klient odpytuje serwer o konfigurację 
+- push - serwer łączy się z klientem i konfiguruje go
+
+> historia o OI w białym stoku  
+
+> historia o błędzie w skrypcie czyszczącym edge w google
+
+### demo ansible
+- `ansible-doc` - dokumentacja modułów ansible  
+- `ansible-doc --list -t inventory` - lista modułów inwentaryzacji
+  - domyślnie używamy yaml i ini do konfiguracji inwentarza
+- `ansible-doc --list -t inventory ansible.builtin.yaml` - pokazuje dokumentację modułu yaml inwentaryzacji
+
+
+przykładowy plik inventory.yaml:
+```yaml
+all:  # nie musimy tego pisać, jest dodawane domyślnie
+  mojagrupa:
+    hosts:
+      docker1:
+        ansible_host: 172.17.0.101
+        ansible_user: root
+    docker2:
+        ansible_host: 172.17.0.102
+        ansible_user: root
+    docker3:
+        ansible_host: 172.17.0.103
+        ansible_user: root
+
+  mojagrupa2:
+    hosts:
+      docker1:
+      docker3:
+```
+
+- `ansible-inventory -i inventory.yaml --list` - pokazuje inwentarz z pliku inventory.yaml
+- `ansible-inventory -i inventory.yaml --graph` - pokazuje inwentarz z pliku inventory.yaml w formie grafu
+
+
+inventory2.yaml:
+```yaml
+grupa_a:
+  hosts:
+    docker1:
+      var_foo: "Smok"
+
+grupa_b:
+  hosts:
+    docker1:
+      var_foo: "Wąż"
+```
+
+grupy są spłaszczane, więc "smok" zostanie nadpisany przez "wąż" (bo jest później)  
+
+zaktualizujmy inventory.yaml - inventory3.yaml:
+```yaml
+mojagrupa:
+  hosts:
+    ansible_host:
+      172.17.0.[2:4]:    # lista prawostronnie domknięta
+        ansible_user: root
+```
+
+inventory4.yaml:
+```yaml
+plugin: ansible.builtin.generator   # pozwala korzystać z jinja2 
+hosts:
+  name;: "zawodnik{{ id+10 }}"
+  parents:
+    - name: "mojagrupa"
+      vars:
+        ansible_host: "172.17.0.{{id}}"
+        ansible_user: root
+
+layers:
+  id:
+    - 2
+    - 3
+    - 4
+```
+
+inventory5.yaml:
+```yaml
+plugin: ansible.builtin.generator   # pozwala korzystać z jinja2 
+hosts: "{{ operation }}_{{ application }}_{{ env }}_runner"
+
+layer:
+  operation: 
+    - build
+    - launch
+  application:
+    - appa
+    - appb
+  env:
+    - linux
+    - windows
+```
+
+ansible ogólnie jest deklaratywny, ale możemy np w ramach debugowania użyć imperatywności:
+```bash
+export ANSIBLE_HOST_KEY_CHECKING=False   # wyłącza sprawdzanie kluczy hosta
+ansible all -i inventory5.yaml -m ping  # pingujemy wszystkie hosty z inwentarza
+ansible docker1 -i inventory5.yaml -m gather_facts # zbieramy fakty o hoście docker1
+```
+
+### ansible.builtin
+- `copy` - z kontrolera na hosta
+- `fetch` - z hosta na kontroler
+- `git` - klonowanie repozytoriów git
+- `ping` - sprawdzanie czy host jest osiągalny
+- `shell` - uruchamianie poleceń shellowych
+- `gather_facts` - zbieranie faktów o hoście
+
+
+```bash
+ansible all -m shell -a "ls" -i inventory.yaml # docker nie wie co zrobi ta zmiana, więc przy użyciu shell uzna że został zmieniony (CHANGED)
+ansible all -i inventory.yaml -m apt -a "name=sl state=present" -vvv # flaga verbose ma 3 poziomy
+```
+
+### jinja2
+plik musi być poprawnym yaml'em aby zastosować jinja
+
+- `{%...%}` - instrukcje (for, if, set, call)
+- `{{...}}` - wypisywanie wyrażenia (np string, [1,2,3]*4)
+- `{#...#}` - komentarze
+
+
+
+
+
+
+
+
+
+
+

@@ -13,7 +13,7 @@ Lista 2 zad 4 i 8
 Użytkownik w grupie `docker` ma uprawnienia `root` względem hosta (docker działa jako root). Możemy więc utworzyć kontener z dostępem do całego systemu plików i przeczytać falgę.
 
 ```bash
-docker run -it --rm -v ./:/mnt debian bash
+docker run -it --rm -v ./:/mnt debian
 ```
 
 ## Zad 3

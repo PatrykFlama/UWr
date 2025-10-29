@@ -38,6 +38,9 @@ oraz przyspiesza aktualizację pakietów, ponieważ pobierane są one z lokalneg
 `docker build . -t zad3:v0`
 
 ## Zadanie 4
+tldr: zamiast impertywnie w terminalu mamy deklaratywnie zapisany sposób uruchamiania w pliku 
+dodatkowo dzięki temu mamy możliwość kontroli wersji
+
 `docker compose up -d`
 
 ## Zadanie 5

@@ -72,39 +72,41 @@ Z punktu widzenia klienta, taki certyfikat nie jest dobry - bo nie jest podpisan
 ## Tworzenie własnego ośrodka certyfikacji (CA)
 najpierw musimy stworzyć klucz prywatny dla naszego ośrodka, a następnie podpisany przez niego certyfikat:  
 ```bash
-CANAME=PatrykFlama-RootCA
-
-sudo openssl genrsa -out /etc/ssl/private/$CANAME.key 4096
-
-sudo openssl req -x509 -new -nodes -key /etc/ssl/private/$CANAME.key -sha256 -days 1826 -out /etc/ssl/certs/$CANAME.crt -subj '/CN=PatrykFlama Root CA/C=PL/ST=PL/L=PL/O=PatrykFlama'
+sudo openssl genrsa -out /etc/ssl/myca/private/ca.key.pem 4096
+sudo openssl req -x509 -new -nodes -key /etc/ssl/myca/private/ca.key.pem \
+  -sha256 -days 3650 -out /etc/ssl/myca/certs/ca.cert.pem \
+  -subj "/C=PL/ST=PL/L=PL/O=PatrykFlama/CN=PatrykFalma"
 ```
 
-dodajemy certyfikat do zaufanych
+dodawanie naszego CA do zaufanych (na lokalnym komputerze)
 ```bash
 sudo apt install -y ca-certificates
 sudo cp $CANAME.crt /usr/local/share/ca-certificates
 sudo update-ca-certificates
 ```
 
+## Certyfikat naszej strony od naszego CA
 generujemy certyfikat dla naszej strony
-
 ```bash
-MYCERT=www2.patrykflama.work.gd
-sudo openssl req -new -nodes -out /etc/ssl/certs/$MYCERT.csr -newkey rsa:4096 -keyout /etc/ssl/private/$MYCERT.key -subj '/CN=PatrykFlama/C=PL/ST=PL/O=PF'
-
-# create a v3 ext file for SAN properties
-cat > $MYCERT.v3.ext << EOF
-authorityKeyIdentifier=keyid,issuer
-basicConstraints=CA:FALSE
-keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
-subjectAltName = DNS:www2.patrykflama.work.gd
-EOF
+sudo openssl genrsa -out /etc/ssl/patrykflama/www2.key 2048
+sudo openssl req -new -key /etc/ssl/patrykflama/www2.key -out /tmp/www2.csr \
+  -subj "/CN=www2.patrykflama.work.gd/O=PatrykFlama"
 ```
 
 i go podpisujemy
 
 ```bash
-sudo openssl x509 -req -in /etc/ssl/certs/$MYCERT.csr -CA /etc/ssl/certs/$CANAME.crt -CAkey /etc/ssl/private/$CANAME.key -CAcreateserial -out /etc/ssl/private/$MYCERT.crt -days 730 -sha256 -extfile $MYCERT.v3.ext
+echo > www2_v3.ext << EOF
+authorityKeyIdentifier=keyid,issuer
+basicConstraints = CA:true
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = DNS:www2.patrykflama.work.gd
+EOF
+
+sudo openssl x509 -req -in /tmp/www2.csr -CA /etc/ssl/myca/certs/ca.cert.pem \
+  -CAkey /etc/ssl/myca/private/ca.key.pem -CAcreateserial \
+  -out /etc/ssl/patrykflama/www2.crt -days 825 -sha256 -extfile www2_v3.ext
 ```
 
 na koniec podpinamy certyfikat pod www2
@@ -115,15 +117,23 @@ server {
   server_name www2.patrykflama.work.gd
   root /var/www/patrykflama/;
 
-  ssl_certificate /etc/ssl/certs/www2.patrykflama.work.gd.crt;
-  ssl_certificate_key /etc/ssl/twojadomena/www2.patrykflama.work.gd.key;
-  ssl_trusted_certificate /etc/ssl/certs/PatrykFlama-RootCA.crt;
+  ssl_certificate /etc/ssl/patrykflama/www2.crt;
+  ssl_certificate_key /etc/ssl/patrykflama/www2.key;
+  ssl_trusted_certificate /etc/ssl/myca/certs/ca.cert.pem;
 
   include /etc/nginx/snippets/ssl-params.conf;
 }
 ```
 
-
+## Certyfikat wildcard
+teraz `wild_c3.ext`:
+```ext
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:TRUE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = DNS:*.patrykflama.work.gd, DNS:patrykflama.work.gd
+```
 
 
 

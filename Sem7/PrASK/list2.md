@@ -1,4 +1,4 @@
-# Lista 2
+# Zad 1
 ## Instalacja serwera
 zainstalujemy nginx:  
 `nginx openssl`
@@ -48,12 +48,13 @@ server {
 }
 ```
 
-## Generowanie certyfikatu self-signed
+## Generowanie certyfikatu self-signed - www1
 generujemy klucz oraz certyfikat za pomocą `openssl-req(1)`:
 
 ```bash
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
   -subj "/CN=www1.patrykflama.work.gd/O=patrykflama" \
+  -addext "subjectAltName=DNS:www1.patrykflama.work.gd" \
   -keyout /etc/ssl/private/www1.key \
   -out /etc/ssl/certs/www1.crt
 ```
@@ -85,7 +86,7 @@ sudo cp $CANAME.crt /usr/local/share/ca-certificates
 sudo update-ca-certificates
 ```
 
-## Certyfikat naszej strony od naszego CA
+## Certyfikat naszej strony od naszego CA - www2
 generujemy certyfikat dla naszej strony
 ```bash
 sudo openssl genrsa -out /etc/ssl/patrykflama/www2.key 2048
@@ -96,7 +97,7 @@ sudo openssl req -new -key /etc/ssl/patrykflama/www2.key -out /tmp/www2.csr \
 i go podpisujemy
 
 ```bash
-echo > www2_v3.ext << EOF
+cat << EOF > www2_v3.ext
 authorityKeyIdentifier=keyid,issuer
 basicConstraints = CA:true
 keyUsage = digitalSignature, keyEncipherment
@@ -125,10 +126,10 @@ server {
 }
 ```
 
-## Certyfikat wildcard
+## Certyfikat wildcard - www3
 teraz `wild_v3.ext`:
 ```bash
-echo > wild_v3.ext << EOF
+cat <<EOF > wild_v3.ext
 authorityKeyIdentifier=keyid,issuer
 basicConstraints=CA:TRUE
 keyUsage = digitalSignature, keyEncipherment
@@ -140,8 +141,10 @@ EOF
 oraz generujemy klucze
 ```bash
 sudo openssl genrsa -out /etc/ssl/patrykflama/wild.key 4096
+
 sudo openssl req -new -key /etc/ssl/patrykflama/wild.key -out /tmp/wild.csr \
-  -subj "/CN=*.patrykflama.work.gd/O=PatrykFlama_wildcard"
+  -subj "/CN=*.patrykflama.work.gd/O=PatrykFlama_wildcard" \
+
 sudo openssl x509 -req -in /tmp/wild.csr -CA /etc/ssl/myca/certs/ca.cert.pem \
   -CAkey /etc/ssl/myca/private/ca.key.pem -CAcreateserial \
   -out /etc/ssl/patrykflama/wild.crt -days 825 -sha256 -extfile wild_v3.ext
@@ -174,4 +177,42 @@ Deploying certificate
 Successfully deployed certificate for www.patrykflama.work.gd to /etc/nginx/sites-enabled/patrykflama
 Congratulations! You have successfully enabled HTTPS on https://www.patrykflama.work.gd
 ```
+
+
+
+
+# Zad 2
+generujemy dhparam
+```bash
+sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+```
+
+i korzystamy z niego w konfiguracji ssl (`ssl-params.conf`):
+```conf 
+# from https://gist.github.com/ziazek/ae2cb56fe63f8727dbaa55cddbc9780e
+
+ssl_protocols TLSv1.2;
+ssl_prefer_server_ciphers on;
+ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+ssl_ecdh_curve secp384r1;
+ssl_session_cache shared:SSL:10m;
+ssl_session_tickets off;
+ssl_stapling on;
+ssl_stapling_verify on;
+# use Google DNS
+resolver 8.8.8.8 8.8.4.4 valid=300s;
+resolver_timeout 5s;
+
+# HSTS header: BE CAREFUL!
+# Uncommenting this setting means that your site needs to support HTTPS in the future (including subdomains),
+# otherwise users who have previously been to your site won't be able to access.
+# add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
+
+add_header X-Frame-Options DENY;
+add_header X-Content-Type-Options nosniff;
+
+ssl_dhparam /etc/letsencrypt/dhparam.pem;
+```
+
+
 

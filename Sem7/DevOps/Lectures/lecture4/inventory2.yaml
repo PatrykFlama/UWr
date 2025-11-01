@@ -1,0 +1,4 @@
+mojagrupa:
+  hosts:
+    172.17.0.[2:4]:
+      ansible_user: root

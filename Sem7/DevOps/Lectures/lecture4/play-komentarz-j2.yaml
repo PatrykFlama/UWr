@@ -1,0 +1,8 @@
+- name: Jedzie pociąg z daleka
+  hosts: docker1
+  environment:
+    TERM: "{% set smok='cieply' %}xterm"
+  tasks:
+  - name: Uruchom ciuchcię
+    debug:
+      msg: "{% set smok='zimny' %}Asfalt{# Zimokrwisty smok pustynny żyje w kręgu narysowanym kredą #} {{ smok }}"

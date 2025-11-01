@@ -1,0 +1,15 @@
+plugin: ansible.builtin.generator
+hosts:
+  name: "zawodnik{{ id+10 }}"
+  parents:
+    - name: "mojagrupa{{ id }}"
+      vars:
+        ansible_host: "172.17.0.{{ id }}"
+        ansible_user: root
+      parents:
+      - name: mojagrupa
+layers:
+  id:
+    - 2
+    - 3
+    - 4

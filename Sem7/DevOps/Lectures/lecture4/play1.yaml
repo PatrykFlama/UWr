@@ -1,0 +1,18 @@
+- name: Moj testowy play
+  hosts: localhost
+  tasks:
+   - name: Run a shell command and register its output as a variable
+     ansible.builtin.shell: echo "Smok"
+     register: foo_result
+     ignore_errors: true
+   - name: Run a shell command using output of the previous task
+     ansible.builtin.shell: /usr/bin/bar
+     when: foo_result.rc == 5
+#  tasks:
+#  - name: Give me the largest permutations (order matters)
+#    ansible.builtin.debug:
+#      msg: "{{ [1,2,3,4,5] | ansible.builtin.permutations | list }}"
+#
+#  - name: Give me permutations of sets of three
+#    ansible.builtin.debug:
+#      msg: "{{ [1,2,3,4,5] | ansible.builtin.permutations(3) | list }}"

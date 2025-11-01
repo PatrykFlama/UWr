@@ -1,0 +1,14 @@
+plugin: ansible.builtin.generator
+hosts:
+    name: "{{ operation }}_{{ application }}_{{ environment }}_runner"
+layers:
+    operation:
+        - build
+        - launch
+    environment:
+        - dev
+        - test
+        - prod
+    application:
+        - web
+        - api

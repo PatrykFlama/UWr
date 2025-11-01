@@ -1,0 +1,75 @@
+- name: Wygeneruj plik do sortowania
+  hosts: localhost
+  vars:
+    liczba_hostow: "{{ groups['all'] | length }}"
+    # czemu nie ansible_play_hosts? -> aktualnie jesteśmy na localhost więc zawsze będzie równe 1
+  tasks:
+    - name: Wyczyść plik jeśli istnieje
+      file:
+        path: klucze.txt
+        state: absent
+    - name: Generuj plik
+      shell: "head -n 100 /dev/random | tr -d -c a-z | split -b 32 --filter='cat >>klucze.txt && echo >>klucze.txt' "
+    - name: Sprawdź plik
+      stat:
+        path: klucze.txt
+      register: stat_ret
+    - name: Asercja na istnienie
+      debugger: on_failed
+      assert:
+        that: stat_ret["stat"]["exists"]
+    - name: Sprawdź plik innym sposobem
+      file:
+        path: klucze.txt
+        state: file
+    - name: Policz liczbę wierszy
+      shell: "wc -l <klucze.txt"
+      register: wc_ret
+    - name: Podziel pliki
+      shell: "split -x -a 1 -l {{ wc_ret.stdout | int // liczba_hostow + 1 }} klucze.txt klucz-part"
+    - name: Wypisz mapowanie hostów na pliki
+      debug: 
+        msg: "{{ dict(groups['all'] | zip (q('ansible.builtin.fileglob', 'klucz-part*') | slice(liczba_hostow)))}}"
+#      loop: "{{ q('ansible.builtin.fileglob', 'klucz-part*') | zip(groups['all']*liczba_hostow)}}"
+- name: Posortuj na węzłach zdalnych
+  hosts: all
+  vars:
+    liczba_hostow: "{{ groups['all'] | length }}"
+    mapa_plikow: "{{ dict(groups['all'] | zip (q('ansible.builtin.fileglob', 'klucz-part*') | slice(liczba_hostow)))}}"
+  tasks:
+    - name: Utworz katalog roboczy
+      file:
+        path: "~/smok/"
+        state: directory
+    - name: Skopiuj pliki
+      copy:
+        src: "{{ item }}"
+        dest: "~/smok/{{ item | basename }}"
+      loop: "{{mapa_plikow[inventory_hostname]}}"
+    - name: Sortuj pliki
+      shell: "sort ~/smok/{{ item | basename }} >~/smok/{{ item | basename }}-sorted"
+      loop: "{{mapa_plikow[inventory_hostname]}}"
+    - name: Pobierz posortowane pliki
+      fetch:
+        dest: "posortowane/"
+        src: "~/smok/{{ item | basename }}-sorted"
+        flat: true
+      loop: "{{mapa_plikow[inventory_hostname]}}"
+
+- name: Sprzątanie docker
+  hosts: all
+  tags:
+    - never
+    - clean
+  tasks:
+    - name: Usuń katalog roboczy smok jeśli istnieje
+      file:
+        path: "~/smok/"
+        state: absent
+    - name: Usuń pliki z kluczami z localhost
+      file:
+        path: "{{item}}"
+        state: absent
+      run_once: true
+      delegate_to: "localhost"
+      loop: "{{q('ansible.builtin.fileglob', 'klucz*') + ['posortowane/']}}"

@@ -126,16 +126,26 @@ server {
 ```
 
 ## Certyfikat wildcard
-teraz `wild_c3.ext`:
-```ext
+teraz `wild_v3.ext`:
+```bash
+echo > wild_v3.ext << EOF
 authorityKeyIdentifier=keyid,issuer
 basicConstraints=CA:TRUE
 keyUsage = digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
 subjectAltName = DNS:*.patrykflama.work.gd, DNS:patrykflama.work.gd
+EOF
 ```
 
-
+oraz generujemy klucze
+```bash
+sudo openssl genrsa -out /etc/ssl/patrykflama/wild.key 4096
+sudo openssl req -new -key /etc/ssl/patrykflama/wild.key -out /tmp/wild.csr \
+  -subj "/CN=*.patrykflama.work.gd/O=PatrykFlama_wildcard"
+sudo openssl x509 -req -in /tmp/wild.csr -CA /etc/ssl/myca/certs/ca.cert.pem \
+  -CAkey /etc/ssl/myca/private/ca.key.pem -CAcreateserial \
+  -out /etc/ssl/patrykflama/wild.crt -days 825 -sha256 -extfile wild_v3.ext
+```
 
 
 

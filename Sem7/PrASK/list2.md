@@ -1,7 +1,7 @@
 # Lista 2
 ## Instalacja serwera
 zainstalujemy nginx:  
-`nginx openssl certbot python3-certbot-nginx`
+`nginx openssl`
 
 > serwer powinien automatycznie wystartować, ale warto się upewnić (`nginx.service`)
 
@@ -147,5 +147,31 @@ sudo openssl x509 -req -in /tmp/wild.csr -CA /etc/ssl/myca/certs/ca.cert.pem \
   -out /etc/ssl/patrykflama/wild.crt -days 825 -sha256 -extfile wild_v3.ext
 ```
 
+## Lets Encrypt
+instalujemy certbota (klient letsencrypt):
+```bash
+sudo apt update && sudo apt install certbot python3-certbot-nginx -y
+```
 
+konfigurowanie certyfikatu dla `www`:
+```bash
+sudo certbot --nginx -d www.patrykflama.work.gd
+```
+
+> certbot automatycznie skonfiguruje deamona do automatycznego odnawiania certyfikatu
+
+```
+Requesting a certificate for www.patrykflama.work.gd
+
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/www.patrykflama.work.gd/fullchain.pem
+Key is saved at:         /etc/letsencrypt/live/www.patrykflama.work.gd/privkey.pem
+This certificate expires on 2026-01-30.
+These files will be updated when the certificate renews.
+Certbot has set up a scheduled task to automatically renew this certificate in the background.
+
+Deploying certificate
+Successfully deployed certificate for www.patrykflama.work.gd to /etc/nginx/sites-enabled/patrykflama
+Congratulations! You have successfully enabled HTTPS on https://www.patrykflama.work.gd
+```
 

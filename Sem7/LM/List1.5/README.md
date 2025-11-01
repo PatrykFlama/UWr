@@ -75,6 +75,9 @@ zadanego prefiksu, składającego się z pełnych wyrazów).
 2. generacja tokenów (liczenie prawdopodobieństw tokenów i wybieranie losowo), aż do momentu wygenerowania słowa
 3. dekodowanie tokenów do tekstu
 
+jeżeli chcemy zmusić prompotowanie to: 
+- możemy podać znak spacji jako znak kończący generowanie
+
 
 ## Zadanie 6 
 Przeczytaj i opowiedz o uprzedzeniach (bias) modelu papuGaPT. Jak były one badane?
@@ -106,6 +109,12 @@ Zdanie po Angielsku: The sun is shining brightly in the sky. Zdanie po Polsku: �
 Zdanie po Angielsku: The sun is shining brightly in the sky. Zdanie po Polsku: Źródło światła jest jasne na niebie.  
 
 
+gdy mamy dostępny słownik:
+- na początku wymieniamy dostępne słowa (występujące w tekście do przetłumaczenia)
+- podajemy tłumaczenie słów  w nawiasach (można też dodać tłumaczenia najpopularniejszych zwrotów - np *I do*)
+- można próbować tłumaczyć zdnie maszynowo i kazać modelowi poprawiać błędy w tłumaczeniu
+
+
 ## Zadanie 8 
 Załóżmy, że mamy dwa modele językowe i chcemy generować tekst korzystając z wiedzy
 obu modeli. Zaproponuj 3 różne scenariusze, przy czym przynajmniej 1 powinien nie zakładać tej
@@ -127,6 +136,6 @@ długości) i nie powinno przeglądać wszystkich permutacji.
 
 utrzymujemy tylko k najlepszych permutacji (najbardziej prawdopodobnych) na każdym etapie generacji słów  
 
-
+budujemy odpowiedź od 0, licząc ppb wzięcia danego słowa jako sufiksu
 
 

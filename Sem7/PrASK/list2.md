@@ -184,7 +184,7 @@ Congratulations! You have successfully enabled HTTPS on https://www.patrykflama.
 # Zad 2
 generujemy dhparam
 ```bash
-sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+sudo openssl dhparam -out /etc/letsencrypt/dhparam.pem 2048
 ```
 
 i korzystamy z niego w konfiguracji ssl (`ssl-params.conf`):
@@ -214,5 +214,29 @@ add_header X-Content-Type-Options nosniff;
 ssl_dhparam /etc/letsencrypt/dhparam.pem;
 ```
 
+
+____
+
+- HSTS (HTTP Strict Transport Security)  
+Meachanizm wymuszający korzystanie z HTTPS  
+Gdy przeglądarka po raz pierwszy odwiedzi stronę z nagłówkiem `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` zapamiętuje, że dana domena musi być odwiedzana tylko przez HTTPS (chroni to przed atakami downgrade, które próbują wymusić połączenie HTTP)
+
+- PFS / FS (Perfect Forward Secrecy / Forward Secrecy)  
+Zasada kryptograficzna zapewniająca, że nawet jeśli klucz prywatny serwera zostanie kiedyś skradziony, stare sesje nie mogą być odszyfrowane - dla każdej sesji generowane są tymczasowe klucze.
+
+
+- ALPN (Application-Layer Protocol Negotiation)  
+Rozszerzenie TLS pozwalające klientowi i serwerowi dogadać się, jaki protokół warstwy aplikacji będą używać w ramach handshake TLS (np. HTTP/1.1, HTTP/2, HTTP/3) -
+dzięki temu nie trzeba wykonywać dodatkowych zapytań po nawiązaniu TLS
+
+- NPN (Next Protocol Negotiation)  
+Poprzednik ALPN - opracowany przez Google do obsługi SPDY i wczesnych wersji HTTP/2.
+
+- CAA (Certification Authority Authorization)  
+Rekord DNS, który określa które urzędy certyfikacji mogą wystawiać certyfikaty dla danej domeny.
+Chroni przed nieautoryzowanym wystawieniem certyfikatu (gdyby inne CA zostało skompromitowane).
+
+- OCSP (Online Certificate Status Protocol)  
+Protokół służący do sprawdzania, czy certyfikat SSL jest nadal ważny, czy został unieważniony przez CA (przeglądarka pyta CA czy certyfikat jest ważny)
 
 

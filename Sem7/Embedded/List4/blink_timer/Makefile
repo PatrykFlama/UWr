@@ -1,5 +1,5 @@
 
-PRG            = helloworld
+PRG            = blink_timer
 OBJ            = ${PRG}.o
 PROGRAMMER     = arduino
 PORT           = /dev/ttyUSB0

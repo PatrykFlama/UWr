@@ -10,6 +10,17 @@
         "format": "c",
         "numeric": "c",
         "ratio": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "any": "c",
+        "array": "c",
+        "charconv": "c",
+        "compare": "c",
+        "functional": "c",
+        "scoped_allocator": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "variant": "c",
+        "cstdint": "c"
     }
 }

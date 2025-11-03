@@ -19,7 +19,7 @@ Kodujemy ciąg znaków za pomocą programu `base64` oraz zapisujemy w głównym 
 
 ```html
 <html><body>
-<h1>patrykflama.work.gd</h1>
+<h1>patrykflama.dev</h1>
 
 <p>Base64:
 <object data="/ala.txt" type="text/plain">
@@ -42,7 +42,7 @@ przykładowa konfiguracja dla naszej strony:
 ```config
 server {
     listen 80;
-    server_name patrykflama.work.gd www.patrykflama.work.gd;
+    server_name patrykflama.dev www.patrykflama.dev;
     root /var/www/patrykflama/root;
     index index.html;
 }
@@ -53,8 +53,8 @@ generujemy klucz oraz certyfikat za pomocą `openssl-req(1)`:
 
 ```bash
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
-  -subj "/CN=www1.patrykflama.work.gd/O=patrykflama" \
-  -addext "subjectAltName=DNS:www1.patrykflama.work.gd" \
+  -subj "/CN=www1.patrykflama.dev/O=patrykflama" \
+  -addext "subjectAltName=DNS:www1.patrykflama.dev" \
   -keyout /etc/ssl/private/www1.key \
   -out /etc/ssl/certs/www1.crt
 ```
@@ -91,7 +91,7 @@ generujemy certyfikat dla naszej strony
 ```bash
 sudo openssl genrsa -out /etc/ssl/patrykflama/www2.key 2048
 sudo openssl req -new -key /etc/ssl/patrykflama/www2.key -out /tmp/www2.csr \
-  -subj "/CN=www2.patrykflama.work.gd/O=PatrykFlama"
+  -subj "/CN=www2.patrykflama.dev/O=PatrykFlama"
 ```
 
 i go podpisujemy
@@ -102,7 +102,7 @@ authorityKeyIdentifier=keyid,issuer
 basicConstraints = CA:true
 keyUsage = digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
-subjectAltName = DNS:www2.patrykflama.work.gd
+subjectAltName = DNS:www2.patrykflama.dev
 EOF
 
 sudo openssl x509 -req -in /tmp/www2.csr -CA /etc/ssl/myca/certs/ca.cert.pem \
@@ -115,7 +115,7 @@ na koniec podpinamy certyfikat pod www2
 ```conf
 server {
   listen 443 ssl;
-  server_name www2.patrykflama.work.gd
+  server_name www2.patrykflama.dev
   root /var/www/patrykflama/;
 
   ssl_certificate /etc/ssl/patrykflama/www2.crt;
@@ -134,7 +134,7 @@ authorityKeyIdentifier=keyid,issuer
 basicConstraints=CA:TRUE
 keyUsage = digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
-subjectAltName = DNS:*.patrykflama.work.gd, DNS:patrykflama.work.gd
+subjectAltName = DNS:*.patrykflama.dev, DNS:patrykflama.dev
 EOF
 ```
 
@@ -143,7 +143,7 @@ oraz generujemy klucze
 sudo openssl genrsa -out /etc/ssl/patrykflama/wild.key 4096
 
 sudo openssl req -new -key /etc/ssl/patrykflama/wild.key -out /tmp/wild.csr \
-  -subj "/CN=*.patrykflama.work.gd/O=PatrykFlama_wildcard" \
+  -subj "/CN=*.patrykflama.dev/O=PatrykFlama_wildcard" \
 
 sudo openssl x509 -req -in /tmp/wild.csr -CA /etc/ssl/myca/certs/ca.cert.pem \
   -CAkey /etc/ssl/myca/private/ca.key.pem -CAcreateserial \
@@ -158,24 +158,24 @@ sudo apt update && sudo apt install certbot python3-certbot-nginx -y
 
 konfigurowanie certyfikatu dla `www`:
 ```bash
-sudo certbot --nginx -d www.patrykflama.work.gd
+sudo certbot --nginx -d www.patrykflama.dev
 ```
 
 > certbot automatycznie skonfiguruje deamona do automatycznego odnawiania certyfikatu
 
 ```
-Requesting a certificate for www.patrykflama.work.gd
+Requesting a certificate for www.patrykflama.dev
 
 Successfully received certificate.
-Certificate is saved at: /etc/letsencrypt/live/www.patrykflama.work.gd/fullchain.pem
-Key is saved at:         /etc/letsencrypt/live/www.patrykflama.work.gd/privkey.pem
+Certificate is saved at: /etc/letsencrypt/live/www.patrykflama.dev/fullchain.pem
+Key is saved at:         /etc/letsencrypt/live/www.patrykflama.dev/privkey.pem
 This certificate expires on 2026-01-30.
 These files will be updated when the certificate renews.
 Certbot has set up a scheduled task to automatically renew this certificate in the background.
 
 Deploying certificate
-Successfully deployed certificate for www.patrykflama.work.gd to /etc/nginx/sites-enabled/patrykflama
-Congratulations! You have successfully enabled HTTPS on https://www.patrykflama.work.gd
+Successfully deployed certificate for www.patrykflama.dev to /etc/nginx/sites-enabled/patrykflama
+Congratulations! You have successfully enabled HTTPS on https://www.patrykflama.dev
 ```
 
 

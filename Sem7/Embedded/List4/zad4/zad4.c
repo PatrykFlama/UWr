@@ -10,23 +10,11 @@
 #define INTER_BURST_US 600U
 #define SEQUENCE_GAP_MS 100U
 
-// compute ICR1 top for desired carrier using prescaler = 1
-#define ICR1_TOP ((uint16_t)(F_CPU / DETECTOR_FREQ - 1UL))
 
 static void init_diode() {
-    // Fast PWM, TOP = ICR1 (mode 14): WGM13:0 = 14 -> WGM13=1,WGM12=1,WGM11=1,WGM10=0
-    ICR1 = ICR1_TOP;
-    // disconnect OC1A
-    TCCR1A = _BV(WGM11);
-    // WGM13 and WGM12 + prescaler = 1
-    TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS10);
-    // half duty cycle
-    OCR1A = ICR1_TOP / 2;
-    // ensure PB1 as output
-    DDRB |= _BV(PB1);
-    // disable output initially
-    TCCR1A &= ~(_BV(COM1A1) | _BV(COM1A0));
-    PORTB |= _BV(PB1);
+    TCCR1B = (1 << WGM12) | (1 << CS10); // CTC, preskaler 1
+    OCR1A = (uint16_t)(F_CPU / DETECTOR_FREQ - 1UL) / 2;
+    TCNT1 = 0;
 }
 
 // enable OC1A output in non-inverting PWM (connect PWM to PB1)

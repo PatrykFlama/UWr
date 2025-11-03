@@ -158,7 +158,7 @@ sudo apt update && sudo apt install certbot python3-certbot-nginx -y
 
 konfigurowanie certyfikatu dla `www`:
 ```bash
-sudo certbot --nginx -d www.patrykflama.dev
+sudo certbot --nginx -d www.patrykflama.dev -d patrykflama.dev
 ```
 
 > certbot automatycznie skonfiguruje deamona do automatycznego odnawiania certyfikatu

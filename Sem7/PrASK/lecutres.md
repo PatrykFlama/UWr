@@ -97,4 +97,50 @@ ______
 - w sieciach bezprzewodowych nie jesteśmy w staanie wykryć takiego przepięcia, ale możemy wykryć gdy ktoś nadaje więc będziemy starali się uniknąć kolizji
 
 
+# Lecture 3 - x.500
+bonding (link bond) - możemy sobie skonfigurować  w linuksie taki agregator linków  
+> np możliwe jest już łączenie wifi+ethernet  
+
+> ile razy można spojrzeć w światłowód?  
+> 2 razy - raz lewym a raz prawym okiem
+
+LDAP - lekka wersja takiej usługi, np do przechowywania adresów ip, DNS, etc
+
+x.509 - ssl, protokół zabezpieczenia usług katalogowych
+
+HSTS - skoro mamy już certyfikat, a istanieją ataki SSL striking (istnieje już bezpieczne połączenie ssl, a ktoś nam mówi 'jednak idź do portu bez ssl') - więc będziemy wymuszać aby korztsać z SSL do połączenia z naszą stroną. Robi się to za pomocą specjalnego nagłówka (zawsze przychodź do mnie po ssl) oraz robienie przekierowania z http na https
+> gdy HSTS jeszcze raczkował, to można było wpisać mu (publicznie) swoje storny które miały mieć wymuszone ssl - były one wkompilowane w kod przeglądarki
+
+dodatkowo HSTS można konfigurować na TLD - więc np google dodal do stron .zip HSTS  
+
+___
+
+kiedyś http działało sobie zwykłym tekstem (idea: komunikacja między serwerema ma być human-readable)  
+jest to jednak niewydajne (lepiej przesyłać strumień danych)
+
+___
+
+co jak nie ufamy naszym urzędom, ISP? jak szyfrować zapytania DNS?
+- DNS over TLS, mniej popularne
+- DOH (DNS over HTTPS)
+
+
+analogiczne pytanie można zadać odnośnie urzędów certyfikacji - dalczego mamy im ufać? powstała więc odnoga bazująca na DNS - DANE (DNS-based Authentication of Named Entities).
+jest to decentralizowany system (niespecjalnie popularny), gł wykorzystywany w mailach (gdzie rzadko sprawdzamy certyfikaty)  
+
+DNSviz - strona do sprawdzania DNSSec
+___
+
+fajna strona hardenize - dobre praktyki konfiguracyjne dla serwerów publicznych
+
+http3check - testowanie wsparcia dla http3
+
+
+
+
+
+
+
+
+
 

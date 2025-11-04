@@ -4,11 +4,11 @@
 
 #include "../../customlib/uart.c"
 
-#define ITERATIONS 2000u
-#define PRESCALER 64u
+#define PRESCALER 1u
 
 void timer1_init() {
-    TCCR1B = _BV(CS11) | _BV(CS10);  // 011 -> prescaler 64
+    // TCCR1B = _BV(CS11) | _BV(CS10);  // 011 -> prescaler 64
+    TCCR1B = _BV(CS10);  // 001 -> presaler 1
     TCNT1 = 0;
 }
 
@@ -18,26 +18,21 @@ void timer1_init() {
         volatile type x = (type)3;                                                          \
         volatile type y = (type)2;                                                          \
         volatile type r = (type)0;                                                          \
-        /* loop overhead */                                                                 \
+        /* overhead */                                                                      \
         uint16_t over_start = TCNT1;                                                        \
-        for (uint32_t i = 0; i < ITERATIONS; ++i) {                                         \
-            r = r;                                                                          \
-        }                                                                                   \
+        r = r;                                                                              \
         uint16_t over_end = TCNT1;                                                          \
         uint32_t overhead_ticks = (uint32_t)((uint16_t)(over_end - over_start));            \
         /* operations */                                                                    \
         uint16_t op_start = TCNT1;                                                          \
-        for (uint32_t i = 0; i < ITERATIONS; ++i) {                                         \
-            r = (x)op(y);                                                                   \
-        }                                                                                   \
+        r = (x)op(y);                                                                       \
         uint16_t op_end = TCNT1;                                                            \
         uint32_t op_ticks = (uint32_t)((uint16_t)(op_end - op_start));                      \
         uint32_t eff_ticks = (op_ticks > overhead_ticks) ? (op_ticks - overhead_ticks) : 0; \
         uint32_t total_cycles = eff_ticks * PRESCALER;                                      \
-        uint32_t cycles_per_op = total_cycles / ITERATIONS;                                 \
-        uint32_t frac = (total_cycles % ITERATIONS) * 100 / ITERATIONS;                     \
-        printf("%-8s %-6s : ticks=%" PRIu32 " cycles/op=%" PRIu32 ".%02" PRIu32 "\r\n",     \
-               (tname), (opname), eff_ticks, cycles_per_op, frac);                          \
+        uint32_t frac = (total_cycles) * 100;                                               \
+        printf("%-8s %-6s : ticks=%" PRIu32 " cycles/op=%" PRIu32 "\r\n",                   \
+               (tname), (opname), eff_ticks, total_cycles);                                 \
     }
 
 int main() {
@@ -46,7 +41,7 @@ int main() {
     timer1_init();
     _delay_ms(100);
 
-    printf("Benchmark start: ITER=%" PRIu32 " prescaler=%d\r\n", (uint32_t)ITERATIONS, PRESCALER);
+    printf("Benchmark start: prescaler=%d\r\n", PRESCALER);
 
     // int8_t
     MEASURE_BINOP(int8_t, "int8_t", "add", +);

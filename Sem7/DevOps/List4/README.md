@@ -1,7 +1,7 @@
 # List 4
 | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|
-| x | x |   |   |   |   |
+| x | x | x |   |   |   |
 
 
 ## Zad 1
@@ -45,5 +45,34 @@ docker run -d --name cc --network netless debian sleep 3600
 ```
 
 
+## Zad 3
+- unshare - uruchamia proces w nowych namespace'ach  
+- nsenter - uruchamia proces w istniejących namespace'ach procesu docelowego  
 
+separacja przestrzeni PID:
+- `--pid` - nowa przestrzeń PID
+- `--fork` - forkuje nowy proces jako dziecko naszego
+- `--mount-proc` - montuje /proc dla nowej przestrzeni PID
+```bash
+sudo unshare --pid --fork --mount-proc bash
+ps aux
+```
+
+wchodzenie do namespace innego procesu:
+- `t` - target PID
+- `a` - wejdź we wszystkie namespace'y
+```bash
+docker run -d --name demo debian sleep 3600
+docker inspect -f '{{.State.Pid}}' demo
+sudo nsenter -t <PID> -a -- /bin/bash
+```
+
+firejail - narzędzie do uruchamiania procesów w odizolowanych środowiskach  
+uruchamianie basha w odizolowanym środowisku:
+- `---private` - system plików jest odizolowany i tymczasowy
+- `--private=DIR` - tworzy tymczasowy katalog domowy
+```bash
+sudo firejail --private=/tmp bash -c "sleep 3600 &"
+sudo nsenter -t <PID> -a -- /bin/bash
+```
 

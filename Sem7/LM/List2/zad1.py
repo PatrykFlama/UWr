@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
 
     FEWHOT_EXAMPLES = 3
-    PROMPT_TEST_RANGE = (0, len(prompts) - 1)
+    PROMPT_TEST_RANGE = (len(prompts) - 1, len(prompts) - 1)
     RANDOM_EQ_PARAMS = (2, 0.0)
 
     for i in range(FEWHOT_EXAMPLES):

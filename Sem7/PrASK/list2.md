@@ -219,10 +219,10 @@ ____
 
 - HSTS (HTTP Strict Transport Security)  
 Meachanizm wymuszający korzystanie z HTTPS  
-Gdy przeglądarka po raz pierwszy odwiedzi stronę z nagłówkiem `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` zapamiętuje, że dana domena musi być odwiedzana tylko przez HTTPS (chroni to przed atakami downgrade, które próbują wymusić połączenie HTTP)
+Gdy przeglądarka po raz pierwszy odwiedzi stronę z nagłówkiem `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` zapamiętuje, że dana domena musi być odwiedzana tylko przez HTTPS   
 
 - PFS / FS (Perfect Forward Secrecy / Forward Secrecy)  
-Zasada kryptograficzna zapewniająca, że nawet jeśli klucz prywatny serwera zostanie kiedyś skradziony, stare sesje nie mogą być odszyfrowane - dla każdej sesji generowane są tymczasowe klucze.
+Zasada kryptograficzna zapewniająca, że nawet jeśli klucz prywatny serwera zostanie kiedyś skradziony, stare sesje nie mogą być odszyfrowane - dla każdej sesji generowane są tymczasowe klucze
 
 
 - ALPN (Application-Layer Protocol Negotiation)  
@@ -230,13 +230,96 @@ Rozszerzenie TLS pozwalające klientowi i serwerowi dogadać się, jaki protokó
 dzięki temu nie trzeba wykonywać dodatkowych zapytań po nawiązaniu TLS
 
 - NPN (Next Protocol Negotiation)  
-Poprzednik ALPN - opracowany przez Google do obsługi SPDY i wczesnych wersji HTTP/2.
+Poprzednik ALPN - opracowany przez Google do obsługi SPDY  
 
 - CAA (Certification Authority Authorization)  
-Rekord DNS, który określa które urzędy certyfikacji mogą wystawiać certyfikaty dla danej domeny.
-Chroni przed nieautoryzowanym wystawieniem certyfikatu (gdyby inne CA zostało skompromitowane).
+Rekord DNS, który określa które urzędy certyfikacji mogą wystawiać certyfikaty dla danej domeny - chroni przed nieautoryzowanym wystawieniem certyfikatu (gdyby inne CA zostało skompromitowane)   
 
 - OCSP (Online Certificate Status Protocol)  
-Protokół służący do sprawdzania, czy certyfikat SSL jest nadal ważny, czy został unieważniony przez CA (przeglądarka pyta CA czy certyfikat jest ważny)
+Protokół służący do sprawdzania, czy certyfikat SSL jest nadal ważny, czy został unieważniony przez CA (X.509)
+
+
+## Zad 3  
+dodajemy do naszej strony odpowiednie headery
+```conf
+add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
+add_header Content-Security-Policy "default-src 'self';";
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Permissions-Policy 'geolocation=(self "https://example.com"), microphone=()';
+add_header Referrer-Policy "strict-origin-when-cross-origin";
+```
+
+oraz tworzymy przekierowanie http do https
+```conf
+server {
+    listen 80;
+    server_name patrykflama.dev www.patrykflama.dev;
+    return 301 https://$host$request_uri;
+}
+```
+
+- `XSS` - Cross-Site Scripting, atak polegający na możliwości wstrzyknięcia złośliwego kodu klienckiego do danej strony
+- `CSP` - Content Security Policy, mechanizm/standard zabezpieczający przed XSS poprzez określenie, skąd mogą być ładowane zasoby
+
+
+
+
+
+
+
+<details>
+<summary>Santander - wynik D</summary>
+
+Missing Headers:  
+- `Content-Security-Policy`	Content Security Policy is an effective measure to protect your site from XSS attacks. By whitelisting sources of approved content, you can prevent the browser from loading malicious assets.
+- `X-Frame-Options`	X-Frame-Options tells the browser whether you want to allow your site to be framed or not. By preventing a browser from framing your site you can defend against attacks like clickjacking. Recommended value "X-Frame-Options: SAMEORIGIN".
+- `Referrer-Policy`	Referrer Policy is a new header that allows a site to control how much information the browser includes with navigations away from a document and should be set by all sites.
+- `Permissions-Policy`	Permissions Policy is a new header that allows a site to control which features and APIs can be used in the browser.
+
+Additional:
+- `access-control-allow-origin` is `*`	This is a very lax CORS policy. Such a policy should only be used on a public CDN.
+
+
+</details>
+
+
+<details>
+<summary>Millennium - wynik C</summary>
+
+Missing Headers:
+- `Content-Security-Policy`	Content Security Policy is an effective measure to protect your site from XSS attacks. By whitelisting sources of approved content, you can prevent the browser from loading malicious assets.
+- `Referrer-Policy`	Referrer Policy is a new header that allows a site to control how much information the browser includes with navigations away from a document and should be set by all sites.
+- `Permissions-Policy`	Permissions Policy is a new header that allows a site to control which features and APIs can be used in the browser.
+
+
+</details>
+
+
+<details>
+<summary>PKO BP - wynik A</summary>
+
+Warnings:
+- `Content-Security-Policy`	This policy contains 'unsafe-inline' which is dangerous in the script-src directive. This policy contains 'unsafe-eval' which is dangerous in the script-src directive.
+</details>
+
+
+
+
+## Zad 4
+HSTS zostało już omówione w zadaniu 3 (nagłówek Strict-Transport-Security)
+
+CAA dodajemy w rekordach DNS naszej domeny (bind9):
+```
+; CAA records to allow Let's Encrypt to issue certificates
+@       IN      CAA     0 issue "letsencrypt.org"
+www     IN      CAA     0 issue "letsencrypt.org"
+@       IN      CAA     0 issuewild "letsencrypt.org"
+www     IN      CAA     0 issuewild "letsencrypt.org"
+```
+
+
+
+
 
 

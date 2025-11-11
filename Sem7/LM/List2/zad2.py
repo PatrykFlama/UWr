@@ -6,19 +6,7 @@ import random
 from tqdm.auto import tqdm
 import equation
 
-# === Model ===
-# model_name = 'eryk-mazus/polka-1.1b-chat'
-# model_name = 'flax-community/papuGaPT2'
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# tokenizer = AutoTokenizer.from_pretrained(model_name)
-# # ensure a pad token is set (avoid the warnings) and propagate to model config
-# if tokenizer.pad_token is None:
-#     tokenizer.pad_token = tokenizer.eos_token
-# model = AutoModelForCausalLM.from_pretrained(model_name)
-# model.config.pad_token_id = tokenizer.pad_token_id
-# model.to(device)  # type: ignore
-# print("Model loaded on", device)
-
+# === MAIN CLASS ===
 class ModelGeneratorSetOfWords:
     def __init__(self, model_name='flax-community/papuGaPT2'):
         # === Model ===
@@ -171,6 +159,7 @@ def evaluate_riddles(riddles, allowed_answers, model, model_name_desc="current m
 
 if __name__ == "__main__":
     model_name = 'flax-community/papuGaPT2'
+    # model_name = 'eryk-mazus/polka-1.1b-chat'
     generator = ModelGeneratorSetOfWords(model_name=model_name)
 
     sample_allowed = {"cat", "dog", "fish", "tiger", "lion", "elephant", "wolf", "rabbit", "hamster", "parrot"}

@@ -5,65 +5,24 @@ import re
 import random
 from tqdm.auto import tqdm
 import equation
+from model_lib import ModelUtils
 
 # === MAIN CLASS ===
 class ModelGeneratorSetOfWords:
     def __init__(self, model_name='flax-community/papuGaPT2'):
-        # === Model ===
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        # ensure a pad token is set (avoid the warnings) and propagate to model config
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.model = AutoModelForCausalLM.from_pretrained(model_name)
-        self.model.config.pad_token_id = self.tokenizer.pad_token_id
-        self.model.to(self.device)  # type: ignore
-        print("Model loaded on", self.device)
-
-    # === helpers ===
-    def log_probs_from_logits(self, logits, labels):
-        logp = F.log_softmax(logits, dim=-1)
-        logp_label = torch.gather(logp, 2, labels.unsqueeze(2)).squeeze(-1)
-        return logp_label
-
-    def sentence_prob(self, sentence_txt):
-        inputs = self.tokenizer(sentence_txt, return_tensors='pt', return_attention_mask=True)
-        input_ids = inputs['input_ids'].to(self.device)
-        attention_mask = inputs['attention_mask'].to(self.device)
-        with torch.no_grad():
-            output = self.model(input_ids=input_ids, attention_mask=attention_mask)
-            log_probs = self.log_probs_from_logits(output.logits[:, :-1, :], input_ids[:, 1:])
-            seq_log_probs = torch.sum(log_probs)
-        return seq_log_probs.cpu().numpy()  
-
-    def ask_model(self, prompt, max_new_tokens=50, temperature=0.7):
-        inputs = self.tokenizer(prompt, return_tensors='pt', return_attention_mask=True)
-        input_ids = inputs['input_ids'].to(self.device)
-        attention_mask = inputs['attention_mask'].to(self.device)
-        with torch.no_grad():
-            output_ids = self.model.generate(
-                input_ids,
-                attention_mask=attention_mask,
-                max_new_tokens=max_new_tokens,
-                temperature=temperature,
-                do_sample=True,
-                pad_token_id=self.tokenizer.pad_token_id
-            )
-        output_text = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
-        return output_text
-
+        self.model_utils = ModelUtils(model_name)
 
     # ===== MAIN =====
     def _tokenize_variants(self, word):
-        ids1 = self.tokenizer(word, add_special_tokens=False)['input_ids']
-        ids2 = self.tokenizer(' ' + word, add_special_tokens=False)['input_ids']
+        ids1 = self.model_utils.tokenizer(word, add_special_tokens=False)['input_ids']
+        ids2 = self.model_utils.tokenizer(' ' + word, add_special_tokens=False)['input_ids']
         return {tuple(ids1), tuple(ids2)}
 
     def generate_one_word_from_set(self, prompt, allowed_words, max_new_tokens=30, temperature=1.0):
         """
         Generates next tokens until finds one matching with allowed_words
         """
-        device_local = self.device
+        device_local = self.model_utils.device
 
         tok_cands = set()
         for w in allowed_words:
@@ -71,7 +30,7 @@ class ModelGeneratorSetOfWords:
         tok_cands = [list(t) for t in tok_cands]
 
         # prep prompt
-        inputs = self.tokenizer(prompt, return_tensors='pt')
+        inputs = self.model_utils.tokenizer(prompt, return_tensors='pt')
         input_ids = inputs['input_ids'].to(device_local)
         attention_mask = inputs.get('attention_mask', None)
         if attention_mask is not None:
@@ -79,7 +38,7 @@ class ModelGeneratorSetOfWords:
 
         gen = []    # generated tokens
         with torch.no_grad():
-            out = self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=True)
+            out = self.model_utils.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=True)
             past = out.past_key_values
         last_token = input_ids[:, -1:].to(device_local)
 
@@ -99,7 +58,7 @@ class ModelGeneratorSetOfWords:
 
             # if any of completions reached, return it
             if completions:
-                return self.tokenizer.decode(completions[0], skip_special_tokens=True).strip()
+                return self.model_utils.tokenizer.decode(completions[0], skip_special_tokens=True).strip()
 
             # if there are no fitting tokens to generate next (shouldn't happen)
             if not allowed_next:
@@ -107,7 +66,7 @@ class ModelGeneratorSetOfWords:
 
             # calculate the tokens probability
             with torch.no_grad():
-                out = self.model(input_ids=last_token, past_key_values=past, use_cache=True)
+                out = self.model_utils.model(input_ids=last_token, past_key_values=past, use_cache=True)
                 logits = out.logits[:, -1, :]  # (1, vocab)
                 past = out.past_key_values
 
@@ -135,7 +94,7 @@ class ModelGeneratorSetOfWords:
 
 
 
-def evaluate_riddles(riddles, allowed_answers, model, model_name_desc="current model",
+def evaluate_riddles(riddles, allowed_answers, model, model_name_desc="current model_utils.model",
                     trials=5, max_new_tokens=30, temperature=1.0):
     """
     Simple evaluator:

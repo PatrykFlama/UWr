@@ -5,51 +5,13 @@ import re
 import random
 from tqdm.auto import tqdm
 import equation
+from model_lib import ModelUtils
+
 
 # === Model ===
 # model_name = 'eryk-mazus/polka-1.1b-chat'
 model_name = 'flax-community/papuGaPT2'
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-# ensure a pad token is set (avoid the warnings) and propagate to model config
-if tokenizer.pad_token is None:
-    tokenizer.pad_token = tokenizer.eos_token
-model = AutoModelForCausalLM.from_pretrained(model_name)
-model.config.pad_token_id = tokenizer.pad_token_id
-model.to(device)  # type: ignore
-print("Model loaded on", device)
-
-# === helpers ===
-def log_probs_from_logits(logits, labels):
-    logp = F.log_softmax(logits, dim=-1)
-    logp_label = torch.gather(logp, 2, labels.unsqueeze(2)).squeeze(-1)
-    return logp_label
-
-def sentence_prob(sentence_txt):
-    inputs = tokenizer(sentence_txt, return_tensors='pt', return_attention_mask=True)
-    input_ids = inputs['input_ids'].to(device)
-    attention_mask = inputs['attention_mask'].to(device)
-    with torch.no_grad():
-        output = model(input_ids=input_ids, attention_mask=attention_mask)
-        log_probs = log_probs_from_logits(output.logits[:, :-1, :], input_ids[:, 1:])
-        seq_log_probs = torch.sum(log_probs)
-    return seq_log_probs.cpu().numpy()  
-
-def ask_model(prompt, max_new_tokens=50, temperature=0.7):
-    inputs = tokenizer(prompt, return_tensors='pt', return_attention_mask=True)
-    input_ids = inputs['input_ids'].to(device)
-    attention_mask = inputs['attention_mask'].to(device)
-    with torch.no_grad():
-        output_ids = model.generate(
-            input_ids,
-            attention_mask=attention_mask,
-            max_new_tokens=max_new_tokens,
-            temperature=temperature,
-            do_sample=True,
-            pad_token_id=tokenizer.pad_token_id
-        )
-    output_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
-    return output_text
+model_utils = ModelUtils(model_name)
 
 # === main loop ===
 def random_equation(num_terms=2, prob_brackets=0.3):
@@ -96,7 +58,7 @@ def test_prompt(prompt_idx, num_tests=100, eq_params=(4, 0.3), eq=None):
     for _ in tqdm(range(num_tests), desc=f"Testing prompt {prompt_idx}", leave=False):
         if eq == None: eq = random_equation(num_terms=eq_params[0], prob_brackets=eq_params[1])
         full_prompt = prompt_few_shot + prompt_start + eq.to_string() + prompt_end
-        response = ask_model(full_prompt, max_new_tokens=50)
+        response = model_utils.ask_model(full_prompt, max_new_tokens=50)
         match = re.search(r'(-?\d+)', response)
         if match:
             model_answer = int(match.group(1))

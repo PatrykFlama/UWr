@@ -18,6 +18,8 @@ Taka metoda jest bardzo niewydajna - liczba możliwych niepoprawnych generacji r
 ### a)  losuj tekst o długości M, który na pozycji k ma określony wyraz
 generowanie prefiksu i suffiksu osobno - będizemy generować prefiks idąc 'do tyłu', co działa dalej na ten samej zasadzie
 
+jak generować w obie strony? model zlicza liczbę wystąpień tokenów długości n. można licząc analogicznie do prawdopodobieństwa na bazie poprzednich - policzyć ppb na bazie kolejnych
+
 ### b) losuj tekst o długości M, który na pozycjach parzystych ma określone wyrazy (czyli losujesz tylko pozycje nieparzyste, zaczynamy numerację od 0),
 
 
@@ -30,7 +32,11 @@ Model jest przydatny do zadań generacji poprzedniego tokenu.  Możliwe jest po�
 ## Zad 4
 <!-- jedno zdanie = jedna litera. Najczęściej występująca litera (w słowach, lub tylko pierwsze litery słów) to litera kodu.  -->
 
-Ustalamy model, ustalamy że dla wygenerowanych prawdopodobieństw tokenów - tokeny na miejscu nieparzystym to zapalony bit, a na parzystym to zgaszony. Wtedy mamy wiadomość gdzie jeden bit kodujemy jednym tokenem. Ideę można też wymienić na 8 bitowe kodowanie w analogiczny sposób.
+Ustalamy model, ustalamy że dla wygenerowanych prawdopodobieństw tokenów - tokeny na miejscu nieparzystym to zapalony bit, a na parzystym to zgaszony. Wtedy mamy wiadomość gdzie jeden bit kodujemy jednym tokenem. Ideę można też wymienić na 8 bitowe kodowanie w analogiczny sposób.   
+
+Żeby zwiększyć losowość wiadomości oraz dodać jej odpowiedni charakter, możemy na początku dodać akapit jakiejś historyjki, który będzie ignorowany przy dekodowaniu.
+
+Dodatkowo można dodać przekakiwanie tokenów, których prawdopodobieństwo jest zbyt wysokie.
 
 
 ## Zad 5
@@ -46,7 +52,7 @@ Iterujemy się token po tokenie, w zadanym zdaniu. Dla każdego takiego prefiksu
 
 
 ## Zad 7
-Tokeny papugi zaczynają się od spacji, więc dodanie spacji na końcu słowa nie przejawiało się w korpusie na którym była ona trenowana. Przez to żaden token za bardzo nie pasuje do naszej generacji i model zaczyna się gubić.
+Tokeny papugi zaczynają się od spacji, więc dodanie spacji na końcu słowa spowoduje że te zaczynjające się nią nie będą pasować
 
 bez spacji vs ze spacją:  
 ```
@@ -69,12 +75,21 @@ Składniki potrzebne do zrobienia naleśników to owca ziemniaczana, kukurydza, 
 Cechy wierszów:
 - liczba sylab (powstarza się), ustalona liczba wersów
 - rymy (np parzyste wersy się rymują)
+- zachowana tematyka
 
 Algorytm:  
 - na początku ustalamy cechy wiersza - liczba wersów i sylab
 - dobieramy rymy (całe słowa lub końcówki) dla każdego wiersza - można to zrobić nie wykorzystując jeszcze modelu
 - teraz mamy zadanie wygenerowania zdania o zadanej długości (liczbie sylab) oraz końcówce (rym), dodatkowo ma ono kontekst poprzednich wersów - możemy to rozwiązać beam searchem
 
+Algorytm v2:
+- generujemy zdanie z zadaną liczbą sylab
+- kopiujemy to zdanie, i podmieniamy słowa (aby zachować wysokie prawdopodobieństwa oraz suffix, ale zmienić zdanie)
+
+Algorytm v3:
+- generujemy zdanie z zadaną liczbą sylab
+- na podstawie porzprzednich zdań generujemy kolejne
+- pod koniec zdania wybieramy te bardziej prawdopodobne tokeny
 
 ## Zad 9
 propozycje:
@@ -86,6 +101,25 @@ propozycje:
 
 
 np przewidywanie kolejnych kroków w przepisach kulinarnych na podstawie wcześniejszych kroków - korpus bierzemy z przepisów kulinarnych, natomiast tokenizację (żeby nie operować na języku naturalnym) możemy zrobić na podstawie akcji (np. "dodać", "wymieszać", "piec") oraz składników (np. "mąka", "jajka", "cukier")
+
+
+## Zad 10
+wnioski: 
+- J.Pol jest najlepszy w zadaniach kontekstowych
+- języki podzielono na 2 grupy: tam gdzie było dużo zasobów i  tam gdzie było mnniej zasobów (w korpusie, bazując na wikipedii)
+
+dlaczego tak może być (że jpol jest taki dobry):
+- precyzyjna konstrukacja zdań (końcówki słów, etc)
+- dłuższe zdania - więcej informacji
+- precyzja zdań wynikająca z konstrukcji języka (w jpol możemy zachować przekaz przy praktycznie dowolnej permutacji słów w zadniu - więc kolejność zdań to dodatkowa informacja)
+- czasem w modelach wielojęzycznych na jpol potrzeba więcej tokenów
+
+
+
+
+
+
+
 
 
 

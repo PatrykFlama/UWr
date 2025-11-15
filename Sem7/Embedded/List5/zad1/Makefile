@@ -1,5 +1,5 @@
 
-PRG            = int
+PRG            = zad1
 OBJ            = ${PRG}.o
 PROGRAMMER     = arduino
 PORT           = /dev/ttyUSB0

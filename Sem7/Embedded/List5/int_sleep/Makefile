@@ -1,5 +1,5 @@
 
-PRG            = helloworld
+PRG            = int_sleep
 OBJ            = ${PRG}.o
 PROGRAMMER     = arduino
 PORT           = /dev/ttyUSB0

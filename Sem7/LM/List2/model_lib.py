@@ -13,7 +13,7 @@ class ModelUtils:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.model = AutoModelForCausalLM.from_pretrained(model_name)
         self.model.config.pad_token_id = self.tokenizer.pad_token_id
-        self.model.to(device)  # type: ignore
+        self.model.to(self.device)  # type: ignore
         print("Model loaded on", self.device)
 
     # === helpers ===

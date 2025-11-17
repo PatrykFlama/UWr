@@ -1,3 +1,5 @@
+// Program przykładowy: tryb powersave i licznik 2
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>

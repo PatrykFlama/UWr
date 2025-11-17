@@ -1,8 +1,8 @@
 
-PRG            = helloworld
+PRG            = zad3
 OBJ            = ${PRG}.o
 PROGRAMMER     = arduino
-PORT           = /dev/ttyUSB0
+PORT           = /dev/ttyUSB1
 MCU_TARGET     = atmega328p 
 AVRDUDE_TARGET = atmega328p
 OPTIMIZE       = -O3

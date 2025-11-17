@@ -121,19 +121,20 @@ if __name__ == "__main__":
     # model_name = 'eryk-mazus/polka-1.1b-chat'
     generator = ModelGeneratorSetOfWords(model_name=model_name)
 
-    sample_allowed = {"cat", "dog", "fish", "tiger", "lion", "elephant", "wolf", "rabbit", "hamster", "parrot"}
+    sample_allowed = {"kot", "pies", "ryba", "tygrys", "lew", "słoń", "wilk", "królik", "chomik", "papuga"}
     sample_riddles = [
-        ("Small domesticated feline animal.", "cat"),
-        ("Man's best friend.", "dog"),
-        ("A large wild cat known as the king of the jungle.", "lion"),
-        ("A common household pet that swims in a tank.", "fish"),
-        ("A large mammal with a trunk.", "elephant"),
-        ("A carnivorous mammal known for its strength and courage.", "tiger"),
-        ("A small, burrowing rodent often kept as a pet.", "hamster"),
-        ("A colorful bird known for its ability to mimic sounds.", "parrot"),
+        ("Małe udomowione zwierzę z rodziny kotowatych.", "kot"),
+        ("Najlepszy przyjaciel człowieka.", "pies"),
+        ("Duży dziki kot znany jako król dżungli.", "lew"),
+        ("Powszechny domowy zwierzak, który pływa w akwarium.", "ryba"),
+        ("Duży ssak z trąbą.", "słoń"),
+        ("Mięsożerny ssak znany ze swojej siły i odwagi.", "tygrys"),
+        ("Mały, kopiący gryzoń często trzymany jako zwierzę domowe.", "chomik"),
+        ("Kolorowy ptak znany ze swojej zdolności do naśladowania dźwięków.", "papuga"),
     ]
     acc = evaluate_riddles(sample_riddles, sample_allowed, model=generator, model_name_desc=model_name, trials=10,
                          max_new_tokens=20, temperature=0.8)
     
     print("Final accuracy: ", acc)
+
 

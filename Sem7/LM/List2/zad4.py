@@ -16,8 +16,7 @@ class AlliterativeSentenceGenerator:
         self.model = self.mu.model
 
     # --- prefix utilities ---
-    @staticmethod
-    def _word_head(word):
+    def _word_head(self, word):
         m = re.search(r"[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]", word)
         return m.group(0).lower() if m else None
 
@@ -52,8 +51,7 @@ class AlliterativeSentenceGenerator:
         return None
 
     # top-k and top-p (nucleus) filtering
-    @staticmethod
-    def top_k_top_p_filtering(logits, top_k=0, top_p=1.0, filter_value=-1e9):
+    def top_k_top_p_filtering(self, logits, top_k=0, top_p=1.0, filter_value=-1e9):
         # logits: 1D tensor
         top_k = min(max(int(top_k), 0), logits.size(-1))
         if top_k > 0:

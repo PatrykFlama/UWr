@@ -38,11 +38,11 @@ def random_equation(num_terms=2, prob_brackets=0.3):
 few_shot_examples = []
 
 prompts = [
-    ("Oblicz wartość wyrażenia: ", "\nWynik: "),
-    ("Wartość wyrażenia matematycznego ", "to "),
-    {"Podaj wynik działania: ", "\nWynik to: "},
-    ("Calculate the result of the expression: ", "\nResult: "),
-    {"", " = "},
+    ("Oblicz wartość wyrażenia: ", "\nWynik:"),
+    ("Wartość wyrażenia matematycznego ", "to"),
+    ("Podaj wynik działania: ", "\nWynik to:"),
+    ("Calculate the result of the expression: ", "\nResult:"),
+    {"", " ="},
 ]
 
 
@@ -58,7 +58,7 @@ def test_prompt(prompt_idx, num_tests=100, eq_params=(4, 0.3), eq=None):
     for _ in tqdm(range(num_tests), desc=f"Testing prompt {prompt_idx}", leave=False):
         if eq == None: eq = random_equation(num_terms=eq_params[0], prob_brackets=eq_params[1])
         full_prompt = prompt_few_shot + prompt_start + eq.to_string() + prompt_end
-        response = model_utils.ask_model(full_prompt, max_new_tokens=50)
+        response = model_utils.ask_model(full_prompt, max_new_tokens=50, temperature=0.01)
         match = re.search(r'(-?\d+)', response)
         if match:
             model_answer = int(match.group(1))
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
 
     FEWHOT_EXAMPLES = 3
-    PROMPT_TEST_RANGE = (len(prompts) - 1, len(prompts) - 1)
+    PROMPT_TEST_RANGE = (0, len(prompts) - 1)
     RANDOM_EQ_PARAMS = (2, 0.0)
 
     for i in range(FEWHOT_EXAMPLES):

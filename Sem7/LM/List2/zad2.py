@@ -73,7 +73,7 @@ class ModelGeneratorSetOfWords:
             mask = torch.full_like(logits, -1e9)
             allowed_idxs = sorted(list(allowed_next))
             temp = (temperature if temperature > 0 else 1.0)
-            # assign per-index to avoid advanced-indexing edge cases
+
             for idx in allowed_idxs:
                 mask[0, idx] = logits[0, idx] / temp
             probs = torch.softmax(mask, dim=-1)
@@ -81,7 +81,7 @@ class ModelGeneratorSetOfWords:
             next_token = torch.multinomial(probs, num_samples=1)  # shape (1,1)
             next_id = next_token.item()
             gen.append(next_id)
-            last_token = next_token  # already shape (1,1)
+            last_token = next_token  # shape (1,1)
 
         return None
 

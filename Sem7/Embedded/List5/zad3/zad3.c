@@ -7,7 +7,7 @@
 
 #include "../../customlib/uart.c"
 
-#define SAMPLES 512
+#define SAMPLES 10
 
 static volatile uint16_t adc_result = 0;
 
@@ -16,6 +16,9 @@ ISR(ADC_vect) {
 }
 
 static void adc_config() {
+    // Disable Analog Comparator
+    ACSR |= _BV(ACD);
+
     // AVcc (Vcc) as ADC reference: REFS1:0 = 0b01
     // MUX bits = 0b1110 (14) selects internal 1.1V (bandgap)
     ADMUX = _BV(REFS0) | (14 & 0x0F);
@@ -95,7 +98,7 @@ int main() {
     // ignore first result
     ADCSRA |= _BV(ADSC);
     while (ADCSRA & _BV(ADSC));
-    ADCSRA &= ~_BV(ADIF);
+    ADCSRA |= _BV(ADIF);
 
 
     uint32_t sum_active;

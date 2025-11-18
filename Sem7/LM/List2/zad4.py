@@ -77,10 +77,36 @@ class AlliterativeGenerator:
         all_logps = []
 
         while remaining > 0:
-            next_word, generated_tokens, logps = self.generate_one_word(prompt, target_char,
-                                                                        top_k=top_k, top_p=top_p,
-                                                                        temperature=temperature,
-                                                                        repetition_penalty=repetition_penalty)
+            # try a few times if the generator repeats an already produced word
+            max_retries = 8
+            attempt = 0
+            next_word = None
+            generated_tokens = 0
+            logps = []
+            banned_first_tokens = set()
+            while attempt < max_retries:
+                attempt += 1
+                res = self.generate_one_word(prompt, target_char,
+                                             top_k=top_k, top_p=top_p,
+                                             temperature=temperature,
+                                             repetition_penalty=repetition_penalty,
+                                             banned_first_tokens=banned_first_tokens)
+                if not res:
+                    next_word = None
+                    break
+                # now generate_one_word returns (word, generated_tokens, logps, first_tok)
+                next_word, generated_tokens, logps, first_tok = res
+                norm = re.sub(r"\s+", " ", next_word.strip()).lower()
+                # avoid exact word repeats
+                prev_set = set(w.lower() for w in self.generated_words)
+                if norm in prev_set:
+                    # ban this first token for next attempt and retry
+                    banned_first_tokens.add(first_tok.strip().lower())
+                    # try again; on last attempt accept anyway
+                    if attempt >= max_retries:
+                        break
+                    continue
+                break
             if not next_word:
                 break
 
@@ -109,12 +135,13 @@ class AlliterativeGenerator:
         pbar.close()
         return prompt, all_logps
 
-    def generate_one_word(self, prompt, target_char, max_tokens=10, top_k=50, top_p=0.9, temperature=1.0, repetition_penalty=1.5) -> tuple:
+    def generate_one_word(self, prompt, target_char, max_tokens=10, top_k=50, top_p=0.9, temperature=1.0, repetition_penalty=1.5, banned_first_tokens=None) -> tuple:
         # generate first token that starts with target_char
         first = self.generate_one_token(prompt, target_char, top_k=top_k, top_p=top_p,
-                                        temperature=temperature, repetition_penalty=repetition_penalty)
+                                        temperature=temperature, repetition_penalty=repetition_penalty,
+                                        banned_token_texts=banned_first_tokens)
         if not first:
-            return ("", 0, [])
+            return ("", 0, [], "")
         first_tok, first_logp, first_id = first
 
         word = first_tok
@@ -144,9 +171,9 @@ class AlliterativeGenerator:
             logps.append(next_logp)
             generated_tokens += 1
 
-        return (word, generated_tokens, logps)
+        return (word, generated_tokens, logps, first_tok)
 
-    def generate_one_token(self, prompt, target_char, temperature=1.0, top_k=50, top_p=0.9, repetition_penalty=1.5):
+    def generate_one_token(self, prompt, target_char, temperature=1.0, top_k=50, top_p=0.9, repetition_penalty=1.5, banned_token_texts=None):
         device_local = self.utils.device
 
         # prep prompt
@@ -186,7 +213,11 @@ class AlliterativeGenerator:
                 if not s_stripped:
                     continue
                 ch = s_stripped[0]
+                token_norm = s.strip().lower()
                 if ch.lower() == target_char.lower():
+                    # if this token's text is banned for first tokens, skip it
+                    if banned_token_texts and token_norm in banned_token_texts:
+                        continue
                     allowed[tid] = True
             logits_proc[~allowed] = -1e9
 

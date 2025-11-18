@@ -54,7 +54,6 @@ void timer_config() {
 }
 
 int main() {
-    // char buf[32];
     uart_init();
 
     timer_config();

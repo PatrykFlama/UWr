@@ -38,15 +38,15 @@ def random_equation(num_terms=2, prob_brackets=0.3):
 few_shot_examples = []
 
 prompts = [
-    ("Oblicz wartość wyrażenia: ", "\nWynik:"),
+    # ("Oblicz wartość wyrażenia: ", "\nWynik:"),
     ("Wartość wyrażenia matematycznego ", "to"),
-    ("Podaj wynik działania: ", "\nWynik to:"),
-    ("Calculate the result of the expression: ", "\nResult:"),
-    {"", " ="},
+    # ("Podaj wynik działania: ", "\nWynik to:"),
+    # ("Calculate the result of the expression: ", "\nResult:"),
+    # ("", " ="),
 ]
 
 
-def test_prompt(prompt_idx, num_tests=100, eq_params=(4, 0.3), eq=None):
+def test_prompt(prompt_idx, tests):
     prompt_start, prompt_end = prompts[prompt_idx]
     prompt_few_shot = ""
 
@@ -55,19 +55,26 @@ def test_prompt(prompt_idx, num_tests=100, eq_params=(4, 0.3), eq=None):
 
     correct = 0
     answeres = []
-    for _ in tqdm(range(num_tests), desc=f"Testing prompt {prompt_idx}", leave=False):
-        if eq == None: eq = random_equation(num_terms=eq_params[0], prob_brackets=eq_params[1])
-        full_prompt = prompt_few_shot + prompt_start + eq.to_string() + prompt_end
+    for cur_eq in tqdm(tests, desc=f"Testing prompt {prompt_idx}", leave=False):
+        full_prompt = prompt_few_shot + prompt_start + cur_eq.to_string() + prompt_end
         response = model_utils.ask_model(full_prompt, max_new_tokens=50, temperature=0.01)
-        match = re.search(r'(-?\d+)', response)
+
+        # accept integers and floats, and comma decimal separators
+        match = re.search(r'(-?\d+(?:[.,]\d+)?)', response)
         if match:
-            model_answer = int(match.group(1))
-            answeres.append((model_answer, eq.evaluate()))
-            if model_answer == eq.evaluate():
+            # normalize comma to dot and parse as float
+            try:
+                model_answer = float(match.group(1).replace(',', '.'))
+            except ValueError:
+                continue
+            correct_answer = cur_eq.evaluate()
+            answeres.append((model_answer, correct_answer))
+            # compare with a small tolerance to allow decimal formatting differences
+            if abs(model_answer - correct_answer) < 1e-6:
                 correct += 1
 
         # tqdm.write(f"Prompt accuracy: {correct}/{i + 1} = {correct / (i + 1):.2%}")
-    accuracy = correct / num_tests
+    accuracy = correct / len(tests)
 
     return accuracy, answeres
 
@@ -92,7 +99,9 @@ if __name__ == "__main__":
 
     FEWHOT_EXAMPLES = 3
     PROMPT_TEST_RANGE = (0, len(prompts) - 1)
+    PROMPT_TEST_EQUATIONS = 10
     RANDOM_EQ_PARAMS = (2, 0.0)
+    PRINT_ANSWERS = True
 
     for i in range(FEWHOT_EXAMPLES):
         eq = random_equation(num_terms=RANDOM_EQ_PARAMS[0], prob_brackets=RANDOM_EQ_PARAMS[1])
@@ -102,10 +111,15 @@ if __name__ == "__main__":
         print(f"\t{eq_str} = {ans}")
     print("============\n")
 
+    test_equations = []
+    for _ in range(PROMPT_TEST_EQUATIONS):
+        eq = random_equation(num_terms=RANDOM_EQ_PARAMS[0], prob_brackets=RANDOM_EQ_PARAMS[1])
+        test_equations.append(eq)
+
     acc = []
     for i in tqdm(range(PROMPT_TEST_RANGE[0], PROMPT_TEST_RANGE[1] + 1), desc="Testing prompts"):
         # tqdm.write(f"Testing prompt {i}: {prompts[i]}")
-        acc.append(test_prompt(i, num_tests=10, eq_params=RANDOM_EQ_PARAMS))
+        acc.append(test_prompt(i, test_equations))
         # tqdm.write(f"Prompt {i} accuracy: {acc[-1][0]:.2%}")
 
     print("Prompt accuracies:")
@@ -117,3 +131,8 @@ if __name__ == "__main__":
 
         print(f"Prompt {i}: {accuracy:.2%}, Avg answer distance: {ans_dist_total / len(answers):.4f}")
 
+        if PRINT_ANSWERS:
+            for i in range(len(answers)):
+                model_answer, correct_answer = answers[i]
+                print(f"\t{test_equations[i].to_string()} = \"{model_answer}\" ({correct_answer}) -> dist: {dist(model_answer, correct_answer):.4f}")
+            print()

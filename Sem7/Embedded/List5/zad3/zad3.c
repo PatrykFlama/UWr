@@ -7,7 +7,7 @@
 
 #include "../../customlib/uart.c"
 
-#define SAMPLES 10
+#define SAMPLES 500
 
 static volatile uint16_t adc_result = 0;
 
@@ -20,9 +20,9 @@ static void adc_config() {
     ACSR |= _BV(ACD);
 
     // AVcc (Vcc) as ADC reference: REFS1:0 = 0b01
-    // MUX bits = 0b1110 (14) selects internal 1.1V (bandgap)
+    // MUX bits = 0b1110 -> internal 1.1V reference
     ADMUX = _BV(REFS0) | (14 & 0x0F);
-    // ADC prescaler = 128
+    // prescaler = 128
     ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0);
     // ADC interrupt disabled
     ADCSRA &= ~_BV(ADIE);
@@ -36,11 +36,11 @@ static void measure_active(uint32_t* out_sum, uint64_t* out_sumsq) {
     // disable ADC interrupt
     ADCSRA &= ~_BV(ADIE);
 
-    // do a few dummy conversions to let ADC input/reference settle
+    // ignore first few
     for (int d = 0; d < 4; ++d) {
         ADCSRA |= _BV(ADSC);
         while (ADCSRA & _BV(ADSC));
-        (void)ADC;
+        ADCSRA &= ~_BV(ADIF);
     }
 
     for (uint16_t i = 0; i < SAMPLES; ++i) {
@@ -48,6 +48,8 @@ static void measure_active(uint32_t* out_sum, uint64_t* out_sumsq) {
         ADCSRA |= _BV(ADSC);
         // wait until conversion finished
         while (ADCSRA & _BV(ADSC));
+        ADCSRA &= ~_BV(ADIF);
+
         uint16_t v = ADC;
         sum += v;
         sumsq += (uint64_t)v * (uint64_t)v;
@@ -75,6 +77,8 @@ static void measure_noise_reduction(uint32_t* out_sum, uint64_t* out_sumsq) {
 
         // sleep until ADC_vect wakes us
         sleep_mode();
+        ADCSRA &= ~_BV(ADIF);
+
         uint16_t v = adc_result;
         sum += v;
         sumsq += (uint64_t)v * (uint64_t)v;
@@ -98,7 +102,7 @@ int main() {
     // ignore first result
     ADCSRA |= _BV(ADSC);
     while (ADCSRA & _BV(ADSC));
-    ADCSRA |= _BV(ADIF);
+    ADCSRA &= ~_BV(ADIF);
 
 
     uint32_t sum_active;
@@ -106,15 +110,9 @@ int main() {
     uint32_t sum_noise;
     uint64_t sumsq_noise;
 
-    // measure active
-    // printf("Starting active polling series (%d samples)\r\n", SAMPLES);
-    
-    measure_noise_reduction(&sum_noise, &sumsq_noise);
-    _delay_ms(200);
     measure_active(&sum_active, &sumsq_active);
-
-    // measure with ADC Noise Reduction
-    // printf("Starting ADC Noise Reduction series (%d samples)\r\n", SAMPLES);
+    _delay_ms(200);
+    measure_noise_reduction(&sum_noise, &sumsq_noise);
 
 
     // compute mean and variance (variance in ADC units^2)

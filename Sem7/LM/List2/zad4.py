@@ -6,73 +6,13 @@ from tqdm.auto import tqdm
 from model_lib import ModelUtils
 
 
-def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-1e9):
-    # logits: 1D tensor
-    top_k = min(top_k, logits.size(-1))
-
-    if top_k > 0:
-        # remove all tokens with a probability less than the top-k tokens
-        indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
-        logits[indices_to_remove] = filter_value
-
-    if top_p > 0.0:
-        sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-        cumulative_probs = torch.cumsum(torch.softmax(sorted_logits, dim=-1), dim=-1)
-
-        # remove tokens with cumulative probability above the threshold
-        sorted_indices_to_remove = cumulative_probs > top_p
-
-        # shift the indices to the right to keep also the first token above the threshold
-        sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
-        sorted_indices_to_remove[..., 0] = 0
-
-        indices_to_remove = sorted_indices[sorted_indices_to_remove]
-        logits[indices_to_remove] = filter_value
-
-    return logits
-
-
 class AlliterativeGenerator:
-    def __init__(self, model_name='flax-community/papuGaPT2', prefix_path=None):
+    def __init__(self, model_name='flax-community/papuGaPT2'):
         self.utils = ModelUtils(model_name)
         self.tokenizer = self.utils.tokenizer
         self.model = self.utils.model
         self.device = self.utils.device
         self.prefix = []
-        if prefix_path is None:
-            prefix_path = 'prefiksy.txt'
-        try:
-            with open(prefix_path, 'r', encoding='utf-8') as f:
-                self.prefix = [ln.strip() for ln in f if ln.strip()]
-        except Exception:
-            self.prefix = []
-
-    # def generate(self, prefix=None, max_new_tokens=50, top_k=50, top_p=0.9, temperature=1.0,
-    #              n_variants=8, repetition_penalty=1.5):
-    #     if prefix is None:
-    #         prefix = random.choice(self.prefix)
-
-    #     # determine target letter: first alphabetic character in prefix
-    #     m = re.search(r"[A-Za-zÀ-ÖØ-öø-ÿ]", prefix)
-    #     if not m:
-    #         target_letter = 'a'
-    #     else:
-    #         target_letter = m.group(0).lower()
-
-    #     variants = []
-
-    #     for _ in tqdm(range(n_variants), desc="Generating variants", leave=False):
-    #         txt, logps, words = self.generate_answer(prefix, target_letter,
-    #                                               max_new_tokens=max_new_tokens,
-    #                                               top_k=top_k, top_p=top_p,
-    #                                               temperature=temperature,
-    #                                               repetition_penalty=repetition_penalty)
-    #         score = self._score_candidate(logps, words)
-    #         variants.append((score, txt, logps, words))
-
-    #     variants.sort(key=lambda x: x[0], reverse=True)
-    #     best = variants[0] if variants else (None, '', [], [])
-    #     return best, variants
 
     def generate_answer(self, prefix, target_char, max_new_tokens=50, top_k=50, top_p=0.9, temperature=1.0,
                       repetition_penalty=1.5):
@@ -83,12 +23,13 @@ class AlliterativeGenerator:
             next_word, generated_tokens = self.generate_one_word(prompt, target_char,
                                           top_k=top_k, top_p=top_p,
                                           temperature=temperature)
-            if not next_word:
+            if not next_word or next_word.endswith(('.', '!', '?')):
                 break
 
-            prompt += next_word
+            prompt += ('' if prompt.endswith((" ", "\n")) else ' ') + next_word
             if generated_tokens <= 0:
                 break
+
             used = min(generated_tokens, remaining)
             pbar.update(used)
             remaining -= used
@@ -114,21 +55,13 @@ class AlliterativeGenerator:
         generated_tokens = 1
         while generated_tokens < max_tokens:
             next_tok = self.generate_one_token(prompt2, None, temperature=temperature)
-            if not next_tok:
-                break
-            # stop if token is pure punctuation or starts with white space
-            if re.fullmatch(r"[.,;:?!-]+", next_tok) or next_tok.startswith((" ", "\n")):
+
+            if next_tok is None or next_tok.startswith((" ", "\n")):
                 break
 
-            # allow tokens that look like word continuations (letters, digits, apostrophe, hyphen, underscore)
-            if re.match(r"^[\wÀ-ÖØ-öø-ÿ'-]", next_tok, re.UNICODE):
-                word += next_tok
-                if prompt2 and not prompt2.endswith((" ", "\n")) and not next_tok.startswith((" ", "\n")):
-                    prompt2 += " "
-                prompt2 += next_tok
-                generated_tokens += 1
-                continue
-            break
+            word += next_tok
+            prompt2 += next_tok
+            generated_tokens += 1
 
         return (word, generated_tokens)
 
@@ -158,7 +91,7 @@ class AlliterativeGenerator:
         temp = (temperature if temperature > 0 else 1.0)
 
         if target_char != None:
-            for tid in range(logits.size(0)):
+            for tid in range(logits.size(-1)):
                 s = self.utils.tokenizer.decode([tid], clean_up_tokenization_spaces=False)
                 s_stripped = s.lstrip()
                 if not s_stripped:
@@ -167,7 +100,7 @@ class AlliterativeGenerator:
                 if ch.lower() == target_char.lower():
                     mask[0, tid] = logits[0, tid] / temp
         else:
-            for tid in range(logits.size(0)):
+            for tid in range(logits.size(-1)):
                 mask[0, tid] = logits[0, tid] / temp
 
         probs = torch.softmax(mask, dim=-1)
@@ -176,6 +109,9 @@ class AlliterativeGenerator:
         next_id = next_token.item()
         gen.append(next_id)
         last_token = next_token  # shape (1,1)
+
+        if next_id == self.utils.tokenizer.eos_token_id:
+            return None
 
         return self.utils.tokenizer.decode(gen, skip_special_tokens=True)
 
@@ -207,18 +143,13 @@ class AlliterativeGenerator:
 
 
 if __name__ == '__main__':
-    gen = AlliterativeGenerator(prefix_path='prefixy.txt')
+    gen = AlliterativeGenerator()
 
-    # print('Loaded', len(gen.prefix), 'prefixes')
-    # # generate a few examples
-    # best, variants = gen.generate(n_variants=6, max_new_tokens=60, top_k=80, top_p=0.92, temperature=0.8)
-    # print('\nBest candidate (score {:.4f}):\n'.format(best[0]) if best[0] is not None else '\nNo candidate\n')
-    # for s in variants[:3]:
-    #     sc, txt, logps, words = s
-    #     print('SCORE=', sc)
-    #     print(txt)
-    #     print('WORDS:', words)
-    #     print('---')
+    prefixes = []
+    with open('prefiksy.txt', 'r', encoding='utf-8') as f:
+        prefixes = [ln.strip() for ln in f if ln.strip()]
 
-    generation = gen.generate_answer("Prawdziwy piekarz przyprawia pieczywo pieprzem", 'p', max_new_tokens=50, top_k=50, top_p=0.9, temperature=1.0)
+
+    prefix = random.choice(prefixes) if prefixes else "Prawdziwy piekarz przyprawia pieczywo pieprzem"
+    generation = gen.generate_answer(prefix, prefix[0].lower(), max_new_tokens=20, top_k=50, top_p=0.9, temperature=1.0)
     print(generation)

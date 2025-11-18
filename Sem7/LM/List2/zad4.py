@@ -1,281 +1,224 @@
+import torch
 import random
 import math
-import torch
-import numpy as np
+import re
+from tqdm.auto import tqdm
 from model_lib import ModelUtils
 
-# Simple util: is punctuation considered sentence terminator
-SENTENCE_END_TOKS = {'.', '!', '?'}
-PUNCTUATION = {',', ';', ':', '(', ')', '"', "'", '—', '-', '…'}
+
+def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-1e9):
+    # logits: 1D tensor
+    top_k = min(top_k, logits.size(-1))
+
+    if top_k > 0:
+        # remove all tokens with a probability less than the top-k tokens
+        indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
+        logits[indices_to_remove] = filter_value
+
+    if top_p > 0.0:
+        sorted_logits, sorted_indices = torch.sort(logits, descending=True)
+        cumulative_probs = torch.cumsum(torch.softmax(sorted_logits, dim=-1), dim=-1)
+
+        # remove tokens with cumulative probability above the threshold
+        sorted_indices_to_remove = cumulative_probs > top_p
+
+        # shift the indices to the right to keep also the first token above the threshold
+        sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+        sorted_indices_to_remove[..., 0] = 0
+
+        indices_to_remove = sorted_indices[sorted_indices_to_remove]
+        logits[indices_to_remove] = filter_value
+
+    return logits
 
 
-class ModelAlliterativeGenerator:
-    def __init__(self, model_name='flax-community/papuGaPT2', device=None):
-        self.model_utils = ModelUtils(model_name)
-        self.tokenizer = self.model_utils.tokenizer
-        self.model = self.model_utils.model
-        self.device = self.model_utils.device
-
-        # Precompute token texts for faster filtering
-        # prefer model's vocab size (logits size); fall back to tokenizer's vocab size
-        self.vocab_size = getattr(self.model.config, 'vocab_size', None) or self.tokenizer.vocab_size
-        # Some tokenizer implementations expose a slightly different vocab_size; ensure we use the model's output dim
+class AlliterativeGenerator:
+    def __init__(self, model_name='flax-community/papuGaPT2', prefix_path=None):
+        self.utils = ModelUtils(model_name)
+        self.tokenizer = self.utils.tokenizer
+        self.model = self.utils.model
+        self.device = self.utils.device
+        self.prefix = []
+        if prefix_path is None:
+            prefix_path = 'prefiksy.txt'
         try:
-            model_vocab = getattr(self.model.config, 'vocab_size', None)
-            if model_vocab is not None:
-                self.vocab_size = model_vocab
+            with open(prefix_path, 'r', encoding='utf-8') as f:
+                self.prefix = [ln.strip() for ln in f if ln.strip()]
         except Exception:
-            pass
+            self.prefix = []
 
-        self._token_texts = [self.tokenizer.decode([i], clean_up_tokenization_spaces=False) for i in range(self.vocab_size)]
+    # def generate(self, prefix=None, max_new_tokens=50, top_k=50, top_p=0.9, temperature=1.0,
+    #              n_variants=8, repetition_penalty=1.5):
+    #     if prefix is None:
+    #         prefix = random.choice(self.prefix)
 
-    def _top_k_top_p_filter(self, logits, top_k=50, top_p=0.9):
-        # logits: 1D tensor
-        logits = logits.clone()
-        # top-k
-        if top_k is not None and top_k > 0:
-            topk_vals, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-            min_topk = topk_vals[-1]
-            logits[logits < min_topk] = -1e9
+    #     # determine target letter: first alphabetic character in prefix
+    #     m = re.search(r"[A-Za-zÀ-ÖØ-öø-ÿ]", prefix)
+    #     if not m:
+    #         target_letter = 'a'
+    #     else:
+    #         target_letter = m.group(0).lower()
 
-        # top-p (nucleus)
-        if top_p is not None and 0.0 < top_p < 1.0:
-            sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-            probs = torch.softmax(sorted_logits, dim=-1)
-            cumulative = torch.cumsum(probs, dim=-1)
-            # remove tokens with cumulative prob above top_p
-            sorted_indices_to_remove = cumulative > top_p
-            # keep at least one
-            if sorted_indices_to_remove[0]:
-                sorted_indices_to_remove[0] = False
-            indices_to_remove = sorted_indices[sorted_indices_to_remove]
-            logits[indices_to_remove] = -1e9
+    #     variants = []
 
-        return logits
+    #     for _ in tqdm(range(n_variants), desc="Generating variants", leave=False):
+    #         txt, logps, words = self.generate_answer(prefix, target_letter,
+    #                                               max_new_tokens=max_new_tokens,
+    #                                               top_k=top_k, top_p=top_p,
+    #                                               temperature=temperature,
+    #                                               repetition_penalty=repetition_penalty)
+    #         score = self._score_candidate(logps, words)
+    #         variants.append((score, txt, logps, words))
 
-    def _allowed_mask_for_alliteration(self, required_letter, new_word_flag):
-        # returns boolean mask (True = allowed)
-        req = required_letter.lower() if required_letter is not None else None
-        mask = torch.zeros(self.vocab_size, dtype=torch.bool)
-        for i, t in enumerate(self._token_texts):
-            txt = t
-            # treat tokens that start with a space as starting a new word
-            starts_new = txt.startswith(' ')
-            core = txt.lstrip()
-            if core == '':
-                # whitespace-only token (rare) - allow only if not starting a new required word
-                mask[i] = not new_word_flag
-                continue
+    #     variants.sort(key=lambda x: x[0], reverse=True)
+    #     best = variants[0] if variants else (None, '', [], [])
+    #     return best, variants
 
-            # punctuation tokens (commas etc.) should generally be allowed (they attach to previous word)
-            if all(ch in PUNCTUATION or ch in SENTENCE_END_TOKS for ch in core):
-                # allow punctuation tokens regardless of new_word_flag
-                mask[i] = True
-                continue
-
-            # if this token starts a new word, enforce required letter
-            if starts_new and new_word_flag:
-                first_char = core[0].lower()
-                # allow only if alphabetic and matches required
-                if req is None:
-                    mask[i] = core[0].isalpha()
-                else:
-                    mask[i] = core[0].isalpha() and first_char == req
-            else:
-                # continuation or we don't enforce letter now: allow tokens that are letter/word pieces
-                # we allow tokens that begin with letter or don't begin with a weird symbol
-                mask[i] = True
-
-        return mask
-
-    def _penalize_repetition(self, logits, generated_words, candidate_texts):
-        # candidate_texts: list of token texts for each vocab id
-        logits = logits.clone()
-        for i, txt in enumerate(candidate_texts):
-            core = txt.lstrip()
-            if core == '':
-                continue
-            # if this token begins a new word
-            if txt.startswith(' '):
-                word_start = core.split()[0].lower()
-                if word_start in generated_words:
-                    logits[i] -= 5.0  # strong penalty for repeating whole word
-        return logits
-
-    def generate_variant(self, prompt, required_letter=None, max_new_tokens=60, top_k=50, top_p=0.9, temperature=1.0):
-        # Tokenize prompt
-        inputs = self.tokenizer(prompt, return_tensors='pt')
-        input_ids = inputs['input_ids'].to(self.device)
-        attention_mask = inputs.get('attention_mask', None)
-        if attention_mask is not None:
-            attention_mask = attention_mask.to(self.device)
-
-        # prepare past
-        with torch.no_grad():
-            out = self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=True)
-            past = out.past_key_values
-        last_token = input_ids[:, -1:].to(self.device)
-
-        generated_ids = []
-        generated_texts = []
-        generated_words = set()
-        # determine if next token is new word by inspecting last token decode
-        last_decoded = self.tokenizer.decode(input_ids[0], clean_up_tokenization_spaces=False)
-        new_word_flag = last_decoded.endswith(' ') or last_decoded == ''
-
-        token_logprobs = []
-
-        for step in range(max_new_tokens):
-            with torch.no_grad():
-                out = self.model(input_ids=last_token, past_key_values=past, use_cache=True)
-                logits = out.logits[:, -1, :].squeeze(0).cpu()
-                past = out.past_key_values
-
-            # build allowed mask based on alliteration rule and punctuation rules
-            allowed_mask = self._allowed_mask_for_alliteration(required_letter, new_word_flag)
-
-            # mask out disallowed tokens
-            logits_masked = logits.clone()
-            logits_masked[~allowed_mask] = -1e9
-
-            # apply repetition penalty using token texts
-            logits_masked = self._penalize_repetition(logits_masked, generated_words, self._token_texts)
-
-            # apply top-k and top-p
-            logits_filtered = self._top_k_top_p_filter(logits_masked, top_k=top_k, top_p=top_p)
-
-            # temperature
-            temp = temperature if temperature > 0 else 1.0
-            probs = torch.softmax(logits_filtered / temp, dim=-1)
-
-            # sample
-            next_id = torch.multinomial(probs, num_samples=1).item()
-            next_txt = self._token_texts[next_id]
-            # compute logprob for scoring
-            lp = torch.log(probs[next_id].clamp(min=1e-12)).item()
-            token_logprobs.append(lp)
-
-            generated_ids.append(next_id)
-            generated_texts.append(next_txt)
-
-            # update generated_words when token starts new word
-            if next_txt.startswith(' '):
-                core = next_txt.lstrip()
-                # get the first contiguous alphabetical/hyphen chunk (may be only subword)
-                candidate = ''.join([c for c in core if c.isalpha() or c == "-"]).strip()
-                if candidate:
-                    first_word = candidate.split()[0]
-                    if first_word:
-                        generated_words.add(first_word.lower())
-
-            # update new_word_flag for next token: next token starts new word if this token ends with a space
-            new_word_flag = False
-            # many tokens include leading spaces; to see whether next token will start a new word we check if current token ends with a space
-            if next_txt.endswith(' '):
-                new_word_flag = True
-
-            last_token = torch.tensor([[next_id]], device=self.device)
-
-            # stop if generated token ends the sentence
-            core = next_txt.lstrip()
-            if len(core) > 0 and core[0] in SENTENCE_END_TOKS:
+    def generate_answer(self, prefix, target_char, max_new_tokens=50, top_k=50, top_p=0.9, temperature=1.0,
+                      repetition_penalty=1.5):
+        prompt = prefix
+        remaining = max_new_tokens
+        pbar = tqdm(total=max_new_tokens, desc="Generating words", leave=False)
+        while remaining > 0:
+            next_word, generated_tokens = self.generate_one_word(prompt, target_char,
+                                          top_k=top_k, top_p=top_p,
+                                          temperature=temperature)
+            if not next_word:
                 break
 
-        # decode full generation
-        decoded = self.tokenizer.decode(input_ids[0].tolist() + generated_ids, skip_special_tokens=True)
-        return decoded, token_logprobs
+            prompt += next_word
+            if generated_tokens <= 0:
+                break
+            used = min(generated_tokens, remaining)
+            pbar.update(used)
+            remaining -= used
 
-    def score_variant(self, token_logprobs, generated_text):
-        # Score: average logprob, penalize big drops and repetitions, prefer ending with sentence end
-        if not token_logprobs:
+        pbar.close()    
+        return prompt
+
+    def generate_one_word(self, prompt, target_char, max_tokens=10, top_k=50, top_p=0.9, temperature=1.0) -> tuple[str, int]:
+        # generate first token that starts with target_char
+        first_tok = self.generate_one_token(prompt, target_char, temperature=temperature)
+        if not first_tok:
+            return ("", 0)
+        # first_tok = first_tok.lstrip()
+        word = first_tok
+
+        # prepare prompt for subsequent tokens
+        prompt2 = prompt
+        if prompt2 and not prompt2.endswith((" ", "\n")) and not first_tok.startswith((" ", "\n")):
+            prompt2 += " "
+        prompt2 += first_tok
+
+        # keep appending continuation tokens until word boundary or punctuation
+        generated_tokens = 1
+        while generated_tokens < max_tokens:
+            next_tok = self.generate_one_token(prompt2, None, temperature=temperature)
+            if not next_tok:
+                break
+            # stop if token is pure punctuation or starts with white space
+            if re.fullmatch(r"[.,;:?!-]+", next_tok) or next_tok.startswith((" ", "\n")):
+                break
+
+            # allow tokens that look like word continuations (letters, digits, apostrophe, hyphen, underscore)
+            if re.match(r"^[\wÀ-ÖØ-öø-ÿ'-]", next_tok, re.UNICODE):
+                word += next_tok
+                if prompt2 and not prompt2.endswith((" ", "\n")) and not next_tok.startswith((" ", "\n")):
+                    prompt2 += " "
+                prompt2 += next_tok
+                generated_tokens += 1
+                continue
+            break
+
+        return (word, generated_tokens)
+
+    def generate_one_token(self, prompt, target_char, temperature=1.0):
+        device_local = self.utils.device
+
+        # prep prompt
+        inputs = self.utils.tokenizer(prompt, return_tensors='pt')
+        input_ids = inputs['input_ids'].to(device_local)
+        attention_mask = inputs.get('attention_mask', None)
+        if attention_mask is not None:
+            attention_mask = attention_mask.to(device_local)
+
+        gen = []    # generated tokens
+        with torch.no_grad():
+            out = self.utils.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=True)
+            past = out.past_key_values
+        last_token = input_ids[:, -1:].to(device_local)
+
+        # calculate the tokens probability
+        with torch.no_grad():
+            out = self.utils.model(input_ids=last_token, past_key_values=past, use_cache=True)
+            logits = out.logits[:, -1, :]  # (1, vocab)
+            past = out.past_key_values
+
+        mask = torch.full_like(logits, -1e9)
+        temp = (temperature if temperature > 0 else 1.0)
+
+        if target_char != None:
+            for tid in range(logits.size(0)):
+                s = self.utils.tokenizer.decode([tid], clean_up_tokenization_spaces=False)
+                s_stripped = s.lstrip()
+                if not s_stripped:
+                    continue
+                ch = s_stripped[0]
+                if ch.lower() == target_char.lower():
+                    mask[0, tid] = logits[0, tid] / temp
+        else:
+            for tid in range(logits.size(0)):
+                mask[0, tid] = logits[0, tid] / temp
+
+        probs = torch.softmax(mask, dim=-1)
+
+        next_token = torch.multinomial(probs, num_samples=1)  # shape (1,1)
+        next_id = next_token.item()
+        gen.append(next_id)
+        last_token = next_token  # shape (1,1)
+
+        return self.utils.tokenizer.decode(gen, skip_special_tokens=True)
+
+
+    def _score_candidate(self, logps, words):
+        if not logps:
             return -1e9
-        arr = np.array(token_logprobs)
-        avg = arr.mean()
-        min_drop = arr.min() - avg  # large negative means drop
-        # repetition penalty: approximate by counting repeated words
-        words = [w for w in ''.join(generated_text).split() if w.isalpha()]
-        rep_pen = len(words) - len(set(words))
-        score = avg - 0.5 * abs(min_drop) - 0.5 * rep_pen
-        # bonus if ends with sentence-ending punctuation
-        if generated_text.strip() and generated_text.strip()[-1] in SENTENCE_END_TOKS:
-            score += 0.5
-        return score
-
-    def generate(self, prefix, required_letter=None, n_variants=8, **gen_kwargs):
-        # If no required_letter, infer from prefix if possible
-        prefix_words = [w.strip(" ,.;:?!()\"'") for w in prefix.split() if w.strip()]
-        if required_letter is None and prefix_words:
-            # check if prefix itself is alliterative
-            first_letters = [w[0].lower() for w in prefix_words if w]
-            if all(fl == first_letters[0] for fl in first_letters):
-                required_letter = first_letters[0]
+        avg_lp = sum(logps) / len(logps)
+        # repetition penalty: if any repeated word, reduce score
+        rep_count = 0
+        seen = set()
+        for w in words:
+            wl = w.lower()
+            if wl in seen:
+                rep_count += 1
             else:
-                # fallback: set required_letter to first letter of first word
-                required_letter = first_letters[0]
+                seen.add(wl)
+        rep_pen = rep_count * 0.5
 
-        variants = []
-        for _ in range(n_variants):
-            gen_text, token_logprobs = self.generate_variant(prefix, required_letter=required_letter, **gen_kwargs)
-            variants.append((gen_text, token_logprobs))
+        # sudden drop penalty: look at consecutive logprob drops
+        drops = [logps[i] - logps[i+1] for i in range(len(logps)-1)] if len(logps) > 1 else [0]
+        max_drop = min(drops) if drops else 0.0
+        drop_pen = 0.0
+        if max_drop < -2.0:
+            drop_pen = abs(max_drop) * 0.3
 
-        # pick best by score
-        best = None
-        best_score = -1e9
-        for text, tlogp in variants:
-            score = self.score_variant(tlogp, text)
-            if score > best_score:
-                best_score = score
-                best = (text, score)
-
-        return best, variants
-
-
-def _load_alliterative_prefixes(path, min_words=2):
-    # load prefixes that themselves are alliterative (every word starts with same letter)
-    good = []
-    with open(path, encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            words = [w.strip(" ,.;:?!()\"'") for w in line.split() if w.strip()]
-            if len(words) < min_words:
-                continue
-            letters = [w[0].lower() for w in words if w]
-            if letters and all(l == letters[0] for l in letters):
-                good.append(line)
-    return good
+        score = avg_lp - rep_pen - drop_pen
+        return score
 
 
 if __name__ == '__main__':
-    import argparse
-    import os
+    gen = AlliterativeGenerator(prefix_path='prefixy.txt')
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--prefix-file', default=os.path.join(os.path.dirname(__file__), 'prefiksy.txt'))
-    parser.add_argument('--n', type=int, default=5)
-    parser.add_argument('--top_k', type=int, default=50)
-    parser.add_argument('--top_p', type=float, default=0.9)
-    parser.add_argument('--temperature', type=float, default=0.8)
-    args = parser.parse_args()
+    # print('Loaded', len(gen.prefix), 'prefixes')
+    # # generate a few examples
+    # best, variants = gen.generate(n_variants=6, max_new_tokens=60, top_k=80, top_p=0.92, temperature=0.8)
+    # print('\nBest candidate (score {:.4f}):\n'.format(best[0]) if best[0] is not None else '\nNo candidate\n')
+    # for s in variants[:3]:
+    #     sc, txt, logps, words = s
+    #     print('SCORE=', sc)
+    #     print(txt)
+    #     print('WORDS:', words)
+    #     print('---')
 
-    prefixes = _load_alliterative_prefixes(args.prefix_file)
-    if not prefixes:
-        print('No strictly alliterative prefixes found; falling back to random prefixes')
-        with open(args.prefix_file, encoding='utf-8') as f:
-            allp = [l.strip() for l in f if l.strip()]
-        prefixes = allp
-
-    # pick a random prefix that is short enough
-    prefix = random.choice(prefixes[:200])
-    print('Prefix:', prefix)
-
-    gen = ModelAlliterativeGenerator()
-    (best_text, best_score), all_variants = gen.generate(prefix, n_variants=args.n, max_new_tokens=60, top_k=args.top_k, top_p=args.top_p, temperature=args.temperature)
-
-    print('\nVariants:')
-    for t, lp in all_variants:
-        print('---')
-        print(t)
-    print('\nBest (score={:.3f}):'.format(best_score))
-    print(best_text)
+    generation = gen.generate_answer("Prawdziwy piekarz przyprawia pieczywo pieprzem", 'p', max_new_tokens=50, top_k=50, top_p=0.9, temperature=1.0)
+    print(generation)

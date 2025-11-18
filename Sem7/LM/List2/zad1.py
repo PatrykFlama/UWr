@@ -14,17 +14,16 @@ model_name = 'flax-community/papuGaPT2'
 model_utils = ModelUtils(model_name)
 
 # === main loop ===
-def random_equation(num_terms=2, prob_brackets=0.3):
-    ops = ['+', '-', '*', '/']
+def random_equation(num_terms=2, prob_brackets=0.3, ops=['+', '-', '*', '/'], randint=(1, 10)):
     equation_terms = []
     if num_terms < 1:
         num_terms = 1
     for _ in range(num_terms):
         if random.random() < prob_brackets:
-            inner = random_equation(num_terms=max(1, num_terms//2), prob_brackets=prob_brackets/2)
+            inner = random_equation(num_terms=max(1, num_terms//2), prob_brackets=prob_brackets/2, ops=ops, randint=randint)
             term = f"({inner.to_string()})"
         else:
-            term = str(random.randint(1, 10))
+            term = str(random.randint(randint[0], randint[1]))
         equation_terms.append(term)
     equation_str = equation_terms[0]
     for term in equation_terms[1:]:
@@ -39,7 +38,8 @@ few_shot_examples = []
 
 prompts = [
     # ("Oblicz wartość wyrażenia: ", "\nWynik:"),
-    ("Wartość wyrażenia matematycznego ", "to"),
+    # add an explicit answer marker (colon + space) so the model's answer appears after a clear delimiter
+    ("Wartość wyrażenia matematycznego ", " to: "),
     # ("Podaj wynik działania: ", "\nWynik to:"),
     # ("Calculate the result of the expression: ", "\nResult:"),
     # ("", " ="),
@@ -57,21 +57,27 @@ def test_prompt(prompt_idx, tests):
     answeres = []
     for cur_eq in tqdm(tests, desc=f"Testing prompt {prompt_idx}", leave=False):
         full_prompt = prompt_few_shot + prompt_start + cur_eq.to_string() + prompt_end
-        response = model_utils.ask_model(full_prompt, max_new_tokens=50, temperature=0.01)
+        response = model_utils.ask_model(full_prompt, max_new_tokens=50, temperature=0.3)
 
         # accept integers and floats, and comma decimal separators
-        match = re.search(r'(-?\d+(?:[.,]\d+)?)', response)
-        if match:
+        # prefer the last numeric token in the generated continuation (more robust)
+        matches = re.findall(r'(-?\d+(?:[.,]\d+)?)', response)
+        if matches:
+            token = matches[-1]
             # normalize comma to dot and parse as float
             try:
-                model_answer = float(match.group(1).replace(',', '.'))
+                model_answer = float(token.replace(',', '.'))
             except ValueError:
+                # skip this example if parsing failed
                 continue
             correct_answer = cur_eq.evaluate()
             answeres.append((model_answer, correct_answer))
             # compare with a small tolerance to allow decimal formatting differences
             if abs(model_answer - correct_answer) < 1e-6:
                 correct += 1
+        else:
+            # keep a record of no numeric match for debugging
+            answeres.append((None, cur_eq.evaluate(), response))
 
         # tqdm.write(f"Prompt accuracy: {correct}/{i + 1} = {correct / (i + 1):.2%}")
     accuracy = correct / len(tests)
@@ -80,7 +86,7 @@ def test_prompt(prompt_idx, tests):
 
 
 def dist(a, b):
-    return min(abs(a - b) / 100, 1) if b != 0 else abs(a - b)
+    return abs(a - b)
 
 
 if __name__ == "__main__":
@@ -101,10 +107,12 @@ if __name__ == "__main__":
     PROMPT_TEST_RANGE = (0, len(prompts) - 1)
     PROMPT_TEST_EQUATIONS = 10
     RANDOM_EQ_PARAMS = (2, 0.0)
+    OPS = ['*']
+    RANDINT = (1, 100)
     PRINT_ANSWERS = True
 
     for i in range(FEWHOT_EXAMPLES):
-        eq = random_equation(num_terms=RANDOM_EQ_PARAMS[0], prob_brackets=RANDOM_EQ_PARAMS[1])
+        eq = random_equation(num_terms=RANDOM_EQ_PARAMS[0], prob_brackets=RANDOM_EQ_PARAMS[1], ops=OPS, randint=RANDINT)
         few_shot_examples.append((eq.to_string(), round(eq.evaluate(), 2)))
     print("Few-shot examples:")
     for eq_str, ans in few_shot_examples:
@@ -113,7 +121,7 @@ if __name__ == "__main__":
 
     test_equations = []
     for _ in range(PROMPT_TEST_EQUATIONS):
-        eq = random_equation(num_terms=RANDOM_EQ_PARAMS[0], prob_brackets=RANDOM_EQ_PARAMS[1])
+        eq = random_equation(num_terms=RANDOM_EQ_PARAMS[0], prob_brackets=RANDOM_EQ_PARAMS[1], ops=OPS, randint=RANDINT)
         test_equations.append(eq)
 
     acc = []

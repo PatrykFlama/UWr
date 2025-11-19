@@ -38,9 +38,8 @@ few_shot_examples = []
 
 prompts = [
     # ("Oblicz wartość wyrażenia: ", "\nWynik:"),
-    # add an explicit answer marker (colon + space) so the model's answer appears after a clear delimiter
-    ("Wartość wyrażenia matematycznego ", " to: "),
-    # ("Podaj wynik działania: ", "\nWynik to:"),
+    ("Wartość wyrażenia matematycznego ", " to"),
+    ("\nPodaj wynik działania: ", "\nWynik to:"),
     # ("Calculate the result of the expression: ", "\nResult:"),
     # ("", " ="),
 ]
@@ -51,13 +50,15 @@ def test_prompt(prompt_idx, tests):
     prompt_few_shot = ""
 
     for eq_str, ans in few_shot_examples:
-        prompt_few_shot += f"{prompt_start}{eq_str}{prompt_end}{ans}\n"
+        prompt_few_shot += f"{prompt_start}{eq_str}{prompt_end} {ans}\n"
 
     correct = 0
     answeres = []
     for cur_eq in tqdm(tests, desc=f"Testing prompt {prompt_idx}", leave=False):
         full_prompt = prompt_few_shot + prompt_start + cur_eq.to_string() + prompt_end
         response = model_utils.ask_model(full_prompt, max_new_tokens=50, temperature=0.3)
+
+        # print("Prompt:", full_prompt, "\nResponse:", response, "\n")
 
         # accept integers and floats, and comma decimal separators
         # prefer the last numeric token in the generated continuation (more robust)
@@ -107,7 +108,7 @@ if __name__ == "__main__":
     PROMPT_TEST_RANGE = (0, len(prompts) - 1)
     PROMPT_TEST_EQUATIONS = 10
     RANDOM_EQ_PARAMS = (2, 0.0)
-    OPS = ['*']
+    OPS = ['/']
     RANDINT = (1, 100)
     PRINT_ANSWERS = True
 
@@ -125,7 +126,8 @@ if __name__ == "__main__":
         test_equations.append(eq)
 
     acc = []
-    for i in tqdm(range(PROMPT_TEST_RANGE[0], PROMPT_TEST_RANGE[1] + 1), desc="Testing prompts"):
+    # for i in tqdm(range(PROMPT_TEST_RANGE[0], PROMPT_TEST_RANGE[1] + 1), desc="Testing prompts"):
+    for i in range(PROMPT_TEST_RANGE[0], PROMPT_TEST_RANGE[1] + 1):
         # tqdm.write(f"Testing prompt {i}: {prompts[i]}")
         acc.append(test_prompt(i, test_equations))
         # tqdm.write(f"Prompt {i} accuracy: {acc[-1][0]:.2%}")

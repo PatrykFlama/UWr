@@ -8,19 +8,33 @@ Dla równań prostych - składających sie tylko z 2 wartości oraz prostych ope
 Najwydajniejsze prompty dla tego modelu to równania w postaci *"Wartość wyrażenia matematycznego XXXX, to YYYY"*
 
 
-`+, -`, range(1, 500):
+`+`, range(1, 10):
 ```
-Prompt 0: 0.00%, Avg answer distance: 228.6000  (expected random ~750)
-        244+139 = "163.0" (383) -> dist: 220.0000
-        196-137 = "-137.0" (59) -> dist: 196.0000
-        293-318 = "-4.0" (-25) -> dist: 21.0000
-        42+104 = "104.0" (146) -> dist: 42.0000
-        341+354 = "354.0" (695) -> dist: 341.0000
-        215+29 = "323.0" (244) -> dist: 79.0000
-        312-360 = "-610.0" (-48) -> dist: 562.0000
-        184+200 = "200.0" (384) -> dist: 184.0000
-        143-235 = "-235.0" (-92) -> dist: 143.0000
-        498+208 = "208.0" (706) -> dist: 498.0000
+Prompt accuracies:                                                                                                                                                       
+Prompt 0: 20.00%, Avg answer distance: 9.8000
+        1+10 = "10.0" (11) -> dist: 1.0000
+        9+5 = "9.0" (14) -> dist: 5.0000
+        2+7 = "1.0" (9) -> dist: 8.0000
+        4+6 = "36.0" (10) -> dist: 26.0000
+        1+8 = "9.0" (9) -> dist: 0.0000
+        7+1 = "2.0" (8) -> dist: 6.0000
+        7+5 = "12.0" (12) -> dist: 0.0000
+        3+8 = "33.0" (11) -> dist: 22.0000
+        1+10 = "1.0" (11) -> dist: 10.0000
+        7+1 = "28.0" (8) -> dist: 20.0000
+
+Prompt accuracies:                                                                                                                                                       
+Prompt 0: 10.00%, Avg answer distance: 6.5000
+        7 + 10 = "10.0" (17) -> dist: 7.0000
+        6 + 4 = "39.0" (10) -> dist: 29.0000
+        9 + 2 = "11.0" (11) -> dist: 0.0000
+        8 + 7 = "14.0" (15) -> dist: 1.0000
+        8 + 5 = "12.0" (13) -> dist: 1.0000
+        2 + 8 = "1.0" (10) -> dist: 9.0000
+        10 + 7 = "6.0" (17) -> dist: 11.0000
+        8 + 4 = "14.0" (12) -> dist: 2.0000
+        7 + 6 = "14.0" (13) -> dist: 1.0000
+        5 + 2 = "3.0" (7) -> dist: 4.0000
 ```
 
 `+, -`, range(1, 1000):
@@ -52,6 +66,23 @@ Prompt 0: 0.00%, Avg answer distance: 45.2000 (expected random ~50)
         7*10 = "13.0" (70) -> dist: 57.0000
         7*7 = "7.0" (49) -> dist: 42.0000
         7*7 = "2.0" (49) -> dist: 47.0000
+```
+
+`/`, range(1, 100):
+```
+
+Prompt accuracies:                                                                                                                                                       
+Prompt 0: 0.00%, Avg answer distance: 8.2022
+        70 / 64 = "0.0" (1.09375) -> dist: 1.0938
+        61 / 76 = "1.0" (0.8026315789473685) -> dist: 0.1974
+        63 / 87 = "0.0" (0.7241379310344828) -> dist: 0.7241
+        60 / 41 = "0.0" (1.4634146341463414) -> dist: 1.4634
+        34 / 32 = "0.7" (1.0625) -> dist: 0.3625
+        72 / 91 = "0.0" (0.7912087912087912) -> dist: 0.7912
+        34 / 53 = "0.3" (0.6415094339622641) -> dist: 0.3415
+        63 / 75 = "75.0" (0.84) -> dist: 74.1600
+        62 / 57 = "0.0" (1.087719298245614) -> dist: 1.0877
+        36 / 15 = "0.6" (2.4) -> dist: 1.8000
 ```
 
 
@@ -90,5 +121,10 @@ calculate the words probability and choose the least probable one for modificati
 
 load prefixes, choose one at random - then we could just take the tokens probability, but choose for random generation only those which start on same letter (kinda like task 2)
 
-
-
+```
+Proszę pana posła | przekręcił  pismo  pokoju  panoszy.
+Badanie było bolesne | bolały,  bu.d.
+Po przesłuchaniu połączonym | przez  płytę  pt  Persons  postanowiłem  posłuchać,  p  pod  piosenką  po  przesłuchaniu  połączonym  p.
+Po przyznaniu punktów | procentowych  poszczególne  przedszkola  prezentowały  przygotowany  przez  p.
+Pierwszy polski portal  poświęcony  problemom  prawnym  przedstawia  PRAWOOBIE,  PRAWOSZKOLE.
+```

@@ -104,7 +104,7 @@ class Equation:
                 if isinstance(token, list):
                     result += '(' + build_string(token) + ')'
                 else:
-                    result += str(token)
+                    result += " " + str(token) + " " if token in ['+', '-',  '*', '/'] else str(token)
             return result
 
         return build_string(eq)

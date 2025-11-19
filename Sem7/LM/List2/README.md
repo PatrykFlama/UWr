@@ -95,5 +95,5 @@ Proszę pana posła | przekręcił  pismo  pokoju  panoszy.
 Badanie było bolesne | bolały,  bu.d.
 Po przesłuchaniu połączonym | przez  płytę  pt  Persons  postanowiłem  posłuchać,  p  pod  piosenką  po  przesłuchaniu  połączonym  p.
 Po przyznaniu punktów | procentowych  poszczególne  przedszkola  prezentowały  przygotowany  przez  p.
-Pierwszy polski portal  poświęcony  problemom  prawnym  przedstawia  PRAWOOBIE,  PRAWOSZKOLE.
+Pierwszy polski portal | poświęcony  problemom  prawnym  przedstawia  PRAWOOBIE,  PRAWOSZKOLE.
 ```

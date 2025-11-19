@@ -25,90 +25,77 @@ class AlliterativeGenerator:
         max_retries = max(1, int(repetition_penalty * 3))
 
         while remaining > 0:
-            attempt = 0
-            accepted_word = None
-            accepted_tokens = 0
-            last_candidate = ("", 0)
-
-            while attempt < max_retries:
-                next_word, generated_tokens = self.generate_one_word(prompt, target_char,
+            # ask generate_one_word to avoid words in seen_words; it will try several candidates
+            next_word, generated_tokens = self.generate_one_word(prompt, target_char,
+                                              max_tokens=10,
                                               top_k=top_k, top_p=top_p,
-                                              temperature=temperature)
-                # save last candidate in case we need to accept it
-                last_candidate = (next_word, generated_tokens)
+                                              temperature=temperature,
+                                              excluded_words=seen_words,
+                                              max_candidate_attempts=max_retries)
 
-                if not next_word:
-                    break
+            if not next_word:
+                break
 
-                # if token ends with punctuation we accept and end generation
-                if next_word.endswith(('.', '!', '?')):
-                    accepted_word = next_word
-                    accepted_tokens = generated_tokens
-                    break
-
-                lw = next_word.strip().lower()
-                if lw and lw not in seen_words:
-                    accepted_word = next_word
-                    accepted_tokens = generated_tokens
-                    break
-
-                # otherwise it's a repeat; try again
-                attempt += 1
-
-            # if we exhausted retries and didn't find a non-repeated word, accept last candidate
-            if accepted_word is None:
-                next_word, generated_tokens = last_candidate
-                if not next_word:
-                    break
-                accepted_word = next_word
-                accepted_tokens = generated_tokens
-
-            # if the accepted word ends the sentence, append and stop
-            if accepted_word.endswith(('.', '!', '?')):
-                prompt += ('' if prompt.endswith((" ", "\n")) else ' ') + accepted_word
+            # if token ends with punctuation we accept and end generation
+            if next_word.endswith(('.', '!', '?')):
+                prompt += ('' if prompt.endswith((" ", "\n")) else ' ') + next_word
                 break
 
             # append accepted word and record it
-            prompt += ('' if prompt.endswith((" ", "\n")) else ' ') + accepted_word
-            if accepted_tokens <= 0:
+            prompt += ('' if prompt.endswith((" ", "\n")) else ' ') + next_word
+            if generated_tokens <= 0:
                 break
 
-            used = min(accepted_tokens, remaining)
+            used = min(generated_tokens, remaining)
             pbar.update(used)
             remaining -= used
 
-            seen_words.add(accepted_word.strip().lower())
+            seen_words.add(next_word.strip().lower())
 
         pbar.close()    
         return prompt
 
-    def generate_one_word(self, prompt, target_char, max_tokens=10, top_k=50, top_p=0.9, temperature=1.0) -> tuple[str, int]:
-        # generate first token that starts with target_char
-        first_tok = self.generate_one_token(prompt, target_char, temperature=temperature, top_k=top_k, top_p=top_p)
-        if not first_tok:
-            return ("", 0)
-        # first_tok = first_tok.lstrip()
-        word = first_tok
+    def generate_one_word(self, prompt, target_char, max_tokens=10, top_k=50, top_p=0.9, temperature=1.0,
+                          excluded_words=None, max_candidate_attempts=3) -> tuple[str, int]:
+        """Generate a single word (possibly multi-token). Try up to max_candidate_attempts
+        candidates and return the first one not present in excluded_words. If none found,
+        return the last candidate generated.
+        """
+        excluded = set(w.lower() for w in (excluded_words or []))
+        last_candidate = ("", 0)
 
-        # prepare prompt for subsequent tokens
-        prompt2 = prompt
-        if prompt2 and not prompt2.endswith((" ", "\n")) and not first_tok.startswith((" ", "\n")):
-            prompt2 += " "
-        prompt2 += first_tok
+        for _ in range(max_candidate_attempts):
+            # generate first token that starts with target_char
+            first_tok = self.generate_one_token(prompt, target_char, temperature=temperature, top_k=top_k, top_p=top_p)
+            if not first_tok:
+                continue
 
-        # keep appending continuation tokens until word boundary or punctuation
-        generated_tokens = 1
-        while generated_tokens < max_tokens:
-            next_tok = self.generate_one_token(prompt2, None, temperature=temperature, top_k=top_k, top_p=top_p)
+            word = first_tok
 
-            if next_tok is None or next_tok.startswith((" ", "\n")):
-                break
+            # prepare prompt for subsequent tokens
+            prompt2 = prompt
+            if prompt2 and not prompt2.endswith((" ", "\n")) and not first_tok.startswith((" ", "\n")):
+                prompt2 += " "
+            prompt2 += first_tok
 
-            word += next_tok
-            prompt2 += next_tok
-            generated_tokens += 1
+            # keep appending continuation tokens until word boundary or punctuation
+            generated_tokens = 1
+            while generated_tokens < max_tokens:
+                next_tok = self.generate_one_token(prompt2, None, temperature=temperature, top_k=top_k, top_p=top_p)
 
-        return (word, generated_tokens)
+                if next_tok is None or next_tok.startswith((" ", "\n")):
+                    break
+
+                word += next_tok
+                prompt2 += next_tok
+                generated_tokens += 1
+
+            last_candidate = (word, generated_tokens)
+            lw = word.strip().lower()
+            if lw and lw not in excluded:
+                return (word, generated_tokens)
+
+        return last_candidate
 
     def generate_one_token(self, prompt, target_char, temperature=1.0, top_k=50, top_p=0.9):
         device_local = self.utils.device

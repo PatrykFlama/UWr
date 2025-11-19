@@ -19,20 +19,65 @@ class AlliterativeGenerator:
         prompt = prefix
         remaining = max_new_tokens
         pbar = tqdm(total=max_new_tokens, desc="Generating words", leave=False)
+        # keep track of words generated in this answer to avoid repetitions
+        seen_words = set()
+        # number of attempts to try before accepting a repeat; scale with repetition_penalty
+        max_retries = max(1, int(repetition_penalty * 3))
+
         while remaining > 0:
-            next_word, generated_tokens = self.generate_one_word(prompt, target_char,
-                                          top_k=top_k, top_p=top_p,
-                                          temperature=temperature)
-            if not next_word or next_word.endswith(('.', '!', '?')):
+            attempt = 0
+            accepted_word = None
+            accepted_tokens = 0
+            last_candidate = ("", 0)
+
+            while attempt < max_retries:
+                next_word, generated_tokens = self.generate_one_word(prompt, target_char,
+                                              top_k=top_k, top_p=top_p,
+                                              temperature=temperature)
+                # save last candidate in case we need to accept it
+                last_candidate = (next_word, generated_tokens)
+
+                if not next_word:
+                    break
+
+                # if token ends with punctuation we accept and end generation
+                if next_word.endswith(('.', '!', '?')):
+                    accepted_word = next_word
+                    accepted_tokens = generated_tokens
+                    break
+
+                lw = next_word.strip().lower()
+                if lw and lw not in seen_words:
+                    accepted_word = next_word
+                    accepted_tokens = generated_tokens
+                    break
+
+                # otherwise it's a repeat; try again
+                attempt += 1
+
+            # if we exhausted retries and didn't find a non-repeated word, accept last candidate
+            if accepted_word is None:
+                next_word, generated_tokens = last_candidate
+                if not next_word:
+                    break
+                accepted_word = next_word
+                accepted_tokens = generated_tokens
+
+            # if the accepted word ends the sentence, append and stop
+            if accepted_word.endswith(('.', '!', '?')):
+                prompt += ('' if prompt.endswith((" ", "\n")) else ' ') + accepted_word
                 break
 
-            prompt += ('' if prompt.endswith((" ", "\n")) else ' ') + next_word
-            if generated_tokens <= 0:
+            # append accepted word and record it
+            prompt += ('' if prompt.endswith((" ", "\n")) else ' ') + accepted_word
+            if accepted_tokens <= 0:
                 break
 
-            used = min(generated_tokens, remaining)
+            used = min(accepted_tokens, remaining)
             pbar.update(used)
             remaining -= used
+
+            seen_words.add(accepted_word.strip().lower())
 
         pbar.close()    
         return prompt
@@ -178,5 +223,6 @@ if __name__ == '__main__':
 
 
     prefix = random.choice(prefixes) if prefixes else "Prawdziwy piekarz przyprawia pieczywo pieprzem"
+    print(prefix)
     generation = gen.generate_answer(prefix, prefix[0].lower(), max_new_tokens=20, top_k=50, top_p=0.9, temperature=1.0)
     print(generation)

@@ -15,7 +15,7 @@ class AlliterativeGenerator:
         self.prefix = []
 
     def generate_answer(self, prefix, target_char, max_new_tokens=50, top_k=50, top_p=0.9, temperature=1.0,
-                      repetition_penalty=1.5):
+                      repetition_penalty=1.5, num_variants=5):
         prompt = prefix
         remaining = max_new_tokens
         pbar = tqdm(total=max_new_tokens, desc="Generating words", leave=False)
@@ -25,13 +25,14 @@ class AlliterativeGenerator:
         max_retries = max(1, int(repetition_penalty * 3))
 
         while remaining > 0:
-            # ask generate_one_word to avoid words in seen_words; it will try several candidates
+            # ask generate_one_word to produce several variants and avoid words in seen_words
             next_word, generated_tokens = self.generate_one_word(prompt, target_char,
                                               max_tokens=10,
                                               top_k=top_k, top_p=top_p,
                                               temperature=temperature,
                                               excluded_words=seen_words,
-                                              max_candidate_attempts=max_retries)
+                                              max_candidate_attempts=max_retries,
+                                              num_variants=num_variants)
 
             if not next_word:
                 break
@@ -56,7 +57,7 @@ class AlliterativeGenerator:
         return prompt
 
     def generate_one_word(self, prompt, target_char, max_tokens=10, top_k=50, top_p=0.9, temperature=1.0,
-                          excluded_words=None, max_candidate_attempts=3) -> tuple[str, int]:
+                          excluded_words=None, max_candidate_attempts=3, num_variants=1) -> tuple[str, int]:
         """Generate a single word (possibly multi-token). Try up to max_candidate_attempts
         candidates and return the first one not present in excluded_words. If none found,
         return the last candidate generated.
@@ -64,13 +65,17 @@ class AlliterativeGenerator:
         excluded = set(w.lower() for w in (excluded_words or []))
         last_candidate = ("", 0)
 
-        for _ in range(max_candidate_attempts):
+        # generate multiple variants and pick the best according to scoring
+        candidates = []  # list of (word, generated_tokens, logps)
+        for _v in range(max(1, num_variants)):
+            last_candidate = ("", 0, [])
             # generate first token that starts with target_char
-            first_tok = self.generate_one_token(prompt, target_char, temperature=temperature, top_k=top_k, top_p=top_p)
-            if not first_tok:
+            first_tok_res = self.generate_one_token(prompt, target_char, temperature=temperature, top_k=top_k, top_p=top_p)
+            if not first_tok_res:
                 continue
-
+            first_tok, first_lp = first_tok_res
             word = first_tok
+            logps = [first_lp]
 
             # prepare prompt for subsequent tokens
             prompt2 = prompt
@@ -81,21 +86,39 @@ class AlliterativeGenerator:
             # keep appending continuation tokens until word boundary or punctuation
             generated_tokens = 1
             while generated_tokens < max_tokens:
-                next_tok = self.generate_one_token(prompt2, None, temperature=temperature, top_k=top_k, top_p=top_p)
+                next_tok_res = self.generate_one_token(prompt2, None, temperature=temperature, top_k=top_k, top_p=top_p)
+                if not next_tok_res:
+                    break
+                next_tok, next_lp = next_tok_res
 
-                if next_tok is None or next_tok.startswith((" ", "\n")):
+                if next_tok.startswith((" ", "\n")):
                     break
 
                 word += next_tok
                 prompt2 += next_tok
+                logps.append(next_lp)
                 generated_tokens += 1
 
-            last_candidate = (word, generated_tokens)
-            lw = word.strip().lower()
-            if lw and lw not in excluded:
-                return (word, generated_tokens)
+            last_candidate = (word, generated_tokens, logps)
+            candidates.append(last_candidate)
 
-        return last_candidate
+        if not candidates:
+            return ("", 0)
+
+        # score candidates and prefer ones not in excluded
+        best_idx = 0
+        best_score = -float('inf')
+        for i, (word, gen_tokens, logps) in enumerate(candidates):
+            score = self._score_candidate(logps, [word])
+            lw = word.strip().lower()
+            if lw in excluded:
+                score -= 5.0  # heavy penalty for excluded words
+            if score > best_score:
+                best_score = score
+                best_idx = i
+
+        bw, bt, _ = candidates[best_idx]
+        return (bw, bt)
 
     def generate_one_token(self, prompt, target_char, temperature=1.0, top_k=50, top_p=0.9):
         device_local = self.utils.device
@@ -172,7 +195,13 @@ class AlliterativeGenerator:
         if next_id == self.utils.tokenizer.eos_token_id:
             return None
 
-        return self.utils.tokenizer.decode(gen, skip_special_tokens=True)
+        # compute log-probability of chosen token
+        prob_row = probs[0].detach().cpu()
+        idx = int(next_id)
+        prob_val = float(prob_row[idx])
+        logp = math.log(prob_val) if prob_val > 0.0 else -1e9
+        decoded = self.utils.tokenizer.decode(gen, skip_special_tokens=True)
+        return (decoded, logp)
 
 
     def _score_candidate(self, logps, words):

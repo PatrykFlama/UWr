@@ -51,6 +51,15 @@ class AlliterativeGenerator:
         self.generated_words = []
 
     def generate_answer(self, prefix, target_char, max_new_tokens=50, top_k=50, top_p=0.9, temperature=1.0,
+                        repetition_penalty=1.5, n_variants=8):
+        return self.generate_answers(prefix, target_char,
+                                     max_new_tokens=max_new_tokens,
+                                     top_k=top_k, top_p=top_p,
+                                     temperature=temperature,
+                                     repetition_penalty=repetition_penalty,
+                                     n_variants=n_variants)[0][1]
+
+    def generate_answers(self, prefix, target_char, max_new_tokens=50, top_k=50, top_p=0.9, temperature=1.0,
                       repetition_penalty=1.5, n_variants=8):
         # Generate several variants and pick the best according to scoring
         variants = []
@@ -65,8 +74,7 @@ class AlliterativeGenerator:
 
         # pick best
         variants.sort(key=lambda x: x[0], reverse=True)
-        best = variants[0]
-        return best[1]
+        return variants
 
     def generate_single_variant(self, prefix, target_char, max_new_tokens=50, top_k=50, top_p=0.9, temperature=1.0,
                                 repetition_penalty=1.5):
@@ -77,36 +85,10 @@ class AlliterativeGenerator:
         all_logps = []
 
         while remaining > 0:
-            # try a few times if the generator repeats an already produced word
-            max_retries = 8
-            attempt = 0
-            next_word = None
-            generated_tokens = 0
-            logps = []
-            banned_first_tokens = set()
-            while attempt < max_retries:
-                attempt += 1
-                res = self.generate_one_word(prompt, target_char,
-                                             top_k=top_k, top_p=top_p,
-                                             temperature=temperature,
-                                             repetition_penalty=repetition_penalty,
-                                             banned_first_tokens=banned_first_tokens)
-                if not res:
-                    next_word = None
-                    break
-                # now generate_one_word returns (word, generated_tokens, logps, first_tok)
-                next_word, generated_tokens, logps, first_tok = res
-                norm = re.sub(r"\s+", " ", next_word.strip()).lower()
-                # avoid exact word repeats
-                prev_set = set(w.lower() for w in self.generated_words)
-                if norm in prev_set:
-                    # ban this first token for next attempt and retry
-                    banned_first_tokens.add(first_tok.strip().lower())
-                    # try again; on last attempt accept anyway
-                    if attempt >= max_retries:
-                        break
-                    continue
-                break
+            next_word, generated_tokens, logps = self.generate_one_word(prompt, target_char,
+                                                                        top_k=top_k, top_p=top_p,
+                                                                        temperature=temperature,
+                                                                        repetition_penalty=repetition_penalty)
             if not next_word:
                 break
 
@@ -135,13 +117,12 @@ class AlliterativeGenerator:
         pbar.close()
         return prompt, all_logps
 
-    def generate_one_word(self, prompt, target_char, max_tokens=10, top_k=50, top_p=0.9, temperature=1.0, repetition_penalty=1.5, banned_first_tokens=None) -> tuple:
+    def generate_one_word(self, prompt, target_char, max_tokens=10, top_k=50, top_p=0.9, temperature=1.0, repetition_penalty=1.5) -> tuple:
         # generate first token that starts with target_char
         first = self.generate_one_token(prompt, target_char, top_k=top_k, top_p=top_p,
-                                        temperature=temperature, repetition_penalty=repetition_penalty,
-                                        banned_token_texts=banned_first_tokens)
+                                        temperature=temperature, repetition_penalty=repetition_penalty)
         if not first:
-            return ("", 0, [], "")
+            return ("", 0, [])
         first_tok, first_logp, first_id = first
 
         word = first_tok
@@ -171,9 +152,26 @@ class AlliterativeGenerator:
             logps.append(next_logp)
             generated_tokens += 1
 
-        return (word, generated_tokens, logps, first_tok)
+        return (word, generated_tokens, logps)
 
-    def generate_one_token(self, prompt, target_char, temperature=1.0, top_k=50, top_p=0.9, repetition_penalty=1.5, banned_token_texts=None):
+    def generate_one_token(self, prompt, target_char, temperature=1.0, top_k=50, top_p=0.9, repetition_penalty=1.5):
+        probs = self.generate_one_token_probs(prompt, target_char,
+                                              temperature=temperature,
+                                              top_k=top_k, top_p=top_p,
+                                              repetition_penalty=repetition_penalty)
+        
+        next_token = torch.multinomial(probs, num_samples=1)
+        next_id = next_token.item()
+
+        if next_id == self.utils.tokenizer.eos_token_id:
+            return None
+
+        next_id = int(next_id)
+        logp = float(torch.log(probs[next_id] + 1e-12))
+        decoded = self.utils.tokenizer.decode([next_id], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+        return decoded, logp, next_id
+
+    def generate_one_token_probs(self, prompt, target_char, temperature=1.0, top_k=50, top_p=0.9, repetition_penalty=1.5):
         device_local = self.utils.device
 
         # prep prompt
@@ -183,7 +181,6 @@ class AlliterativeGenerator:
         if attention_mask is not None:
             attention_mask = attention_mask.to(device_local)
 
-        gen = []    # generated tokens
         with torch.no_grad():
             out = self.utils.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=True)
             past = out.past_key_values
@@ -197,12 +194,7 @@ class AlliterativeGenerator:
         # prepare logits copy
         logits_proc = logits.clone()
 
-        # apply repetition_penalty for tokens that lead to already generated words (only when starting a new word)
-        if target_char is not None and self.generated_words:
-            # build a set of lower-case generated words
-            gen_words_set = set(w.lower() for w in self.generated_words)
-        else:
-            gen_words_set = set()
+        gen_words_tokens = set(item for sublist in self.generated_words for item in sublist)
 
         # filter out tokens that do not start with target_char
         if target_char is not None:
@@ -213,25 +205,17 @@ class AlliterativeGenerator:
                 if not s_stripped:
                     continue
                 ch = s_stripped[0]
-                token_norm = s.strip().lower()
                 if ch.lower() == target_char.lower():
-                    # if this token's text is banned for first tokens, skip it
-                    if banned_token_texts and token_norm in banned_token_texts:
-                        continue
                     allowed[tid] = True
             logits_proc[~allowed] = -1e9
 
         # apply repetition penalty
-        if gen_words_set:
-            for tid in range(logits_proc.size(0)):
-                try:
-                    s = self.utils.tokenizer.decode([tid], clean_up_tokenization_spaces=False)
-                except Exception:
-                    continue
-                token_str = s.strip().lower()
-                # exact match with previous word (simplified heuristic)
-                if token_str in gen_words_set:
-                    logits_proc[tid] /= max(1.0, repetition_penalty)
+        for tid in range(logits_proc.size(0)):
+            s = self.utils.tokenizer.decode([tid], clean_up_tokenization_spaces=False)
+            token_str = s.strip().lower()
+            # exact match with previous word (simplified heuristic)
+            if token_str in gen_words_tokens:
+                logits_proc[tid] /= 5# max(1.0, repetition_penalty) 
 
         temp = (temperature if temperature > 0 else 1.0)
         logits_proc = logits_proc / temp
@@ -241,20 +225,12 @@ class AlliterativeGenerator:
 
         probs = torch.softmax(filtered, dim=-1)
 
-        # if all probs are zero or nan because of filtering, back off to original logits
-        if torch.isfinite(probs).sum() == 0:
-            probs = torch.softmax(logits / temp, dim=-1)
+        # # if all probs are zero or nan because of filtering, back off to original logits
+        # if torch.isfinite(probs).sum() == 0:
+        #     probs = torch.softmax(logits / temp, dim=-1)
 
-        next_token = torch.multinomial(probs, num_samples=1)
-        next_id = next_token.item()
+        return probs
 
-        if next_id == self.utils.tokenizer.eos_token_id:
-            return None
-
-        next_id = int(next_id)
-        logp = float(torch.log(probs[next_id] + 1e-12))
-        decoded = self.utils.tokenizer.decode([next_id], skip_special_tokens=True, clean_up_tokenization_spaces=False)
-        return decoded, logp, next_id
 
     def score_sequence(self, logps, drop_penalty=1.0):
         """Score a sequence of token log-probabilities.
@@ -286,5 +262,6 @@ if __name__ == '__main__':
 
 
     prefix = random.choice(prefixes) if prefixes else "Prawdziwy piekarz przyprawia pieczywo pieprzem"
-    generation = gen.generate_answer(prefix, prefix[0].lower(), max_new_tokens=20, top_k=20, top_p=0.9, temperature=1.0)
+    print(f"Prefix: {prefix}")
+    generation = gen.generate_answer(prefix, prefix[0].lower(), max_new_tokens=20, top_k=20, top_p=0.9, temperature=1.0, n_variants=3)
     print(generation)

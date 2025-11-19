@@ -39,7 +39,7 @@ class AlliterativeGenerator:
 
     def generate_one_word(self, prompt, target_char, max_tokens=10, top_k=50, top_p=0.9, temperature=1.0) -> tuple[str, int]:
         # generate first token that starts with target_char
-        first_tok = self.generate_one_token(prompt, target_char, temperature=temperature)
+        first_tok = self.generate_one_token(prompt, target_char, temperature=temperature, top_k=top_k, top_p=top_p)
         if not first_tok:
             return ("", 0)
         # first_tok = first_tok.lstrip()
@@ -54,7 +54,7 @@ class AlliterativeGenerator:
         # keep appending continuation tokens until word boundary or punctuation
         generated_tokens = 1
         while generated_tokens < max_tokens:
-            next_tok = self.generate_one_token(prompt2, None, temperature=temperature)
+            next_tok = self.generate_one_token(prompt2, None, temperature=temperature, top_k=top_k, top_p=top_p)
 
             if next_tok is None or next_tok.startswith((" ", "\n")):
                 break
@@ -65,7 +65,7 @@ class AlliterativeGenerator:
 
         return (word, generated_tokens)
 
-    def generate_one_token(self, prompt, target_char, temperature=1.0):
+    def generate_one_token(self, prompt, target_char, temperature=1.0, top_k=50, top_p=0.9):
         device_local = self.utils.device
 
         # prep prompt
@@ -81,34 +81,61 @@ class AlliterativeGenerator:
             past = out.past_key_values
         last_token = input_ids[:, -1:].to(device_local)
 
-        # calculate the tokens probability
+        # calculate the tokens probability for the next position
         with torch.no_grad():
             out = self.utils.model(input_ids=last_token, past_key_values=past, use_cache=True)
             logits = out.logits[:, -1, :]  # (1, vocab)
-            past = out.past_key_values
 
-        mask = torch.full_like(logits, -1e9)
+        # apply temperature
         temp = (temperature if temperature > 0 else 1.0)
+        scores = logits / temp
 
-        if target_char != None:
-            for tid in range(logits.size(-1)):
+        vocab_size = scores.size(-1)
+
+        # if target_char specified, zero-out bad tokens
+        if target_char is not None:
+            for tid in range(vocab_size):
                 s = self.utils.tokenizer.decode([tid], clean_up_tokenization_spaces=False)
                 s_stripped = s.lstrip()
                 if not s_stripped:
+                    scores[0, tid] = -1e9
                     continue
                 ch = s_stripped[0]
-                if ch.lower() == target_char.lower():
-                    mask[0, tid] = logits[0, tid] / temp
-        else:
-            for tid in range(logits.size(-1)):
-                mask[0, tid] = logits[0, tid] / temp
+                if ch.lower() != target_char.lower():
+                    scores[0, tid] = -1e9
 
-        probs = torch.softmax(mask, dim=-1)
+        # convert to probabilities
+        probs = torch.softmax(scores, dim=-1)
+
+        # apply top-k filtering
+        if top_k is not None and top_k > 0 and top_k < vocab_size:
+            topk_vals, topk_idx = torch.topk(probs, top_k, dim=-1)
+            mask = torch.zeros_like(probs)
+            mask[0, topk_idx[0]] = probs[0, topk_idx[0]]
+            probs = mask
+
+        # apply top-p filtering
+        if top_p is not None and 0.0 < top_p < 1.0:
+            sorted_probs, sorted_idx = torch.sort(probs, descending=True)
+            cumulative = torch.cumsum(sorted_probs, dim=-1)
+            cutoff = (cumulative >= top_p).nonzero(as_tuple=False)
+            if cutoff.numel() > 0:
+                cutoff_idx = int(cutoff[0, 1])
+                keep_idx = sorted_idx[0, :cutoff_idx + 1]
+                mask = torch.zeros_like(probs)
+                mask[0, keep_idx] = probs[0, keep_idx]
+                probs = mask
+
+        total = probs.sum()
+        if total <= 0:
+            # no valid tokens after filtering
+            return None
+
+        probs = probs / total
 
         next_token = torch.multinomial(probs, num_samples=1)  # shape (1,1)
         next_id = next_token.item()
         gen.append(next_id)
-        last_token = next_token  # shape (1,1)
 
         if next_id == self.utils.tokenizer.eos_token_id:
             return None

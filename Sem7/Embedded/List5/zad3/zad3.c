@@ -4,10 +4,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <util/delay.h>
+#include <math.h>
 
 #include "../../customlib/uart.c"
 
-#define SAMPLES 500
+#define SAMPLES 10
 
 static volatile uint16_t adc_result = 0;
 
@@ -53,6 +54,8 @@ static void measure_active(uint32_t* out_sum, uint64_t* out_sumsq) {
         uint16_t v = ADC;
         sum += v;
         sumsq += (uint64_t)v * (uint64_t)v;
+
+        _delay_ms(2);
     }
 
     *out_sum = sum;
@@ -82,6 +85,8 @@ static void measure_noise_reduction(uint32_t* out_sum, uint64_t* out_sumsq) {
         uint16_t v = adc_result;
         sum += v;
         sumsq += (uint64_t)v * (uint64_t)v;
+
+        _delay_ms(2);
     }
 
     // disable ADC interrupt
@@ -119,8 +124,8 @@ int main() {
     uint32_t mean_active = sum_active / SAMPLES;
     uint32_t mean_noise = sum_noise / SAMPLES;
 
-    uint64_t var_active = (sumsq_active / SAMPLES) - (uint64_t)mean_active * (uint64_t)mean_active;
-    uint64_t var_noise = (sumsq_noise / SAMPLES) - (uint64_t)mean_noise * (uint64_t)mean_noise;
+    uint64_t var_active = sqrt((sumsq_active - (uint64_t)mean_active) / SAMPLES);
+    uint64_t var_noise = sqrt((sumsq_noise - (uint64_t)mean_noise) / SAMPLES);
 
     printf("Active: mean=%lu var=%lu\r\n", (unsigned long)mean_active, (unsigned long)var_active);
     printf("NoiseR: mean=%lu var=%lu\r\n", (unsigned long)mean_noise, (unsigned long)var_noise);

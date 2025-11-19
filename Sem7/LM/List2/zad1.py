@@ -42,6 +42,8 @@ prompts = [
     ("\nPodaj wynik działania: ", "\nWynik to:"),
     # ("Calculate the result of the expression: ", "\nResult:"),
     # ("", " ="),
+    # ("Student rozwiązuje równanie ", " jego wynik to"),
+    # ("Studentka rozwiązuje równanie ", " jej wynik to"),
 ]
 
 

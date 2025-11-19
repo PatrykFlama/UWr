@@ -112,6 +112,8 @@ def evaluate_riddles(riddles, allowed_answers, model, model_name_desc="current m
         ok = any((s is not None and s.strip().lower() == gold.strip().lower()) for s in samples)
         correct += 1 if ok else 0
         total += 1
+
+        # print(f"Acc {correct / total if total > 0 else 0.0}")
     acc = correct / total if total > 0 else 0.0
     print(f"{model_name_desc}: {correct}/{total} = {acc:.3f}")
     return acc
@@ -121,18 +123,26 @@ if __name__ == "__main__":
     # model_name = 'eryk-mazus/polka-1.1b-chat'
     generator = ModelGeneratorSetOfWords(model_name=model_name)
 
-    sample_allowed = {"kot", "pies", "ryba", "tygrys", "lew", "słoń", "wilk", "królik", "chomik", "papuga"}
-    sample_riddles = [
-        ("Małe udomowione zwierzę z rodziny kotowatych.", "kot"),
-        ("Najlepszy przyjaciel człowieka.", "pies"),
-        ("Duży dziki kot znany jako król dżungli.", "lew"),
-        ("Powszechny domowy zwierzak, który pływa w akwarium.", "ryba"),
-        ("Duży ssak z trąbą.", "słoń"),
-        ("Mięsożerny ssak znany ze swojej siły i odwagi.", "tygrys"),
-        ("Mały, kopiący gryzoń często trzymany jako zwierzę domowe.", "chomik"),
-        ("Kolorowy ptak znany ze swojej zdolności do naśladowania dźwięków.", "papuga"),
-    ]
-    acc = evaluate_riddles(sample_riddles, sample_allowed, model=generator, model_name_desc=model_name, trials=10,
+    # sample_allowed = {"kot", "pies", "ryba", "tygrys", "lew", "słoń", "wilk", "królik", "chomik", "papuga"}
+    # sample_riddles = [
+    #     ("Małe udomowione zwierzę z rodziny kotowatych.", "kot"),
+    #     ("Najlepszy przyjaciel człowieka.", "pies"),
+    #     ("Duży dziki kot znany jako król dżungli.", "lew"),
+    #     ("Powszechny domowy zwierzak, który pływa w akwarium.", "ryba"),
+    #     ("Duży ssak z trąbą.", "słoń"),
+    #     ("Mięsożerny ssak znany ze swojej siły i odwagi.", "tygrys"),
+    #     ("Mały, kopiący gryzoń często trzymany jako zwierzę domowe.", "chomik"),
+    #     ("Kolorowy ptak znany ze swojej zdolności do naśladowania dźwięków.", "papuga"),
+    # ]
+
+    with open('zagadki_do_testow_clean.txt', 'r', encoding='utf-8') as f:
+        sample_riddles = [(ln.split(';;')[1].strip(), ln.split(';;')[0].strip()) for ln in f]
+
+    with open('plwiktionary_definitions_clean.txt', 'r', encoding='utf-8') as f:
+        sample_allowed = list(set(ln.split('#')[0].strip() for ln in f))
+
+
+    acc = evaluate_riddles(sample_riddles[:100], sample_allowed, model=generator, model_name_desc=model_name, trials=10,
                          max_new_tokens=20, temperature=0.8)
     
     print("Final accuracy: ", acc)

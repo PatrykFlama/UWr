@@ -56,7 +56,7 @@ class AlliterativeGenerator:
         pbar.close()    
         return prompt
 
-    def generate_one_word(self, prompt, target_char, max_tokens=10, top_k=50, top_p=0.9, temperature=1.0,
+    def generate_next_words(self, prompt, target_char, max_tokens=10, top_k=50, top_p=0.9, temperature=1.0,
                           excluded_words=None, max_candidate_attempts=3, num_variants=1) -> tuple[str, int]:
         """Generate a single word (possibly multi-token). Try up to max_candidate_attempts
         candidates and return the first one not present in excluded_words. If none found,

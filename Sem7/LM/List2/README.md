@@ -2,6 +2,12 @@
 
 
 ## Task  1
+Wnioski do modelu _papugaGPT_ (wybranie mocniejszego modelu, takiego jak polka, **powinno** dać lepsze wyniki):  
+Dla równań prostych - składających sie tylko z 2 wartości oraz prostych operatorów (dodawanie i odejmownie) i małych liczb - model jest w stanie kilkukrotniej dokładniej przybliżyć wynik niż losowe zgadywanie, a czasem nawet trafić w poprawną odpowiedź. Jednak po dołożeniu mnożenia lub odejmowania, papuga bardzo szybko (wraz ze wzrostem wartości liczb) traci jakąkolwiek trafność, a nawet daje gorsze przybliżenia niż losowe zgadywanie.   
+
+Najwydajniejsze prompty dla tego modelu to równania w postaci *"Wartość wyrażenia matematycznego XXXX, to YYYY"*
+
+
 `+, -`, range(1, 500):
 ```
 Prompt 0: 0.00%, Avg answer distance: 228.6000  (expected random ~750)
@@ -35,7 +41,7 @@ Prompt 0: 0.00%, Avg answer distance: 495.2000 (expected random ~1500)
 `*`, range(1, 10):
 ```
 Prompt accuracies:                                                      
-Prompt 0: 0.00%, Avg answer distance: 45.2000
+Prompt 0: 0.00%, Avg answer distance: 45.2000 (expected random ~50)
         3*9 = "9.0" (27) -> dist: 18.0000
         7*7 = "1.0" (49) -> dist: 48.0000
         10*9 = "1.0" (90) -> dist: 89.0000
@@ -48,7 +54,25 @@ Prompt 0: 0.00%, Avg answer distance: 45.2000
         7*7 = "2.0" (49) -> dist: 47.0000
 ```
 
+
+## Task 2
+```
+flax-community/papuGaPT2: 6/8 = 0.750
+Final accuracy:  0.75
+```
+
+
 ## Task  3
+
+```
+wprost uwielbiała słuchać o wartościach własnych macierzy
+-54.63517761230469: wprost uwielbiał słuchać o wartościach własnych macierzy
+-58.463905334472656: wprost uwielbiał słuchać o wartościach własnych mocarzy
+-59.47153854370117: wprost wielbił słuchać o wartościach własnych macierzy
+-59.47153854370117: wprost wielbił słuchać o wartościach własnych macierzy
+-59.47153854370117: wprost wielbił słuchać o wartościach własnych macierzy
+```
+
 ### concept 1:
 greedy construct sentence and test all possible words for one place at a time - all other words should be either the chosen ones, or random  
 additionally apply beam search to test _k_ best sentences

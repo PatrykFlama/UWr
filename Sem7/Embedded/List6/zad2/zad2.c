@@ -1,16 +1,17 @@
-#include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/io.h>
 #include <avr/sleep.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <util/delay.h>
-
 
 #define BAUD 9600
 #define UBRR_VALUE ((F_CPU) / 16 / (BAUD) - 1)
 
 #define BUF_BITS 6
 #define BUF_SIZE (1u << BUF_BITS)
-#define BUF_MASK (BUF_SIZE - 1)     // used instead of modulo
+#define BUF_MASK (BUF_SIZE - 1)  // used instead of modulo
 
 static volatile uint8_t rx_buf[BUF_SIZE];
 static volatile uint8_t rx_r = 0;
@@ -33,23 +34,20 @@ void uart_init() {
 }
 
 // transmit one byte
-void uart_transmit(uint8_t c) {
+void uart_transmit(char c, FILE *stream) {
     uint8_t next;
-    while (1) {
-        next = (uint8_t)((tx_r + 1) & BUF_MASK);
-        if (next != tx_l) {
-            tx_buf[tx_r] = c;
-            tx_r = next;
-            // enable UDRE interrupt so ISR will start sending
-            UCSR0B |= _BV(UDRIE0);
-            return;
-        }
-        // buffer full -> busy-wait
+
+    next = (uint8_t)((tx_r + 1) & BUF_MASK);
+    if (next != tx_l) {
+        tx_buf[tx_r] = c;
+        tx_r = next;
+        // enable UDRE interrupt so ISR will start sending
+        UCSR0B |= _BV(UDRIE0);
     }
 }
 
 // receive one byte
-uint8_t uart_receive() {
+uint8_t uart_receive(FILE *stream) {
     uint8_t c;
     while (1) {
         if (rx_r != rx_l) {
@@ -87,46 +85,48 @@ ISR(USART_UDRE_vect) {
 }
 
 
-void trainsmit_string(const char* str) {
-    while (*str) {
-        uart_transmit((uint8_t)(*str));
-        str++;
+FILE uart_file;
+
+// stdio wrapper: putchar-style (returns int)
+int uart_putchar(char data, FILE *stream) {
+    uint8_t next = (uint8_t)((tx_r + 1) & BUF_MASK);
+    if (next != tx_l) {
+        tx_buf[tx_r] = (uint8_t)data;
+        tx_r = next;
+        // enable UDRE interrupt so ISR will start sending
+        UCSR0B |= _BV(UDRIE0);
     }
+    return 0;
 }
 
-void receive_string(char* buf, uint8_t max_len) {
-    uint8_t len = 0;
-    while (len < (max_len - 1)) {
-        uint8_t c = uart_receive();
-        if (c == '\r' || c == '\n') {
-            break;
+// stdio wrapper: getchar-style (returns int or EOF)
+int uart_getchar(FILE *stream) {
+    uint8_t c;
+    while (1) {
+        if (rx_r != rx_l) {
+            c = rx_buf[rx_l];
+            rx_l = (uint8_t)((rx_l + 1) & BUF_MASK);
+            return (int)c;
         }
-        buf[len++] = (char)c;
+        // buffer empty -> busy-wait
     }
-    buf[len] = '\0';
+    return EOF;
 }
-
 
 int main() {
     uart_init();
-    set_sleep_mode(SLEEP_MODE_IDLE);
     sei();
+    fdev_setup_stream(&uart_file, uart_putchar, uart_getchar, _FDEV_SETUP_RW);
+    stdin = stdout = stderr = &uart_file;
 
-    trainsmit_string("Type string: \r\n");
     while (1) {
+        printf("Type string: \r\n");
         sleep_mode();
-        // uint8_t c = uart_receive();
-        // uart_transmit(c);
-
-        // if (c == '\r') {
-        //     uart_transmit('\n');
-        // }
-
         char buf[100];
-        receive_string(buf, sizeof(buf));
-        trainsmit_string("\r\n");
-        trainsmit_string(buf);
-        trainsmit_string("\r\n");
-        trainsmit_string("Type string: \r\n");
+
+        // read a whitespace-delimited token
+        if (scanf("%99s", buf) == 1) {
+            printf("You typed: %s\r\n", buf);
+        }
     }
 }

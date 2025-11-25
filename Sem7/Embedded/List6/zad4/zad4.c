@@ -20,7 +20,7 @@ void spi_init() {
     // MOSI (PB3), SCK (PB5), LE OE PINS as output
     DDRB |= (1 << PB3) | (1 << PB5) | (1 << PIN_LE) | (1 << PIN_OE);
 
-    // SPI, master, mode 0 (CPOL=0, CPHA=0), zegar F_CPU/128
+    // SPI, master, mode 0 (CPOL=0, CPHA=0), clock F_CPU/128
     SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR1) | (1 << SPR0);
 }
 

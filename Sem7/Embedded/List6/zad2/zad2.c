@@ -2,6 +2,8 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 #include <stdint.h>
+#include <util/delay.h>
+
 
 #define BAUD 9600
 #define UBRR_VALUE ((F_CPU) / 16 / (BAUD) - 1)
@@ -62,6 +64,7 @@ uint8_t uart_receive() {
 // USART, Rx Complete
 ISR(USART_RX_vect) {
     uint8_t c = UDR0;
+    UDR0 = c;  // echo back
     uint8_t next = (uint8_t)((rx_r + 1) & BUF_MASK);
     if (next != rx_l) {
         rx_buf[rx_r] = c;
@@ -76,24 +79,54 @@ ISR(USART_UDRE_vect) {
     if (tx_l != tx_r) {
         UDR0 = tx_buf[tx_l];
         tx_l = (uint8_t)((tx_l + 1) & BUF_MASK);
+        _delay_ms(1);
     } else {
         // nothing more to send -> disable UDRE interrupt
         UCSR0B &= ~_BV(UDRIE0);
     }
 }
 
+
+void trainsmit_string(const char* str) {
+    while (*str) {
+        uart_transmit((uint8_t)(*str));
+        str++;
+    }
+}
+
+void receive_string(char* buf, uint8_t max_len) {
+    uint8_t len = 0;
+    while (len < (max_len - 1)) {
+        uint8_t c = uart_receive();
+        if (c == '\r' || c == '\n') {
+            break;
+        }
+        buf[len++] = (char)c;
+    }
+    buf[len] = '\0';
+}
+
+
 int main() {
     uart_init();
     set_sleep_mode(SLEEP_MODE_IDLE);
     sei();
 
+    trainsmit_string("Type string: \r\n");
     while (1) {
         sleep_mode();
-        uint8_t c = uart_receive();
-        uart_transmit(c);
+        // uint8_t c = uart_receive();
+        // uart_transmit(c);
 
-        if (c == '\r') {
-            uart_transmit('\n');
-        }
+        // if (c == '\r') {
+        //     uart_transmit('\n');
+        // }
+
+        char buf[100];
+        receive_string(buf, sizeof(buf));
+        trainsmit_string("\r\n");
+        trainsmit_string(buf);
+        trainsmit_string("\r\n");
+        trainsmit_string("Type string: \r\n");
     }
 }

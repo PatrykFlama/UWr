@@ -2,12 +2,12 @@
 #include <avr/io.h>
 #include <avr/sleep.h>
 #include <stdint.h>
+#include <util/delay.h>
+
 
 #define BAUD 9600
 #define UBRR_VALUE ((F_CPU) / 16 / (BAUD) - 1)
 
-volatile uint8_t tx_byte = 0;
-volatile uint8_t tx_pending = 0;  // flag
 
 // inicjalizacja UART
 void uart_init() {
@@ -21,23 +21,8 @@ void uart_init() {
     UCSR0C = _BV(UCSZ00) | _BV(UCSZ01);
 }
 
-// USART, Rx Complete
 ISR(USART_RX_vect) {
-    const uint8_t c = UDR0;
-    tx_byte = c;
-    tx_pending = 1;
-    UCSR0B |= _BV(UDRIE0);  // enable interrupt USART Data Register Empty
-}
-
-// USART Data Register Empty
-ISR(USART_UDRE_vect) {
-    if (tx_pending) {
-        UDR0 = tx_byte;
-        tx_pending = 0;
-    }
-
-    // disable UDRE interrupts as no more data to send
-    UCSR0B &= ~_BV(UDRIE0);
+    UDR0 = UDR0;
 }
 
 int main() {

@@ -2,4 +2,4 @@ pki
 *.crt
 *.key
 *.pem
-
+wireguard

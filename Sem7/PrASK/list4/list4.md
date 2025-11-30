@@ -1,5 +1,5 @@
 ## instalacja openvpn
-instalujemy `openvpn` oraz rekomendowaną paczkę [`easy-rsa`](https://github.com/OpenVPN/easy-rsa)
+instalujemy [`openvpn`](https://openvpn.net/community-docs/how-to.html) oraz rekomendowaną paczkę [`easy-rsa`](https://github.com/OpenVPN/easy-rsa)
 
 ```bash
 sudo apt update
@@ -28,10 +28,6 @@ key /etc/openvpn/server/server.key
 dh /etc/openvpn/server/dh.pem
 
 topology subnet
-
-server 10.8.0.0 255.255.255.0
-push "redirect-gateway def1"
-push "dhcp-option DNS 1.1.1.1"
 
 ifconfig-pool-persist /var/log/openvpn/ipp.txt
 
@@ -64,5 +60,61 @@ sudo openvpn /etc/openvpn/server/server.conf
 sudo systemctl enable openvpn@server
 sudo systemctl start openvpn@server
 ```
+
+
+## konfiguracja z autoryzacją PAM
+tworzymy analogiczny config do poprzedniego (`/etc/openvpn/server-pam.conf`):
+```conf
+port 1195
+proto udp
+dev tun1
+
+ca /etc/openvpn/server/ca.crt
+cert /etc/openvpn/server/server.crt
+key /etc/openvpn/server/server.key
+dh /etc/openvpn/server/dh.pem
+
+plugin /usr/lib/openvpn/openvpn-plugin-auth-pam.so login
+verify-client-cert none
+username-as-common-name
+```
+
+
+## konfiguracja klienta
+```conf
+client
+dev tun
+proto udp
+remote 91.204.161.220 1194
+
+resolv-retry infinite
+nobind
+
+persist-key
+persist-tun
+
+ca ca.crt
+cert client1.crt
+key client1.key
+
+remote-cert-tls server
+verb 3
+```
+
+```bash
+sudo openvpn --config client.conf
+```
+
+aby vpn startował bo boocie, konfigurujemy go jako daemona tak samo jak serewr
+
+![alt text](image.png)
+
+## instalacja wireguard
+instalujemy [wireguard'a](https://www.wireguard.com/quickstart/)
+```bash
+sudo apt update
+sudo apt install wireguard
+```
+
 
 

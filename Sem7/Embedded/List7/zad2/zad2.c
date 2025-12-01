@@ -53,6 +53,109 @@ int eeprom_read_byte(uint16_t addr, uint8_t* out) {
     return 0;
 }
 
+// perform sequential read of `length` bytes starting at `addr` and print Intel HEX records
+int eeprom_read_seq(uint16_t addr, uint32_t length) {
+    if (length == 0) {
+        printf(":00000001FF\r\n");
+        return 0;
+    }
+    if (addr > 0x1FF) return -1;
+    uint32_t remaining = length;
+    uint16_t cur = addr;
+
+    i2cStart();
+    i2cCheck(0x08)
+    i2cSend(eeprom_addr | ((cur & 0x100) >> 7));
+    i2cCheck(0x18)
+    i2cSend(cur & 0xFF);
+    i2cCheck(0x28)
+    i2cStart();
+    i2cCheck(0x10)
+    i2cSend(eeprom_addr | 0x1 | ((cur & 0x100) >> 7));
+    i2cCheck(0x40)
+
+    uint8_t buf[32];
+    while (remaining) {
+        uint8_t toread = remaining > sizeof(buf) ? sizeof(buf) : (uint8_t)remaining;
+        for (uint8_t i = 0; i < toread; ++i) {
+            uint8_t v = (remaining == 1) ? i2cReadNoAck() : i2cReadAck();
+            buf[i] = v;
+            remaining--;
+        }
+        uint8_t printed = 0;
+        while (printed < toread) {
+            uint8_t rec_len = (toread - printed) > 16 ? 16 : (toread - printed);
+            uint16_t rec_addr = cur;
+            uint8_t sum = 0;
+            sum += rec_len;
+            sum += (rec_addr >> 8) & 0xFF;
+            sum += rec_addr & 0xFF;
+            sum += 0x00;
+            printf(":");
+            printf("%02X%04X00", rec_len, rec_addr);
+            for (uint8_t j = 0; j < rec_len; ++j) {
+                uint8_t d = buf[printed + j];
+                sum += d;
+                printf("%02X", d);
+            }
+            uint8_t chksum = (uint8_t)(-sum);
+            printf("%02X\r\n", chksum);
+            cur += rec_len;
+            printed += rec_len;
+        }
+    }
+    i2cStop();
+    printf(":00000001FF\r\n");
+    return 0;
+}
+
+// read Intel HEX lines from UART and write them to EEPROM page-by-page
+int eeprom_write_hex_stream(void) {
+    char line[128];
+    int done = 0;
+    while (!done) {
+        uart_readline(line, sizeof(line));
+        size_t l = strlen(line);
+        if (l == 0) continue;
+        if (line[0] != ':') { printf("bad hex line: %s\r\n", line); continue; }
+        char *p = line + 1;
+        unsigned int bytecount = (unsigned int)strtoul(p, NULL, 16);
+        p += 2;
+        unsigned int rec_addr = (unsigned int)strtoul(p, NULL, 16);
+        p += 4;
+        unsigned int rectype = (unsigned int)strtoul(p, NULL, 16);
+        p += 2;
+        uint8_t data[256];
+        for (unsigned int i = 0; i < bytecount; ++i) {
+            data[i] = (uint8_t)strtoul(p + i*2, NULL, 16);
+        }
+        if (rectype == 0x01) { done = 1; break; }
+        if (rectype != 0x00) continue;
+        unsigned int offset = 0;
+        while (offset < bytecount) {
+            uint16_t a = (uint16_t)(rec_addr + offset);
+            uint8_t page_off = a & 0x0F;
+            uint8_t space = 16 - page_off;
+            uint8_t chunk = (bytecount - offset) < space ? (bytecount - offset) : space;
+            i2cStart();
+            i2cCheck(0x08)
+            i2cSend(eeprom_addr | ((a & 0x100) >> 7));
+            i2cCheck(0x18)
+            i2cSend(a & 0xFF);
+            i2cCheck(0x28)
+            for (uint8_t k = 0; k < chunk; ++k) {
+                i2cSend(data[offset + k]);
+                i2cCheck(0x28)
+            }
+            i2cStop();
+            _delay_ms(6);
+            offset += chunk;
+        }
+    }
+    printf("write completed\r\n");
+    return 0;
+}
+
 int main() {
     uart_init();
 
@@ -76,122 +179,14 @@ int main() {
                 printf(":00000001FF\r\n"); // EOF record
                 continue;
             }
-            if (addr > 0x1FF) {
-                printf("addr out of range (0..0x1FF)\r\n");
-                continue;
+            // delegate to helper
+            if (eeprom_read_seq((uint16_t)addr, (uint32_t)length) != 0) {
+                printf("read failed (bad parameters or I2C)\r\n");
             }
-            // read `length` bytes starting at addr
-            uint32_t remaining = length;
-            uint16_t cur = (uint16_t)addr;
-            // We'll read in chunks but minimize I2C transactions: perform one sequential read for the whole length
-            // Set address
-            i2cStart();
-            if ((TWSR & 0xF8) != 0x08) { i2cStop(); printf("I2C start failed\r\n"); continue; }
-            i2cSend(eeprom_addr | ((cur & 0x100) >> 7));
-            if ((TWSR & 0xF8) != 0x18) { i2cStop(); printf("I2C write addr failed\r\n"); continue; }
-            i2cSend(cur & 0xFF);
-            if ((TWSR & 0xF8) != 0x28) { i2cStop(); printf("I2C set mem addr failed\r\n"); continue; }
-            // repeated start for read
-            i2cStart();
-            if ((TWSR & 0xF8) != 0x10) { i2cStop(); printf("I2C restart failed\r\n"); continue; }
-            i2cSend(eeprom_addr | 0x1 | ((cur & 0x100) >> 7));
-            if ((TWSR & 0xF8) != 0x40) { i2cStop(); printf("I2C read request failed\r\n"); continue; }
-            // read bytes sequentially
-            uint8_t buf[32];
-            while (remaining) {
-                uint8_t toread = remaining > sizeof(buf) ? sizeof(buf) : (uint8_t)remaining;
-                for (uint8_t i = 0; i < toread; ++i) {
-                    uint8_t v;
-                    if (remaining == 1) v = i2cReadNoAck(); else v = i2cReadAck();
-                    buf[i] = v;
-                    remaining--;
-                }
-                // print buffered data as Intel HEX records of up to 16 bytes per line
-                uint8_t *p = buf;
-                uint8_t printed = 0;
-                while (printed < toread) {
-                    uint8_t rec_len = (toread - printed) > 16 ? 16 : (toread - printed);
-                    uint16_t rec_addr = cur;
-                    // compute checksum
-                    uint8_t sum = 0;
-                    sum += rec_len;
-                    sum += (rec_addr >> 8) & 0xFF;
-                    sum += rec_addr & 0xFF;
-                    sum += 0x00; // record type
-                    // print data
-                    printf(":" );
-                    printf("%02X%04X00", rec_len, rec_addr);
-                    for (uint8_t j = 0; j < rec_len; ++j) {
-                        uint8_t d = p[printed + j];
-                        sum += d;
-                        printf("%02X", d);
-                    }
-                    uint8_t chksum = ((uint8_t)(-sum));
-                    printf("%02X\r\n", chksum);
-                    cur += rec_len;
-                    printed += rec_len;
-                }
-            }
-            i2cStop();
-            // EOF record
-            printf(":00000001FF\r\n");
         }
         // write -> expect subsequent Intel HEX lines until EOF record (type 01)
         else if (strcmp(line, "write") == 0) {
-            // read lines until EOF record
-            int done = 0;
-            while (!done) {
-                uart_readline(line, sizeof(line));
-                size_t l = strlen(line);
-                if (l == 0) continue;
-                if (line[0] != ':') { printf("bad hex line: %s\r\n", line); continue; }
-                // parse hex fields
-                // byte count
-                char *p = line + 1;
-                unsigned int bytecount = (unsigned int)strtoul(p, NULL, 16);
-                // address
-                p += 2;
-                unsigned int rec_addr = (unsigned int)strtoul(p, NULL, 16);
-                p += 4;
-                unsigned int rectype = (unsigned int)strtoul(p, NULL, 16);
-                p += 2;
-                // data
-                uint8_t data[256];
-                for (unsigned int i = 0; i < bytecount; ++i) {
-                    data[i] = (uint8_t)strtoul(p + i*2, NULL, 16);
-                }
-                // checksum not validated strictly here
-                if (rectype == 0x01) {
-                    done = 1;
-                    break;
-                }
-                if (rectype != 0x00) continue;
-                // write data[] of length bytecount starting at rec_addr
-                unsigned int offset = 0;
-                while (offset < bytecount) {
-                    uint16_t a = (uint16_t)(rec_addr + offset);
-                    uint8_t page_off = a & 0x0F;
-                    uint8_t space = 16 - page_off;
-                    uint8_t chunk = (bytecount - offset) < space ? (bytecount - offset) : space;
-                    // start I2C write for this page chunk
-                    i2cStart();
-                    if ((TWSR & 0xF8) != 0x08) { i2cStop(); printf("I2C start failed during write\r\n"); break; }
-                    i2cSend(eeprom_addr | ((a & 0x100) >> 7));
-                    if ((TWSR & 0xF8) != 0x18) { i2cStop(); printf("I2C device addr failed during write\r\n"); break; }
-                    i2cSend(a & 0xFF);
-                    if ((TWSR & 0xF8) != 0x28) { i2cStop(); printf("I2C mem addr failed during write\r\n"); break; }
-                    for (uint8_t k = 0; k < chunk; ++k) {
-                        i2cSend(data[offset + k]);
-                        if ((TWSR & 0xF8) != 0x28) {
-                            // continue sending but warn
-                        }
-                    }
-                    i2cStop();
-                    _delay_ms(6); // allow write cycle (<=5ms per datasheet)
-                    offset += chunk;
-                }
-            }
-            printf("write completed\r\n");
+            if (eeprom_write_hex_stream() != 0) printf("write failed\r\n");
         }
         // single byte read/write from zad1-compatible commands
         else if (sscanf(line, "read %i", &addr) == 1) {

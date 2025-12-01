@@ -7,8 +7,15 @@ void i2cInit() {
   TWCR |= _BV(TWEN);
 }
 void i2cWaitForComplete() {
-  // czekaj na flagę TWINT
-  while(!(TWCR & _BV(TWINT)));
+  // czekaj na flagę TWINT, ale z bezpiecznym timeoutem
+  uint32_t timeout = 100000;
+  while (!(TWCR & _BV(TWINT))) {
+    if (--timeout == 0) {
+      // Timeout: reset TWI to avoid permanent lock
+      TWCR = 0;
+      return;
+    }
+  }
 }
 void i2cStart() {
   // wyślij warunek startu

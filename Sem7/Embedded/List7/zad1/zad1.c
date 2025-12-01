@@ -5,6 +5,7 @@
 
 #include "i2c.h"
 
+#define UART_ECHO
 #include "../../customlib/uart.c"
 
 const uint8_t eeprom_addr = 0xa0;  // device base address (A2..A0 = 0)

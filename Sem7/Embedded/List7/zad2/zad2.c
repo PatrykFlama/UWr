@@ -2,13 +2,13 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <util/delay.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "i2c.h"
 
 #include "../../customlib/uart.c"
 
-#include <string.h>
-#include <stdlib.h>
 
 
 const uint8_t eeprom_addr = 0xa0;  // device base address (A2..A0 = 0)
@@ -162,7 +162,6 @@ int main() {
     i2cInit();
 
     char line[64];
-    printf("EEPROM I2C console ready\r\n");
 
     while (1) {
         // prompt

@@ -56,7 +56,6 @@ int main() {
     i2cInit();
 
     char line[64];
-    printf("EEPROM I2C console ready\r\n");
 
     while (1) {
         // prompt

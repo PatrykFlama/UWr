@@ -10,28 +10,23 @@
 
 const uint8_t eeprom_addr = 0xa0;  // device base address (A2..A0 = 0)
 
+#define i2cCheck(code) \
+    if ((TWSR & 0xf8) != (code)) { \
+        i2cStop(); \
+        return -1; \
+    }
+
 int eeprom_write_byte(uint16_t addr, uint8_t value) {
     i2cStart();
-    if ((TWSR & 0xF8) != 0x08) {
-        i2cStop();
-        return -1;
-    }
+    i2cCheck(0x08)
     i2cSend(eeprom_addr | ((addr & 0x100) >> 7));
-    if ((TWSR & 0xF8) != 0x18) {
-        i2cStop();
-        return -1;
-    }
+    i2cCheck(0x18)
     i2cSend(addr & 0xFF);
-    if ((TWSR & 0xF8) != 0x28) {
-        i2cStop();
-        return -1;
-    }
+    i2cCheck(0x28)
     i2cSend(value);
-    if ((TWSR & 0xF8) != 0x28) {
-        i2cStop();
-        return -1;
-    }
+    i2cCheck(0x28)
     i2cStop();
+
     _delay_ms(10);  // wait for EEPROM write cycle
     
     return 0;
@@ -39,35 +34,17 @@ int eeprom_write_byte(uint16_t addr, uint8_t value) {
 
 int eeprom_read_byte(uint16_t addr, uint8_t* out) {
     i2cStart();
-    if ((TWSR & 0xF8) != 0x08) {
-        i2cStop();
-        return -1;
-    }
+    i2cCheck(0x08)
     i2cSend(eeprom_addr | ((addr & 0x100) >> 7));
-    if ((TWSR & 0xF8) != 0x18) {
-        i2cStop();
-        return -1;
-    }
+    i2cCheck(0x18)
     i2cSend(addr & 0xFF);
-    if ((TWSR & 0xF8) != 0x28) {
-        i2cStop();
-        return -1;
-    }
+    i2cCheck(0x28)
     i2cStart();
-    if ((TWSR & 0xF8) != 0x10) {
-        i2cStop();
-        return -1;
-    }
+    i2cCheck(0x10)
     i2cSend(eeprom_addr | 0x1 | ((addr & 0x100) >> 7));
-    if ((TWSR & 0xF8) != 0x40) {
-        i2cStop();
-        return -1;
-    }
+    i2cCheck(0x40)
     uint8_t v = i2cReadNoAck();
-    if ((TWSR & 0xF8) != 0x58) {
-        i2cStop();
-        return -1;
-    }
+    i2cCheck(0x58)
     i2cStop();
     *out = v;
     return 0;

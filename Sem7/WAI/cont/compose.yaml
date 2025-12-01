@@ -1,0 +1,24 @@
+services:
+  pytorch-container:
+    build:
+      context: .  # Replace with the path to the directory containing your Dockerfile
+      dockerfile: Dockerfile  # Replace with the actual name of your Dockerfile if it's different
+    volumes:
+      - ../:/app
+    working_dir: /app
+#    command:
+#      - /bin/bash
+#      - -c
+#      - "tail -f /dev/null"
+#      - source /myvenv/bin/activate && jupyter-server
+    command:
+      - /bin/bash
+      - -c
+      - |
+        cd /app
+        source /myvenv/bin/activate
+        jupyter server --allow-root --ip 0.0.0.0 --port 8888 --notebook-dir='/app'
+
+    container_name: hu-galaxy-container
+    ports:
+      - "8888:8888"

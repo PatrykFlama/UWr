@@ -18,7 +18,21 @@ int uart_transmit(char data, FILE *stream) {
 int uart_receive(FILE *stream) {
     // czekaj aż znak dostępny
     while (!(UCSR0A & _BV(RXC0)));
+
+    #ifdef UART_NO_ECHO
     return UDR0;
+    #endif
+
+    char c = UDR0;
+    // echo received character back to sender
+    // map LF or CR to CR+LF for terminal compatibility
+    if (c == '\r' || c == '\n') {
+        uart_transmit('\r', stream);
+        uart_transmit('\n', stream);
+    } else {
+        uart_transmit(c, stream);
+    }
+    return (int)c;
 }
 
 FILE uart_file;

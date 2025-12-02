@@ -18,13 +18,13 @@ const uint8_t eeprom_addr = 0xa0;  // device base address (A2..A0 = 0)
 
 int eeprom_write_byte(uint16_t addr, uint8_t value) {
     i2cStart();
-    i2cCheck(0x08)
+    i2cCheck(0x08);
     i2cSend(eeprom_addr | ((addr & 0x100) >> 7));
-    i2cCheck(0x18)
+    i2cCheck(0x18);
     i2cSend(addr & 0xFF);
-    i2cCheck(0x28)
+    i2cCheck(0x28);
     i2cSend(value);
-    i2cCheck(0x28)
+    i2cCheck(0x28);
     i2cStop();
 
     _delay_ms(10);  // wait for EEPROM write cycle
@@ -34,17 +34,17 @@ int eeprom_write_byte(uint16_t addr, uint8_t value) {
 
 int eeprom_read_byte(uint16_t addr, uint8_t* out) {
     i2cStart();
-    i2cCheck(0x08)
+    i2cCheck(0x08);
     i2cSend(eeprom_addr | ((addr & 0x100) >> 7));
-    i2cCheck(0x18)
+    i2cCheck(0x18);
     i2cSend(addr & 0xFF);
-    i2cCheck(0x28)
+    i2cCheck(0x28);
     i2cStart();
-    i2cCheck(0x10)
+    i2cCheck(0x10);
     i2cSend(eeprom_addr | 0x1 | ((addr & 0x100) >> 7));
-    i2cCheck(0x40)
+    i2cCheck(0x40);
     uint8_t v = i2cReadNoAck();
-    i2cCheck(0x58)
+    i2cCheck(0x58);
     i2cStop();
     *out = v;
     return 0;

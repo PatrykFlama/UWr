@@ -98,9 +98,9 @@ void spi_slave_init() {
 // Hardware SPI Slave interrupt handler
 // Called when the Slave receives a full byte
 ISR(SPI_STC_vect) {
-    slave_received_data = SPDR;  // Odczytaj odebrane dane
-    slave_new_data_flag = 1;     // Ustaw flagę
-    // Załaduj dane do wysłania w następnej transakcji
+    slave_received_data = SPDR;  // Read received data
+    slave_new_data_flag = 1;
+    // data to send on next transaction
     SPDR = slave_received_data + 1;
 }
 
@@ -117,7 +117,7 @@ int main() {
     while (1) {
         printf("Master sending: %u\r\n", counter);
 
-        // Master wysyła dane i odbiera odpowiedź (z poprzedniej transakcji)
+        // Master sends data and receives response (from previous transaction)
         uint8_t master_received = spi_transfer(counter);
 
         // Check if the Slave received data (interrupt should have fired)

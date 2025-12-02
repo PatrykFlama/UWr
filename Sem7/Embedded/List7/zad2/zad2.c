@@ -18,7 +18,7 @@ void eeprom_read_sequential(uint16_t start_addr, uint8_t* buffer, uint16_t lengt
     uint8_t block = (start_addr >> 8) & 0x01;
     uint8_t device_addr = EEPROM_ADDR | (block << 1);
 
-    // Dummy write - set the initial address
+    // Dummy write
     i2cStart();
     i2cSend(device_addr << 1);
     i2cSend((uint8_t)(start_addr & 0xFF));
@@ -30,11 +30,10 @@ void eeprom_read_sequential(uint16_t start_addr, uint8_t* buffer, uint16_t lengt
     // subsequent bytes
     for (uint16_t i = 0; i < length; i++) {
         uint16_t current_addr = start_addr + i;
-        // Check if we've crossed a block boundary (256 bytes)
-        // If so, start a new transaction
+        // block boundary (256 bytes)
         if (i > 0 && (current_addr & 0xFF) == 0) {
             i2cStop();
-            // New block - restart transaction
+            // new block - restart transaction
             block = (current_addr >> 8) & 0x01;
             device_addr = EEPROM_ADDR | (block << 1);
 
@@ -46,7 +45,7 @@ void eeprom_read_sequential(uint16_t start_addr, uint8_t* buffer, uint16_t lengt
             i2cSend((device_addr << 1) | 0x01);
         }
 
-        // read byte; NACK is sent after the last byte or at a block boundary
+        // read byte; NOACK is sent after the last byte or at a block boundary
         if (i < length - 1 && ((current_addr + 1) & 0xFF) != 0) {
             buffer[i] = i2cReadAck();
         } else {
@@ -57,9 +56,7 @@ void eeprom_read_sequential(uint16_t start_addr, uint8_t* buffer, uint16_t lengt
     i2cStop();
 }
 
-// Page write
-// 24C04 has 16-byte pages. If data crosses a page boundary,
-// the address wraps within the same page
+// 16-byte pages
 void eeprom_write_page(uint16_t start_addr, uint8_t* data, uint8_t length) {
     if (length == 0 || length > PAGE_SIZE)
         return;
@@ -71,13 +68,13 @@ void eeprom_write_page(uint16_t start_addr, uint8_t* data, uint8_t length) {
     i2cSend(device_addr << 1);
     i2cSend((uint8_t)(start_addr & 0xFF));
 
-    // Send all bytes
+    // send all bytes
     for (uint8_t i = 0; i < length; i++) {
         i2cSend(data[i]);
     }
 
     i2cStop();
-    _delay_ms(10);  // Wait for write cycle
+    _delay_ms(5);  // wait for write cycle
 }
 
 uint8_t hex_to_byte(char c) {
@@ -90,33 +87,24 @@ uint8_t hex_to_byte(char c) {
     return 0;
 }
 
-// Parse Intel HEX line and write to EEPROM
-// Format: :LLAAAATTDD...DDCC
+// :LLAAAATTDD...DDCC
 // LL = length, AAAA = address, TT = type, DD = data, CC = checksum
 int parse_hex_line(char* line) {
     if (line[0] != ':')
         return -1;
 
-    // Parse length
     uint8_t len = (hex_to_byte(line[1]) << 4) | hex_to_byte(line[2]);
 
-    // Parse address
     uint16_t addr = (hex_to_byte(line[3]) << 12) | (hex_to_byte(line[4]) << 8) |
                     (hex_to_byte(line[5]) << 4) | hex_to_byte(line[6]);
 
-    // Parse record type
     uint8_t type = (hex_to_byte(line[7]) << 4) | hex_to_byte(line[8]);
 
-    if (type != 0x00)
-        return 0;  // Only data records
-
-    // Check if address is within range
     if (addr + len > 512) {
         printf("Error: Address out of range\r\n");
         return -1;
     }
 
-    // Parse data and write to EEPROM by pages
     uint8_t data[16];
     uint8_t written = 0;
 
@@ -126,7 +114,6 @@ int parse_hex_line(char* line) {
         uint8_t page_remaining = PAGE_SIZE - page_offset;
         uint8_t to_write = (len - written) < page_remaining ? (len - written) : page_remaining;
 
-        // Parse data for this page
         for (uint8_t i = 0; i < to_write; i++) {
             uint8_t pos = 9 + (written + i) * 2;
             data[i] = (hex_to_byte(line[pos]) << 4) | hex_to_byte(line[pos + 1]);
@@ -139,7 +126,6 @@ int parse_hex_line(char* line) {
     return len;
 }
 
-// Data in Intel HEX format
 void print_hex_line(uint16_t addr, uint8_t* data, uint8_t len) {
     uint8_t checksum = len + (addr >> 8) + (addr & 0xFF) + 0x00;
 

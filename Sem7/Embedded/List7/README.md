@@ -20,4 +20,5 @@ gdy w komputerze wyładuje się bateria w zegarze, to po starcie będzie jakieś
 kiedyś nawet był koncept robienia arytmetyki w procesorze, bazujących na liczbach BCD ("E BCD IC")  
 
 
+po do _bit-banging_? np jak mamy dhc11 (czujnik wilgotności), który się komunikuje po 2 drutach, to nie ma dla niego wsparcia sprzętowego (nie mamy z kim gadać) - więc musimy go ogarnąć software'owo
 

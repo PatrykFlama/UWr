@@ -6,38 +6,35 @@
 
 #define UART_ECHO
 #include "../../customlib/uart.c"
-
 #include "i2c.h"
 
 #define EEPROM_ADDR 0x50
-#define PAGE_SIZE 16    // bajty
+#define PAGE_SIZE 16  // bajty
 
 void eeprom_read_sequential(uint16_t start_addr, uint8_t* buffer, uint16_t length) {
-    // po odczycie bajtu, wysłanie ACK inkrementuje wewnętrzny licznik adresu i kontynuuje odczyt
+    // after reading a byte, sending ACK increments the internal address counter and continues reading
 
     // random read
     uint8_t block = (start_addr >> 8) & 0x01;
     uint8_t device_addr = EEPROM_ADDR | (block << 1);
 
-    // Dummy write - ustawienie początkowego adresu
+    // Dummy write - set the initial address
     i2cStart();
     i2cSend(device_addr << 1);
     i2cSend((uint8_t)(start_addr & 0xFF));
 
-    // sekwencyjny odczyt
+    // sequential read
     i2cStart();
     i2cSend((device_addr << 1) | 0x01);
 
-    // kolejne bajty
+    // subsequent bytes
     for (uint16_t i = 0; i < length; i++) {
         uint16_t current_addr = start_addr + i;
-
-        // Sprawdź czy przekroczyliśmy granicę bloku (256 bajtów)
-        // Jeśli tak, musimy rozpocząć nową transakcję
+        // Check if we've crossed a block boundary (256 bytes)
+        // If so, start a new transaction
         if (i > 0 && (current_addr & 0xFF) == 0) {
             i2cStop();
-
-            // Nowy blok - rozpocznij od nowa
+            // New block - restart transaction
             block = (current_addr >> 8) & 0x01;
             device_addr = EEPROM_ADDR | (block << 1);
 
@@ -49,7 +46,7 @@ void eeprom_read_sequential(uint16_t start_addr, uint8_t* buffer, uint16_t lengt
             i2cSend((device_addr << 1) | 0x01);
         }
 
-        // odczytaj bajt, NACK jest wysyłany po ostatnim bajcie lub przy granicy bloku
+        // read byte; NACK is sent after the last byte or at a block boundary
         if (i < length - 1 && ((current_addr + 1) & 0xFF) != 0) {
             buffer[i] = i2cReadAck();
         } else {
@@ -60,9 +57,9 @@ void eeprom_read_sequential(uint16_t start_addr, uint8_t* buffer, uint16_t lengt
     i2cStop();
 }
 
-// Zapis stronami (Page Write)
-// 24C04 ma strony 16-bajtowe. Jeśli dane przekroczą granicę strony,
-// adres "zawija się" do początku tej samej strony
+// Page write
+// 24C04 has 16-byte pages. If data crosses a page boundary,
+// the address wraps within the same page
 void eeprom_write_page(uint16_t start_addr, uint8_t* data, uint8_t length) {
     if (length == 0 || length > PAGE_SIZE)
         return;
@@ -74,7 +71,7 @@ void eeprom_write_page(uint16_t start_addr, uint8_t* data, uint8_t length) {
     i2cSend(device_addr << 1);
     i2cSend((uint8_t)(start_addr & 0xFF));
 
-    // Wyślij wszystkie bajty
+    // Send all bytes
     for (uint8_t i = 0; i < length; i++) {
         i2cSend(data[i]);
     }
@@ -93,33 +90,33 @@ uint8_t hex_to_byte(char c) {
     return 0;
 }
 
-// Parsowanie linii Intel HEX i zapis do EEPROM
+// Parse Intel HEX line and write to EEPROM
 // Format: :LLAAAATTDD...DDCC
 // LL = length, AAAA = address, TT = type, DD = data, CC = checksum
 int parse_hex_line(char* line) {
     if (line[0] != ':')
         return -1;
 
-    // Parsuj długość
+    // Parse length
     uint8_t len = (hex_to_byte(line[1]) << 4) | hex_to_byte(line[2]);
 
-    // Parsuj adres
+    // Parse address
     uint16_t addr = (hex_to_byte(line[3]) << 12) | (hex_to_byte(line[4]) << 8) |
                     (hex_to_byte(line[5]) << 4) | hex_to_byte(line[6]);
 
-    // Parsuj typ rekordu
+    // Parse record type
     uint8_t type = (hex_to_byte(line[7]) << 4) | hex_to_byte(line[8]);
 
     if (type != 0x00)
-        return 0;  // Tylko data records
+        return 0;  // Only data records
 
-    // Sprawdź czy adres mieści się w zakresie
+    // Check if address is within range
     if (addr + len > 512) {
         printf("Error: Address out of range\r\n");
         return -1;
     }
 
-    // Parsuj dane i zapisz do EEPROM stronami
+    // Parse data and write to EEPROM by pages
     uint8_t data[16];
     uint8_t written = 0;
 
@@ -129,7 +126,7 @@ int parse_hex_line(char* line) {
         uint8_t page_remaining = PAGE_SIZE - page_offset;
         uint8_t to_write = (len - written) < page_remaining ? (len - written) : page_remaining;
 
-        // Parsuj dane dla tej strony
+        // Parse data for this page
         for (uint8_t i = 0; i < to_write; i++) {
             uint8_t pos = 9 + (written + i) * 2;
             data[i] = (hex_to_byte(line[pos]) << 4) | hex_to_byte(line[pos + 1]);
@@ -142,7 +139,7 @@ int parse_hex_line(char* line) {
     return len;
 }
 
-// dane w formacie Intel HEX
+// Data in Intel HEX format
 void print_hex_line(uint16_t addr, uint8_t* data, uint8_t len) {
     uint8_t checksum = len + (addr >> 8) + (addr & 0xFF) + 0x00;
 
@@ -189,15 +186,15 @@ int main() {
                 remaining -= to_read;
             }
         } else if (strcmp(cmd, "write") == 0) {
-            // reszta linii (linia HEX)
+            // rest of the line (HEX line)
             char hex_line[100];
             char c;
             uint8_t idx = 0;
 
-            // pomiń białe znaki
+            // skip whitespace
             while ((c = getchar()) == ' ' || c == '\t');
 
-            // wczytaj całą linię
+            // read full line
             do {
                 hex_line[idx++] = c;
                 c = getchar();

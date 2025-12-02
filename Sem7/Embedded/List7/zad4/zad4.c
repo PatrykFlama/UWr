@@ -6,8 +6,8 @@
 
 #include "../../customlib/uart.c"
 
-// --- Konfiguracja pinów Software SPI (Master) ---
-// Używamy portu D
+// --- Software SPI pins configuration (Master) ---
+// Using port D
 #define SW_SPI_PORT PORTD
 #define SW_SPI_DDR DDRD
 #define SW_SPI_PIN PIND
@@ -17,8 +17,8 @@
 #define SW_MISO PD6
 #define SW_SCK PD7
 
-// --- Konfiguracja pinów Hardware SPI (Slave) ---
-// Używamy portu B
+// --- Hardware SPI pins configuration (Slave) ---
+// Using port B
 #define HW_SS PB2
 #define HW_MOSI PB3
 #define HW_MISO PB4
@@ -28,14 +28,14 @@ volatile uint8_t slave_received_data = 0;
 volatile uint8_t slave_new_data_flag = 0;
 
 void spi_init() {
-    // Konfiguracja kierunków: SS, MOSI, SCK jako wyjścia
+    // Configure directions: SS, MOSI, SCK as outputs
     SW_SPI_DDR |= (1 << SW_SS) | (1 << SW_MOSI) | (1 << SW_SCK);
-    // MISO jako wejście
+    // MISO as input
     SW_SPI_DDR &= ~(1 << SW_MISO);
-    // Włącz pull-up na MISO
+    // Enable pull-up on MISO
     SW_SPI_PORT |= (1 << SW_MISO);
 
-    // Stan początkowy: SS wysoki (nieaktywny), SCK niski (Mode 0)
+    // Initial state: SS high (inactive), SCK low (Mode 0)
     SW_SPI_PORT |= (1 << SW_SS);
     SW_SPI_PORT &= ~(1 << SW_SCK);
 }
@@ -43,60 +43,60 @@ void spi_init() {
 uint8_t spi_transfer(uint8_t data) {
     uint8_t received = 0;
 
-    // Aktywuj Slave (SS Low)
+    // Activate Slave (SS Low)
     SW_SPI_PORT &= ~(1 << SW_SS);
-    _delay_us(1);  // Krótkie opóźnienie na stabilizację
+    _delay_us(1);  // Short delay for stabilization
 
-    // Pętla dla 8 bitów (MSB first)
+    // Loop for 8 bits (MSB first)
     for (uint8_t i = 0; i < 8; i++) {
-        // 1. Ustaw MOSI zgodnie z bitem danych (MSB)
+        // 1. Set MOSI according to the data bit (MSB)
         if (data & 0x80) {
             SW_SPI_PORT |= (1 << SW_MOSI);
         } else {
             SW_SPI_PORT &= ~(1 << SW_MOSI);
         }
 
-        // Przesuń dane do następnego bitu
+        // Shift data to the next bit
         data <<= 1;
 
-        // 2. Zbocze narastające SCK (Clock High) - Slave czyta MOSI
-        _delay_us(5);  // Opóźnienie dla "półokresu" zegara
+        // 2. Rising edge SCK (Clock High) - Slave reads MOSI
+        _delay_us(5);  // Delay for clock half-period
         SW_SPI_PORT |= (1 << SW_SCK);
 
-        // 3. Odczytaj MISO (MSB)
+        // 3. Read MISO (MSB)
         received <<= 1;
         if (SW_SPI_PIN & (1 << SW_MISO)) {
             received |= 1;
         }
 
-        // 4. Zbocze opadające SCK (Clock Low) - Slave wystawia MISO
+        // 4. Falling edge SCK (Clock Low) - Slave drives MISO
         _delay_us(5);
         SW_SPI_PORT &= ~(1 << SW_SCK);
     }
 
-    // Dezaktywuj Slave (SS High)
+    // Deactivate Slave (SS High)
     SW_SPI_PORT |= (1 << SW_SS);
 
     return received;
 }
 
 void spi_slave_init() {
-    // Konfiguracja kierunków dla Slave: MISO wyjście, reszta wejścia
+    // Configure directions for Slave: MISO output, others input
     DDRB |= (1 << HW_MISO);                                    // MISO Output
     DDRB &= ~((1 << HW_MOSI) | (1 << HW_SCK) | (1 << HW_SS));  // MOSI, SCK, SS Input
 
-    // Włącz pull-up na SS
+    // Enable pull-up on SS
     PORTB |= (1 << HW_SS);
 
-    // Konfiguracja rejestru SPCR:
-    // SPE (SPI Enable) - włącz SPI
-    // SPIE (SPI Interrupt Enable) - włącz przerwania
-    // Bit MSTR = 0 (tryb Slave)
+    // Configure SPCR register:
+    // SPE (SPI Enable) - enable SPI
+    // SPIE (SPI Interrupt Enable) - enable interrupts
+    // Bit MSTR = 0 (Slave mode)
     SPCR = (1 << SPE) | (1 << SPIE);
 }
 
-// Obsługa przerwania Hardware SPI Slave
-// Wywoływane gdy Slave odbierze pełny bajt
+// Hardware SPI Slave interrupt handler
+// Called when the Slave receives a full byte
 ISR(SPI_STC_vect) {
     slave_received_data = SPDR;  // Odczytaj odebrane dane
     slave_new_data_flag = 1;     // Ustaw flagę
@@ -107,8 +107,8 @@ ISR(SPI_STC_vect) {
 int main() {
     uart_init();
 
-    spi_slave_init();  // Najpierw Slave
-    spi_init();        // Potem Master
+    spi_slave_init();  // Initialize Slave first
+    spi_init();        // Then initialize Master
 
     sei();
 
@@ -120,7 +120,7 @@ int main() {
         // Master wysyła dane i odbiera odpowiedź (z poprzedniej transakcji)
         uint8_t master_received = spi_transfer(counter);
 
-        // Sprawdź czy Slave odebrał dane (przerwanie powinno zadziałać)
+        // Check if the Slave received data (interrupt should have fired)
         if (slave_new_data_flag) {
             slave_new_data_flag = 0;
             printf("Slave received: %u\r\n", slave_received_data);

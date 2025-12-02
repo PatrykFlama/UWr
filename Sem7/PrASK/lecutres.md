@@ -137,10 +137,73 @@ http3check - testowanie wsparcia dla http3
 
 
 
+___
+
+
+(ram) ballooning - pamięć ram może być współdzielona, wtedy możemy teoretycznie zadeklarować procesom/writualnym maszynom więcej pamięci, niż faktycznie mamy  
+
+___
+
+jak stworzyć kom[puter w sieci 10.0.0.1/32 ?  
+
+załóżmy że mamy komputer w 10.0.0.2/30 oraz gateway w 10.0.0.1/30 - wtedy mamy:
+- 10.0.0.0/30 przypisane do interfejsu enp0
+- w tablicy routingu wpisane 0.0.0.0 (default) -> 10.0.0.1
+
+teraz jeżeli chcemy mieć gateway na 1.2.3.4 to komputer nie wie gdzie to jest, dodajemy więc do naszego interfejsu ten adres (przpisujemy go) - wtedy nasz komputer nadal wie jak się dostać do routera, mimo tego że jest on poza siecią:
+- 10.0.0.2/32 enp0
+- 1.2.3.4 enp0
+- default via 1.2.3.4
+
+> - `ip addr` - lokalne przypisania
+> - `ip route` - sprawdza tablicę routingu
+
+___
+
+> arp proxy - na wszystkie zapytania arp odpowiada router
+
+
+## NAT i IPv6
+przyjmujemy że najmniejsza 'fajna' podsieć ipv6 to /64 (przy mniejszych rzomiarach nie działają niektóre funkcje, np reklamowanie routera)
+> zdarzają się przypadki gdy ISP da nam np tylko jeden adres ipv6 - wtedy nat na ipv6 ma sens
+
+przyjmijmy że mamy 2001::a/64 przypisane do maszyny na enp18  
+niech router będzie na 2001::1 (komunikuje się z naszym komputerem protokołem NDP)  
+jeżeli stworzymy tune wg0 z adresem 2001:1::cafe/128 to nie będzie on w stanie się komunikować z routerem  
+musimy więc zrobić coś takiego jak NDP proxy: `ip -6 neigh proxy add WG_ADDR dev enp18` - żeby zachowało się to po reboocie, to musimy w configu vpn'a dodać  
+
+> `ip neigh sh` - pokazuje tablicę przypisać mac <-> iface
 
 
 
+# kontenery
+- `chroot`
+- `namespaces`
+
+to jest zalążek do konceptu kontenera - kontener to proces który myśli że jest initem (system init)  
+> np nginxa z chrootem w `/var/www` oraz pid 9191 -> 1 
+
+supervisor to będzie proces dbający o to że jeżeli taki nginx nam padnie, to zostanie uruchomiony ponownie
 
 
+docker sam w sobie jest już supervisorem
 
+idea: każdy kontener powinien zawierać tylko jeden proces - jeżeli zabijemy ten proces (pid 1) to ubijamy całe drzewo procesów    
+
+
+> zaleta konteneryzacji - lżejsza od wirtualizacji bo jest lżejsze, działamy na tym samym kernelu etc
+
+problem z dockerem - działa on z uprawnieniami roota;
+podman, lxc - tutaj juz ten problem został rozwiązany
+
+
+w dockerze przyjęło się dzielenie środowiska na obrazy oraz kontenery  
+obrazy to template wg którego tworzone są kontenery, z konceptu obrazu nie można ruszać/zmienić  
+
+
+z założenia kontenery powinny być efemeryczne - zabicie go i uruchomienie ponownie nie powinno 'zepsuć jest stanu'  
+
+___
+
+koncept dodatkowej redundancji przy 2 kontenerach nginx: stawiamy jeden 'zapasowy', sprawdzają się one nawzajem - czy ten drugi żyje, jeżeli master przestał odpowiadać to slave przejmuje jego ip oraz działanie (pokazuje na nie inny nginx, reverse proxy https)
 

@@ -7,6 +7,7 @@
 #include "../../customlib/uart.c"
 #include "i2c.h"
 
+
 #define EEPROM_ADDR 0x50  // (1010 000x)
 
 uint8_t eeprom_read(uint16_t addr) {

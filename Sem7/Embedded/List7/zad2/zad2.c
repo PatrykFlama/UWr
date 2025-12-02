@@ -9,7 +9,7 @@
 #include "i2c.h"
 
 #define EEPROM_ADDR 0x50
-#define PAGE_SIZE 16  // bajty
+#define PAGE_SIZE 16  // bytes
 
 void eeprom_read_sequential(uint16_t start_addr, uint8_t* buffer, uint16_t length) {
     // after reading a byte, sending ACK increments the internal address counter and continues reading

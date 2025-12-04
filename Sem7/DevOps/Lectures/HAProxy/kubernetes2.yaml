@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mapa-smokow
+data:
+  niedobory.txt: żelazo, siarka, węgiel
+  pomiary.txt: |
+    żelazo=0.1
+    siarka=0.5
+    węgiel=0.7
+    złoto=1
+  redukcja_wagi.txt: "3"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: moj-serwis-baza-cis
+spec:
+  selector:
+      app: baza-cis
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: moj-serwis-miniserve
+spec:
+  selector:
+      app: lekarz
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: baza-cisnienia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: baza-cis
+  template:
+    metadata:
+      labels:
+        app: baza-cis
+    spec:
+      containers:
+        - image: miniserve:20250907
+          name: miniserve
+          args:
+            - -u
+            - -U
+            - /mnt/baza
+            - --route-prefix=baza
+          volumeMounts:
+            - name: emptydir-baza
+              mountPath: /mnt/baza
+      volumes:
+        - name: emptydir-baza
+          emptyDir:
+
+
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lekarz-smokow
+spec:
+  replicas: 1
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: [lekarz]
+  template:
+    metadata:
+      labels:
+        app: lekarz
+    spec:
+      containers:
+        - image: miniserve:20250907
+          name: miniserve
+          args: [/mnt/wynikiBadan]
+          volumeMounts:
+            - name: wyniki-badan-config
+              mountPath: /mnt/wynikiBadan
+      volumes:
+        - name: wyniki-badan-config
+          configMap:
+            name: mapa-smokow
+            items:
+            - key: niedobory.txt
+              path: niedobory.txt
+            - key: pomiary.txt
+              path: pomiary.txt
+            - key: redukcja_wagi.txt
+              path: redukcja_wagi.txt
+

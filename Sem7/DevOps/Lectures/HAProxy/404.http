@@ -1,0 +1,12 @@
+HTTP/1.1 403 Not Found
+Cache-Control: no-cache
+Connection: close
+Content-Type: text/html; charset=utf-8
+
+<!DOCTYPE html>
+<html>
+   <body>
+      <h1>404 Not Found</h1>
+      <p>Zimnokrwisty smok pustynny był głodny i zjadł tę stronę!!!</p>
+   </body>
+</html>

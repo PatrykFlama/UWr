@@ -6,3 +6,4 @@
 *.map
 *.srec
 *.elf
+List8/freertos_atmega328P

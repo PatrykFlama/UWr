@@ -15,7 +15,7 @@
 #define mainADC_TASK_PRIORITY 2
 #define mainBLINK_TASK_PRIORITY 1
 
-#define mainADC_STACK (configMINIMAL_STACK_SIZE + 64)
+#define mainADC_STACK (configMINIMAL_STACK_SIZE + 32)
 #define mainBLINK_STACK (configMINIMAL_STACK_SIZE)
 
 typedef struct {
@@ -139,7 +139,7 @@ static void adc_init() {
     xSemaphoreGive(uart_mutex);
 
     // ensure adc_done is empty
-    xSemaphoreTake(adc_done, 1);
+    xSemaphoreTake(adc_done, 0);
 
     // AVcc reference
     ADMUX = _BV(REFS0);

@@ -98,7 +98,7 @@ static void vSerialTask(void* pvParameters) {
             c = getchar();
 
             if (c == '\r' || c == '\n') {
-                putchar('\n');
+                putchar('\r\n');
                 break;
             }
 
@@ -113,9 +113,9 @@ static void vSerialTask(void* pvParameters) {
 
         if (value > 0 && value <= 100000) {
             xQueueSend(queue, &value, portMAX_DELAY);
-            printf("OK\r\nEnter ms: ");
+            printf("\r\nOK\r\nEnter ms: ");
         } else {
-            printf("ERR\r\nEnter ms: ");
+            printf("\r\nERR\r\nEnter ms: ");
         }
     }
 }

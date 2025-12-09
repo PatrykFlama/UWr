@@ -207,3 +207,26 @@ ___
 
 koncept dodatkowej redundancji przy 2 kontenerach nginx: stawiamy jeden 'zapasowy', sprawdzają się one nawzajem - czy ten drugi żyje, jeżeli master przestał odpowiadać to slave przejmuje jego ip oraz działanie (pokazuje na nie inny nginx, reverse proxy https)
 
+
+# IaC and stuff
+## Ansible
+automation / configuration management  
+
+## IPXE
+bootowanie z interfejsu sieciowego
+
+ipxe.org
+
+> 'make linux fast again' - strona wyłączająca w kernelu moduły bezpieczeństwa, ale przyspieszająca (zauważalnie 30%-40%) linuxa  
+> pakiet z mikrokodem np patchuje rzeczy w środowisku kernela, aby dalej był bezpieczny (ale wolniejszy)
+
+## Backupy
+
+
+
+
+
+
+
+
+

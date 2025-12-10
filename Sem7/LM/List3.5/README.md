@@ -1,7 +1,7 @@
 # List 3.5
-| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10*| 11*|
 |---|---|---|---|---|---|---|---|---|----|----|
-| x | x | x |   | x |   |   |   |   |    |    |
+| x | x | x |   | x | x |   |   |   |    |    |
 
 
 ## Zad 1
@@ -52,5 +52,29 @@ Będziemy polegać na korpusie przysłów - będziemy chcieli znaleźć pasując
 Aby znaleźć pasujące przysłowie, możemy skorzystać z osadzeń kontekstów (z papugi, lub TF-IDF) i znaleźć najbliższe przysłowie do pytania (np  podobieństwo cosinusowe).  
 
 
+## Zad 6
+The WIKI_SEARCH baseline solution uses the question as a query to Wikipedia search service and returns the title of the first returned article as an answer, as long as it doesn’t overlap with the question.
+
+Specifically, the following procedure is used:
+
+1. Split the question into tokens using spaCy (model pl_core_news_sm) and ignore the one-character tokens,
+2. Send the space-separated tokens as a query to the Search API of the Polish Wikipedia,
+3. For each of the returned articles:
+   1. Split its title into tokens with spaCy,
+   2. If none of the tokens of the title has at least 50% overlap (measured as in Evaluation) with any of the tokens of the question:
+      1. remove the part of the title starting from ‘(‘, if found
+      2. return the title as an answer,
+   3. Otherwise, continue to the next result,
+4. If no answer is found at this point, remove the first of the question tokens and jump back to (2).
+
+
+Dlaczego może to działać?  
+- pytania dotyczą wiedzy ogólnej/faktów - Wikipedia jest dobrym źródłem takich informacji
+- silnik wyszukiwania Wikipedii jest zoptymalizowany pod kątem znajdowania artykułów odpowiadających zapytaniom użytkowników
+- unikamy artykułów, które dotyczą bardziej samego pytania, niż odpowiedzi
+
+Sensowna korekta:
+- wybieramy kilka pasujących odpowiedzi i każdą testujemy modelem językowym (wybieramy najbardziej prawdopodobną)
+- zamiast ignorować jednowyrazowe tokeny, możemy ignorować `stop words` - aby zapytanie było bardziej informacyjne
 
 

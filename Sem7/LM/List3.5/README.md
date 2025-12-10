@@ -1,7 +1,7 @@
 # List 3.5
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|----|----|
-| x |   |   |   |   |   |   |   |   |    |    |
+| x | x | x |   |   |   |   |   |   |    |    |
 
 
 ## Zad 1
@@ -33,6 +33,21 @@ Koncept algorytmu:
 Będziemy chcieli połączyć słowa o podobnym znaczeniu - przeprowadzimy więc klasteryzację wektorów kontekstów (cosinusowe podobieństwo).  
 Następnie przypiszemy każdemu słowu etykietę klastra, do którego należy jego wektor kontekstów.  
 Możemy zastosować klasteryzację K-means.
+
+
+## Zad 3
+a) przykłady negatywne losowane z całego korpusu  
+b) przykłady negatywne to sąsiadujące zdania w odwróconej kolejności  
+
+
+- w (b) możemy porównać wiarygodności obu permutacji - i wybrać najlepszą
+- możemy potraktować papugę jako enkoder całego tekstu (np bierzemy reprezentację ostatniego tokena po przepuszczeniu przez papugę) - na podstawie tego enkodera wytrenować klasyfikator binarny
+- w wariancie (a), aby zdeterminować czy zdania mogły wystąpić koło siebie, możemy policzyć TF-IDF obu zdań i sprawdzić ich podobieństwo cosinusowe
+
+
+## Zad 4
+
+
 
 
 

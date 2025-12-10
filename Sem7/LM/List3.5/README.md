@@ -1,7 +1,7 @@
 # List 3.5
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10*| 11*|
 |---|---|---|---|---|---|---|---|---|----|----|
-| x | x | x |   | x | x |   |   |   |    |    |
+| x | x | x |   | x | x |   | x |   |    |    |
 
 
 ## Zad 1
@@ -78,3 +78,10 @@ Sensowna korekta:
 - zamiast ignorować jednowyrazowe tokeny, możemy ignorować `stop words` - aby zapytanie było bardziej informacyjne
 
 
+## Zad 7
+
+## Zad 8
+augmentacja danych z recenzjami za pomocą papugi:
+- każemy papudze parafrazować ("napisz tą recenzję innymi słowami")
+- każemy papudze napisać recenzję przeciwną do podanej ("napisz tą samą recenzję, ale pozytywną/negatywną")
+- zmiana długości recenzji ("napisz krótszą/dłuższą recenzję na ten sam temat")

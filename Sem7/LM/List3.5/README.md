@@ -1,7 +1,7 @@
 # List 3.5
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
 |---|---|---|---|---|---|---|---|---|----|----|
-| x | x | x |   |   |   |   |   |   |    |    |
+| x | x | x |   | x |   |   |   |   |    |    |
 
 
 ## Zad 1
@@ -47,6 +47,9 @@ b) przykłady negatywne to sąsiadujące zdania w odwróconej kolejności
 
 ## Zad 4
 
+## Zad 5
+Będziemy polegać na korpusie przysłów - będziemy chcieli znaleźć pasujące do pytania przysłowie oraz podać je do prompta modelu. 
+Aby znaleźć pasujące przysłowie, możemy skorzystać z osadzeń kontekstów (z papugi, lub TF-IDF) i znaleźć najbliższe przysłowie do pytania (np  podobieństwo cosinusowe).  
 
 
 

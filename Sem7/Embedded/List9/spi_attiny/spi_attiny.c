@@ -1,10 +1,12 @@
 #include <avr/io.h>
 #include <inttypes.h>
+#include <util/delay.h>
 
 void spi_init()
 {
-    // ustaw piny MOSI i SCK jako wyjścia
-    DDRA = _BV(DDA4) | _BV(DDA5);
+    // ustaw piny MOSI i SCK jako wyjścia, MISO jako wejście
+    DDRA |= _BV(DDA4) | _BV(DDA5);
+    DDRA &= ~_BV(DDA6);
     // ustaw USI w trybie trzyprzewodowym (SPI)
     USICR = _BV(USIWM0);
 }
@@ -30,7 +32,10 @@ int main()
     spi_init();
     uint8_t v = 0;
     while(1) {
-        spi_transfer(v++);
+        uint8_t received = spi_transfer(v);
+        v++;
+        // opóźnienie aby slave miał czas przetworzyć dane
+        _delay_ms(100);
     }
 }
 

@@ -1,50 +1,55 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <inttypes.h>
+#include <avr/sleep.h>
+#include <util/delay.h>
 
-volatile uint8_t slave_data = 0;
 
-void spi_slave_init() {
-    // MISO as input, rest as output
+// inicjalizacja SPI
+void spi_init()
+{
+    // ustaw piny MOSI, SCK i ~SS jako wyjścia
+    DDRB &= ~(_BV(DDB3) | _BV(DDD3) | _BV(DDB2));
+
+    // miso jako wejścir
     DDRB |= _BV(DDB4);
-    DDRB &= ~(_BV(DDB2) | _BV(DDB3) | _BV(DDB5));
-    // pull-up on SS
-    PORTB |= _BV(PB2);
-    // enable SPI in slave mode with interrupt
-    SPCR = _BV(SPE) | _BV(SPIE);
+
+    // spi w trybie slave
+    SPCR = _BV(SPE);
 }
 
-ISR(SPI_STC_vect) {
-    uint8_t received = SPDR;
-    // set LED based on received data
-    if (received) {
-        PORTB |= _BV(PB5);
-    } else {
-        PORTB &= ~_BV(PB5);
-    }
-    // prepare data to send (button state)
-    slave_data = (PIND & _BV(PD2)) ? 0 : 1;
-    SPDR = slave_data;
+// transfer jednego bajtu
+uint8_t spi_transfer(uint8_t data)
+{
+    // rozpocznij transmisję
+    SPDR = data;
+    // czekaj na ukończenie transmisji
+    while (!(SPSR & _BV(SPIF)));
+    // wyczyść flagę przerwania
+    SPSR |= _BV(SPIF);
+    // zwróć otrzymane dane
+    return SPDR;
 }
 
 int main() {
-    // LED (PB5) as output
-    DDRB |= _BV(DDB5);
+    // LED (PD3) as output
+    DDRD |= _BV(DDD3);
     // button (PD2) as input with pull-up
     DDRD &= ~_BV(DDD2);
     PORTD |= _BV(PD2);
 
-    spi_slave_init();
-
-    // prepare first value to send
-    slave_data = (PIND & _BV(PD2)) ? 0 : 1;
-    SPDR = slave_data;
-
-    set_sleep_mode(SLEEP_MODE_IDLE);
-
-    sei();
+    spi_init();
 
     while (1) {
-        sleep_mode();
+        // read button state
+        uint8_t btn_state = (PIND & _BV(PD2)) ? 0 : 1;
+        // send button state via SPI and receive data
+        uint8_t received = spi_transfer(btn_state);
+        // set LED according to received data
+        if (received) {
+            PORTD |= _BV(PD3);
+        } else {
+            PORTD &= ~_BV(PD3);
+        }
     }
 }

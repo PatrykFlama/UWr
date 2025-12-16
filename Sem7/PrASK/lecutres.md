@@ -226,6 +226,93 @@ ipxe.org
 
 
 
+# Firewalle
+firewalle działają na warstwach 2-7 (OSI)
+
+> w zasadzie na warstwie 1 też mogą działać - odłączanie kabla  
+
+> firewall na warstwie 8 to fizyczna kontrola dostępu do serwerowni - ha ha ha
+
+
+czym się różni firewall od NAT? nie zmienia pakietów  
+
+firewalle dzielimy na stanowe (np trackowanie TCP - ruch established i related) i bezstanowe (bardzo ograniczone zastosowanie)
+
+np stanowy firewall może zapisać naszą sesję (pary ip-port źródłowy-docelowy)
+- related, gdy otwieramy sesję i dostajemy odpowiedź zwrotną
+- established, gdy mamy komunikację z ustanowionej sesji
+
+gdy odrzucamy pakiet (zamiast drop robimy reject) to głównie wysyłamy informację zwrotną korzystając z flagi rst (lub dla udp korzystamy z ICMP)
+
+
+firewall pakietów w kernelu - ich ścieżki rozróżniamy na: input, output i forward
+- jeżeli system wspiera forward, to z definicji jest routerem (i wtedy rzadko kiedy przyjmuje/generuje pakiety)
+- zazwyczaj host korzysta z input (output w standardowych konfiguracjach jest pomijany)
+
+![netfilter packet flow](https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Netfilter-packet-flow.svg/2560px-Netfilter-packet-flow.svg.png)
+
+
+## WAF
+są rzeczy które możemy takim klasycznym firewallem filtrować (np geolokalizacja, max 100 zapytań na sekundę, etc), ale są też takie jak np XSS - z którymi firewall do warstwy 6 sobie nie poradzi  
+ale firewalle działające na warstwie 7 potrafią zdekodować http - rozumieją co się dzieje w środku zapytania - 'deep packet inspection'  
+
+np jeżeli w zapytaniu siedzie 'DROP TABLE USERS' to możemy łatwo wykryć że coś jest nie tak, tkzw WAF (Web Application Firewall)
+
+> działa to podobnie jak antywirus - taki firewall patrzy na feedy, szuka patternów i blokuje jeżeli coś mu nie pasuje
+
+
+jak działa cloudflare? jak mamy serwer web'owy - to jest on narażony na czynniki zewnętrzny (powinien implemenować firewalle, WAF, zabezpieczenie przed DOS)  
+więc zamiast tego możemy się schować za cloudflare'em (blokujemy cały ruch zewnętrzny bezpośrednio do naszego ip), łączymy się np vpn do cloudflare'a - i tylko on ma prawo z nami rozmiaiać  
+cały ruch zewnętrzny idzie do cloudflare'a (który ma porządne warstwy zabezpieczeń), więc cały ruch który do nas idzie powinien być bezpieczny
+
+> cloudflare jest 'za' popularny - efekty awarii samego cloudflare'a
+
+
+## IDS, IPS - Intrusion Detection System, Intrusion Prevention System
+powiedzieliśmy sobie że firewall patrzy na pakiet i decyduje czy go przepuścić  
+
+np jeżeli z jakiegoś adresu IP dostaliśmy skan na wszystkie porty, a potem otrzymujemy od niego połączenie ssh - brzmi podejrzanie  
+
+**tutaj chcemy patrzeć na korelację**  
+
+
+- IDS - sprawdzamy i informujemy  
+- IPS - sprawdzamy i blokujemy
+
+
+## UTM
+UTM - koreluje rzeczy powiązane z firewallem, głęboką inspekcją pakietów, etc, z listą CVE
+
+> lista CVE - lista podatności
+
+jeżeli zaobserwuje że coś próbuje wykorzystać daną podatność, to blokuje ten atak
+
+
+
+## DMZ
+```
+WAN <--> <nasz router> <--> LAN
+            /\
+            ||
+            ||
+            \/
+           DMZ
+```
+
+
+strefa zdemilitaryzowana - znajduje się w niej nasz serwer, jest to podsieć która z założenia jest dostępna z zewnątrz  
+potrzebujemy do tego reguły firewalla, które odpowiednio blokują ruch aby utrzymać konfigurację bezpieczną (jest to sporo regułek)   
+
+
+zone based firewall - więc powstał koncept, gdzie dzielimy sobie naszą sieć na strefy (np internal, external, dmz) - reguły definiujemy strefami (a nie interfejsami), strefy mają przyisane liczby i ruch może iść tylko z liczby mniejszej do większej (+ jakieś wyjątki np ze strefy 3 (WAN) może iść ruch do LAN (1))  
+
+można to też wyciągnąć na poziom wyższy, gdzie zamiast stref myślimy o obiektach (strefa, interfejs, aplikacja, mac adres)  
+
+## ZTNA - zero trust network access
+wszystkich klientów traktujemy jako tych złych - z założenia każdy jest w wan i nie może ze sobą gadać
+
+wprowadzamy więc NAC - Network Access Control - który ustanawia połączenia z innymi urządzeniami w formie tunelów, tylko konkretne uprawnione połączenia są tworzone/zezwalane
+
 
 
 

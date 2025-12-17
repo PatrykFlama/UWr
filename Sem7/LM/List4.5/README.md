@@ -57,9 +57,23 @@ duża liczba tokenów
 
 
 ## Zad 7
-zasada bayesa: $P(A|B) = \frac{P(B|A)P(A)}{P(B)}$  
+zasada bayesa: 
+$$P(C_k|X) = \frac{P(X|C_k)P(C_k)}{P(X)}$$  
+
+co oznacza że  
+$$P(X|C_k) = P(x_1 | x_2, ..., x_n, C_k) P(x_2 | x_3, ..., x_n, C_k) ... P(x_n | C_k)$$
+
 naiwny klasyfikatorr bayesowski zakłada że cechy są niezależne warunkowo względem klasy:  
-$$P(C|F_1, F_2, ..., F_n) = \frac{P(C) \prod_{i=1}^{n} P(F_i|C)}{P(F_1, F_2, ..., F_n)}$$
+
+$$P(x_i | x_{i+1},...,x_n |  C_k) = P(x_i | C_k)$$
+
+więc
+
+$$P(X|C_k) = P(x_1 | C_k) P(x_2 | C_k) ... P(x_n | C_k)$$
+
+oraz
+
+$$P(C_k|X) = \frac{P(C_k) \prod_{i=1}^{n} P(x_i | C_k)}{P(X)} \propto P(C_k) \prod_{i=1}^{n} P(x_i | C_k)$$
 
 dlatego BERT jest lepszy:
 - jest on w stanie uchwycić zależności między cechami (słowami) w zdaniu

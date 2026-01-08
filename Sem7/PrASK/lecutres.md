@@ -316,4 +316,56 @@ wprowadzamy więc NAC - Network Access Control - który ustanawia połączenia z
 
 
 
+# Firewalle
+## Podsumowanie
+- iptables powoli są deprecowane
+- nftalbes generalnie są lepsze, mają wiele braków iptables naprawione - ale iptables są bardziej dojarzałym (i kompletnym) produktem
+
+> jednego z zadań na liście ćwiczeniowej 3 lata temu nie dało się zrobić, ale podobno zostało to już poprawione
+
+- w iptables utrzymywało się 2 osobne firewalle dla IPv4 i IPv6 (w nftables jest to lepiej rozwiązane)
+- setup ipset'u był ciężki w iptables, w nftables jest on wbudowany (ipset 'opis' tego czym jest pewien zbiór adresów)
+
+
+## NAT
+nat harping (nat pining) - gdy ktoś z WAN próbuje się przez NAT dostać 'z powrotem' do naszej sieci
+
+nat helpers, szczególnie przydatne do FTP - np w odpowiedzi protokołu, która powie na jakiem porcie odbędzie się przesyłanie plików, przejrzy ją i otworzy odpowieni port  
+> to nie to samo co UPnP - mamy usługę oczekującą że wszyscy z internetu będą w stanie się do nas dostać  
+> wysyłamy więc taką informację do routera, żeby otworzył on dany port (co wsm jest niebezpieczne - jak tylko ktoś się do nas dostanie to sobie otworzy wszystkie porty)
+
+
+## gdzie dać firewalle
+wyobraźmy sobie strukturę serwerów o maksymalnej redundancji sieciowej ([2 routery] --mesh--> [switche] --mesh--> [maszyny front] --mesh--> [maszyny back]  --mesh--> [bazy danych])  
+gdzie powinien być firewall? wszędzie. (jest to dyrektywa PCI-DSS)  
+dodatkowo w takiej konfiguracji warto mieć połączenia mTLS aby uwierzytelniać połączenia (żeby nikt będący jużw sieci się nie mógł podszyć pod maszynę)
+
+
+## Logi
+tworzymy osobną encję (architekturą może to byc maszyna, albo coś podobnego do wyżej) _loghost_ do której wszystkie maszyny będą logować  
+
+> shell shock - każdy użytkownik z dostępem do basha mógł ustawić zmienną środowiskową, która czasem była wywoływana z uprawnieniami roota  
+
+w sony, korzstając z log4j, podatność shell shock została wykorzystana aby postawić VPN na loghoście - który nie był zabezpieczony (z konceptu odcięty od świata zewnętrzenego)  
+wniosek - wszędzie zakładamy firewalla, warto też zabezpieczać output (nie tylko input)
+
+np dla loghosta w ogóle chcielibyśmy ograniczyć dostęp do internetu - możemy to zrobić za pomocą zwykłego forward proxy
+
+
+- ELK stack - log stash
+- Elastic search - baza danych
+- Kibana - prezentowanie danych
+
+
+
+
+
+
+
+
+
+
+
+
+
 

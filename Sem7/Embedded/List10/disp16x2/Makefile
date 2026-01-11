@@ -1,6 +1,6 @@
 
 PRG            = disp16x2
-OBJ            = ${PRG}.o
+OBJ            = ${PRG}.o ../hd44780/hd44780.o
 PROGRAMMER     = arduino
 PORT           = /dev/ttyUSB0
 MCU_TARGET     = atmega328p 

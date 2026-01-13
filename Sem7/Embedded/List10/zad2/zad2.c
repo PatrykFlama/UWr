@@ -19,10 +19,10 @@ static void lcd_upload_progress_chars() {
 		// CGRAM address: base = character << 3
 		LCD_WriteCommand(HD44780_CGRAM_SET | (character << 3));
         // write 8 block_rows of pattern (last one cursor position)
-		for (uint8_t r = 0; r < 7; r++) {
+		for (uint8_t r = 0; r < 8; r++) {
 			LCD_WriteData(block_rows[character]);
 		}
-        LCD_WriteData(0b00000); // cursor position as 0
+        // LCD_WriteData(0b00000); // cursor position as 0
 	}
 	// return to DDRAM addressing by setting any DDRAM address
 	LCD_GoTo(0, 0);

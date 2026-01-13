@@ -7,9 +7,9 @@
 #include "../../customlib/uart.c"
 
 // MOSFET gate on PB5 (OC1A)
-#define HEATER_DDR  DDRB
-#define HEATER_PORT PORTB
-#define HEATER_PIN  (1 << PB5)
+#define HEATER_DDR  DDRC
+#define HEATER_PORT PORTC
+#define HEATER_PIN  (1 << PC1)
 
 // MCP9700 constants
 // Vout = Tc * Ta + V0
@@ -74,8 +74,8 @@ void controller_update(int16_t current_temp) {
 
 void command_handler() {
     printf("Commands:\n\r");
-    printf("  T<value> - Set target temp (e.g., T25 for 25°C)\n\r");
-    printf("  H<value> - Set hysteresis (e.g., H1 for 1°C)\n\r");
+    printf("  T<value> - Set target temp\n\r");
+    printf("  H<value> - Set hysteresis\n\r");
 
     char line[32];
     uart_readline(line, sizeof(line));

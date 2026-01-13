@@ -51,8 +51,8 @@ int main() {
 	while (1) {
 		int ch = getchar();
 
-        if (ch == '\r') continue;
-		if (ch == '\n') {
+        // if (ch == '\r') continue;
+		if (ch == '\n' || ch == '\r') {
 			scroll_up(lines);
 			cursor_row = 1;
 			cursor_col = 0;

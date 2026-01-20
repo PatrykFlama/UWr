@@ -18,9 +18,9 @@
 
 // ADC na kanale ADC0 (PC0) - potencjometr
 static void adc_init() {
-    ADMUX = _BV(REFS0);                                 // AVcc jako referencja, ADC0
-    DIDR0 = _BV(ADC0D);                                 // wyłącz wejście cyfrowe na ADC0
-    ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1);       // włącz ADC, preskaler 64
+    ADMUX = _BV(REFS0);                                 // AVcc as ref, ADC0 (PC0)
+    DIDR0 = _BV(ADC0D);                                 // disable digital input on ADC0
+    ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0);  // enable ADC, prescaler 128 (125 kHz)
 }
 
 static uint16_t adc_read() {

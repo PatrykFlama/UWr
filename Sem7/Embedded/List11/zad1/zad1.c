@@ -15,7 +15,7 @@
 static void adc_init() {
     ADMUX = _BV(REFS0);                                 // AVcc as ref, ADC0 (PC0)
     DIDR0 = _BV(ADC0D);                                 // disable digital input on ADC0
-    ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1);       // enable ADC, prescaler 64 (125 kHz)
+    ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0);  // enable ADC, prescaler 128 (125 kHz)
 }
 
 static uint16_t adc_read() {
@@ -48,7 +48,7 @@ int main() {
     
     while (1) {
         uint16_t adc_value = adc_read();
-        
+
         // przeskaluj na zakres PWM (0..PWM_TOP)
         // OCR1A = (adc_value * PWM_TOP) / 1023
         uint16_t duty = (uint16_t)(((uint32_t)adc_value * (uint32_t)PWM_TOP) / 1023UL);

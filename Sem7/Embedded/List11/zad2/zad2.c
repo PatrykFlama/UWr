@@ -24,19 +24,18 @@ static volatile uint8_t adc_ready = 0;       // flaga gotowych pomiarów
 
 // inicjalizacja ADC na kanale ADC0 (PC0) do odczytu potencjometru
 static void adc_init() {
-    ADMUX = _BV(REFS0);                                 // AVcc jako referencja, ADC0 (PC0)
-    DIDR0 = _BV(ADC0D) | _BV(ADC1D);                    // wyłącz wejścia cyfrowe na ADC0 i ADC1
-    ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1);       // włącz ADC, preskaler 64 (125 kHz)
+    ADMUX = _BV(REFS0);                                 // AVcc as ref, ADC0 (PC0)
+    DIDR0 = _BV(ADC0D) | _BV(ADC1D);                    // disable digital input on ADC0 and ADC1
+    ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0);  // enable ADC, prescaler 128 (125 kHz)
 }
 
 // odczyt z ADC0 (potencjometr)
-static uint16_t adc_read() {
-    ADMUX = _BV(REFS0);             // ADC0
-    _delay_us(10);
-    ADCSRA |= _BV(ADSC);            // rozpocznij konwersję
-    while (ADCSRA & _BV(ADSC));     // czekaj na zakończenie
-    ADCSRA |= _BV(ADIF);            // wyczyść flagę
-    return ADC;                     // zwróć wartość 0..1023
+static uint16_t adc0_read() {
+    ADMUX = _BV(REFS0); // ADC0 (PC0)
+    ADCSRA |= _BV(ADSC);
+    while (ADCSRA & _BV(ADSC));
+    ADCSRA |= _BV(ADIF);
+    return ADC;
 }
 
 // inicjalizacja Timer1 jako Phase and Frequency Correct PWM
@@ -55,14 +54,13 @@ static void pwm_init() {
     // początkowe wypełnienie 0 - silnik zatrzymany
     OCR1A = 0;
 
-    // włącz przerwania: CAPT (TOP) i OVF (BOTTOM)
+    // przerwania: CAPT (TOP) i OVF (BOTTOM)
     TIMSK1 = _BV(ICIE1) | _BV(TOIE1);
 }
 
 // odczyt z ADC1 (pomiary silnika)
 static uint16_t adc1_read() {
     ADMUX = _BV(REFS0) | _BV(MUX0); // ADC1 (PC1)
-    _delay_us(10);
     ADCSRA |= _BV(ADSC);
     while (ADCSRA & _BV(ADSC));
     ADCSRA |= _BV(ADIF);
@@ -72,22 +70,13 @@ static uint16_t adc1_read() {
 // przerwanie Input Capture (TOP) - tranzystor zamknięty
 // mierzymy SEM silnika (napięcie 5V - V_measured proporcjonalne do prędkości)
 ISR(TIMER1_CAPT_vect) {
-    // ustaw ADC1 i uruchom pomiar
-    ADMUX = _BV(REFS0) | _BV(MUX0); // ADC1
-    _delay_us(10);
-    ADCSRA |= _BV(ADSC);
-    while (ADCSRA & _BV(ADSC));
-    adc_at_top = ADC;
+    adc_at_top = adc1_read();
 }
 
 // przerwanie Overflow (BOTTOM) - tranzystor otwarty
 // mierzymy napięcie na tranzystorze (proporcjonalne do prądu/momentu)
 ISR(TIMER1_OVF_vect) {
-    // ustaw ADC1 i uruchom pomiar
-    ADMUX = _BV(REFS0) | _BV(MUX0); // ADC1
-    ADCSRA |= _BV(ADSC);
-    while (ADCSRA & _BV(ADSC));  // czekaj na wynik
-    adc_at_bottom = ADC;
+    adc_at_bottom = adc1_read();
     adc_ready = 1;  // oba pomiary gotowe
 }
 
@@ -98,13 +87,9 @@ int main() {
 
     sei();
 
-    printf("Phase & Frequency Correct PWM Motor Control\r\n");
-    printf("Potentiometer: ADC0 (PC0) | Motor: ADC1 (PC1)\r\n");
-    printf("Measuring back-EMF (speed) and current (torque)\r\n\r\n");
-
     while (1) {
         // odczytaj potencjometr i ustaw wypełnienie PWM
-        uint16_t pot_value = adc_read();
+        uint16_t pot_value = adc0_read();
         uint16_t duty = (uint16_t)(((uint32_t)pot_value * (uint32_t)PWM_TOP) / 1023UL);
         OCR1A = duty;
 
@@ -128,7 +113,7 @@ int main() {
         // gdy tranzystor otwarty, mierzymy spadek napięcia na Rds(on)
         uint32_t motor_current_mv = bottom_mv;
 
-        printf("PWM: %4u/%u | EMF(speed): %4lu mV | I(torque): %4lu mV\r\n",
+        printf("PWM: %4u/%u | speed: %4lu mV | torque: %4lu mV\r\n",
                duty, PWM_TOP, motor_emf_mv, motor_current_mv);
 
         _delay_ms(100);

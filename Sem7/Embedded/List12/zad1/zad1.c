@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-
 #include "../../customlib/uart.c"
 #include "../AVR221/IAR/pid.h"
 
@@ -13,35 +12,13 @@
 #define HEATER_PORT PORTC
 #define HEATER_PIN  (1 << PC1)
 
-// PWM on Timer0, OC0A (PD6)
-#define PWM_DDR  DDRD
-#define PWM_PORT PORTD
-#define PWM_PIN  (1 << PD6)
-
 // MCP9700 constants
 // Vout = Tc * Ta + V0
 // Ta = ambient; Tc = temperature coefficient
 #define TC 0.01f    // 10 mV/C
 #define V0 0.5f     // 500 mV at 0°C
 
-// Initial PID parameters (will be fine-tuned)
-// These are scaled by SCALING_FACTOR (128)
-#define PID_P   80   // Proportional
-#define PID_I   20   // Integral
-#define PID_D   30   // Derivative
-
-typedef struct {
-    int16_t target_temp;    // target temperature in 0.1°C units
-    pidData_t pid_data;
-    uint16_t pwm_duty;
-} controller_t;
-
-controller_t ctrl = {300, {0}, 0};
-
-// ============================================================================
-// ADC Functions
-// ============================================================================
-
+// ADC 1.1V reference
 void adc_init() {
     // 1.1V internal reference and ADC0
     ADMUX = _BV(REFS1) | _BV(REFS0); // 1.1V internal ref
@@ -57,154 +34,142 @@ uint16_t adc_read() {
     return ADC;
 }
 
+// Convert ADC value to temperature in 0.1°C units
 int16_t adc_to_temp(uint16_t adc_val) {
     return (int16_t)(((adc_val * 1.1f / 1024.0f) - V0) / TC * 10.0f);
 }
 
-// ============================================================================
-// PWM Control Functions
-// ============================================================================
-
-// PWM control for heater on Timer0, OC0A (PD6)
-// Using Fast PWM mode, ~976 Hz at 16 MHz with prescaler 64
-void pwm_init() {
-    PWM_DDR |= PWM_PIN;
+// Heater control with PWM (0-255)
+void heater_init() {
+    // PB1 (OC1A) for PWM output
+    DDRB |= _BV(PB1);
     
-    // Fast PWM mode, prescaler 64
-    // WGM0 = 011 (Fast PWM)
-    // COM0A = 10 (non-inverting)
-    // CS0 = 011 (prescaler 64)
-    TCCR0A = _BV(COM0A1) | _BV(WGM01) | _BV(WGM00);
-    TCCR0B = _BV(CS01) | _BV(CS00);
+    // Timer1 Fast PWM (8-bit), prescaler 8
+    // WGM1[3:0] = 0101 (8-bit Fast PWM)
+    // COM1A[1:0] = 10 (non-inverting)
+    // CS1[2:0] = 010 (prescaler 8)
+    TCCR1A = _BV(COM1A1) | _BV(WGM10);
+    TCCR1B = _BV(WGM12) | _BV(CS11);
     
-    // Start with PWM duty = 0
-    OCR0A = 0;
+    OCR1A = 0; // Initially off
 }
 
-void pwm_set(uint16_t duty) {
-    // Clamp duty to 0-255 (8-bit)
-    if (duty > 255) duty = 255;
-    if (duty < 0) duty = 0;
-    OCR0A = (uint8_t)duty;
-    ctrl.pwm_duty = duty;
+void heater_set_pwm(int16_t pwm_value) {
+    // Clamp to 0-255
+    if (pwm_value < 0) pwm_value = 0;
+    if (pwm_value > 255) pwm_value = 255;
+    OCR1A = pwm_value;
 }
 
-// ============================================================================
-// Temperature Controller Functions
-// ============================================================================
-
-int16_t controller_update(int16_t current_temp) {
-    int16_t pid_output = pid_Controller(ctrl.target_temp, current_temp, &ctrl.pid_data);
+void print_status(int16_t temp, int16_t target, uint8_t pwm) {
+    int int_part = temp / 10;
+    int frac_part = temp % 10;
+    if (frac_part < 0) frac_part = -frac_part;
     
-    // Clamp PID output to PWM range (0-255)
-    if (pid_output > 255) pid_output = 255;
-    if (pid_output < 0) pid_output = 0;
+    int target_int = target / 10;
+    int target_frac = target % 10;
     
-    pwm_set(pid_output);
-    return pid_output;
+    printf("T:%d.%d C->%d.%d C PWM:%3d%%\r",
+           int_part, frac_part,
+           target_int, target_frac,
+           (pwm * 100) / 255);
+    fflush(stdout);
 }
 
-void command_handler() {
+void print_help() {
     printf("\n\rCommands:\n\r");
-    printf("  T<value> - Set target temp (e.g., T25 for 25.0°C)\n\r");
-    printf("  P<value> - Set P factor (e.g., P80)\n\r");
-    printf("  I<value> - Set I factor (e.g., I20)\n\r");
-    printf("  D<value> - Set D factor (e.g., D30)\n\r");
-    printf("  R        - Reset PID integrator\n\r");
-
-    char line[32];
-    uart_readline(line, sizeof(line));
-
-    if (strlen(line) == 0) return;
-
-    char cmd = line[0];
-    switch (cmd) {
-        case 'T':
-        case 't': {
-            int val = atoi(&line[1]);
-            ctrl.target_temp = val * 10; // Convert to 0.1°C units
-            printf("Target temp set to %d.%d°C\n\r", val, 0);
-            break;
-        }
-        case 'P':
-        case 'p': {
-            int val = atoi(&line[1]);
-            ctrl.pid_data.P_Factor = val;
-            ctrl.pid_data.maxError = INT16_MAX / (val + 1);
-            printf("P factor set to %d\n\r", val);
-            break;
-        }
-        case 'I':
-        case 'i': {
-            int val = atoi(&line[1]);
-            ctrl.pid_data.I_Factor = val;
-            ctrl.pid_data.maxSumError = (INT32_MAX / 2) / (val + 1);
-            printf("I factor set to %d\n\r", val);
-            break;
-        }
-        case 'D':
-        case 'd': {
-            int val = atoi(&line[1]);
-            ctrl.pid_data.D_Factor = val;
-            printf("D factor set to %d\n\r", val);
-            break;
-        }
-        case 'R':
-        case 'r': {
-            pid_Reset_Integrator(&ctrl.pid_data);
-            printf("PID integrator reset\n\r");
-            break;
-        }
-        default:
-            printf("Unknown command. Send any character for help.\n\r");
-    }
+    printf("  T<value> - Set target temp (e.g., T30)\n\r");
+    printf("  P<val>   - Set P coefficient (e.g., P80)\n\r");
+    printf("  I<val>   - Set I coefficient (e.g., I10)\n\r");
+    printf("  D<val>   - Set D coefficient (e.g., D100)\n\r");
+    printf("  ?        - Show this help\n\r");
 }
-
-// ============================================================================
-// Main
-// ============================================================================
 
 int main() {
     uart_init();
     adc_init();
-    pwm_init();
+    heater_init();
 
     // Initialize PID controller
-    pid_Init(PID_P, PID_I, PID_D, &ctrl.pid_data);
-
-    printf("\n\r=== PID Temperature Controller ===\n\r");
-    printf("Send any character for help\n\r");
-
+    // P_Factor, I_Factor, D_Factor (these are multiplied by SCALING_FACTOR=128)
+    // Initial tuning: Kp=80, Ki=10, Kd=100
+    pidData_t pid_data;
+    pid_Init(80, 10, 100, &pid_data);
+    
+    int16_t target_temp = 300;  // 30.0°C in 0.1°C units
     uint16_t loop_count = 0;
 
+    printf("Temperature controller with PID initialized\n\r");
+    printf("Type '?' for help\n\r");
+
     while (1) {
+        // Read temperature
         uint16_t adc_val = adc_read();
-        int16_t temp_deciC = adc_to_temp(adc_val);
+        int16_t current_temp = adc_to_temp(adc_val);
 
-        controller_update(temp_deciC);
+        // Calculate PID output (-255 to 255 range, then map to 0-255 for PWM)
+        int16_t pid_output = pid_Controller(target_temp, current_temp, &pid_data);
+        
+        // Map PID output to PWM (0-255)
+        // PID output range is typically -255 to 255
+        int16_t pwm_value = pid_output / 2;  // Scale down to match typical ranges
+        if (pwm_value < 0) pwm_value = 0;
+        if (pwm_value > 255) pwm_value = 255;
+        
+        heater_set_pwm(pwm_value);
 
-        if (loop_count % 100 == 0) {
-            int int_part = temp_deciC / 10;
-            int frac_part = temp_deciC % 10;
-            if (frac_part < 0) frac_part = -frac_part;
-
-            int target_int = ctrl.target_temp / 10;
-            int target_frac = ctrl.target_temp % 10;
-
-            printf("Temp: %d.%d°C Target: %d.%d°C PWM: %3d Error: %d.%d°C\r",
-                   int_part, frac_part,
-                   target_int, target_frac,
-                   ctrl.pwm_duty,
-                   (temp_deciC - ctrl.target_temp) / 10,
-                   abs((temp_deciC - ctrl.target_temp) % 10));
-            fflush(stdout);
+        // Display status every ~100ms (100 * 10ms)
+        if (loop_count % 10 == 0) {
+            print_status(current_temp, target_temp, pwm_value);
         }
 
+        // Check for UART commands
         if (UCSR0A & _BV(RXC0)) {
-            command_handler();
+            uint8_t ch = UDR0;
+            
+            if (ch == '?') {
+                print_help();
+            } else if (ch == 'T' || ch == 't') {
+                printf("\n\rEnter target temp (°C): ");
+                fflush(stdout);
+                char line[10];
+                uart_readline(line, sizeof(line));
+                int val = atoi(line);
+                target_temp = val * 10;  // Convert to 0.1°C units
+                pid_Reset_Integrator(&pid_data);  // Reset integrator on setpoint change
+                printf("Target set to %d.%d°C\n\r", val, 0);
+            } 
+            else if (ch == 'P' || ch == 'p') {
+                printf("\n\rEnter P coefficient: ");
+                fflush(stdout);
+                char line[10];
+                uart_readline(line, sizeof(line));
+                int val = atoi(line);
+                pid_data.P_Factor = val;
+                printf("P set to %d\n\r", val);
+            }
+            else if (ch == 'I' || ch == 'i') {
+                printf("\n\rEnter I coefficient: ");
+                fflush(stdout);
+                char line[10];
+                uart_readline(line, sizeof(line));
+                int val = atoi(line);
+                pid_data.I_Factor = val;
+                pid_Reset_Integrator(&pid_data);  // Reset integrator on I change
+                printf("I set to %d\n\r", val);
+            }
+            else if (ch == 'D' || ch == 'd') {
+                printf("\n\rEnter D coefficient: ");
+                fflush(stdout);
+                char line[10];
+                uart_readline(line, sizeof(line));
+                int val = atoi(line);
+                pid_data.D_Factor = val;
+                printf("D set to %d\n\r", val);
+            }
         }
 
         loop_count++;
-        _delay_ms(10);  // 100 Hz control loop
+        _delay_ms(10);
     }
 }

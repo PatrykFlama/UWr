@@ -85,6 +85,54 @@ void print_help() {
     printf("  ?        - Show this help\n\r");
 }
 
+// Handle UART commands for temperature and PID tuning
+void handle_commands(int16_t *target_temp, pidData_t *pid) {
+    if (!(UCSR0A & _BV(RXC0))) return;
+    
+    uint8_t ch = UDR0;
+    
+    if (ch == '?') {
+        print_help();
+    } else if (ch == 'T' || ch == 't') {
+        printf("\n\rEnter target temp (°C): ");
+        fflush(stdout);
+        char line[10];
+        uart_readline(line, sizeof(line));
+        int val = atoi(line);
+        *target_temp = val * 10;  // Convert to 0.1°C units
+        pid_Reset_Integrator(pid);  // Reset integrator on setpoint change
+        printf("Target set to %d.%d°C\n\r", val, 0);
+    } 
+    else if (ch == 'P' || ch == 'p') {
+        printf("\n\rEnter P coefficient: ");
+        fflush(stdout);
+        char line[10];
+        uart_readline(line, sizeof(line));
+        int val = atoi(line);
+        pid->P_Factor = val;
+        printf("P set to %d\n\r", val);
+    }
+    else if (ch == 'I' || ch == 'i') {
+        printf("\n\rEnter I coefficient: ");
+        fflush(stdout);
+        char line[10];
+        uart_readline(line, sizeof(line));
+        int val = atoi(line);
+        pid->I_Factor = val;
+        pid_Reset_Integrator(pid);  // Reset integrator on I change
+        printf("I set to %d\n\r", val);
+    }
+    else if (ch == 'D' || ch == 'd') {
+        printf("\n\rEnter D coefficient: ");
+        fflush(stdout);
+        char line[10];
+        uart_readline(line, sizeof(line));
+        int val = atoi(line);
+        pid->D_Factor = val;
+        printf("D set to %d\n\r", val);
+    }
+}
+
 int main() {
     uart_init();
     adc_init();
@@ -124,50 +172,7 @@ int main() {
         }
 
         // Check for UART commands
-        if (UCSR0A & _BV(RXC0)) {
-            uint8_t ch = UDR0;
-            
-            if (ch == '?') {
-                print_help();
-            } else if (ch == 'T' || ch == 't') {
-                printf("\n\rEnter target temp (°C): ");
-                fflush(stdout);
-                char line[10];
-                uart_readline(line, sizeof(line));
-                int val = atoi(line);
-                target_temp = val * 10;  // Convert to 0.1°C units
-                pid_Reset_Integrator(&pid_data);  // Reset integrator on setpoint change
-                printf("Target set to %d.%d°C\n\r", val, 0);
-            } 
-            else if (ch == 'P' || ch == 'p') {
-                printf("\n\rEnter P coefficient: ");
-                fflush(stdout);
-                char line[10];
-                uart_readline(line, sizeof(line));
-                int val = atoi(line);
-                pid_data.P_Factor = val;
-                printf("P set to %d\n\r", val);
-            }
-            else if (ch == 'I' || ch == 'i') {
-                printf("\n\rEnter I coefficient: ");
-                fflush(stdout);
-                char line[10];
-                uart_readline(line, sizeof(line));
-                int val = atoi(line);
-                pid_data.I_Factor = val;
-                pid_Reset_Integrator(&pid_data);  // Reset integrator on I change
-                printf("I set to %d\n\r", val);
-            }
-            else if (ch == 'D' || ch == 'd') {
-                printf("\n\rEnter D coefficient: ");
-                fflush(stdout);
-                char line[10];
-                uart_readline(line, sizeof(line));
-                int val = atoi(line);
-                pid_data.D_Factor = val;
-                printf("D set to %d\n\r", val);
-            }
-        }
+        handle_commands(&target_temp, &pid_data);
 
         loop_count++;
         _delay_ms(10);

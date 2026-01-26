@@ -2,7 +2,7 @@
 PRG            = zad2
 OBJ            = ${PRG}.o pid.o
 PROGRAMMER     = arduino
-PORT           = /dev/ttyUSB0
+PORT           = /dev/ttyUSB3
 MCU_TARGET     = atmega328p 
 AVRDUDE_TARGET = atmega328p
 OPTIMIZE       = -O3

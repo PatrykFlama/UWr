@@ -2,6 +2,7 @@
 #include <avr/io.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <util/delay.h>
 
 #include "../../customlib/uart.c"
@@ -81,6 +82,44 @@ ISR(TIMER1_OVF_vect) {
     adc_ready = 1;  // oba pomiary gotowe
 }
 
+// Obsługa komend UART do dostrajania PID
+static void handle_pid_tuning(pidData_t *pid) {
+    if (!(UCSR0A & _BV(RXC0))) return;
+    
+    uint8_t ch = UDR0;
+    putchar('\n');
+    
+    if (ch == 'p' || ch == 'P') {
+        printf("P=");
+        char buf[10];
+        uart_readline(buf, sizeof(buf));
+        pid->P_Factor = atoi(buf);
+        printf("P set to %d\n\r", pid->P_Factor);
+    }
+    else if (ch == 'i' || ch == 'I') {
+        printf("I=");
+        char buf[10];
+        uart_readline(buf, sizeof(buf));
+        pid->I_Factor = atoi(buf);
+        pid_Reset_Integrator(pid);
+        printf("I set to %d\n\r", pid->I_Factor);
+    }
+    else if (ch == 'd' || ch == 'D') {
+        printf("D=");
+        char buf[10];
+        uart_readline(buf, sizeof(buf));
+        pid->D_Factor = atoi(buf);
+        printf("D set to %d\n\r", pid->D_Factor);
+    }
+    else if (ch == '?') {
+        printf("\nCommands:\n");
+        printf("  P - Set P coefficient (current: %d)\n", pid->P_Factor);
+        printf("  I - Set I coefficient (current: %d)\n", pid->I_Factor);
+        printf("  D - Set D coefficient (current: %d)\n", pid->D_Factor);
+        printf("  ? - Show this help\n\n");
+    }
+}
+
 int main() {
     uart_init();
     adc_init();
@@ -90,6 +129,9 @@ int main() {
     pid_Init(8, 1, 10, &pid_data);
 
     sei();
+
+    printf("Motor controller with PID - P=%d I=%d D=%d - Type '?' for help\r\n", 
+           pid_data.P_Factor, pid_data.I_Factor, pid_data.D_Factor);
 
     while (1) {
         // potencjometr jako target speed (0-1023)
@@ -135,6 +177,8 @@ int main() {
         printf("PWM:%4u/%u|EMF:%4lu mV|Cur:%4d|Tgt:%4d|PID:%5d\r",
                duty, PWM_TOP, motor_emf_mv, current_speed, target_speed, pid_output);
         fflush(stdout);
+
+        handle_pid_tuning(&pid_data);
 
         _delay_ms(100);
     }

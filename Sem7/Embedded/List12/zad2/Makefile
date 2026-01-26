@@ -1,6 +1,6 @@
 
 PRG            = zad2
-OBJ            = ${PRG}.o
+OBJ            = ${PRG}.o pid.o
 PROGRAMMER     = arduino
 PORT           = /dev/ttyUSB0
 MCU_TARGET     = atmega328p 
@@ -34,6 +34,12 @@ all: $(PRG).elf lst text
 
 $(PRG).elf: $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+pid.o: ../AVR221/IAR/pid.c ../AVR221/IAR/pid.h
+	$(CC) $(CFLAGS) -I../AVR221/IAR -c -o $@ ../AVR221/IAR/pid.c
+
+${PRG}.o: ${PRG}.c
+	$(CC) $(CFLAGS) -I../AVR221/IAR -c -o $@ ${PRG}.c
 
 clean:
 	rm -rf *.o $(PRG).elf *.eps *.png *.pdf *.bak *.hex *.bin *.srec

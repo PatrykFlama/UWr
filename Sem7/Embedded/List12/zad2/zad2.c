@@ -7,6 +7,7 @@
 #include <util/delay.h>
 
 #include "../../customlib/uart.c"
+#include "../AVR221/IAR/pid.h"
 
 // ============================================================================
 // Configuration
@@ -25,9 +26,6 @@
 
 // PID controller scaling
 #define SCALING_FACTOR  128
-#define MAX_INT         INT16_MAX
-#define MAX_LONG        INT32_MAX
-#define MAX_I_TERM      (MAX_LONG / 2)
 
 // Initial PID parameters for speed control
 #define PID_P   100
@@ -53,81 +51,8 @@ static uint16_t target_speed_mv = 2500;  // default: half speed
 // PID Data Structure
 // ============================================================================
 
-typedef struct PID_DATA {
-    int16_t lastProcessValue;
-    int32_t sumError;
-    int16_t P_Factor;
-    int16_t I_Factor;
-    int16_t D_Factor;
-    int16_t maxError;
-    int32_t maxSumError;
-} pidData_t;
-
 pidData_t pid_speed;
 uint16_t pwm_duty = 0;
-
-// ============================================================================
-// PID Controller Functions (from AVR221)
-// ============================================================================
-
-void pid_Init(int16_t p_factor, int16_t i_factor, int16_t d_factor, pidData_t *pid)
-{
-    pid->sumError = 0;
-    pid->lastProcessValue = 0;
-    pid->P_Factor = p_factor;
-    pid->I_Factor = i_factor;
-    pid->D_Factor = d_factor;
-    pid->maxError = MAX_INT / (pid->P_Factor + 1);
-    pid->maxSumError = MAX_I_TERM / (pid->I_Factor + 1);
-}
-
-int16_t pid_Controller(int16_t setPoint, int16_t processValue, pidData_t *pid_st)
-{
-    int16_t error, p_term, d_term;
-    int32_t i_term, ret, temp;
-
-    error = setPoint - processValue;
-
-    // Calculate P term
-    if (error > pid_st->maxError) {
-        p_term = MAX_INT;
-    } else if (error < -pid_st->maxError) {
-        p_term = -MAX_INT;
-    } else {
-        p_term = pid_st->P_Factor * error;
-    }
-
-    // Calculate I term with anti-windup
-    temp = pid_st->sumError + error;
-    if (temp > pid_st->maxSumError) {
-        i_term = MAX_I_TERM;
-        pid_st->sumError = pid_st->maxSumError;
-    } else if (temp < -pid_st->maxSumError) {
-        i_term = -MAX_I_TERM;
-        pid_st->sumError = -pid_st->maxSumError;
-    } else {
-        pid_st->sumError = temp;
-        i_term = pid_st->I_Factor * pid_st->sumError;
-    }
-
-    // Calculate D term
-    d_term = pid_st->D_Factor * (pid_st->lastProcessValue - processValue);
-    pid_st->lastProcessValue = processValue;
-
-    ret = (p_term + i_term + d_term) / SCALING_FACTOR;
-    if (ret > MAX_INT) {
-        ret = MAX_INT;
-    } else if (ret < -MAX_INT) {
-        ret = -MAX_INT;
-    }
-
-    return (int16_t)ret;
-}
-
-void pid_Reset_Integrator(pidData_t *pid_st)
-{
-    pid_st->sumError = 0;
-}
 
 // ============================================================================
 // ADC Functions
@@ -272,7 +197,7 @@ void command_handler() {
         case 'p': {
             int val = atoi(&line[1]);
             pid_speed.P_Factor = val;
-            pid_speed.maxError = MAX_INT / (val + 1);
+            pid_speed.maxError = INT16_MAX / (val + 1);
             printf("P factor set to %d\n\r", val);
             break;
         }
@@ -280,7 +205,7 @@ void command_handler() {
         case 'i': {
             int val = atoi(&line[1]);
             pid_speed.I_Factor = val;
-            pid_speed.maxSumError = MAX_I_TERM / (val + 1);
+            pid_speed.maxSumError = (INT32_MAX / 2) / (val + 1);
             printf("I factor set to %d\n\r", val);
             break;
         }

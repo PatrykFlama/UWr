@@ -72,9 +72,9 @@ void print_status(int16_t temp, int16_t target, uint8_t pwm) {
     int target_int = target / 10;
     int target_frac = target % 10;
     
-    printf("T:%d.%d C->%d.%d C PWM:%3d%%\r",
-           int_part, frac_part,
-           target_int, target_frac,
+    printf("T:%d C->%d C PWM:%3d%%\r",
+           int_part, 
+           target_int, 
            (pwm * 100) / 255);
     fflush(stdout);
 }
@@ -88,7 +88,6 @@ void print_help() {
     printf("  ?        - Show this help\n\r");
 }
 
-// handle commands
 void handle_commands(int16_t *target_temp, pidData_t *pid) {
     if (!(UCSR0A & _BV(RXC0))) return;
     
@@ -142,15 +141,13 @@ int main() {
     heater_init();
 
     // init PID controller
-    // P_Factor, I_Factor, D_Factor (these are multiplied by SCALING_FACTOR=128)
+    // P_Factor, I_Factor, D_Factor
     pidData_t pid_data;
     pid_Init(80, 10, 100, &pid_data);
-    
+
     int16_t target_temp = 300;  // 30.0C in 0.1C units
     uint16_t loop_count = 0;
 
-    printf("Temperature controller with PID initialized\n\r");
-    printf("Type '?' for help\n\r");
 
     while (1) {
         // read temperature

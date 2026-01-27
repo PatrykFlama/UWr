@@ -130,7 +130,7 @@ int main() {
 
     sei();
 
-    printf("Motor controller with PID - P=%d I=%d D=%d - Type '?' for help\r\n", 
+    printf("Motor controller with PID - P=%d I=%d D=%d\r\n", 
            pid_data.P_Factor, pid_data.I_Factor, pid_data.D_Factor);
 
     while (1) {
@@ -154,7 +154,7 @@ int main() {
         // gdy tranzystor zamknięty (TOP), mierzymy napięcie między silnikiem a masą
         uint32_t motor_emf_mv = VREF_MV - top_mv;
 
-        // Prąd silnika: napięcie na tranzystorze (BOTTOM)
+        // prąd silnika: napięcie na tranzystorze (BOTTOM)
         uint32_t motor_current_mv = bottom_mv;
 
         // motor_emf_mv (0-5000mV) na current_speed (0-1023)

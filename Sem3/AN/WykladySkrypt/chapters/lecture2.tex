@@ -1,0 +1,26 @@
+\section{Błąd bezwzględny i bład względny}
+
+Weźmy liczby:
+$$x = 1.23456789 \quad \tilde{x} = 1.2345679$$
+$$y = 10^{50}+1 \quad \tilde{y} = 10^{50}$$
+
+Wtedy błąd bezwzględny to:
+$$|x-\tilde{x}| = 10^{-8} \quad |y-\tilde{y}| = 1$$
+
+Błąd względny to:
+$$\frac{|x-\tilde{x}|}{|x|} = 0.8 \cdot 10^{-8} \quad \frac{|y-\tilde{y}|}{|y|} = 10^{-50}$$
+
+Błąd względny jest lepszą miarą błędu.
+
+Dodatkowo zdefiniujmy liczbę cyfr dokładnych:
+$$acc(v, \tilde{v}) = -\log_{10} \left( \middle|1 - \frac{\tilde{v}}{v} \middle| \right)$$
+
+Wtedy:
+$$acc(x, \tilde{x}) \approx 8.091 \quad acc(y, \tilde{y}) = 50$$
+
+
+\section{Reprezentacja liczb w komputerze}
+Potrafimy reprezentować wszystkie liczby całkowite z pewnego zakresu, ale nie potrafimy reprezentować wszystkich liczb rzeczywistych. Dlatego musimy wybrać pewną reprezentację, która będzie przybliżać liczby rzeczywiste.
+
+
+

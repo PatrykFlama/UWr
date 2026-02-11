@@ -1,0 +1,201 @@
+
+\textbf{Powtórka.}
+\begin{itemize}
+\item punkty $(E^d)$ i wektory $(\mathbb{R}^d)$,
+\item kombinacje barycentryczne i wypukłe,
+\item wielomiany Bernsteina oraz krzywe Béziera,
+\item algorytm de Casteljau ($O(n^2)$).
+\end{itemize}
+
+\section{Idea aproksymacji}
+
+Mamy obserwacje (``chmurę'' punktów) i chcemy dobrać funkcję z ustalonego modelu tak, aby była do nich możliwie bliska.
+
+\begin{center}
+\begin{tikzpicture}[x=1.0cm,y=1.0cm,>=Latex]
+  \draw[->] (-0.2,0) -- (8.2,0);
+  \draw[->] (0,-0.2) -- (0,3.0);
+  \draw[thick,red] plot[smooth] coordinates {(0.4,0.6) (1.2,1.2) (2.1,1.7) (3.0,2.0) (3.9,2.2) (4.8,2.4) (5.8,2.55)};
+  \foreach \x/\y in {0.4/0.62,0.9/0.95,1.6/1.35,2.2/1.72,2.8/1.92,3.5/2.08,4.1/2.21,4.9/2.33,5.4/2.49,6.0/2.58} {
+    \fill[green!60!black] (\x,\y) circle (0.8pt);
+  }
+  \node at (6.2,2.85) {\footnotesize obserwacje + model};
+\end{tikzpicture}
+\end{center}
+
+\section{Dyskretna norma średniokwadratowa}
+
+Niech ustalone będą liczby $x_0<x_1<\dots<x_N$ i funkcja $f$ określona w tych punktach.
+Definiujemy dyskretną normę:
+$$
+\|f\|_2:=\sqrt{\sum_{k=0}^{N}\big(f(x_k)\big)^2}.
+$$
+
+Odległość funkcji:
+$$
+\|f-g\|_2=\sqrt{\sum_{k=0}^{N}\big(f(x_k)-g(x_k)\big)^2}.
+$$
+
+\textbf{Uwaga (motywacja).}
+W praktyce nie definiujemy ``najlepszego dopasowania'' przez normę jednostajną
+$$
+\max_{x\in[a,b]}|f(x)-g(x)|,
+$$
+bo prowadzi to zwykle do trudnego numerycznie zadania minimaksowego.
+W tej części używamy normy dyskretnej średniokwadratowej.
+
+\textbf{Własności normy $\|\cdot\|_2$:}
+\begin{itemize}
+\item $\|f\|_2\ge 0$, a $\|f\|_2=0 \Leftrightarrow f(x_k)=0$ dla wszystkich $k$,
+\item $\|\alpha f\|_2=|\alpha|\,\|f\|_2$,
+\item $\|f+g\|_2\le \|f\|_2+\|g\|_2$.
+\end{itemize}
+
+\section{Zadanie aproksymacji}
+
+Dla danej funkcji $f$ (określonej w $x_0,\dots,x_N$) i ustalonego modelu $\mathcal{X}$ szukamy elementu optymalnego $w^\ast\in\mathcal{X}$:
+$$
+\|f-w^\ast\|_2=\min_{w\in\mathcal{X}}\|f-w\|_2
+=\min_{w\in\mathcal{X}}\sqrt{\sum_{k=0}^{N}\big(f(x_k)-w(x_k)\big)^2}.
+$$
+
+\section{Model jednoparametrowy: funkcje stałe}
+
+Niech
+$$
+\mathcal{X}=\{a:\ a\in\mathbb{R}\}=\Pi_0,\qquad w(x)=a.
+$$
+Minimalizujemy
+$$
+E(a):=\sum_{k=0}^{N}\big(f(x_k)-a\big)^2.
+$$
+Warunek konieczny:
+$$
+E'(a)=0
+\quad\Longrightarrow\quad
+a^\ast=\frac{1}{N+1}\sum_{k=0}^{N}f(x_k)
+=\frac{1}{N+1}\sum_{k=0}^{N}y_k.
+$$
+
+Zatem element optymalny:
+$$
+w^\ast(x)=a^\ast.
+$$
+
+\section{Model jednoparametrowy: \texorpdfstring{$\{ax^2\}$}{ax^2}}
+
+Niech
+$$
+\mathcal{X}=\{ax^2:\ a\in\mathbb{R}\}.
+$$
+Minimalizujemy
+$$
+E(a)=\sum_{k=0}^{N}\big(f(x_k)-a x_k^2\big)^2.
+$$
+Z warunku $E'(a)=0$:
+$$
+a^\ast=\frac{\sum_{k=0}^{N}f(x_k)x_k^2}{\sum_{k=0}^{N}x_k^4}.
+$$
+Wtedy
+$$
+w^\ast(x)=a^\ast x^2.
+$$
+
+\section{Model jednoparametrowy: \texorpdfstring{$\{ae^x\}$}{ae^x}}
+
+Niech
+$$
+\mathcal{X}=\{ae^x:\ a\in\mathbb{R}\}.
+$$
+Minimalizujemy
+$$
+E(a)=\sum_{k=0}^{N}\big(f(x_k)-a e^{x_k}\big)^2.
+$$
+Warunek $E'(a)=0$ daje:
+$$
+a^\ast=\frac{\sum_{k=0}^{N}f(x_k)e^{x_k}}{\sum_{k=0}^{N}e^{2x_k}}.
+$$
+Stąd
+$$
+w^\ast(x)=a^\ast e^x.
+$$
+
+\section{Model dwuparametrowy: prosta regresji}
+
+Niech
+$$
+\mathcal{X}=\{ax+b:\ a,b\in\mathbb{R}\}=\Pi_1.
+$$
+Minimalizujemy
+$$
+E(a,b)=\sum_{k=0}^{N}\big(f(x_k)-ax_k-b\big)^2.
+$$
+Warunki stacjonarności:
+$$
+\frac{\partial E}{\partial a}=0,\qquad \frac{\partial E}{\partial b}=0.
+$$
+Dają układ:
+$$
+\begin{cases}
+a\sum x_k^2+b\sum x_k=\sum x_k f(x_k),\\
+a\sum x_k+b(N+1)=\sum f(x_k).
+\end{cases}
+$$
+
+Oznaczając
+$$
+s_1:=\sum_{k=0}^{N}x_k,\quad
+s_2:=\sum_{k=0}^{N}x_k^2,\quad
+s_3:=\sum_{k=0}^{N}f(x_k),\quad
+s_4:=\sum_{k=0}^{N}x_k f(x_k),
+$$
+otrzymujemy
+$$
+a^\ast=\frac{(N+1)s_4-s_1s_3}{(N+1)s_2-s_1^2},
+\qquad
+b^\ast=\frac{s_2s_3-s_1s_4}{(N+1)s_2-s_1^2}.
+$$
+
+Wtedy
+$$
+w^\ast(x)=a^\ast x+b^\ast,
+$$
+czyli klasyczna prosta regresji liniowej.
+
+\section{Model ogólny}
+
+Niech
+$$
+\mathcal{X}=\left\{a_0g_0(x)+a_1g_1(x)+\dots+a_mg_m(x):\ a_0,\dots,a_m\in\mathbb{R}\right\},
+$$
+gdzie $g_0,\dots,g_m$ są ustalone (typowo $m+1\le N+1$).
+
+Szukamy minimum funkcji błędu
+$$
+E(a_0,\dots,a_m)=\sum_{k=0}^{N}\left(f(x_k)-\sum_{i=0}^{m}a_i g_i(x_k)\right)^2.
+$$
+Otrzymujemy układ równań normalnych:
+$$
+\frac{\partial E}{\partial a_i}=0,\qquad i=0,1,\dots,m.
+$$
+
+Rozwiązanie tego układu daje parametry optymalne i funkcję $w^\ast\in\mathcal{X}$.
+
+\section{Pochodne cząstkowe -- uwaga techniczna}
+
+Gdy model zależy od wielu parametrów, minimalizujemy funkcję błędu wielu zmiennych.
+Wtedy używamy pochodnych cząstkowych.
+
+\textbf{Przykład.}
+Dla
+$$
+F(x,y,z)=x^2y+z\cos(x)-4e^{2y+xz}
+$$
+mamy np.
+$$
+\frac{\partial F}{\partial x}=2xy-z\sin(x)-4e^{2y+xz}\,z,\qquad
+\frac{\partial F}{\partial z}=\cos(x)-4e^{2y+xz}\,x.
+$$
+
+\textbf{Fakt.}
+Jeśli funkcja wielu zmiennych ma ekstremum wewnętrzne, to jej wszystkie pochodne cząstkowe pierwszego rzędu zerują się w tym punkcie.

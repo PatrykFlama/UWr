@@ -3,7 +3,9 @@
 
 [(back)](../)
 # Numerical Analysis
+### [Script](./WykladySkrypt)
 
+___
 
 ### [List 1](./Lista1)
 ### [List 2](./Lista2)
@@ -32,6 +34,8 @@ ___
 [(wróć)](../)
 # **A**naliza **N**umeryczna
 ### [Skrypt](./WykladySkrypt)
+
+___
 
 ### [Lista 1](./Lista1)
 ### [Lista 2](./Lista2)

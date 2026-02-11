@@ -1,0 +1,173 @@
+
+\textbf{Powtórka z NIFS3.}
+\begin{itemize}
+\item Dla danych $(x_k,y_k)$, $k=0,\dots,n$, istnieje dokładnie jedna naturalna funkcja sklejana 3-go stopnia.
+\item Układ dla momentów jest trójprzekątniowy i można go rozwiązać w czasie $O(n)$.
+\item Splajny są praktyczne w grafice, ale dziś przechodzimy do krzywych Béziera.
+\end{itemize}
+
+\section{Oznaczenia i kombinacje wypukłe}
+
+\begin{itemize}
+\item $\mathbb{R}^d$ -- przestrzeń wektorów $d$-wymiarowych.
+\item $E^d$ -- punkty w przestrzeni $d$-wymiarowej (np. $E^2$ na płaszczyźnie).
+\end{itemize}
+
+Jeśli $W_i\in E^d$, $\alpha_i\in\mathbb{R}$ i
+$$
+\sum_{i=0}^{n}\alpha_i=1,
+$$
+to punkt
+$$
+\sum_{i=0}^{n}\alpha_i W_i\in E^d
+$$
+nazywamy kombinacją barycentryczną punktów $W_i$.
+
+Jeśli dodatkowo $\alpha_i\ge 0$, to jest to kombinacja wypukła i punkt należy do otoczki wypukłej zbioru $\{W_0,\dots,W_n\}$.
+
+\section{Wielomiany Bernsteina}
+
+Dla $n\in\mathbb{N}$ i $k=0,\dots,n$:
+$$
+B_k^n(t):=\binom{n}{k}t^k(1-t)^{n-k}.
+$$
+
+\textbf{Własności podstawowe.}
+\begin{itemize}
+\item $B_k^n(t)\ge 0$ dla $t\in[0,1]$.
+\item $\sum_{k=0}^{n}B_k^n(t)=1$.
+\item Rekurencja:
+$$
+B_k^n(t)=(1-t)B_k^{n-1}(t)+tB_{k-1}^{n-1}(t).
+$$
+\item Pochodna:
+$$
+\left(B_k^n\right)'(t)=n\left(B_{k-1}^{n-1}(t)-B_k^{n-1}(t)\right).
+$$
+\end{itemize}
+
+Wielomiany $B_0^n,\dots,B_n^n$ tworzą bazę przestrzeni $\Pi_n$:
+$$
+\operatorname{lin}\{B_0^n,\dots,B_n^n\}=\Pi_n.
+$$
+
+\section{Krzywa Béziera}
+
+Niech punkty kontrolne $W_0,\dots,W_n\in E^2$.
+Krzywa Béziera stopnia $n$ jest dana wzorem
+$$
+P_n(t)=\sum_{k=0}^{n}B_k^n(t)\,W_k,\qquad t\in[0,1].
+$$
+
+\textbf{Własności.}
+\begin{itemize}
+\item $P_n(0)=W_0$, $P_n(1)=W_n$.
+\item Dla $t\in[0,1]$ punkt $P_n(t)$ leży w otoczce wypukłej punktów kontrolnych.
+\item
+$$
+P_n'(0)=n(W_1-W_0),\qquad P_n'(1)=n(W_n-W_{n-1}).
+$$
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm,>=Latex]
+  % Punkty kontrolne (krzywa kubiczna)
+  \coordinate (w0) at (0.0,0.0);
+  \coordinate (w1) at (1.2,2.1);
+  \coordinate (w2) at (3.0,2.4);
+  \coordinate (w3) at (4.6,0.3);
+
+  % Konstrukcja de Casteljau dla t=1/3
+  \coordinate (q0) at (0.4,0.7);
+  \coordinate (q1) at (1.8,2.2);
+  \coordinate (q2) at (3.5333,1.7);
+  \coordinate (r0) at (0.8667,1.2);
+  \coordinate (r1) at (2.3778,2.0333);
+  \coordinate (p)  at (1.3704,1.4778);
+
+  % Wielokat kontrolny i krzywa
+  \draw[blue!60,thick] (w0)--(w1)--(w2)--(w3);
+  \draw[red!75!black,thick] (w0) .. controls (w1) and (w2) .. (w3);
+
+  % Poziomy de Casteljau
+  \draw[blue!55] (q0)--(q1)--(q2);
+  \draw[blue!55] (r0)--(r1);
+
+  % Punkty
+  \foreach \pt in {w0,w1,w2,w3,q0,q1,q2,r0,r1} {
+    \fill[blue!60] (\pt) circle (1.05pt);
+  }
+  \fill[blue!90!black] (p) circle (1.4pt);
+
+  % Etykiety
+  \node[above left]  at (w0) {$W_0$};
+  \node[above]       at (w1) {$W_1$};
+  \node[above]       at (w2) {$W_2$};
+  \node[right]       at (w3) {$W_3$};
+  \node[red!75!black] at (3.05,1.00) {$P_3(t)$};
+  \node[blue!90!black] at (1.55,0.90) {$P(1/3)$};
+  \draw[->,blue!70!black] (1.35,0.95) -- (p);
+\end{tikzpicture}
+\end{center}
+
+\section{Algorytm de Casteljau}
+
+Dla ustalonego $t\in[0,1]$ definiujemy:
+$$
+W_k^{(0)}:=W_k,\qquad k=0,\dots,n,
+$$
+$$
+W_k^{(i)}:=(1-t)W_k^{(i-1)}+tW_{k+1}^{(i-1)},
+\qquad i=1,\dots,n,\quad k=0,\dots,n-i.
+$$
+Wtedy
+$$
+P_n(t)=W_0^{(n)}.
+$$
+
+Koszt obliczeń punktu $P_n(t)$: $O(n^2)$.
+
+\begin{center}
+\begin{tikzpicture}[x=1.2cm,y=1.0cm,>=Latex]
+  \node (a0) at (0,0) {$W_0$};
+  \node (a1) at (1.2,0) {$W_1$};
+  \node (a2) at (2.4,0) {$W_2$};
+  \node (a3) at (3.6,0) {$W_3$};
+
+  \node (b0) at (0.6,-1.0) {$W_0^{(1)}$};
+  \node (b1) at (1.8,-1.0) {$W_1^{(1)}$};
+  \node (b2) at (3.0,-1.0) {$W_2^{(1)}$};
+
+  \node (c0) at (1.2,-2.0) {$W_0^{(2)}$};
+  \node (c1) at (2.4,-2.0) {$W_1^{(2)}$};
+
+  \node (d0) at (1.8,-3.0) {$W_0^{(3)}=P_3(t)$};
+
+  \draw[gray] (a0)--(a1)--(a2)--(a3);
+  \draw[gray] (b0)--(b1)--(b2);
+  \draw[gray] (c0)--(c1);
+
+  \draw[->] (a0) -- (b0);
+  \draw[->] (a1) -- (b0);
+  \draw[->] (a1) -- (b1);
+  \draw[->] (a2) -- (b1);
+  \draw[->] (a2) -- (b2);
+  \draw[->] (a3) -- (b2);
+
+  \draw[->] (b0) -- (c0);
+  \draw[->] (b1) -- (c0);
+  \draw[->] (b1) -- (c1);
+  \draw[->] (b2) -- (c1);
+
+  \draw[->] (c0) -- (d0);
+  \draw[->] (c1) -- (d0);
+\end{tikzpicture}
+\end{center}
+
+\section{Uwagi praktyczne}
+
+\begin{itemize}
+\item Krzywe Béziera są podstawowym narzędziem modelowania krzywych w grafice komputerowej.
+\item Punkty kontrolne sterują kształtem krzywej w intuicyjny sposób.
+\item Dla złożonych kształtów używa się łączenia wielu segmentów Béziera albo baz B-sklejanych.
+\end{itemize}

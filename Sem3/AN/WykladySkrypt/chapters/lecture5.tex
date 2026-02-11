@@ -1,0 +1,175 @@
+
+\textbf{Powtórka z wykładu 4.}
+\begin{itemize}
+\item Bisekcja: rząd zbieżności $p=1$.
+\item Newton: rząd zbieżności $p=2$ (lokalnie, przy spełnionych założeniach).
+\item Sieczne: rząd zbieżności $p\approx 1.618$.
+\end{itemize}
+
+\section{Postaci wielomianu}
+
+Oznaczenie:
+$$\Pi_n:=\{w\colon w \text{ jest wielomianem stopnia } \le n\}.$$
+
+\textbf{a) Postać naturalna (potęgowa).}
+Dla $w\in\Pi_n$:
+$$w(x)=\sum_{i=0}^{n} a_i x^i.$$
+
+\textbf{Schemat Hornera.}
+\[
+w(x)=(((a_nx+a_{n-1})x+a_{n-2})x+\dots+a_1)x+a_0.
+\]
+
+Algorytm:
+\[
+\begin{array}{l}
+w_n:=a_n,\\
+w_k:=w_{k+1}x+a_k,\quad k=n-1,n-2,\dots,0.
+\end{array}
+\]
+Wtedy $w(x)=w_0$. Koszt obliczeniowy: $O(n)$.
+
+\vspace{0.3cm}
+
+\textbf{b) Postać Newtona.}
+Niech $x_0,x_1,\dots,x_n$ będą ustalonymi punktami. Wtedy
+$$
+w(x)=\sum_{k=0}^{n} b_k P_k(x),
+$$
+gdzie
+$$
+P_0(x)=1,\qquad
+P_k(x)=\prod_{i=0}^{k-1}(x-x_i)\quad (k\ge 1).
+$$
+
+Czyli:
+$$
+w(x)=b_0+b_1(x-x_0)+b_2(x-x_0)(x-x_1)+\dots+b_n\prod_{i=0}^{n-1}(x-x_i).
+$$
+
+\textbf{Uogólniony schemat Hornera (dla postaci Newtona).}
+\[
+\begin{array}{l}
+w_n:=b_n,\\
+w_k:=w_{k+1}(x-x_k)+b_k,\quad k=n-1,n-2,\dots,0.
+\end{array}
+\]
+Wtedy $w(x)=w_0$.
+
+\vspace{0.3cm}
+
+\textbf{c) Postać Czebyszewa.}
+Wielomiany Czebyszewa definiujemy rekurencyjnie:
+$$T_0(x)=1,\qquad T_1(x)=x,\qquad T_k(x)=2xT_{k-1}(x)-T_{k-2}(x)\quad (k\ge 2).$$
+
+\textbf{Własności (podstawowe).}
+\begin{itemize}
+\item $T_k\in \Pi_k\setminus \Pi_{k-1}$.
+\item Dla $n\ge 1$: $T_n(x)=2^{n-1}x^n+\dots$
+\item Parzystość: $T_n(-x)=(-1)^nT_n(x)$.
+\item Dla $x\in[-1,1]$: $T_n(x)=\cos\!\big(n\arccos(x)\big)$.
+\item Wszystkie miejsca zerowe $T_n$ są rzeczywiste, pojedyncze i należą do $(-1,1)$.
+\item Dla $x\in[-1,1]$: $|T_n(x)|\le 1$.
+\item $\operatorname{lin}\{T_0,T_1,\dots,T_n\}=\Pi_n$.
+\end{itemize}
+
+Postać Czebyszewa wielomianu:
+$$
+w(x)=\frac12 c_0T_0(x)+c_1T_1(x)+\dots+c_nT_n(x)
+=\sum_{k=0}^{n}{}' c_kT_k(x),
+$$
+gdzie kreska przy sumie oznacza, że składnik dla $k=0$ jest liczony z czynnikiem $\frac12$.
+
+\textbf{Algorytm Clenshawa} (obliczanie wartości w postaci Czebyszewa, koszt $O(n)$):
+\[
+\begin{array}{l}
+B_{n+2}:=0,\quad B_{n+1}:=0,\\
+B_k:=2xB_{k+1}-B_{k+2}+c_k,\quad k=n,n-1,\dots,0.
+\end{array}
+\]
+Wtedy
+$$
+w(x)=\frac{B_0-B_2}{2}.
+$$
+
+\section{Interpolacja wielomianowa}
+
+Mamy dane pomiary:
+$$
+x_0,x_1,\dots,x_n\in\mathbb{R},\quad x_i\neq x_j\ (i\neq j),
+\qquad
+y_0,y_1,\dots,y_n\in\mathbb{R}.
+$$
+
+Szukamy wielomianu $L_n\in\Pi_n$ takiego, że
+$$
+L_n(x_k)=y_k,\qquad k=0,1,\dots,n.
+$$
+
+\begin{center}
+\begin{tikzpicture}[x=1.2cm,y=1cm,>=Latex]
+  \draw[->] (-0.2,0) -- (6.5,0) node[right] {$x$};
+  \draw[->] (0,-0.2) -- (0,3.2) node[above] {$y$};
+  \draw[thick,blue] plot[smooth] coordinates {(0.4,0.6) (1.2,2.0) (2.2,1.3) (3.1,2.4) (4.3,1.2) (5.8,2.2)};
+  \foreach \xx/\yy/\lab in {0.4/0.6/0,1.2/2.0/1,2.2/1.3/2,3.1/2.4/3,4.3/1.2/4,5.8/2.2/5} {
+    \fill (\xx,\yy) circle (1.3pt);
+    \draw[densely dashed,gray] (\xx,0)--(\xx,\yy);
+    \node[below] at (\xx,0) {$x_{\lab}$};
+  }
+  \node at (4.9,2.8) {$L_n(x)$};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Twierdzenie.}
+Zadanie interpolacyjne Lagrange'a ma zawsze dokładnie jedno rozwiązanie.
+
+\textbf{Postać Lagrange'a.}
+$$
+L_n(x)=\sum_{k=0}^{n}\lambda_k(x)\,y_k,
+$$
+gdzie
+$$
+\lambda_k(x):=\prod_{\substack{i=0\\ i\neq k}}^{n}\frac{x-x_i}{x_k-x_i},\qquad k=0,1,\dots,n.
+$$
+
+Własność bazowa:
+$$
+\lambda_k(x_i)=
+\begin{cases}
+1,& i=k,\\
+0,& i\neq k.
+\end{cases}
+$$
+
+\textbf{Przykład.}
+Niech $f(x)=e^x$, $n=3$, węzły:
+$$x_0=0,\quad x_1=0.2,\quad x_2=0.6,\quad x_3=0.8.$$
+
+Budujemy $L_3$ i przybliżamy $f(0.4)$.
+W zapisie z tablicy:
+$$
+L_3(x)=\lambda_0(x)y_0+\lambda_1(x)y_1+\lambda_2(x)y_2+\lambda_3(x)y_3,\qquad y_k=f(x_k).
+$$
+Otrzymane przybliżenie:
+$$
+L_3(0.4)\approx 1.49142,\qquad f(0.4)\approx 1.49182.
+$$
+Zatem błąd punktowy jest rzędu $10^{-3}$.
+
+\vspace{0.3cm}
+
+\textbf{Przykłady (jak na tablicy).}
+\begin{itemize}
+\item $f(x)=\sin(x)$, \quad
+$$x_k=\frac{2k\pi}{n},\qquad 0\le k\le n,\qquad n=1,\dots,15,$$
+i porównujemy z interpolantem $L_n(x)$.
+
+\item $f(x)=|x|$, \quad
+$$x_k=-1+\frac{2k}{n},\qquad 0\le k\le n,\qquad n=1,\dots,15,$$
+i obserwujemy jakość przybliżenia przez $L_n(x)$.
+
+\item $f(x)=x^6$, \quad
+$$x_k=-2+\frac{4k}{n},\qquad 0\le k\le n,\qquad n=1,\dots,6.$$
+Ponieważ $f\in\Pi_6$, dla $n\ge 6$ mamy dokładnie
+$$L_n(x)=x^6 \quad (\text{w szczególności } L_6(x)=x^6).$$
+\end{itemize}

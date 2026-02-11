@@ -1,0 +1,239 @@
+\textbf{Powtórka (z wykładu 10).}
+\begin{itemize}
+\item Szukamy $w_n^\ast\in \Pi_n$ minimalizującego błąd w normie dyskretnej:
+$$
+\|f-w_n^\ast\|_2=\min_{w\in\Pi_n}\|f-w\|_2.
+$$
+\item W bazie ortogonalnej $\{P_k\}$ mamy postać
+$$
+w_n^\ast(x)=\sum_{k=0}^{n} a_k P_k(x),
+\qquad
+ a_k=\frac{(f,P_k)_N}{(P_k,P_k)_N}.
+$$
+\item Współczynniki wyznaczamy projekcyjnie, jak w dyskretnym rozwinięciu Fouriera.
+\end{itemize}
+
+\section{Całki nieoznaczone i oznaczone -- przypomnienie}
+
+Dla pochodnej odwrotnej (funkcji pierwotnej):
+$$
+\int f(x)\,dx = F(x)+C,\qquad F'(x)=f(x).
+$$
+
+Przykłady:
+$$
+\int x^n\,dx=\frac{x^{n+1}}{n+1}+C\quad (n\neq -1),
+\qquad
+\int \frac{dx}{x}=\ln|x|+C,
+$$
+$$
+\int e^x\,dx=e^x+C,
+\qquad
+\int \cos x\,dx=\sin x+C,
+\qquad
+\int \frac{dx}{x^2+1}=\arctan x+C.
+$$
+
+Nie każda całka ma postać elementarną, np.
+$$
+\int e^{-x^2}\,dx,
+\qquad
+\int \frac{\sin x}{x}\,dx.
+$$
+
+Całka oznaczona:
+$$
+\int_a^b f(x)\,dx=F(b)-F(a),\qquad F'=f,
+$$
+co interpretujemy jako pole obszaru zorientowane pomiędzy wykresem i osią $OX$.
+
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm,>=Latex]
+  \draw[->] (-0.2,0) -- (6.6,0);
+  \draw[->] (0,-1.4) -- (0,2.0);
+  \draw[thick] plot[smooth] coordinates {(0.4,0.2) (1.2,1.0) (2.1,0.4) (2.9,-0.8) (3.8,-0.2) (4.6,1.1) (5.7,1.4)};
+  \draw[dashed] (0.4,0)--(0.4,0.2);
+  \draw[dashed] (5.7,0)--(5.7,1.4);
+  \node[below] at (0.4,0) {$a$};
+  \node[below] at (5.7,0) {$b$};
+  \node[right] at (5.8,1.4) {$f(x)$};
+\end{tikzpicture}
+\end{center}
+
+\section{Idea całkowania numerycznego}
+
+Jeśli $f$ jest trudna do scałkowania analitycznie, szukamy funkcji $g$ dobrze przybliżającej $f$ na $[a,b]$, takiej że
+$$
+\int_a^b f(x)\,dx\approx\int_a^b g(x)\,dx,
+$$
+a prawa strona daje się policzyć jawnie.
+
+\section{Kwadratury liniowe}
+
+\textbf{Definicja.}
+Kwadraturą liniową nazywamy wyrażenie
+$$
+Q_n(f):=\sum_{k=0}^{n} A_k^{(n)}\, f\big(x_k^{(n)}\big),
+$$
+gdzie $x_0^{(n)},\dots,x_n^{(n)}$ to węzły, a $A_0^{(n)},\dots,A_n^{(n)}$ to współczynniki kwadratury.
+
+\textbf{Zadanie.}
+Dobrać węzły i współczynniki tak, aby
+$$
+\int_a^b f(x)\,dx\approx Q_n(f)
+$$
+dla możliwie szerokiej klasy funkcji $f$.
+
+Mamy równanie z resztą:
+$$
+\int_a^b f(x)\,dx = Q_n(f)+R_n(f),
+$$
+gdzie $R_n(f)$ to błąd kwadratury.
+
+\section{Rząd kwadratury}
+
+\textbf{Definicja.}
+Mówimy, że kwadratura liniowa $Q_n$ ma rząd $r\in\mathbb N$, gdy:
+\begin{itemize}
+\item dla każdego $w\in\Pi_{r-1}$ zachodzi
+$$
+\int_a^b w(x)\,dx = Q_n(w),
+$$
+\item istnieje $v\in\Pi_r$ takie, że
+$$
+\int_a^b v(x)\,dx \neq Q_n(v).
+$$
+\end{itemize}
+
+\textbf{Uwaga.}
+Kwadratury chcemy konstruować tak, aby ich rząd był możliwie wysoki.
+
+\textbf{Twierdzenie.}
+$$
+\operatorname{rzad}(Q_n)\le 2n+2.
+$$
+
+\section{Kwadratura interpolacyjna}
+
+Niech $L_n\in\Pi_n$ będzie wielomianem interpolacyjnym funkcji $f$ w węzłach $x_0,\dots,x_n$:
+$$
+L_n(x_k)=f(x_k),\qquad k=0,1,\dots,n.
+$$
+W postaci Lagrange'a:
+$$
+L_n(x)=\sum_{k=0}^{n} f(x_k)\,\lambda_k(x),
+$$
+$$
+\lambda_k(x)=\prod_{\substack{i=0\\ i\ne k}}^{n}\frac{x-x_i}{x_k-x_i}.
+$$
+
+Po scałkowaniu:
+$$
+\int_a^b L_n(x)\,dx
+=\sum_{k=0}^{n}\left(\int_a^b\lambda_k(x)\,dx\right)f(x_k)
+=:\sum_{k=0}^{n}A_k f(x_k)=Q_n(f),
+$$
+czyli
+$$
+A_k=\int_a^b\lambda_k(x)\,dx.
+$$
+
+To jest właśnie kwadratura interpolacyjna.
+
+\textbf{Przypomnienie (błąd interpolacji).}
+Jeśli $f\in C^{n+1}[a,b]$, to dla $x\in[a,b]$:
+$$
+f(x)-L_n(x)=\frac{f^{(n+1)}(\eta_x)}{(n+1)!}\prod_{k=0}^{n}(x-x_k),
+\qquad \eta_x\in(a,b).
+$$
+Stąd po scałkowaniu:
+$$
+\int_a^b f(x)\,dx-\int_a^b L_n(x)\,dx
+=\frac{1}{(n+1)!}\int_a^b f^{(n+1)}(\eta_x)\prod_{k=0}^{n}(x-x_k)\,dx.
+$$
+
+\section{Przykład kwadratury interpolacyjnej}
+
+Dla $[a,b]=[0,1]$, $n=4$, węzły:
+$$
+x_0=0,\quad x_1=\frac13,\quad x_2=\frac12,\quad x_3=\frac23,\quad x_4=1.
+$$
+Dla tej siatki:
+$$
+A_0=A_4=\frac{11}{120},\qquad
+A_1=A_3=\frac{27}{40},\qquad
+A_2=-\frac{8}{15}.
+$$
+Zatem
+$$
+Q_4(f)=\frac{11}{120}f(0)+\frac{27}{40}f\!\left(\frac13\right)-\frac{8}{15}f\!\left(\frac12\right)+\frac{27}{40}f\!\left(\frac23\right)+\frac{11}{120}f(1).
+$$
+
+Dla $f(x)=\sin(\pi x)$:
+$$
+\int_0^1\sin(\pi x)\,dx=\frac{2}{\pi}\approx 0.6366,
+$$
+$$
+Q_4(f)=\frac{27\sqrt3}{40}-\frac{8}{15}\approx 0.6358.
+$$
+
+Dla $f(x)=e^{-x^2}$:
+$$
+\int_0^1 e^{-x^2}\,dx\approx 0.7468241,\qquad Q_4(f)\approx 0.746841.
+$$
+
+\section{Rząd a interpolacja}
+
+\textbf{Twierdzenie.}
+Kwadratura liniowa ma rząd co najmniej $n+1$ wtedy i tylko wtedy, gdy jest kwadraturą interpolacyjną.
+
+W szczególności dla kwadratur interpolacyjnych:
+$$
+n+1\le \operatorname{rzad}(Q_n)\le 2n+2.
+$$
+
+Pytanie naturalne: jak dobrać węzły i współczynniki, by osiągnąć rząd dokładnie $2n+2$?
+Odpowiedzią są kwadratury Gaussa.
+
+\section{Kwadratury Newtona--Cotesa}
+
+Bierzemy węzły równoodległe:
+$$
+x_k=a+kh,\qquad k=0,1,\dots,n,
+\qquad h:=\frac{b-a}{n}.
+$$
+
+Dla tych węzłów współczynniki kwadratury interpolacyjnej można zapisać jawnie:
+$$
+A_k=\frac{(-1)^{n-k}}{k!(n-k)!}\,h\int_0^n\prod_{\substack{j=0\\ j\ne k}}^{n}(t-j)\,dt,
+$$
+a ponadto zachodzi symetria
+$$
+A_k=A_{n-k}.
+$$
+
+\textbf{Fakt (rząd kwadratur Newtona--Cotesa).}
+\begin{itemize}
+\item dla $n$ parzystych: $\operatorname{rzad}(Q_n^{NC})=n+2$,
+\item dla $n$ nieparzystych: $\operatorname{rzad}(Q_n^{NC})=n+1$.
+\end{itemize}
+
+\section{Dwa klasyczne wzory NC}
+
+\textbf{Wzór trapezów} ($n=1$):
+$$
+Q_1^{NC}(f)=\frac{b-a}{2}\,[f(a)+f(b)].
+$$
+Reszta ma rząd $O(h^3)$ (dla $h=b-a$).
+
+\textbf{Wzór Simpsona} ($n=2$):
+$$
+Q_2^{NC}(f)=\frac{b-a}{6}\left[f(a)+4f\!\left(\frac{a+b}{2}\right)+f(b)\right],
+$$
+$$
+R_2^{NC}(f)=\frac{1}{90}h^5 f^{(4)}(\alpha),\qquad \alpha\in(a,b),
+$$
+co daje rząd $O(h^5)$.
+
+\textbf{Uwaga.}
+Na zdjęciu ze wzorem trapezów współczynnik przy dokładnej postaci reszty jest nieczytelny; zachowałem pewną informację o rzędzie błędu.

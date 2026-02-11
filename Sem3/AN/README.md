@@ -3,6 +3,8 @@
 
 [(back)](../)
 # Numerical Analysis
+
+
 ### [List 1](./Lista1)
 ### [List 2](./Lista2)
 ### [List 3](./Lista3)
@@ -29,6 +31,8 @@ ___
 
 [(wróć)](../)
 # **A**naliza **N**umeryczna
+### [Skrypt](./WykladySkrypt)
+
 ### [Lista 1](./Lista1)
 ### [Lista 2](./Lista2)
 ### [Lista 3](./Lista3)

@@ -1,0 +1,187 @@
+\textbf{Powtórka (z wykładu 11).}
+\begin{itemize}
+\item Kwadratura liniowa ma postać
+$$
+Q_n(f)=\sum_{k=0}^{n}A_k^{(n)}f\big(x_k^{(n)}\big).
+$$
+\item Rząd kwadratury:
+$$
+\operatorname{rzad}(Q_n)=r
+\iff
+\begin{cases}
+Q_n(w)=\displaystyle\int_a^b w(x)\,dx & \forall w\in\Pi_{r-1},\\
+\exists v\in\Pi_r:\ Q_n(v)\neq \displaystyle\int_a^b v(x)\,dx.
+\end{cases}
+$$
+\item Dla kwadratur interpolacyjnych:
+$$
+n+1\le \operatorname{rzad}(Q_n)\le 2n+2.
+$$
+\end{itemize}
+
+\section{Kwadratura interpolacyjna -- postać współczynników}
+
+Dla zadanych węzłów $x_0,\dots,x_n$ i bazy Lagrange'a $\lambda_k$:
+$$
+Q_n(f)=\sum_{k=0}^{n}A_k f(x_k),
+\qquad
+A_k=\int_a^b \lambda_k(x)\,dx,
+$$
+$$
+\lambda_k(x)=\prod_{\substack{i=0\\ i\ne k}}^{n}\frac{x-x_i}{x_k-x_i}.
+$$
+
+Dla węzłów równoodległych otrzymujemy kwadratury Newtona--Cotesa.
+
+\section{Kwadratury złożone -- idea}
+
+Dzielimy przedział całkowania na podprzedziały:
+$$
+a=t_0<t_1<\dots<t_n=b,
+\qquad
+\int_a^b f(x)\,dx=\sum_{k=0}^{n-1}\int_{t_k}^{t_{k+1}} f(x)\,dx.
+$$
+
+Na każdym małym przedziale stosujemy prostą kwadraturę (np. trapezy lub Simpsona), a następnie sumujemy.
+
+\begin{center}
+\begin{tikzpicture}[x=1.05cm,y=0.9cm,>=Latex]
+  \draw[->] (-0.2,0) -- (7.4,0);
+  \draw[->] (0,-0.2) -- (0,2.2);
+  \draw[thick] plot[smooth] coordinates {(0.2,0.7) (1.0,1.3) (1.8,1.1) (2.7,0.5) (3.6,1.0) (4.5,1.5) (5.5,1.3) (6.8,1.7)};
+  \foreach \x in {0.4,1.6,2.8,4.0,5.2,6.4} {
+    \draw[dashed] (\x,0) -- (\x,2.0);
+  }
+  \node[below] at (0.4,0) {$t_0$};
+  \node[below] at (6.4,0) {$t_n$};
+\end{tikzpicture}
+\end{center}
+
+\section{Złożony wzór trapezów}
+
+Niech siatka będzie równomierna:
+$$
+t_k=a+kh_n,\qquad h_n:=\frac{b-a}{n},\qquad k=0,1,\dots,n.
+$$
+
+Dla pojedynczego przedziału $[t_k,t_{k+1}]$:
+$$
+\int_{t_k}^{t_{k+1}} f(x)\,dx
+=\frac{h_n}{2}\big(f(t_k)+f(t_{k+1})\big)-\frac{h_n^3}{12}f''(\eta_k),
+\qquad \eta_k\in(t_k,t_{k+1}).
+$$
+
+Po zsumowaniu:
+$$
+\int_a^b f(x)\,dx=T_n(f)+R_n^T(f),
+$$
+$$
+T_n(f):=h_n\left[\frac{f(a)+f(b)}{2}+\sum_{k=1}^{n-1}f(t_k)\right],
+$$
+$$
+R_n^T(f)=-\frac{b-a}{12}h_n^2 f''(\xi),\qquad \xi\in(a,b),\quad f\in C^2[a,b].
+$$
+
+\textbf{Twierdzenie.}
+Jeśli $f\in C[a,b]$, to
+$$
+\lim_{n\to\infty}T_n(f)=\int_a^b f(x)\,dx.
+$$
+
+\section{Złożony wzór Simpsona}
+
+Dzielimy $[a,b]$ na parzystą liczbę podprzedziałów:
+$$
+n=2m,
+\qquad
+h_n=\frac{b-a}{n}.
+$$
+
+Dla każdej pary przedziałów $[t_{2k},t_{2k+2}]$:
+$$
+\int_{t_{2k}}^{t_{2k+2}} f(x)\,dx
+=\frac{h_n}{3}\Big(f(t_{2k})+4f(t_{2k+1})+f(t_{2k+2})\Big)
++\frac{h_n^5}{90}f^{(4)}(\alpha_k),
+$$
+$$
+\alpha_k\in(t_{2k},t_{2k+2}),\qquad f\in C^4[t_{2k},t_{2k+2}].
+$$
+
+Po zsumowaniu:
+$$
+\int_a^b f(x)\,dx=S_n(f)+R_n^S(f),
+$$
+$$
+S_n(f):=\frac{h_n}{3}\left[f(t_0)+2\sum_{k=1}^{m-1}f(t_{2k})+4\sum_{k=1}^{m}f(t_{2k-1})+f(t_{2m})\right],
+$$
+$$
+R_n^S(f)=\frac{a-b}{180}h_n^4 f^{(4)}(\alpha),\qquad \alpha\in(a,b),\quad f\in C^4[a,b].
+$$
+
+\textbf{Wniosek (rząd zbieżności).}
+$$
+R_n^T(f)=O(n^{-2}),\qquad R_n^S(f)=O(n^{-4}).
+$$
+
+\section{Metoda Romberga}
+
+Bierzemy kolejne zagęszczenia siatki:
+$$
+n=2^k,\qquad h_k:=\frac{b-a}{2^k},\qquad x_i^{(k)}=a+ih_k\ (i=0,1,\dots,2^k).
+$$
+
+Pierwszy wiersz tablicy Romberga to wartości złożonego trapezu:
+$$
+T_{0k}:=T_{2^k}(f)=h_k\left[\frac{f(a)+f(b)}{2}+\sum_{i=1}^{2^k-1}f\big(x_i^{(k)}\big)\right].
+$$
+
+Następnie wykonujemy ekstrapolację Richardsona:
+$$
+T_{mk}:=\frac{4^m T_{m-1,k+1}-T_{m-1,k}}{4^m-1},
+\qquad k=0,1,\dots,\quad m=1,2,\dots
+$$
+
+Własności (z tablicy Romberga):
+\begin{itemize}
+\item $T_{mk}=\displaystyle\int_a^b f(x)\,dx+O\!\left(h_k^{2m+2}\right)$,
+\item każde $T_{mk}$ jest kwadraturą liniową,
+\item ciąg na przekątnej $T_{00},T_{11},T_{22},\dots$ daje coraz wyższe rzędy.
+\end{itemize}
+
+\section{Informacja o kwadraturach Gaussa}
+
+\textbf{Problem.}
+Dla kwadratury
+$$
+Q_n(f)=\sum_{k=0}^{n}A_k^{(n)}f\big(x_k^{(n)}\big)
+$$
+chcemy dobrać węzły i współczynniki tak, aby
+$$
+\operatorname{rzad}(Q_n)=2n+2
+$$
+(maksymalny możliwy).
+
+Taka kwadratura musi być interpolacyjna, więc
+$$
+A_k^{(n)}=\int_a^b\prod_{\substack{i=0\\ i\ne k}}^{n}\frac{x-x_i^{(n)}}{x_k^{(n)}-x_i^{(n)}}\,dx.
+$$
+Kluczowy problem to dobór węzłów $x_k^{(n)}$.
+
+\textbf{Twierdzenie (Gauss--Legendre, przypadek $[a,b]=[-1,1]$).}
+Węzły kwadratury rzędu $2n+2$ są miejscami zerowymi wielomianu Legendre'a $P_{n+1}$.
+
+Wielomiany Legendre'a spełniają rekurencję:
+$$
+P_0(x)=1,\qquad P_1(x)=x,
+$$
+$$
+P_k(x)=\frac{2k-1}{k}xP_{k-1}(x)-\frac{k-1}{k}P_{k-2}(x),
+\qquad k=2,3,\dots
+$$
+
+\textbf{Uwagi.}
+\begin{itemize}
+\item Nie ma prostych wzorów jawnych na zera $P_{n+1}$.
+\item W praktyce zera i współczynniki są tablicowane lub liczone numerycznie z dużą dokładnością.
+\item Dzięki temu kwadratury Gaussa można stabilnie liczyć także dla dużych $n$.
+\end{itemize}

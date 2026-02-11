@@ -22,5 +22,20 @@ $$acc(x, \tilde{x}) \approx 8.091 \quad acc(y, \tilde{y}) = 50$$
 \section{Reprezentacja liczb w komputerze}
 Potrafimy reprezentować wszystkie liczby całkowite z pewnego zakresu, ale nie potrafimy reprezentować wszystkich liczb rzeczywistych. Dlatego musimy wybrać pewną reprezentację, która będzie przybliżać liczby rzeczywiste.
 
+a) $l \in \mathbb{Z}$,
+$$l = \pm \sum_{i=0}^{n} e_i 2^i, \quad e_i \in \{0,1\}, \quad e_n = 1$$
 
+Jeśli $n < d$ to OK, a jeśli $n \ge d$ to przepełnienie.
+
+\vspace{0.5cm}
+
+b) $x \in \mathbb{R}\setminus\{0\}$
+
+\textbf{TW.} Dla każdej liczby rzeczywistej $x \neq 0$ istnieje trójka:
+$$m \in \left[\frac{1}{2},1\right) \quad \text{(mantysa)}$$
+$$c \in \mathbb{Z} \quad \text{(cecha)}$$
+$$s \in \{+1,-1\} \quad \text{(znak liczby)}$$
+dla których
+$$x = s \cdot m \cdot 2^c$$
+Trójka $(s,m,c)$ jest wyznaczona jednoznacznie.
 

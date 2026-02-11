@@ -1,0 +1,119 @@
+
+Zadanie: dla danej funkcji $f:\mathbb{R}\to\mathbb{R}$ znaleźć takie $\alpha\in\mathbb{R}$, dla którego
+$$f(\alpha)=0.$$
+
+W przypadku równań nieliniowych rozwiązanie analityczne najczęściej nie jest możliwe, dlatego stosujemy metody przybliżone (iteracyjne), zwykle z użyciem komputera.
+
+Omówimy trzy podstawowe metody:
+\begin{itemize}
+\item metodę bisekcji,
+\item metodę Newtona,
+\item metodę siecznych.
+\end{itemize}
+
+\section{Metoda bisekcji}
+
+Założenia:
+\begin{itemize}
+\item $f$ jest ciągła na przedziale $(a_0,b_0)$,
+\item istnieje dokładnie jedno miejsce zerowe $\alpha\in(a_0,b_0)$,
+\item $f(a_0)\,f(b_0)<0$ (np. $f(a_0)<0<f(b_0)$).
+\end{itemize}
+
+Konstrukcja:
+\begin{itemize}
+\item $I_k=[a_k,b_k]$ dla $k=0,1,2,\dots$,
+\item środek przedziału $m_{k+1}:=\dfrac{a_k+b_k}{2}$,
+\item jeśli $f(m_{k+1})=0$, to $\alpha=m_{k+1}$,
+\item w przeciwnym razie:
+\[
+I_{k+1}=
+\begin{cases}
+[a_k,m_{k+1}], & \text{gdy } f(a_k)f(m_{k+1})<0,\\[1mm]
+[m_{k+1},b_k], & \text{gdy } f(m_{k+1})f(b_k)<0.
+\end{cases}
+\]
+\end{itemize}
+
+\textbf{Obserwacje.}
+\begin{itemize}
+\item Długość przedziału po $k$ krokach:
+$$|I_k|=\frac{b_0-a_0}{2^k}\xrightarrow[k\to\infty]{}0.$$
+\item Metoda bisekcji jest zbieżna i praktycznie niezawodna (dla spełnionych założeń).
+\item Aby otrzymać przedział długości co najwyżej $2\varepsilon$, wystarczy wykonać
+$$N=\left\lceil \log_2\!\left(\frac{b_0-a_0}{2\varepsilon}\right)\right\rceil$$
+kroków (często zapisywane także jako $\lfloor \cdot \rfloor +1$).
+\end{itemize}
+
+\section{Metoda Newtona}
+
+Punkt startowy $x_0$ dany, a iteracje:
+$$x_{n+1}=x_n-\frac{f(x_n)}{f'(x_n)},\qquad n=0,1,2,\dots$$
+
+Interpretacja geometryczna: $x_{n+1}$ jest miejscem zerowym stycznej do wykresu $y=f(x)$ w punkcie $(x_n,f(x_n))$.
+
+\section{Metoda siecznych}
+
+Punkty startowe $x_0,x_1$ dane, a iteracje:
+$$
+x_{n+1}=x_n-\frac{f(x_n)\,(x_n-x_{n-1})}{f(x_n)-f(x_{n-1})},
+\qquad n=1,2,3,\dots
+$$
+
+Interpretacja geometryczna: $x_{n+1}$ jest miejscem zerowym prostej przechodzącej przez punkty
+$(x_n,f(x_n))$ oraz $(x_{n-1},f(x_{n-1}))$.
+
+Metoda siecznych jest odpowiedzią na wadę metody Newtona polegającą na konieczności liczenia pochodnej.
+
+\section{Warunki stopu}
+
+W praktyce zamiast warunku idealnego $f(\alpha)=0$ stosuje się kryteria przybliżone:
+\begin{itemize}
+\item mała wartość reszty: $|f(x_n)|$ małe,
+\item mały krok iteracji (np. względny):
+$$\left|\frac{x_n-x_{n-1}}{x_n}\right| \ \text{małe},$$
+\item ograniczenie liczby iteracji: $n\le N_{\max}$.
+\end{itemize}
+
+\section{Wykładnik Zbieżności (Rząd Metody)}
+
+Niech $x_n\to \alpha$. Mówimy, że ciąg $(x_n)$ ma asymptotyczny rząd zbieżności $p$, jeśli istnieją $C>0$ oraz $p\ge 1$ takie, że
+$$
+\lim_{n\to\infty}\frac{|x_{n+1}-\alpha|}{|x_n-\alpha|^p}=C.
+$$
+
+Wtedy (dla dużych $n$):
+$$|x_{n+1}-\alpha|\approx C\,|x_n-\alpha|^p.$$
+
+Przypadki szczególne:
+\begin{itemize}
+\item $p=1$, $C\in(0,1)$: zbieżność liniowa,
+\item $p=2$: zbieżność kwadratowa,
+\item $p=3$: zbieżność sześcienna.
+\end{itemize}
+
+Im większe $p$, tym szybciej (asymptotycznie) maleje błąd.
+
+\textbf{Uwaga.} Porównywanie metod wyłącznie przez rząd zbieżności ma sens przede wszystkim dla metod jednokrokowych.
+
+\section{Twierdzenie (metody jednokrokowe)}
+
+Niech metoda jednokrokowa ma postać
+$$x_0\ \text{dane},\qquad x_{n+1}=F(x_n),\quad n\ge 0,$$
+i niech $x_n\to \alpha$, gdzie $\alpha$ jest miejscem zerowym $f$.
+
+Wtedy rząd zbieżności $p$ tej metody jest liczbą naturalną i zachodzi równoważność:
+\[
+p \text{ jest rzędem metody}
+\Longleftrightarrow
+\begin{cases}
+F(\alpha)=\alpha,\\
+F'(\alpha)=F''(\alpha)=\dots=F^{(p-1)}(\alpha)=0,\\
+F^{(p)}(\alpha)\neq 0.
+\end{cases}
+\]
+
+Dodatkowo stała asymptotyczna wynosi
+$$
+C=\frac{|F^{(p)}(\alpha)|}{p!}.
+$$

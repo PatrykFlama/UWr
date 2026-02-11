@@ -1,0 +1,264 @@
+\textbf{Powtórka (z wykładu 12).}
+\begin{itemize}
+\item Złożony wzór trapezów: błąd rzędu $O(h^2)=O(n^{-2})$.
+\item Złożony wzór Simpsona: błąd rzędu $O(h^4)=O(n^{-4})$.
+\item Metoda Romberga: ekstrapolacja Richardsona dla kolejnych przybliżeń trapezowych.
+\item Kwadratury Gaussa: maksymalny rząd $2n+2$ dla $n+1$ węzłów.
+\end{itemize}
+
+\section{Macierze -- przypomnienie}
+
+Macierz rzeczywista $m\times n$:
+$$
+A=[a_{ij}]\in\mathbb R^{m\times n},
+\qquad
+b=\begin{bmatrix}b_1\\ \vdots \\ b_m\end{bmatrix}\in\mathbb R^m.
+$$
+
+Dla macierzy tego samego rozmiaru:
+$$
+A\pm B=[a_{ij}\pm b_{ij}],
+\qquad
+\lambda A=[\lambda a_{ij}],\ \lambda\in\mathbb R,
+\qquad
+A^T=[a_{ji}].
+$$
+
+Macierz jednostkowa:
+$$
+I_n=\operatorname{diag}(1,\dots,1)\in\mathbb R^{n\times n}.
+$$
+
+\section{Mnożenie macierzy i macierz odwrotna}
+
+Jeśli
+$$
+A=[a_{ij}]\in\mathbb R^{m\times k},
+\qquad
+B=[b_{ij}]\in\mathbb R^{k\times n},
+$$
+to
+$$
+AB=[c_{ij}]\in\mathbb R^{m\times n},
+\qquad
+c_{ij}=\sum_{\ell=1}^{k} a_{i\ell}b_{\ell j}.
+$$
+
+Koszt klasycznego mnożenia: $O(n^3)$ (dla macierzy kwadratowych).
+Mnożenie macierzy nie jest przemienne.
+
+Dla macierzy kwadratowej $A\in\mathbb R^{n\times n}$:
+$$
+A^{-1}\ \text{spełnia}\ AA^{-1}=A^{-1}A=I_n.
+$$
+
+\section{Wyznacznik i odwracalność}
+
+Wyznacznik:
+$$
+\det:\mathbb R^{n\times n}\to\mathbb R.
+$$
+
+Własności:
+$$
+\det(AB)=\det(A)\det(B),
+\qquad
+\det(A^T)=\det(A).
+$$
+
+\textbf{Twierdzenie.}
+Macierz $A$ jest odwracalna wtedy i tylko wtedy, gdy
+$$
+\det(A)\neq 0.
+$$
+
+\section{Układ równań liniowych}
+
+Układ
+$$
+\begin{cases}
+a_{11}x_1+\cdots+a_{1n}x_n=b_1,\\
+\vdots\\
+a_{n1}x_1+\cdots+a_{nn}x_n=b_n
+\end{cases}
+\qquad\Longleftrightarrow\qquad
+Ax=b,
+$$
+
+z
+$$
+A\in\mathbb R^{n\times n},\quad x\in\mathbb R^n,\quad b\in\mathbb R^n.
+$$
+
+\textbf{Fakt.}
+Układ $Ax=b$ ma dokładnie jedno rozwiązanie wtedy i tylko wtedy, gdy $\det(A)\neq 0$.
+
+Dwie klasyczne postacie rozwiązania:
+\begin{itemize}
+\item przez macierz odwrotną:
+$$
+x=A^{-1}b,
+$$
+\item wzory Cramera:
+$$
+x_k=\frac{\det(A_k)}{\det(A)},\qquad k=1,\dots,n,
+$$
+gdzie $A_k$ powstaje z $A$ przez zastąpienie $k$-tej kolumny wektorem $b$.
+\end{itemize}
+
+\section{Uwaga o uwarunkowaniu}
+
+Nawet mała perturbacja danych może silnie zmienić rozwiązanie.
+Na tablicy był przykład dla macierzy bliskiej osobliwej:
+$$
+A=\begin{bmatrix}1 & 0.99\\ 0.99 & 0.98\end{bmatrix},
+$$
+porównujący rozwiązania układów $Ax=b$ oraz $A\tilde x=\tilde b$.
+
+\textbf{Uwaga.}
+Część wartości liczbowych perturbacji na zdjęciu jest nieczytelna; sens przykładu: zadanie jest źle uwarunkowane.
+
+\section{Układy trójkątne}
+
+\textbf{Układ dolnotrójkątny:}
+$$
+Lx=b,
+\qquad
+L=[\ell_{ij}],\ \ell_{ij}=0\ \text{dla}\ j>i.
+$$
+Rozwiązujemy podstawianiem w przód:
+$$
+x_i=\frac{b_i-\sum_{j=1}^{i-1}\ell_{ij}x_j}{\ell_{ii}},
+\qquad i=1,\dots,n,
+$$
+przy $\ell_{ii}\neq 0$. Koszt: $O(n^2)$.
+
+\textbf{Układ górnotrójkątny:}
+$$
+Ux=b,
+\qquad
+U=[u_{ij}],\ u_{ij}=0\ \text{dla}\ j<i.
+$$
+Rozwiązujemy podstawianiem wstecz:
+$$
+x_i=\frac{b_i-\sum_{j=i+1}^{n}u_{ij}x_j}{u_{ii}},
+\qquad i=n,n-1,\dots,1,
+$$
+przy $u_{ii}\neq 0$. Koszt: $O(n^2)$.
+
+\section{Metoda faktoryzacji (LU)}
+
+Niech $A$ będzie odwracalna i załóżmy, że
+$$
+A=LU,
+$$
+gdzie $L$ jest trójkątna dolna, a $U$ trójkątna górna.
+
+Wtedy
+$$
+Ax=b
+\iff
+(LU)x=b
+\iff
+L(Ux)=b.
+$$
+Wprowadzamy zmienną pomocniczą $y=Ux$ i rozwiązujemy dwa układy:
+$$
+\begin{cases}
+Ly=b,\\
+Ux=y.
+\end{cases}
+$$
+
+\textbf{Korzyść.}
+Zamiast pełnego układu rozwiązujemy dwa układy trójkątne.
+
+Koszt:
+$$
+O(n^3)\ \text{(wyznaczenie }L,U\text{)}+O(n^2)+O(n^2)=O(n^3).
+$$
+
+\section{Przykład}
+
+Rozwiązać $Ax=b$ metodą LU, gdzie
+$$
+A=\begin{bmatrix}
+1&2&3\\
+-3&-2&-4\\
+-5&18&26
+\end{bmatrix},
+\qquad
+b=\begin{bmatrix}14\\ -19\\ 109\end{bmatrix}.
+$$
+
+Dla
+$$
+L=\begin{bmatrix}
+1&0&0\\
+-3&1&0\\
+-5&7&1
+\end{bmatrix},
+\qquad
+U=\begin{bmatrix}
+1&2&3\\
+0&4&5\\
+0&0&6
+\end{bmatrix}
+$$
+mamy $A=LU$.
+
+1) Rozwiązujemy $Ly=b$:
+$$
+y=\begin{bmatrix}14\\ 23\\ 18\end{bmatrix}.
+$$
+
+2) Rozwiązujemy $Ux=y$:
+$$
+x=\begin{bmatrix}1\\ 2\\ 3\end{bmatrix}.
+$$
+
+\section{Warunek istnienia rozkładu LU (bez pivotingu)}
+
+\textbf{Twierdzenie.}
+Jeśli wszystkie minory główne wiodące macierzy $A=[a_{ij}]\in\mathbb R^{n\times n}$ są niezerowe,
+$$
+\det\!
+\begin{bmatrix}
+a_{11} & \cdots & a_{1k}\\
+\vdots & \ddots & \vdots\\
+a_{k1} & \cdots & a_{kk}
+\end{bmatrix}
+\neq 0,
+\qquad k=1,2,\dots,n,
+$$
+to istnieje dokładnie jeden rozkład
+$$
+A=LU,
+$$
+gdzie $L$ jest dolnotrójkątna z jedynkami na przekątnej, a $U$ jest górnotrójkątna.
+
+Współczynniki wyznaczamy rekurencyjnie:
+$$
+u_{ij}=a_{ij}-\sum_{k=1}^{i-1}\ell_{ik}u_{kj},\qquad i\le j,
+$$
+$$
+\ell_{ij}=\frac{a_{ij}-\sum_{k=1}^{j-1}\ell_{ik}u_{kj}}{u_{jj}},\qquad i>j.
+$$
+
+\section{Zastosowania rozkładu LU}
+
+\begin{itemize}
+\item Obliczanie wyznacznika:
+$$
+\det(A)=\det(L)\det(U)=u_{11}u_{22}\cdots u_{nn}
+$$
+(bo w tym wariancie $\det(L)=1$).
+\item Obliczanie macierzy odwrotnej:
+$$
+A^{-1}=(LU)^{-1}=U^{-1}L^{-1},
+$$
+co sprowadza się do rozwiązywania układów trójkątnych.
+\end{itemize}
+
+\textbf{Uwaga końcowa.}
+Na tablicy pojawia się zapowiedź alternatywnego wariantu rozkładu (inna normalizacja elementów diagonalnych); temat przeniesiony na kolejny wykład.

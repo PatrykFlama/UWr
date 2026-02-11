@@ -1,0 +1,142 @@
+
+\textbf{Powtórka (Wykład 9).}
+\begin{itemize}
+\item Dla danych $x_0<\dots<x_N$ używamy normy
+$$
+\|f\|_2=\sqrt{\sum_{k=0}^{N}\big(f(x_k)\big)^2}.
+$$
+\item Szukamy elementu optymalnego
+$$
+w^\ast=\arg\min_{w\in\mathcal X}\|f-w\|_2.
+$$
+\item Dla modeli jednoparametrowych i liniowych (regresja) dostajemy wzory jawne po wyzerowaniu pochodnych funkcji błędu.
+\end{itemize}
+
+\section{Zadanie wykładu 10}
+
+Zakładamy model wielomianowy:
+$$
+\mathcal X:=\Pi_m,\qquad m\le N.
+$$
+Dla danych $(x_k,y_k)$, gdzie $y_k=f(x_k)$, szukamy wielomianu
+$$
+w_m^\ast\in \Pi_m
+$$
+takiego, że
+$$
+\|f-w_m^\ast\|_2=\min_{w\in\Pi_m}\|f-w\|_2.
+$$
+
+\textbf{Uwaga praktyczna.}
+Rozwiązywanie zadania w bazie potęgowej bywa numerycznie niestabilne i kosztowne. Lepsza droga: baza ortogonalna.
+
+\section{Dyskretny iloczyn skalarny}
+
+Definiujemy
+$$
+(f,g)_N:=\sum_{k=0}^{N}f(x_k)g(x_k),\qquad (\cdot,\cdot)_N:F\times F\to\mathbb R.
+$$
+
+Własności:
+\begin{itemize}
+\item $(f,f)_N\ge 0$, a $(f,f)_N=0 \Leftrightarrow f(x_k)=0\ \forall k$,
+\item $(f,g)_N=(g,f)_N$,
+\item $(f+g,h)_N=(f,h)_N+(g,h)_N$,
+\item $(\alpha f,g)_N=\alpha(f,g)_N$.
+\end{itemize}
+
+Związek z normą:
+$$
+\|f\|_2=\sqrt{(f,f)_N}.
+$$
+
+Funkcje $f,g$ są ortogonalne względem $(\cdot,\cdot)_N$, gdy
+$$
+(f,g)_N=0.
+$$
+
+\section{Układ i ciąg ortogonalny}
+
+Układ funkcji $f_0,\dots,f_m$ nazywamy ortogonalnym względem $(\cdot,\cdot)_N$, jeśli
+$$
+(f_i,f_j)_N=0\quad (i\neq j),\qquad (f_i,f_i)_N>0.
+$$
+
+Szczególny przypadek: ciąg wielomianów ortogonalnych $P_0,\dots,P_m$,
+$$
+P_k\in \Pi_k\setminus \Pi_{k-1},\qquad
+(P_i,P_j)_N=0\ (i\neq j),\qquad (P_i,P_i)_N>0.
+$$
+
+Można go dostać np. ortogonalizacją Grama--Schmidta, ale ta droga jest zwykle za droga numerycznie.
+
+\section{Rekurencja trójczłonowa}
+
+Dla ustalonego $(\cdot,\cdot)_N$ ciąg wielomianów ortogonalnych spełnia rekurencję:
+$$
+P_0(x)=1,\qquad
+P_1(x)=x-c_1,
+$$
+$$
+P_k(x)=(x-c_k)P_{k-1}(x)-d_k P_{k-2}(x),\qquad k=2,\dots,m,
+$$
+gdzie
+$$
+c_k=\frac{(xP_{k-1},P_{k-1})_N}{(P_{k-1},P_{k-1})_N},\qquad
+d_k=\frac{(P_{k-1},P_{k-1})_N}{(P_{k-2},P_{k-2})_N}.
+$$
+
+Koszt konstrukcji: liniowy względem $m$ (poza kosztami obliczania iloczynów skalarnych).
+
+\section{Postać rozwiązania optymalnego}
+
+\textbf{Twierdzenie.}
+Wielomian optymalny ma postać
+$$
+w_m^\ast(x)=\sum_{k=0}^{m}a_k P_k(x),
+$$
+gdzie
+$$
+a_k=\frac{(f,P_k)_N}{(P_k,P_k)_N},\qquad k=0,\dots,m.
+$$
+
+To odpowiednik rozwinięcia Fouriera w bazie ortogonalnej.
+
+\section{Obliczanie wartości wielomianu}
+
+Jeśli wielomiany bazowe spełniają rekurencję ogólną
+$$
+Q_0(x)=\alpha_0,\qquad
+Q_1(x)=(\alpha_1 x-\beta_1)Q_0(x),
+$$
+$$
+Q_k(x)=(\alpha_k x-\beta_k)Q_{k-1}(x)-\gamma_{k-2}Q_{k-2}(x),\qquad k\ge 2,
+$$
+to dla
+$$
+q_m(x)=\sum_{k=0}^{m}a_k Q_k(x)
+$$
+wartość dla ustalonego $x$ obliczamy algorytmem Clenshawa.
+
+Wersja praktyczna (backward):
+$$
+B_{m+2}=B_{m+1}=0,\qquad
+B_k=a_k+(\alpha_{k+1}x-\beta_{k+1})B_{k+1}-\gamma_{k+1}B_{k+2},
+$$
+dla $k=m,m-1,\dots,0$, a następnie
+$$
+q_m(x)=\alpha_0 B_0.
+$$
+
+Koszt: $O(m)$ dla jednego punktu.
+
+\section{Podsumowanie}
+
+\begin{itemize}
+\item Wielomianową aproksymację średniokwadratową warto realizować w bazie ortogonalnej.
+\item Współczynniki optymalne liczymy projekcyjnie:
+$$
+a_k=\frac{(f,P_k)_N}{(P_k,P_k)_N}.
+$$
+\item Rekurencja trójczłonowa i Clenshaw dają efektywny koszt obliczeń.
+\end{itemize}

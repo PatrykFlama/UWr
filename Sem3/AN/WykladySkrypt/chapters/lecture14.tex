@@ -1,0 +1,154 @@
+\textbf{Powtórka (z wykładu 13).}
+\begin{itemize}
+\item Rozkład $A=LU$ pozwala rozwiązywać układ $Ax=b$ przez dwa układy trójkątne:
+$$
+Ly=b,\qquad Ux=y.
+$$
+\item Koszt: wyznaczenie $L,U$ rzędu $O(n^3)$, a każde podstawianie trójkątne rzędu $O(n^2)$.
+\item Z rozkładu $LU$:
+$$
+\det(A)=\det(L)\det(U),
+\qquad
+A^{-1}=(LU)^{-1}=U^{-1}L^{-1}.
+$$
+\end{itemize}
+
+\section{Informacje organizacyjne (z tablicy)}
+
+Na początku zajęć pojawiły się krótkie informacje o egzaminie i konkursie.
+Szczegóły terminów były podane na tablicy, ale nie są częścią materiału rachunkowego wykładu.
+
+\section{Odwracanie macierzy przez układy z wektorami bazowymi}
+
+Niech $A\in\mathbb R^{n\times n}$, $\det(A)\neq 0$, oraz
+$$
+X:=A^{-1}=[x_1\ \cdots\ x_n].
+$$
+Z równania
+$$
+AX=I_n=[e_1\ \cdots\ e_n]
+$$
+dostajemy niezależne układy:
+$$
+Ax_1=e_1,\quad Ax_2=e_2,\ \dots,\ Ax_n=e_n.
+$$
+
+Jeśli mamy już rozkład $A=LU$, to dla każdego $k$ rozwiązujemy:
+$$
+Ly_k=e_k,\qquad Ux_k=y_k.
+$$
+
+Koszt całkowity:
+$$
+O(n^3)+n\cdot O(n^2)=O(n^3).
+$$
+
+\textbf{Ważna uwaga numeryczna.}
+W praktyce numerycznej zwykle unikamy jawnego wyznaczania $A^{-1}$, gdy celem jest rozwiązanie $Ax=b$.
+
+\section{Eliminacja Gaussa -- schemat}
+
+Rozważamy układ
+$$
+A^{(1)}x=b^{(1)},
+$$
+gdzie standardowo $A^{(1)}=A$, $b^{(1)}=b$.
+
+\subsection*{Krok 1}
+Zakładamy $a_{11}^{(1)}\neq 0$ i dla $i=2,3,\dots,n$ bierzemy mnożniki
+$$
+m_{i1}:=-\frac{a_{i1}^{(1)}}{a_{11}^{(1)}}.
+$$
+Dodając $m_{i1}$-krotność pierwszego równania do $i$-tego, dostajemy:
+$$
+a_{ij}^{(2)}=a_{ij}^{(1)}+m_{i1}a_{1j}^{(1)},
+\qquad j=2,3,\dots,n,
+$$
+$$
+b_i^{(2)}=b_i^{(1)}+m_{i1}b_1^{(1)},
+\qquad i=2,3,\dots,n.
+$$
+
+\subsection*{Krok ogólny}
+Po $(r-1)$ krokach mamy układ
+$$
+A^{(r)}x=b^{(r)},
+$$
+i eliminujemy zmienną $x_{r-1}$ z równań $i=r,\dots,n$.
+Zakładając $a_{r-1,r-1}^{(r-1)}\neq 0$, bierzemy
+$$
+m_{i,r-1}:=-\frac{a_{i,r-1}^{(r-1)}}{a_{r-1,r-1}^{(r-1)}},
+\qquad i=r,\dots,n,
+$$
+po czym aktualizujemy
+$$
+a_{ij}^{(r)}=a_{ij}^{(r-1)}+m_{i,r-1}a_{r-1,j}^{(r-1)},
+\qquad i,j=r,\dots,n,
+$$
+$$
+b_i^{(r)}=b_i^{(r-1)}+m_{i,r-1}b_{r-1}^{(r-1)},
+\qquad i=r,\dots,n.
+$$
+
+Po $n-1$ krokach otrzymujemy układ trójkątny górny:
+$$
+\sum_{j=r}^{n}a_{rj}^{(n)}x_j=b_r^{(n)},
+\qquad r=1,2,\dots,n,
+$$
+z elementami głównymi $a_{rr}^{(r)}\neq 0$.
+
+\section{Podstawianie wsteczne i koszt}
+
+Rozwiązanie układu trójkątnego górnego:
+$$
+x_r=\frac{b_r^{(n)}-\sum_{j=r+1}^{n}a_{rj}^{(n)}x_j}{a_{rr}^{(r)}},
+\qquad r=n,n-1,\dots,1.
+$$
+
+Koszt:
+\begin{itemize}
+\item faza eliminacji: $\sim O\!\left(\frac{n^3}{3}\right)$,
+\item podstawianie wsteczne: $O(n^2)$,
+\item łącznie: $O(n^3)$.
+\end{itemize}
+
+\section{Problem numeryczny: zanik elementu głównego}
+
+Może się zdarzyć, że mimo istnienia jednoznacznego rozwiązania, w pewnym kroku eliminacji dostajemy
+$$
+a_{rr}^{(r)}=0
+$$
+lub bardzo małą wartość, co psuje obliczenia (dzielenie przez zero albo duże błędy zaokrągleń).
+
+Aby temu zapobiec, stosujemy \textbf{wybór elementów głównych} (pivoting).
+
+\section{Wybór elementów głównych}
+
+\textbf{1) Częściowy wybór elementów głównych (partial pivoting).}
+W kroku $r$ zamieniamy miejscami wiersz $r$ z wierszem $p$, gdzie
+$$
+|a_{pr}^{(r)}|=\max_{r\le i\le n}|a_{ir}^{(r)}|.
+$$
+
+\textbf{2) Pełny wybór elementów głównych (full pivoting).}
+W kroku $r$ wybieramy $(p,q)$ takie, że
+$$
+|a_{pq}^{(r)}|=\max_{r\le i,j\le n}|a_{ij}^{(r)}|,
+$$
+a następnie zamieniamy zarówno wiersze, jak i kolumny (czyli także numerację niewiadomych).
+
+\section{Wniosek o rozkładzie z permutacją}
+
+\textbf{Twierdzenie.}
+Dla dowolnej macierzy $A\in\mathbb R^{n\times n}$ istnieją:
+\begin{itemize}
+\item macierz permutacji wierszy $P$,
+\item macierz dolnotrójkątna $L$ z jedynkami na przekątnej,
+\item macierz górnotrójkątna $U$,
+\end{itemize}
+takie, że
+$$
+PA=LU.
+$$
+
+To jest algebraiczny zapis eliminacji Gaussa z częściowym wyborem elementów głównych.

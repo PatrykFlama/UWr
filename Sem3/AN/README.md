@@ -3,7 +3,7 @@
 
 [(back)](../)
 # Numerical Analysis
-### [Script](./WykladySkrypt)
+### [Script](./WykladySkrypt/main.pdf)
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 [(wróć)](../)
 # **A**naliza **N**umeryczna
-### [Skrypt](./WykladySkrypt)
+### [Skrypt](./WykladySkrypt//main.pdf)
 
 ___
 

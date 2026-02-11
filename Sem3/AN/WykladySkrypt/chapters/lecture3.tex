@@ -1,3 +1,5 @@
+\section{Przykłady wrażliwości zadań}
+
 
 \textbf{Przykład.}
 Rozważmy wielomian
@@ -14,6 +16,7 @@ Przy bardzo małym $\varepsilon$ (np. $\varepsilon=2^{-30}$) można zaobserwowa�
 
 \vspace{0.5cm}
 
+
 \textbf{Przykład (macierz Hilberta).}
 $$H_n=\left[\frac{1}{i+j-1}\right]\in\mathbb{R}^{n\times n},\qquad
 \widetilde{H}_n=\left[\operatorname{rd}\!\left(\frac{1}{i+j-1}\right)\right]\in\mathbb{R}^{n\times n}.$$
@@ -24,6 +27,7 @@ $$\det(H_n),\qquad \det(\widetilde{H}_n).$$
 Dla większych $n$ (na tablicy: $n=15$) wartości te mogą mieć nawet przeciwne znaki, co oznacza błąd względny rzędu $100\%$.
 
 \vspace{0.5cm}
+
 
 \textbf{Przykład (układ równań).}
 Rozważmy układ
@@ -36,6 +40,8 @@ W praktyce rozwiązania mogą się istotnie różnić, mimo małej zmiany danych
 
 \vspace{0.5cm}
 
+\section{Uwarunkowanie i wskaźniki}
+
 \textbf{Definicja (uwarunkowanie zadania).}
 Zadanie nazywamy \textit{źle uwarunkowanym}, jeśli mała względna zmiana danych powoduje dużą względną zmianę wyniku.
 
@@ -46,6 +52,7 @@ Zadanie nazywamy \textit{źle uwarunkowanym}, jeśli mała względna zmiana dany
 \end{itemize}
 
 \vspace{0.5cm}
+
 
 \textbf{Przykład (wartość funkcji).}
 Dla $f:\mathbb{R}\to\mathbb{R}$ badamy wpływ małej zmiany argumentu $x\to x+h$ na wartość funkcji, np. przez iloraz:
@@ -76,6 +83,7 @@ $$\left|\frac{x f'(x)}{f(x)}\right|$$
 można zatem przyjąć za miarę tego, jak względna zmiana danych wpływa na względną zmianę wyniku w zadaniu obliczania wartości funkcji.
 
 \vspace{0.5cm}
+
 
 \textbf{Przykład (iloczyn skalarny).}
 Rozważmy
@@ -118,6 +126,7 @@ $$K(a,b):=\frac{\sum_{i=1}^{n}|a_i b_i|}{\left|\sum_{i=1}^{n}a_i b_i\right|}.$$
 
 \vspace{0.5cm}
 
+
 \textbf{Definicja (wskaźnik uwarunkowania zadania).}
 Wielkość (lub wielkości), które opisują, jak względna zmiana danych wpływa na względną zmianę wyniku, nazywamy wskaźnikiem (wskaźnikami) uwarunkowania.
 
@@ -129,12 +138,16 @@ Umowa:
 
 \vspace{0.5cm}
 
+\section{Algorytmy numerycznie poprawne}
+
+
 \textbf{Algorytmy numerycznie poprawne.}
 
 \textbf{Definicja (algorytm numerycznie poprawny).}
 Algorytm nazywamy numerycznie poprawnym, jeśli wynik uzyskany w arytmetyce zmiennopozycyjnej może być zinterpretowany jako mało zaburzony wynik dokładny dla mało zaburzonych danych.
 
 \vspace{0.5cm}
+
 
 \textbf{Przykład.}
 Niech dane będą liczby $x_1,x_2,\dots,x_n$ i rozważmy algorytm:

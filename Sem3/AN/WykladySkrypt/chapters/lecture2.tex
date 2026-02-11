@@ -1,5 +1,6 @@
 \section{Błąd bezwzględny i bład względny}
 
+
 Weźmy liczby:
 $$x = 1.23456789 \quad \tilde{x} = 1.2345679$$
 $$y = 10^{50}+1 \quad \tilde{y} = 10^{50}$$
@@ -12,6 +13,7 @@ $$\frac{|x-\tilde{x}|}{|x|} = 0.8 \cdot 10^{-8} \quad \frac{|y-\tilde{y}|}{|y|} 
 
 Błąd względny jest lepszą miarą błędu.
 
+
 Dodatkowo zdefiniujmy liczbę cyfr dokładnych:
 $$acc(v, \tilde{v}) = -\log_{10} \left( \middle|1 - \frac{\tilde{v}}{v} \middle| \right)$$
 
@@ -20,6 +22,7 @@ $$acc(x, \tilde{x}) \approx 8.091 \quad acc(y, \tilde{y}) = 50$$
 
 
 \section{Reprezentacja liczb w komputerze}
+
 Potrafimy reprezentować wszystkie liczby całkowite z pewnego zakresu, ale nie potrafimy reprezentować wszystkich liczb rzeczywistych. Dlatego musimy wybrać pewną reprezentację, która będzie przybliżać liczby rzeczywiste.
 
 a) $l \in \mathbb{Z}$,
@@ -43,6 +46,7 @@ Trójka $(s,m,c)$ jest wyznaczona jednoznacznie.
 
 Reprezentacja mantysy:
 $$m \in \left[\frac{1}{2},1\right), \quad m=\sum_{i=1}^{\infty} e_{-i}2^{-i}, \quad e_{-i}\in\{0,1\}, \quad e_{-1}=1$$
+
 
 Sposoby zaokrąglania mantysy:
 
@@ -80,6 +84,7 @@ Jakie liczby, tzn. z jakiego zakresu, 'zna'  komputer?
 
 Niech
 $$C_{\max}=2^{d-t-1}-1, \qquad D:=2^{C_{\max}}.$$
+
 
 
 \begin{center}
@@ -120,6 +125,7 @@ W pamięci pojawiają się liczby ze zbioru dyskretnego $X_{fl}:=\operatorname{r
 
 \vspace{0.5cm}
 
+
 \textbf{Przykład.} Rozważmy arytmetykę dla
 $$d=5,\qquad t=3.$$
 
@@ -159,6 +165,7 @@ Zbiór $X_{fl}$ jest symetryczny względem zera (dochodzi też liczba $0$).
 Zmiennopozycyjna realizacja działań arytmetycznych:
 $$\operatorname{fl}(x\circ y):=(x\circ y)\left(1+\varepsilon_{x\circ y}\right), \qquad \circ\in\{+,-,\ast,/\}, \qquad x,y\in X_{fl}.$$
 
+
 Błąd względny pojedynczej operacji spełnia:
 $$\left|\varepsilon_{x\circ y}\right|\le 2^{-t}.$$
 
@@ -170,6 +177,7 @@ $$\left|\frac{x\circ y-\operatorname{fl}(x\circ y)}{x\circ y}\right|=\left|\vare
 Aby analizować (symulować) działanie algorytmów w arytmetyce zmiennopozycyjnej, będziemy często posługiwać się tzw. twierdzeniem o kumulacji błędów.
 
 \vspace{0.5cm}
+
 
 \textbf{TW. (o kumulacji błędów)} 
 
@@ -189,6 +197,7 @@ $$|\sigma_n|\le \gamma_n:=\frac{n\cdot 2^{-t}}{1-\frac{1}{2}n\cdot 2^{-t}}\appro
 \vspace{0.5cm}
 
 Użyjemy twierdzenia o kumulacji błędów do analizy zmiennopozycyjnej realizacji prostego programu komputerowego.
+
 
 \textbf{Przykład.}
 Rozważmy zadanie obliczenia sumy liczb $x_1,x_2,x_3,x_4,x_5$, tzn.
@@ -277,6 +286,7 @@ $$
 
 \section{Zjawisko utraty cyfr znaczących}
 
+
 Problem utraty cyfr znaczących prześledźmy na przykładzie.
 
 Niech
@@ -345,6 +355,7 @@ W efekcie:
 \end{center}
 
 \vspace{0.5cm}
+
 
 \textbf{Przykład numeryczny (kod demonstracyjny).}
 

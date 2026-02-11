@@ -39,3 +39,339 @@ dla których
 $$x = s \cdot m \cdot 2^c$$
 Trójka $(s,m,c)$ jest wyznaczona jednoznacznie.
 
+\vspace{0.5cm}
+
+Reprezentacja mantysy:
+$$m \in \left[\frac{1}{2},1\right), \quad m=\sum_{i=1}^{\infty} e_{-i}2^{-i}, \quad e_{-i}\in\{0,1\}, \quad e_{-1}=1$$
+
+Sposoby zaokrąglania mantysy:
+
+i) obcięcie
+$$m_t^c := \sum_{i=1}^{t} e_{-i}2^{-i}$$
+
+ii) zaokrąglanie symetryczne
+$$m_t^r := \sum_{i=1}^{t} e_{-i}2^{-i} + e_{-(t+1)}2^{-t}$$
+
+Model zapisu liczby:
+$$[\pm] \underbrace{[\text{bity mantysy}]}_{t\ \text{bitów}} \quad \underbrace{[\text{cecha ze znakiem}]}_{(d-t)\ \text{bitów}}$$
+
+Łącznie: $d+1$ bitów na liczbę rzeczywistą ze znakiem.
+
+Ten model reprezentacji jest teoretyczny. W praktyce stosujemy standard IEEE 754.
+
+\vspace{0.5cm}
+
+\textbf{TW.}
+$$|m-m_t^c| \le 2^{-t}, \qquad |m-m_t^r| \le \frac{1}{2}\cdot 2^{-t}$$
+
+Reprezentacja zmiennopozycyjna liczby rzeczywistej $x\neq 0$:
+$$x \approx \operatorname{chop}(x):=s\cdot m_t^c\cdot 2^c \qquad \text{albo} \qquad x \approx \operatorname{rd}(x):=s\cdot m_t^r\cdot 2^c$$
+
+\vspace{0.5cm}
+
+Pytanie: Które liczby rzeczywiste można dokładnie reprezentować w komputerze? Jaką one mają postać?
+
+\textbf{TW.}
+$$\left|\frac{\operatorname{chop}(x)-x}{x}\right| \le 2\cdot 2^{-t}, \qquad \left|\frac{\operatorname{rd}(x)-x}{x}\right| \le 2^{-t}$$
+
+\vspace{0.5cm}
+
+Jakie liczby, tzn. z jakiego zakresu, 'zna'  komputer?
+
+Niech
+$$C_{\max}=2^{d-t-1}-1, \qquad D:=2^{C_{\max}}.$$
+
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0, >=Latex]
+  % Os liczbowa
+  \draw[->] (-6,0) -- (6,0);
+
+  % Glowne znaczniki
+  \draw (-4,0.20) -- (-4,-0.20);
+  \draw (4,0.20) -- (4,-0.20);
+  \draw (-1,0.16) -- (-1,-0.16);
+  \draw (0,0.16) -- (0,-0.16);
+  \draw (1,0.16) -- (1,-0.16);
+
+  % Opisy punktow
+  \node[below] at (-4,-0.20) {$-D$};
+  \node[below] at (4,-0.20) {$D$};
+  \node[below] at (-1,-0.16) {$-\frac{1}{2D}$};
+  \node[below] at (0,-0.16) {$0$};
+  \node[below] at (1,-0.16) {$\frac{1}{2D}$};
+
+  % Opisy obszarow
+  \draw[->] (-5.6,0.95) .. controls (-5.0,0.65) and (-4.4,0.45) .. (-4.0,0.24);
+  \node[above] at (-5.5,1.05) {niedomiar};
+
+  \draw[->] (5.6,0.95) .. controls (5.0,0.65) and (4.4,0.45) .. (4.0,0.24);
+  \node[above] at (5.5,1.05) {nadmiar};
+
+  \draw[->] (0.0,1.05) -- (-0.55,0.24);
+  \draw[->] (0.0,1.05) -- (0.55,0.24);
+  \node[above] at (0,1.15) {niedomiar zmiennopozycyjny};
+\end{tikzpicture}
+\end{center}
+
+
+W rzeczywistości w komputerze możemy reprezentować liczby ze zbioru $X':=(-D,D)$.
+W pamięci pojawiają się liczby ze zbioru dyskretnego $X_{fl}:=\operatorname{rd}(X')$.
+
+\vspace{0.5cm}
+
+\textbf{Przykład.} Rozważmy arytmetykę dla
+$$d=5,\qquad t=3.$$
+
+Wtedy:
+$$C_{\max}=2^{d-t-1}-1=2^{1}-1=1,\qquad D=2^{C_{\max}}=2.$$
+
+Możliwe mantysy:
+$$m\in\left\{\frac12,\frac58,\frac34,\frac78\right\},$$
+a cecha:
+$$c\in\{-1,0,1\}.$$
+
+Dodatnie liczby znormalizowane:
+$$\left\{\frac14,\frac{5}{16},\frac38,\frac{7}{16},\frac12,\frac58,\frac34,\frac78,1,\frac54,\frac32,\frac74\right\}.$$
+
+Zbiór $X_{fl}$ jest symetryczny względem zera (dochodzi też liczba $0$).
+
+\begin{center}
+\begin{tikzpicture}[x=3.7cm,y=2.2cm,>=Latex]
+  \draw[->] (-1.95,0) -- (1.95,0);
+  \draw (0,0.04) -- (0,-0.04);
+  \node[below] at (0,-0.04) {$0$};
+  \draw (-1,0.03) -- (-1,-0.03);
+  \draw (1,0.03) -- (1,-0.03);
+  \node[below] at (-1,-0.03) {$-1$};
+  \node[below] at (1,-0.03) {$1$};
+
+  \foreach \x in {-1.75,-1.5,-1.25,-0.875,-0.75,-0.625,-0.5,-0.4375,-0.375,-0.3125,-0.25,
+                  0,
+                  0.25,0.3125,0.375,0.4375,0.5,0.625,0.75,0.875,1,1.25,1.5,1.75} {
+    \fill[red] (\x,0) circle (0.018);
+  }
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+Zmiennopozycyjna realizacja działań arytmetycznych:
+$$\operatorname{fl}(x\circ y):=(x\circ y)\left(1+\varepsilon_{x\circ y}\right), \qquad \circ\in\{+,-,\ast,/\}, \qquad x,y\in X_{fl}.$$
+
+Błąd względny pojedynczej operacji spełnia:
+$$\left|\varepsilon_{x\circ y}\right|\le 2^{-t}.$$
+
+Równoważnie:
+$$\left|\frac{x\circ y-\operatorname{fl}(x\circ y)}{x\circ y}\right|=\left|\varepsilon_{x\circ y}\right|.$$
+
+\vspace{0.5cm}
+
+Aby analizować (symulować) działanie algorytmów w arytmetyce zmiennopozycyjnej, będziemy często posługiwać się tzw. twierdzeniem o kumulacji błędów.
+
+\vspace{0.5cm}
+
+\textbf{TW. (o kumulacji błędów)} 
+
+Niech zachodzi
+$$|\delta_i|\le 2^{-t}, \qquad i=1,2,3,\dots,n,$$
+oraz niech
+$$1+\sigma_n:=\prod_{i=1}^{n}(1+\delta_i).$$
+
+Wtedy
+$$\sigma_n=\sum_{i=1}^{n}\delta_i+O\!\left(2^{-2t}\right).$$
+
+Jeśli dodatkowo
+$$n\cdot 2^{-t}<2,$$
+to
+$$|\sigma_n|\le \gamma_n:=\frac{n\cdot 2^{-t}}{1-\frac{1}{2}n\cdot 2^{-t}}\approx n\cdot 2^{-t}.$$
+
+\vspace{0.5cm}
+
+Użyjemy twierdzenia o kumulacji błędów do analizy zmiennopozycyjnej realizacji prostego programu komputerowego.
+
+\textbf{Przykład.}
+Rozważmy zadanie obliczenia sumy liczb $x_1,x_2,x_3,x_4,x_5$, tzn.
+$$S=\sum_{i=1}^{5}x_i.$$
+
+Wartość $S$ wyznaczamy przy pomocy następującego ('naturalnego') programu:
+
+\begin{center}
+\fbox{
+\begin{minipage}{0.72\textwidth}
+\vspace{0.2cm}
+\[
+\begin{array}{l}
+S:=x_1\\
+\textbf{for } i=2 \textbf{ to } 5\\
+\quad S:=S+x_i\\
+\textbf{return } S
+\end{array}
+\]
+\vspace{-0.2cm}
+\end{minipage}
+}
+\end{center}
+
+Jak wygląda zmiennopozycyjna realizacja programu?
+
+Dla uproszczenia przyjmijmy, że
+$$\operatorname{rd}(x_i)=x_i,\qquad 1\leq i \leq 5$$
+tj. dane wejściowe są liczbami maszynowymi.
+
+Wtedy realizacja zmiennopozycyjna programu ma postać:
+$$
+\operatorname{fl}(P)=\Big(\Big(\big((x_1+x_2)(1+\xi_2)+x_3\big)(1+\xi_3)+x_4\Big)(1+\xi_4)+x_5\Big)(1+\xi_5),
+$$
+gdzie
+$$|\xi_2|,|\xi_3|,|\xi_4|,|\xi_5|\le 2^{-t}.$$
+
+Po uporządkowaniu względem $x_i$:
+$$
+\begin{aligned}
+\operatorname{fl}(P)=&\;x_1(1+\xi_2)(1+\xi_3)(1+\xi_4)(1+\xi_5)\\
+&+x_2(1+\xi_2)(1+\xi_3)(1+\xi_4)(1+\xi_5)\\
+&+x_3(1+\xi_3)(1+\xi_4)(1+\xi_5)\\
+&+x_4(1+\xi_4)(1+\xi_5)+x_5(1+\xi_5).
+\end{aligned}
+$$
+
+Oznaczmy:
+$$1+E_i:=\prod_{j=i}^{5}(1+\xi_j), \qquad i=2,3,4,5,\qquad E_1:=E_2.$$
+
+Wówczas
+$$\operatorname{fl}(P)=\sum_{i=1}^{5}x_i(1+E_i).$$
+
+Z twierdzenia o kumulacji błędów otrzymujemy (w pierwszym rzędzie):
+$$|E_2|\le \gamma_4\lesssim 4\cdot 2^{-t},\qquad |E_3|\le \gamma_3\lesssim 3\cdot 2^{-t},$$
+$$|E_4|\le \gamma_2\lesssim 2\cdot 2^{-t},\qquad |E_5|=|\xi_5|\le 2^{-t}.$$
+
+Badamy błąd względny:
+$$
+\left|\frac{S-\operatorname{fl}(P)}{S}\right|
+=\left|\frac{\sum_{i=1}^{5}x_i-\sum_{i=1}^{5}x_i(1+E_i)}{\sum_{i=1}^{5}x_i}\right|
+=\left|\frac{\sum_{i=1}^{5}x_iE_i}{\sum_{i=1}^{5}x_i}\right|.
+$$
+
+Stąd
+$$
+\left|\frac{S-\operatorname{fl}(P)}{S}\right|
+\le \frac{\sum_{i=1}^{5}|x_i||E_i|}{\left|\sum_{i=1}^{5}x_i\right|}
+\le \left(\frac{\sum_{i=1}^{5}|x_i|}{\left|\sum_{i=1}^{5}x_i\right|}\right)\cdot 4\cdot 2^{-t}.
+$$
+
+Wprowadzamy oznaczenie:
+$$K:=\frac{\sum_{i=1}^{5}|x_i|}{\left|\sum_{i=1}^{5}x_i\right|}.$$
+
+Wtedy
+$$
+\left|\frac{S-\operatorname{fl}(P)}{S}\right|\lesssim K\cdot 4\cdot 2^{-t}.
+$$
+
+\textbf{Wniosek.}
+\begin{itemize}
+\item Jeśli sumujemy liczby dodatnie, to warto je najpierw posortować.
+\item Jeśli wszystkie $x_i$ mają ten sam znak, to $K=1$.
+\item Może jednak być tak, że $K$ jest dowolnie duże.
+\end{itemize}
+
+\section{Zjawisko utraty cyfr znaczących}
+
+Problem utraty cyfr znaczących prześledźmy na przykładzie.
+
+Niech
+$$x,y\in X_{fl},\qquad x>y>0,\qquad x\approx y.$$
+
+Przy odejmowaniu $x-y$ najpierw wyrównujemy cechy (przesuwamy mantysę jednej z liczb), a następnie odejmujemy mantysy.
+Gdy liczby są bliskie, najstarsze cyfry (bity) mantysy się redukują i wynik zaczyna się od wielu zer.
+
+W efekcie:
+\begin{itemize}
+\item w wyniku zostaje mało cyfr znaczących,
+\item względny błąd wyniku może istotnie wzrosnąć.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[x=0.55cm,y=0.9cm,>=Latex]
+  % x = + 1 . a1 a2 a3 a4 a5 * 2^c
+  \node[left] at (-1.3,2.4) {$x=$};
+  \node at (-0.4,2.4) {$+$};
+  \foreach \i/\txt in {0/1,1/a_1,2/a_2,3/a_3,4/a_4,5/a_5} {
+    \draw (\i,2.1) rectangle ++(1,0.6);
+    \node at (\i+0.5,2.4) {$\txt$};
+  }
+  \node at (6.7,2.4) {$\cdot 2^c$};
+
+  % y = + 1 . a1 a2 a3 0 0 * 2^c  (po wyrownaniu cech)
+  \node[left] at (-1.3,0.6) {$y=$};
+  \node at (-0.4,0.6) {$+$};
+  \foreach \i/\txt in {0/1,1/a_1,2/a_2,3/a_3,4/0,5/0} {
+    \draw (\i,0.3) rectangle ++(1,0.6);
+    \node at (\i+0.5,0.6) {$\txt$};
+  }
+  \node at (6.7,0.6) {$\cdot 2^c$};
+
+  \draw[->] (3.2,1.85) -- (3.2,1.0);
+  \node[fill=white, inner sep=1pt] at (5.0,1.45) {\footnotesize wyrownanie cech};
+\end{tikzpicture}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[x=0.55cm,y=0.9cm,>=Latex]
+  % wynik surowy po odejmowaniu
+  \node[left] at (-1.3,2.0) {$x-y=$};
+  \node at (-0.4,2.0) {$+$};
+  \foreach \i/\txt in {0/0,1/0,2/0,3/b_1,4/b_2,5/b_3} {
+    \draw (\i,1.7) rectangle ++(1,0.6);
+    \node at (\i+0.5,2.0) {$\txt$};
+  }
+  \node at (6.9,2.0) {$\cdot 2^c$};
+
+  % znormalizowana mantysa
+  \node[left] at (-1.3,0.0) {$=$};
+  \node at (-0.4,0.0) {$+$};
+  \foreach \i/\txt in {0/1,1/b_2,2/b_3,3/0,4/0,5/0} {
+    \draw (\i,-0.3) rectangle ++(1,0.6);
+    \node at (\i+0.5,0.0) {$\txt$};
+  }
+  \node at (6.9,0.0) {$\cdot 2^{c-3}$};
+
+  \draw[->] (2.6,1.55) -- (2.6,0.4);
+  \node[align=center, fill=white, inner sep=1pt] at (4.9,1.1) {\footnotesize normalizacja mantysy};
+
+  \draw[red,thick,rounded corners] (3.0,-0.45) rectangle (6.0,0.45);
+  \node[red] at (4.5,-0.95) {\footnotesize nie wiemy co tu wpisac};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.5cm}
+
+\textbf{Przykład numeryczny (kod demonstracyjny).}
+
+\begin{minted}[frame=single,fontsize=\small]{maple}
+f1:=z->ln(z)-1;
+
+x:=exp(1.0001):
+
+printf("        x = %1.10e\n\n",x);
+printf("      f1(x) = %1.10e dla Digits:=%d\n ",f1(x),Digits);
+printf(" Wynik dokladny = %1.30e\n\n",evalf(f1(x),64));
+
+x = 2.7185536700e+00
+f1(x) = 1.0000000000e-04 dla Digits:=10
+Wynik dokladny = 9.999991401555060459381913048956e-05
+
+f2:=z->ln(z/exp(1.0));
+\end{minted}
+
+\begin{minted}[frame=single,fontsize=\small]{maple}
+x:=exp(1.0001):
+
+printf("        x = %1.10e\n\n",x);
+printf("      f2(x) = %1.10e dla Digits:=%d\n ",f2(x),Digits);
+printf(" Wynik dokladny = %1.30e\n\n",evalf(f1(x),64));
+
+x = 2.7185536700e+00
+f2(x) = 9.9999999830e-05 dla Digits:=10
+Wynik dokladny = 9.999991401555060459381913048956e-05
+\end{minted}

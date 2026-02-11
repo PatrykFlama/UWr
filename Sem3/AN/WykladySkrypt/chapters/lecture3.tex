@@ -1,0 +1,172 @@
+
+\textbf{Przykład.}
+Rozważmy wielomian
+$$\omega(x)=(x-1)(x-2)\cdots(x-20)=\sum_{i=0}^{20}a_i x^i
+=x^{20}-210x^{19}+\dots$$
+oraz jego zaburzenie
+$$\widetilde{\omega}(x):=\omega(x)-\varepsilon x^{19},\qquad \varepsilon\ \text{małe}.$$
+
+Przy bardzo małym $\varepsilon$ (np. $\varepsilon=2^{-30}$) można zaobserwować:
+\begin{itemize}
+\item minimalna zmiana danych (współczynników),
+\item duża zmiana wyniku (położenia miejsc zerowych).
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{Przykład (macierz Hilberta).}
+$$H_n=\left[\frac{1}{i+j-1}\right]\in\mathbb{R}^{n\times n},\qquad
+\widetilde{H}_n=\left[\operatorname{rd}\!\left(\frac{1}{i+j-1}\right)\right]\in\mathbb{R}^{n\times n}.$$
+
+Badamy:
+$$\det(H_n),\qquad \det(\widetilde{H}_n).$$
+
+Dla większych $n$ (na tablicy: $n=15$) wartości te mogą mieć nawet przeciwne znaki, co oznacza błąd względny rzędu $100\%$.
+
+\vspace{0.5cm}
+
+\textbf{Przykład (układ równań).}
+Rozważmy układ
+$$H_n x=b_n,\qquad b_n=H_n\begin{bmatrix}1\\1\\ \vdots \\1\end{bmatrix},$$
+oraz układ zaburzony
+$$\widetilde{H}_n\widetilde{x}=\widetilde{b}_n,\qquad
+\widetilde{b}_n=\operatorname{fl}\!\left(H_n\begin{bmatrix}1\\1\\ \vdots \\1\end{bmatrix}\right).$$
+
+W praktyce rozwiązania mogą się istotnie różnić, mimo małej zmiany danych.
+
+\vspace{0.5cm}
+
+\textbf{Definicja (uwarunkowanie zadania).}
+Zadanie nazywamy \textit{źle uwarunkowanym}, jeśli mała względna zmiana danych powoduje dużą względną zmianę wyniku.
+
+\textbf{Uwaga.}
+\begin{itemize}
+\item Dla zadań źle uwarunkowanych obliczenia komputerowe wymagają szczególnej ostrożności.
+\item Sprawdzenie, czy zadanie jest źle uwarunkowane, bywa trudne.
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{Przykład (wartość funkcji).}
+Dla $f:\mathbb{R}\to\mathbb{R}$ badamy wpływ małej zmiany argumentu $x\to x+h$ na wartość funkcji, np. przez iloraz:
+$$\left|\frac{f(x)-f(x+h)}{f(x)}\right|.$$
+
+Korzystając z
+$$f'(x)=\lim_{h\to 0}\frac{f(x+h)-f(x)}{h},$$
+otrzymujemy dla małego $h$:
+$$
+\left|\frac{f(x)-f(x+h)}{f(x)}\right|
+\approx
+\left|\frac{f(x+h)-f(x)}{h}\right|\frac{|h|}{|f(x)|}
+\approx
+|f'(x)|\frac{|h|}{|f(x)|}.
+$$
+
+Ponieważ
+$$\left|\frac{x-(x+h)}{x}\right|=\left|\frac{h}{x}\right|,$$
+to
+$$
+\left|\frac{f(x)-f(x+h)}{f(x)}\right|
+\approx
+\left|\frac{x f'(x)}{f(x)}\right|\left|\frac{h}{x}\right|.
+$$
+
+Wielkość
+$$\left|\frac{x f'(x)}{f(x)}\right|$$
+można zatem przyjąć za miarę tego, jak względna zmiana danych wpływa na względną zmianę wyniku w zadaniu obliczania wartości funkcji.
+
+\vspace{0.5cm}
+
+\textbf{Przykład (iloczyn skalarny).}
+Rozważmy
+$$a=\begin{bmatrix}a_1\\a_2\\ \vdots \\a_n\end{bmatrix}\in\mathbb{R}^n,\qquad
+b=\begin{bmatrix}b_1\\b_2\\ \vdots \\b_n\end{bmatrix}\in\mathbb{R}^n,$$
+oraz funkcję
+$$S(a,b)=\sum_{i=1}^{n}a_i b_i,\qquad S:\mathbb{R}^n\times\mathbb{R}^n\to\mathbb{R}.$$
+
+Niech dane będą względnie zaburzone składowo:
+$$\widetilde{a}_i=a_i(1+\varepsilon_i),\qquad
+\widetilde{b}_i=b_i(1+\delta_i),$$
+czyli
+$$\widetilde{a}=\begin{bmatrix}a_1(1+\varepsilon_1)\\ \vdots \\ a_n(1+\varepsilon_n)\end{bmatrix},\qquad
+\widetilde{b}=\begin{bmatrix}b_1(1+\delta_1)\\ \vdots \\ b_n(1+\delta_n)\end{bmatrix}.$$
+
+Wtedy
+$$
+\begin{aligned}
+\left|\frac{S(a,b)-S(\widetilde{a},\widetilde{b})}{S(a,b)}\right|
+&=
+\left|\frac{\sum_{i=1}^{n}a_i b_i-\sum_{i=1}^{n}a_i b_i(1+\varepsilon_i)(1+\delta_i)}{\sum_{i=1}^{n}a_i b_i}\right|\\
+&\approx
+\left|\frac{\sum_{i=1}^{n}a_i b_i(\varepsilon_i+\delta_i)}{\sum_{i=1}^{n}a_i b_i}\right|\\
+&\le
+\frac{\sum_{i=1}^{n}|a_i b_i|\,|\varepsilon_i+\delta_i|}{\left|\sum_{i=1}^{n}a_i b_i\right|}\\
+&\le
+\max_i |\varepsilon_i+\delta_i|
+\frac{\sum_{i=1}^{n}|a_i b_i|}{\left|\sum_{i=1}^{n}a_i b_i\right|}.
+\end{aligned}
+$$
+
+Definiujemy wskaźnik:
+$$K(a,b):=\frac{\sum_{i=1}^{n}|a_i b_i|}{\left|\sum_{i=1}^{n}a_i b_i\right|}.$$
+
+\textbf{Wnioski.}
+\begin{itemize}
+\item Jeśli $a_i b_i>0$ (albo $a_i b_i<0$) dla wszystkich $i=1,\dots,n$, to $K(a,b)=1$.
+\item W szczególnych sytuacjach $K(a,b)$ może być dowolnie duże (np. $\sum_i |a_i b_i|=1$, a $\sum_i a_i b_i\approx 0$).
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{Definicja (wskaźnik uwarunkowania zadania).}
+Wielkość (lub wielkości), które opisują, jak względna zmiana danych wpływa na względną zmianę wyniku, nazywamy wskaźnikiem (wskaźnikami) uwarunkowania.
+
+Umowa:
+\begin{itemize}
+\item jeśli wskaźnik uwarunkowania jest ograniczony, to zadanie jest dobrze uwarunkowane,
+\item jeśli jest nieograniczony, to zadanie jest źle uwarunkowane.
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{Algorytmy numerycznie poprawne.}
+
+\textbf{Definicja (algorytm numerycznie poprawny).}
+Algorytm nazywamy numerycznie poprawnym, jeśli wynik uzyskany w arytmetyce zmiennopozycyjnej może być zinterpretowany jako mało zaburzony wynik dokładny dla mało zaburzonych danych.
+
+\vspace{0.5cm}
+
+\textbf{Przykład.}
+Niech dane będą liczby $x_1,x_2,\dots,x_n$ i rozważmy algorytm:
+\[
+\begin{array}{l}
+S:=x_1\\
+\textbf{for } i=2 \textbf{ to } n\\
+\quad S:=S+x_i\\
+\textbf{return } S
+\end{array}
+\]
+
+Zakładamy, że $x_i=\operatorname{rd}(x_i)$ (dane wejściowe są maszynowe) oraz
+$$|\varepsilon_i|\le 2^{-t}\quad (i=2,\dots,n),\qquad \varepsilon_1:=0.$$
+
+Wtedy
+$$
+\operatorname{fl}(S)=\sum_{i=1}^{n}x_i\prod_{j=i}^{n}(1+\varepsilon_j).
+$$
+
+Wprowadzamy oznaczenie:
+$$1+E_i:=\prod_{j=i}^{n}(1+\varepsilon_j),\qquad i=2,\dots,n,\qquad E_1:=E_2.$$
+
+Otrzymujemy
+$$
+\operatorname{fl}(S)=\sum_{i=1}^{n}x_i(1+E_i)=\sum_{i=1}^{n}\widehat{x}_i,
+\qquad \widehat{x}_i:=x_i(1+E_i).
+$$
+
+Z twierdzenia o kumulacji błędów:
+$$|E_i|\le (n-i+1)\,2^{-t}\quad (i=2,\dots,n),\qquad |E_1|\le (n-1)\,2^{-t}.$$
+
+A więc wynik obliczony jest dokładną sumą lekko zaburzonych danych $\widehat{x}_i$.
+
+\textbf{Konkluzja.} Ten algorytm jest numerycznie poprawny.

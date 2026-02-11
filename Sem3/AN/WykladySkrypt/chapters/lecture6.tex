@@ -1,0 +1,174 @@
+
+\textbf{Plan wykładu:}
+\begin{itemize}
+\item postać Newtona,
+\item ilorazy różnicowe,
+\item „dobry” wybór węzłów interpolacji.
+\end{itemize}
+
+\vspace{0.3cm}
+
+\textbf{Przypomnienie.}
+Dla par parami różnych węzłów $x_0,\dots,x_n$ oraz danych $y_0,\dots,y_n$ szukamy $L_n\in\Pi_n$ takiego, że
+$$
+L_n(x_k)=y_k,\qquad 0\le k\le n.
+$$
+W postaci Lagrange'a:
+$$
+L_n(x)=\sum_{k=0}^{n} y_k\,\lambda_k(x),\qquad
+\lambda_k(x)=\prod_{\substack{j=0\\ j\neq k}}^{n}\frac{x-x_j}{x_k-x_j}.
+$$
+
+\section{Postać Newtona wielomianu interpolacyjnego}
+
+Niech
+$$
+P_0(x)=1,\qquad
+P_k(x)=\prod_{i=0}^{k-1}(x-x_i)\quad (k\ge 1).
+$$
+Szukamy
+$$
+L_n(x)=b_0P_0(x)+b_1P_1(x)+\dots+b_nP_n(x).
+$$
+
+Współczynniki $b_k$ wyznacza się z warunków interpolacji, co prowadzi do układu trójkątnego (koszt $O(n^2)$).
+
+\textbf{Wzór jawny (z tablicy):}
+$$
+b_k=\sum_{i=0}^{k}\frac{y_i}{\prod_{\substack{j=0\\ j\neq i}}^{k}(x_i-x_j)},
+\qquad k=0,1,\dots,n.
+$$
+
+\section{Ilorazy różnicowe}
+
+\textbf{Definicja.}
+Niech $x_0,\dots,x_n$ będą parami różne i niech $f(x_k)=y_k$.
+Definiujemy:
+$$
+f[x_i]=f(x_i)=y_i,
+$$
+oraz rekurencyjnie
+$$
+f[x_i,\dots,x_k]
+:=
+\frac{f[x_{i+1},\dots,x_k]-f[x_i,\dots,x_{k-1}]}{x_k-x_i},
+\qquad i<k.
+$$
+
+\textbf{Przykład (rząd 2):}
+$$
+f[x_0,x_1,x_2]
+=
+\frac{f[x_1,x_2]-f[x_0,x_1]}{x_2-x_0}.
+$$
+
+\textbf{Twierdzenie (postać Newtona przez ilorazy różnicowe).}
+$$
+L_n(x)=\sum_{k=0}^{n} f[x_0,x_1,\dots,x_k]\,P_k(x),
+$$
+czyli
+$$
+b_k=f[x_0,\dots,x_k].
+$$
+
+\begin{center}
+\begin{tikzpicture}[x=1.8cm,y=0.85cm,>=Latex]
+  % kolumna 0
+  \node (a0) at (0,0) {$f[x_0]$};
+  \node (a1) at (0,-1) {$f[x_1]$};
+  \node (a2) at (0,-2) {$f[x_2]$};
+  \node (ad) at (0,-3) {$\vdots$};
+  \node (an) at (0,-4) {$f[x_n]$};
+
+  % kolumna 1
+  \node (b0) at (2,-0.5) {$f[x_0,x_1]$};
+  \node (b1) at (2,-1.5) {$f[x_1,x_2]$};
+  \node (bd) at (2,-2.5) {$\vdots$};
+
+  % kolumna 2
+  \node (c0) at (4,-1) {$f[x_0,x_1,x_2]$};
+  \node (cd) at (4,-2) {$\vdots$};
+
+  % dalsze kolumny
+  \node at (5.7,-1.5) {$\cdots$};
+  \node (z0) at (7.5,-1.5) {$f[x_0,\dots,x_n]$};
+
+  % strzalki konstrukcji tablicy
+  \draw[->,gray] (a0.east) -- (b0.west);
+  \draw[->,gray] (a1.east) -- (b0.west);
+  \draw[->,gray] (a1.east) -- (b1.west);
+  \draw[->,gray] (a2.east) -- (b1.west);
+  \draw[->,gray] (b0.east) -- (c0.west);
+  \draw[->,gray] (b1.east) -- (c0.west);
+  \draw[->,gray] (c0.east) -- (z0.west);
+\end{tikzpicture}
+\end{center}
+
+\section{Koszty i aktualizacja}
+
+\textbf{Koszt jednej konstrukcji:}
+\begin{itemize}
+\item tablica ilorazów różnicowych: $O(n^2)$,
+\item obliczenie $L_n(x)$ dla ustalonego $x$: $O(n)$ (uogólniony Horner).
+\end{itemize}
+
+Przy wielu punktach $z_0,\dots,z_M$:
+$$
+\text{koszt} \approx O(n^2)+(M+1)\,O(n),
+$$
+co jest tańsze niż wielokrotne liczenie postaci Lagrange'a od zera.
+
+Jeśli dodamy jedną obserwację $(x_{n+1},y_{n+1})$ i mamy zapamiętaną ostatnią kolumnę tablicy ilorazów różnicowych, aktualizacja do $L_{n+1}$ kosztuje $O(n)$.
+
+\section{Uwagi numeryczne}
+
+\begin{itemize}
+\item Przed budową tablicy ilorazów różnicowych zaleca się uporządkować węzły.
+\item Naiwny algorytm wypełniania tablicy ilorazów różnicowych nie jest numerycznie poprawny.
+\item Dla dużej liczby węzłów (na tablicy: rzędu $n\gtrsim 30$) mogą pojawiać się istotne problemy numeryczne.
+\end{itemize}
+
+\section{Błąd interpolacji i wybór węzłów}
+
+\textbf{Twierdzenie (reszta interpolacji).}
+Jeśli $f\in C^{n+1}([a,b])$, to dla każdego $x\in(a,b)$ istnieje $\xi_x\in(a,b)$ takie, że
+$$
+f(x)-L_n(x)=\frac{f^{(n+1)}(\xi_x)}{(n+1)!}\prod_{k=0}^{n}(x-x_k).
+$$
+
+Stąd oszacowanie:
+$$
+\max_{x\in[a,b]}|f(x)-L_n(x)|
+\le
+\max_{x\in[a,b]}\left|\frac{f^{(n+1)}(x)}{(n+1)!}\right|
+\cdot
+\max_{x\in[a,b]}\left|\prod_{k=0}^{n}(x-x_k)\right|.
+$$
+
+Żeby zmniejszyć błąd, chcemy minimalizować
+$$
+\max_{x\in[a,b]}\left|\prod_{k=0}^{n}(x-x_k)\right|.
+$$
+
+\textbf{Fakt.}
+Dla $[a,b]=[-1,1]$ minimum osiągają węzły Czebyszewa:
+$$
+x_k=\cos\!\left(\frac{2k+1}{2n+2}\pi\right),\qquad 0\le k\le n.
+$$
+
+\begin{center}
+\begin{tikzpicture}[x=3.0cm,y=1cm,>=Latex]
+  \draw[->] (-1.15,0) -- (1.15,0);
+  \foreach \x in {-0.9659,-0.7071,-0.2588,0.2588,0.7071,0.9659} {
+    \fill[red] (\x,0) circle (0.8pt);
+  }
+  \node[below] at (-1,0) {$-1$};
+  \node[below] at (1,0) {$1$};
+  \node[above] at (0,0.12) {\footnotesize wezly Czebyszewa na $[-1,1]$};
+\end{tikzpicture}
+\end{center}
+
+Dla ogólnego przedziału $[a,b]$ stosujemy przeskalowanie:
+$$
+t_k=\frac{a+b}{2}+\frac{b-a}{2}\cos\!\left(\frac{2k+1}{2n+2}\pi\right),\qquad 0\le k\le n.
+$$

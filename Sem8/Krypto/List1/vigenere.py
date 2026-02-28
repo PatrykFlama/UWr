@@ -3,7 +3,7 @@ from math import gcd
 from pathlib import Path
 
 
-plik = Path(__file__).with_name("SzyfrVigenere.txt")
+plik = Path(__file__).with_name("SzyfrNieznany.txt")
 tekst = plik.read_text(encoding="utf-8")
 tekst = "".join(ch for ch in tekst.upper() if "A" <= ch <= "Z")
 

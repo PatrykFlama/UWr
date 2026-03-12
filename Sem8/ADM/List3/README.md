@@ -1,5 +1,5 @@
 # List 1
-## Task 1
+## Task 1 -Properties of the Attention Matrix 
 1. Show that every element of the attention matrix A is strictly positive.
 
 From the properties of the softmax function, each of its values is positive - therefore, the matrix A, on which softmax has been applied to each element, will be positive.
@@ -60,3 +60,18 @@ $$
 Since $A_{ij} > 0$ for every $j$ and $\sum_j A_{ij} = 1$, the $i$-th row of $A$ forms a probability distribution over all key positions $j$.
 
 Therefore, $A_{ij}$ represents how likely it is that, when processing token $i$, the model focuses on token $j$. Larger values of $A_{ij}$ mean stronger attention paid by token $i$ to token $j$.
+
+
+
+
+## Task 2 - Linear Structure of Sinusoidal Positional Encoding
+[about positional encoding](https://kazemnejad.com/blog/transformer_architecture_positional_encoding/#:~:text=postional%20embedding-,Relative%20Positioning,-Another%20characteristic%20of)
+
+1. Consider two positions p and q in the sequence. Write explicitly the positional encoding vectors P E(p) and P E(q) for a single pair of coordinates (2i, 2i + 1).
+
+2. Show that the positional encoding at position p can be expressed as a linear transformation of
+the positional encoding at position q that depends only on the offset ∆ = p − q.
+
+3. Conclude that there exists a matrix M∆ such that $PE(p) = M_∆ PE(q)$.
+Discuss why this property may be useful for modeling relative token positions in Transformer architectures.
+

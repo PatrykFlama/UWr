@@ -65,13 +65,28 @@ Therefore, $A_{ij}$ represents how likely it is that, when processing token $i$,
 
 
 ## Task 2 - Linear Structure of Sinusoidal Positional Encoding
-[about positional encoding](https://kazemnejad.com/blog/transformer_architecture_positional_encoding/#:~:text=postional%20embedding-,Relative%20Positioning,-Another%20characteristic%20of)
+[about positional encoding](https://kazemnejad.com/blog/transformer_architecture_positional_encoding)
 
-1. Consider two positions p and q in the sequence. Write explicitly the positional encoding vectors P E(p) and P E(q) for a single pair of coordinates (2i, 2i + 1).
+1. Consider two positions p and q in the sequence. Write explicitly the positional encoding vectors PE(p) and PE(q) for a single pair of coordinates (2i, 2i + 1).
+
+$$
+PE(p)_{i} =
+\begin{bmatrix}
+\sin\left(\frac{p}{10000^{2i/d}}\right) \\
+\cos\left(\frac{p}{10000^{2i/d}}\right)
+\end{bmatrix}
+$$
+
+$$
+PE(q)_{i} =
+\begin{bmatrix}
+\sin\left(\frac{q}{10000^{2i/d}}\right) \\
+\cos\left(\frac{q}{10000^{2i/d}}\right)
+\end{bmatrix}
+$$
 
 2. Show that the positional encoding at position p can be expressed as a linear transformation of
 the positional encoding at position q that depends only on the offset ∆ = p − q.
 
 3. Conclude that there exists a matrix M∆ such that $PE(p) = M_∆ PE(q)$.
 Discuss why this property may be useful for modeling relative token positions in Transformer architectures.
-

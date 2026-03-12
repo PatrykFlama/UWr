@@ -28,6 +28,21 @@ for every $i,j$, which proves that every element of the attention matrix $A$ is 
 
 Softmax is applied row-wise, so sum of each row is 1.
 
-<!-- TODO: formula based proof -->
+More formally, for a fixed row $i$,
+
+$$
+A_{ij} = \frac{e^{S_{ij}}}{\sum_l e^{S_{il}}}
+$$
+
+Hence
+
+$$
+\sum_j A_{ij}
+= \sum_j \frac{e^{S_{ij}}}{\sum_l e^{S_{il}}}
+= \frac{\sum_j e^{S_{ij}}}{\sum_l e^{S_{il}}}
+= 1
+$$
+
+Thus, the sum of elements in every row of $A$ is equal to 1.
 
 3. Provide a probabilistic interpretation of the element Aij in the context of the attention mechanism.

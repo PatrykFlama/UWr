@@ -1,9 +1,6 @@
-# Code from https://medium.com/@sayedebad.777/training-a-transformer-model-from-scratch-25bb270f5888
-
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
-
 
 class TranslationDataset(Dataset):
 
@@ -91,4 +88,3 @@ class TranslationDataset(Dataset):
 def causal_mask(size):
     mask = torch.triu(torch.ones((1, size, size)), diagonal=1).type(torch.int)
     return mask == 0
-

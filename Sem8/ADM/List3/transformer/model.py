@@ -1,9 +1,6 @@
-# Code from https://medium.com/@sayedebad.777/building-a-transformer-from-scratch-a-step-by-step-guide-a3df0aeb7c9a
-
 import torch
 import torch.nn as nn
 import math
-
 
 class InputEmbeddings(nn.Module):
     def __init__(self, d_model: int, vocab_size: int):
@@ -14,8 +11,7 @@ class InputEmbeddings(nn.Module):
     
     def forward(self, x):
         return self.embedding(x) * math.sqrt(self.d_model)
-
-
+    
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model: int, seq: int, dropout: float) -> None:
         super().__init__()
@@ -47,8 +43,7 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         x = x + (self.pe[:, :x.shape[1], :]).requires_grad_(False) # (batch, seq, d_model)
         return self.dropout(x)
-
-
+    
 class LayerNormalization(nn.Module):
 
     def __init__(self, features: int, eps:float=10**-6) -> None:
@@ -65,8 +60,7 @@ class LayerNormalization(nn.Module):
         std = x.std(dim = -1, keepdim = True) # (batch, seq, 1)
         # eps is to prevent dividing by zero or when std is very small
         return self.alpha * (x - mean) / (std + self.eps) + self.bias
-
-
+    
 class FeedForwardBlock(nn.Module):
 
     def __init__(self, d_model: int, d_ff: int, dropout: float) -> None:
@@ -78,8 +72,7 @@ class FeedForwardBlock(nn.Module):
     def forward(self, x):
         # (batch, seq, d_model) --> (batch, seq, d_ff) --> (batch, seq, d_model)
         return self.linear_2(self.dropout(torch.relu(self.linear_1(x))))
-
-
+    
 class MultiHeadAttentionBlock(nn.Module):
 
     def __init__(self, d_model: int, h: int, dropout: float) -> None:
@@ -133,7 +126,6 @@ class MultiHeadAttentionBlock(nn.Module):
         # (batch, seq, d_model) --> (batch, seq, d_model)  
         return self.w_o(x)
     
-
 class ResidualConnection(nn.Module):
     
         def __init__(self, features: int, dropout: float) -> None:
@@ -143,8 +135,7 @@ class ResidualConnection(nn.Module):
     
         def forward(self, x, sublayer):
             return x + self.dropout(sublayer(self.norm(x)))
-
-
+        
 class EncoderBlock(nn.Module):
 
     def __init__(self, features: int, self_attention_block: MultiHeadAttentionBlock, feed_forward_block: FeedForwardBlock, dropout: float) -> None:
@@ -157,8 +148,7 @@ class EncoderBlock(nn.Module):
         x = self.residual_connections[0](x, lambda x: self.self_attention_block(x, x, x, src_mask))
         x = self.residual_connections[1](x, self.feed_forward_block)
         return x
-
-
+    
 class Encoder(nn.Module):
 
     def __init__(self, features: int, layers: nn.ModuleList) -> None:
@@ -170,7 +160,6 @@ class Encoder(nn.Module):
         for layer in self.layers:
             x = layer(x, mask)
         return self.norm(x)
-
 
 class DecoderBlock(nn.Module):
 
@@ -186,8 +175,7 @@ class DecoderBlock(nn.Module):
         x = self.residual_connections[1](x, lambda x: self.cross_attention_block(x, encoder_output, encoder_output, src_mask))
         x = self.residual_connections[2](x, self.feed_forward_block)
         return x
-
-
+    
 class Decoder(nn.Module):
 
     def __init__(self, features: int, layers: nn.ModuleList) -> None:
@@ -199,8 +187,7 @@ class Decoder(nn.Module):
         for layer in self.layers:
             x = layer(x, encoder_output, src_mask, tgt_mask)
         return self.norm(x)
-
-
+    
 class ProjectionLayer(nn.Module):
 
     def __init__(self, d_model, vocab_size) -> None:
@@ -210,8 +197,7 @@ class ProjectionLayer(nn.Module):
     def forward(self, x) -> None:
         # (batch, seq, d_model) --> (batch, seq, vocab_size)
         return self.proj(x)
-
-
+    
 class Transformer(nn.Module):
 
     def __init__(self, encoder: Encoder, decoder: Decoder, src_embed: InputEmbeddings, tgt_embed: InputEmbeddings, src_pos: PositionalEncoding, tgt_pos: PositionalEncoding, projection_layer: ProjectionLayer) -> None:
@@ -239,8 +225,7 @@ class Transformer(nn.Module):
     def project(self, x):
         # (batch, seq, vocab_size)
         return self.projection_layer(x)
-
-
+    
 def build_transformer(src_vocab_size: int, tgt_vocab_size: int, src_seq: int, tgt_seq: int, d_model: int=512, N: int=6, h: int=8, dropout: float=0.1, d_ff: int=2048) -> Transformer:
     # Create the embedding layers
     src_embed = InputEmbeddings(d_model, src_vocab_size)
@@ -283,4 +268,3 @@ def build_transformer(src_vocab_size: int, tgt_vocab_size: int, src_seq: int, tg
             nn.init.xavier_uniform_(p)
     
     return transformer
-

@@ -65,6 +65,19 @@ class LayerNormalization(nn.Module):
         return self.alpha * (x - mean) / (std + self.eps) + self.bias
 
 
+class FeedForwardBlock(nn.Module):
+
+    def __init__(self, d_model: int, d_ff: int, dropout: float) -> None:
+        super().__init__()
+        self.linear_1 = nn.Linear(d_model, d_ff) # w1 and b1
+        self.dropout = nn.Dropout(dropout)
+        self.linear_2 = nn.Linear(d_ff, d_model) # w2 and b2
+
+    def forward(self, x):
+        # (batch, seq, d_model) --> (batch, seq, d_ff) --> (batch, seq, d_model)
+        return self.linear_2(self.dropout(torch.relu(self.linear_1(x))))
+
+
 class MultiHeadAttentionBlock(nn.Module):
 
     def __init__(self, d_model: int, h: int, dropout: float) -> None:
@@ -270,4 +283,7 @@ def build_transformer(src_vocab_size: int, tgt_vocab_size: int, src_seq: int, tg
     return transformer
 
 
+def causal_mask(size: int):
+    mask = torch.triu(torch.ones(1, 1, size, size), diagonal=1).type(torch.int)
+    return mask == 0
 

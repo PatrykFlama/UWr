@@ -19,11 +19,11 @@ def causal_mask(size: int, device: torch.device | None = None) -> torch.Tensor:
 
 
 class CopyDataset(Dataset):
-    def __init__(self, sample_count: int, seq_len: int, vocab_size: int, seed: int = 42):
+    def __init__(self, sample_count: int, seq_len: int, vocab_size: int):
         self.sample_count = sample_count
         self.seq_len = seq_len
         self.vocab_size = vocab_size
-        self.random = random.Random(seed)
+        self.random = random.Random()
 
     def __len__(self) -> int:
         return self.sample_count
@@ -129,15 +129,12 @@ def greedy_decode(model: Transformer, src: torch.Tensor, max_len: int, device: t
 
 
 def run_training(epochs: int = 5, batch_size: int = 64, learning_rate: float = 1e-4) -> None:
-    torch.manual_seed(42)
-    random.seed(42)
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     vocab_size = 64
     seq_len = 16
 
-    train_dataset = CopyDataset(sample_count=2048, seq_len=seq_len, vocab_size=vocab_size, seed=42)
-    valid_dataset = CopyDataset(sample_count=256, seq_len=seq_len, vocab_size=vocab_size, seed=7)
+    train_dataset = CopyDataset(sample_count=2048, seq_len=seq_len, vocab_size=vocab_size)
+    valid_dataset = CopyDataset(sample_count=256, seq_len=seq_len, vocab_size=vocab_size)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)

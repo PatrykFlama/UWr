@@ -13,3 +13,5 @@ https://arxiv.org/abs/2104.14294
 
 https://proceedings.mlr.press/v119/wang20k.html
 
+### Lecture 4
+https://gnn.seas.upenn.edu/lectures/

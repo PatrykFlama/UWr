@@ -88,5 +88,93 @@ $$
 2. Show that the positional encoding at position p can be expressed as a linear transformation of
 the positional encoding at position q that depends only on the offset ∆ = p − q.
 
+Let
+
+$$
+\Delta = p - q
+$$
+
+$$
+\omega_k = \frac{1}{10000^{2k/d}}
+$$
+
+Then
+
+$$
+\frac{p}{10000^{2k/d}} = \frac{q+\Delta}{10000^{2k/d}} = q\omega_k + \Delta \omega_k
+$$
+
+Lets define
+
+$$
+PE(p,2k) = \sin(q\omega_k + \Delta \omega_k)
+$$
+
+$$
+PE(p,2k+1) = \cos(q\omega_k + \Delta\omega_k)
+$$
+
+Using the identity $\sin(a+b) = \sin a \cos b + \cos a \sin b$
+
+$$
+PE(p,2k)
+= \sin(q\omega_k)\cos(\Delta\omega_k) + \cos(q\omega_k)\sin(\Delta\omega_k)
+$$
+
+$$
+PE(p,2k)
+= \cos(\Delta\omega_k)\,PE(q,2k) + \sin(\Delta\omega_k)\,PE(q,2k+1)
+$$
+
+
+Using $\cos(a+b) = \cos a \cos b - \sin a \sin b$
+
+$$
+PE(p,2k+1)
+= \cos(q\omega_k)\cos(\Delta\omega_k) - \sin(q\omega_k)\sin(\Delta\omega_k)
+$$
+
+$$
+PE(p,2k+1)
+= -\sin(\Delta\omega_k)\,PE(q,2k) + \cos(\Delta\omega_k)\,PE(q,2k+1)
+$$
+
+So for coordinate pair $(2k,2k+1)$
+
+$$
+\begin{bmatrix}
+PE(p,2k) \\
+PE(p,2k+1)
+\end{bmatrix}
+=
+\begin{bmatrix}
+\cos(\Delta\omega_k) & \sin(\Delta\omega_k) \\
+-\sin(\Delta\omega_k) & \cos(\Delta\omega_k)
+\end{bmatrix}
+\begin{bmatrix}
+PE(q,2k) \\
+PE(q,2k+1)
+\end{bmatrix}
+$$
+
+This is a linear transformation of $PE(q)$ that depends only on the offset $\Delta$
+
 3. Conclude that there exists a matrix M∆ such that $PE(p) = M_∆ PE(q)$.
 Discuss why this property may be useful for modeling relative token positions in Transformer architectures.
+
+For  full positional encoding vector, there exists a block-diagonal matrix $M_\Delta$ whose $k$-th $2 \times 2$ block is
+
+$$
+\begin{bmatrix}
+\cos(\Delta\omega_k) & \sin(\Delta\omega_k) \\
+-\sin(\Delta\omega_k) & \cos(\Delta\omega_k)
+\end{bmatrix}
+$$
+
+such that
+
+$$
+PE(p) = M_\Delta PE(q)
+$$
+
+This is useful because the transformation depends only on the relative distance $\Delta = p-q$, not on the absolute positions $p$ and $q$ separately. As a result, sinusoidal positional encodings naturally preserve relative-position information. This helps Transformers detect patterns based on token offsets, such as whether one token is a few positions before or after another, which is more important than their absolute positions in the sentence.

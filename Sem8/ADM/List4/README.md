@@ -201,3 +201,41 @@ The term $w_{ij}(x_i-x_j)^2$ penalizes differences across edge $(i,j)$ proportio
 - If $w_{ij}$ is very large, then any difference $|x_i-x_j|$ becomes very expensive, so minimization focuses on obtaining $x_i\approx x_j$
 - If $w_{ij}$ is small, that edge weakly constrains the values
 
+
+## Task 3: Kernel of the Laplacian
+
+$$
+\mathbf{1}=(1,1,\dots,1)^T
+$$
+
+1. Show that
+
+$$
+L\mathbf{1}=0
+$$
+
+$$
+(Lx)_i=\sum_{j\sim i}(x_i-x_j)
+$$
+
+for $x=\mathbf{1}$ we have $x_i=1$ and $x_j=1$ for every neighbor $j$, so each term is
+
+$$
+x_i-x_j=1-1=0
+$$
+
+$$
+(L\mathbf{1})_i=\sum_{j\sim i}0=0
+$$
+
+for every vertex $i$, thus
+
+$$
+L\mathbf{1}=0
+$$
+
+2. Intuitive explanation
+
+the Laplacian measures local differences between a vertex value and neighboring values  
+if the signal is constant (all ones), there are no differences anywhere on the graph, so the Laplacian returns zero at every vertex
+

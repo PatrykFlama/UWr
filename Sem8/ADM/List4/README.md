@@ -28,6 +28,11 @@ L = D - A =
 \end{bmatrix}
 $$
 
+> observation: rows/cols sum to 0  
+> we can interpret this matrix as "how much our neighborhood affects us" 
+
+> for directed graphs everything works based on the same concept
+
 2. Compute the vector:
  
 $$

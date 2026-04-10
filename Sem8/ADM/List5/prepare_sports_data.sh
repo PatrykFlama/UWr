@@ -3,10 +3,14 @@ set -euo pipefail
 
 REVIEWS_URL="https://mcauleylab.ucsd.edu/public_datasets/data/amazon_v2/categoryFiles/Sports_and_Outdoors.json.gz"
 META_URL="https://mcauleylab.ucsd.edu/public_datasets/data/amazon_v2/metaFiles2/meta_Sports_and_Outdoors.json.gz"
+REVIEWS_5CORE_URL="https://mcauleylab.ucsd.edu/public_datasets/data/amazon_v2/categoryFilesSmall/Sports_and_Outdoors_5.json.gz"
+RATINGS_URL="https://mcauleylab.ucsd.edu/public_datasets/data/amazon_v2/categoryFilesSmall/Sports_and_Outdoors.csv"
 
 mkdir -p "data"
 REVIEWS_GZ="data/Sports_and_Outdoors.json.gz"
 META_GZ="data/meta_Sports_and_Outdoors.json.gz"
+REVIEWS_5CORE_GZ="data/Sports_and_Outdoors_5.json.gz"
+RATINGS_CSV="data/Sports_and_Outdoors.csv"
 
 download_if_missing() {
   local url="$1"
@@ -18,14 +22,8 @@ download_if_missing() {
   fi
 
   echo "Downloading: $url"
-  if command -v curl >/dev/null 2>&1; then
-    curl -fL --retry 3 --retry-delay 2 -o "$output" "$url"
-  elif command -v wget >/dev/null 2>&1; then
-    wget -O "$output" "$url"
-  else
-    echo "Error: neither curl nor wget is available." >&2
-    exit 1
-  fi
+  curl -fL --retry 3 --retry-delay 2 -o "$output" "$url" &>/dev/null
+  echo "Downloaded: $output"
 }
 
 unpack_if_missing() {
@@ -41,16 +39,16 @@ unpack_if_missing() {
   gzip -dc "$input_gz" > "$output_json"
 }
 
-download_if_missing "$REVIEWS_URL" "$REVIEWS_GZ" &
-pid_dl_reviews=$!
-download_if_missing "$META_URL" "$META_GZ" &
-pid_dl_meta=$!
-wait "$pid_dl_reviews"
-wait "$pid_dl_meta"
+download_if_missing "$REVIEWS_URL" "$REVIEWS_GZ" && unpack_if_missing "$REVIEWS_GZ" &
+pid_reviews=$!
+download_if_missing "$META_URL" "$META_GZ" && unpack_if_missing "$META_GZ" &
+pid_meta=$!
+download_if_missing "$REVIEWS_5CORE_URL" "$REVIEWS_5CORE_GZ" && unpack_if_missing "$REVIEWS_5CORE_GZ" &
+pid_reviews_5core=$!
+download_if_missing "$RATINGS_URL" "$RATINGS_CSV" &
+pid_ratings=$!
 
-unpack_if_missing "$REVIEWS_GZ" &
-pid_unpack_reviews=$!
-unpack_if_missing "$META_GZ" &
-pid_unpack_meta=$!
-wait "$pid_unpack_reviews"
-wait "$pid_unpack_meta"
+wait "$pid_reviews"
+wait "$pid_meta"
+wait "$pid_reviews_5core"
+wait "$pid_ratings"

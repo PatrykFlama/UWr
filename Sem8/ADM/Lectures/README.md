@@ -50,15 +50,13 @@ https://dl.acm.org/doi/10.1145/3038912.3052569
 
 ## Lecture 7: Modern RS - interactions as sequences and graphs
 Recall before the lecture:
-
-- GRU
-
-- Transformer
-
-- basic GNN,  graph convolutional netwrok
+	- GRU
+	- Transformer
+	- basic GNN,  graph convolutional netwrok
 
 Reading:
-
-TBA
-
-Next mini-talk slot: 21.04.2026
+	https://arxiv.org/abs/1808.09781
+	https://arxiv.org/abs/2002.02126
+	https://dl.acm.org/doi/10.1145/3404835.3462862
+	https://dl.acm.org/doi/10.1145/3627673.3679655
+	https://dl.acm.org/doi/10.1145/3477495.3531937

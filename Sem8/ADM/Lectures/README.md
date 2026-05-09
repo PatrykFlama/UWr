@@ -60,3 +60,9 @@ Reading:
 	https://dl.acm.org/doi/10.1145/3404835.3462862
 	https://dl.acm.org/doi/10.1145/3627673.3679655
 	https://dl.acm.org/doi/10.1145/3477495.3531937
+
+## Lecture 8: Time Series
+
+## Lecture 9: RNNs, LSTMs, and Transformers for Time Series
+
+

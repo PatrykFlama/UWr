@@ -65,4 +65,4 @@ Reading:
 
 ## Lecture 9: RNNs, LSTMs, and Transformers for Time Series
 
-
+## Lecture 10: Self-supervised Learning for Time Series

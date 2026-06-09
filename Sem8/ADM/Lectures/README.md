@@ -66,3 +66,11 @@ Reading:
 ## Lecture 9: RNNs, LSTMs, and Transformers for Time Series
 
 ## Lecture 10: Self-supervised Learning for Time Series
+
+## Lecture 11: Deep Learning for Vision Based on Geospatial Data
+
+## Lecture 12: Trajectory Clustering And Segmentation
+
+## Lecture 13: EvolveGCN: Evolving Graph Convolutional Networks for Dynamic Graphs
+
+## Lecture 14:  Gated Graph Recurrent Neural Networks

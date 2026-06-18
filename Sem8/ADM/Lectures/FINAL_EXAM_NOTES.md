@@ -283,8 +283,8 @@ The causal mask contains $0$ for allowed positions and $-\infty$ for forbidden p
 > $$
 >
 > $$
-> \operatorname{Attention}(Q,K,V)
-> =\operatorname{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}+M\right)V.
+> \mathrm{Attention}(Q,K,V)
+> =\mathrm{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}+M\right)V.
 > $$
 >
 > $M=0$ in unmasked attention. In causal attention it contains $-\infty$ above the permitted region.
@@ -296,14 +296,14 @@ The causal mask contains $0$ for allowed positions and $-\infty$ for forbidden p
 One attention pattern may not capture every relation. **Multi-head attention** uses separate projections for each head:
 
 $$
-\text{head}_j=\operatorname{Attention}(QW_j^Q,KW_j^K,VW_j^V).
+\text{head}_j=\mathrm{Attention}(QW_j^Q,KW_j^K,VW_j^V).
 $$
 
 The heads are concatenated and projected:
 
 $$
-\operatorname{MHA}(Q,K,V)
-=\operatorname{Concat}(\text{head}_1,\ldots,\text{head}_h)W_O.
+\mathrm{MHA}(Q,K,V)
+=\mathrm{Concat}(\text{head}_1,\ldots,\text{head}_h)W_O.
 $$
 
 Different heads can specialize in different relationships or representation subspaces. A head is not guaranteed to have a clean human interpretation, but the architecture gives the model multiple independent retrieval mechanisms.
@@ -600,12 +600,12 @@ For implicit recommendation, ranking quality is usually more meaningful than rat
 > **Formula box — common top-$K$ metrics**
 >
 > $$
-> \operatorname{Precision@K}
+> \mathrm{Precision@K}
 > =\frac{\#\text{ relevant items in top }K}{K},
 > $$
 >
 > $$
-> \operatorname{Recall@K}
+> \mathrm{Recall@K}
 > =\frac{\#\text{ relevant items in top }K}
 > {\#\text{ relevant items}}.
 > $$
@@ -615,7 +615,7 @@ For implicit recommendation, ranking quality is usually more meaningful than rat
 > If the first relevant item is at rank $r_u$:
 >
 > $$
-> \operatorname{MRR}=\frac1{|U|}\sum_u\frac1{r_u}.
+> \mathrm{MRR}=\frac1{|U|}\sum_u\frac1{r_u}.
 > $$
 >
 > $$
@@ -781,9 +781,9 @@ The lecture also pointed to diffusion-based recommendation/augmentation as a mod
 >
 > $$
 > \ell=-\log
-> \frac{\exp(\operatorname{sim}(z,z^+)/\tau)}
-> {\exp(\operatorname{sim}(z,z^+)/\tau)+
-> \sum_j\exp(\operatorname{sim}(z,z_j^-)/\tau)}.
+> \frac{\exp(\mathrm{sim}(z,z^+)/\tau)}
+> {\exp(\mathrm{sim}(z,z^+)/\tau)+
+> \sum_j\exp(\mathrm{sim}(z,z_j^-)/\tau)}.
 > $$
 
 In graph recommenders, a common combined objective is **BPR + InfoNCE**.
@@ -846,7 +846,7 @@ A weakly stationary process has:
 > $$
 > \mathbb E[X_t]=\mu,
 > \qquad
-> \operatorname{Cov}(X_t,X_{t+k})=\gamma_k.
+> \mathrm{Cov}(X_t,X_{t+k})=\gamma_k.
 > $$
 
 Real series are often non-stationary due to:
@@ -1337,7 +1337,7 @@ xLSTM modernizes LSTM-style memory:
 Structured state-space models learn efficient long filters. **Mamba** makes the state-space parameters depend on the current input:
 
 $$
-A_t,B_t,C_t=\operatorname{functions}(x_t).
+A_t,B_t,C_t=\mathrm{functions}(x_t).
 $$
 
 This **selectivity** lets the model:
@@ -1497,7 +1497,7 @@ Contrastive learning chooses positives and negatives. The key question is not me
 Masked modeling hides values or patches and reconstructs them:
 
 $$
-\widetilde X=\operatorname{mask}(X),
+\widetilde X=\mathrm{mask}(X),
 \qquad
 \widehat X_M=g_\phi(f_\theta(\widetilde X)).
 $$
@@ -1966,8 +1966,8 @@ OPTICS addresses the limitation of one global density scale.
 > **Formula box — OPTICS reachability**
 >
 > $$
-> \operatorname{reach\_dist}(p,q)
-> =\max(\operatorname{core\_dist}(p),d(p,q)).
+> \mathrm{reach\_dist}(p,q)
+> =\max(\mathrm{core\_dist}(p),d(p,q)).
 > $$
 
 OPTICS outputs:
@@ -2042,7 +2042,7 @@ Three components:
 > Combined:
 >
 > $$
-> \operatorname{dist}(L_i,L_j)=
+> \mathrm{dist}(L_i,L_j)=
 > w_\perp d_\perp+
 > w_\parallel d_\parallel+
 > w_\theta d_\theta.
@@ -2177,7 +2177,7 @@ EvolveGCN stores temporal information in GCN weight matrices:
 > **Formula box — EvolveGCN principle**
 >
 > $$
-> W_t=\operatorname{RNN}(W_{t-1}),
+> W_t=\mathrm{RNN}(W_{t-1}),
 > $$
 >
 > $$
@@ -2205,8 +2205,8 @@ In EvolveGCN-H:
 
 $$
 W_t^{(\ell)}
-=\operatorname{GRU}
-\left(\operatorname{summarize}(H_t^{(\ell)}),
+=\mathrm{GRU}
+\left(\mathrm{summarize}(H_t^{(\ell)}),
 W_{t-1}^{(\ell)}\right).
 $$
 
@@ -2230,7 +2230,7 @@ In EvolveGCN-O:
 
 $$
 W_t^{(\ell)}
-=\operatorname{LSTM}(W_{t-1}^{(\ell)}).
+=\mathrm{LSTM}(W_{t-1}^{(\ell)}).
 $$
 
 Node embeddings are not inputs to the recurrent unit. The LSTM cell state carries internal temporal memory, while weight matrices are recurrent input/output.
@@ -2349,12 +2349,12 @@ One gate per node:
 
 $$
 \widehat Q\{A_S(X_t)\}
-=\operatorname{diag}(\hat q_t)A_S(X_t),
+=\mathrm{diag}(\hat q_t)A_S(X_t),
 $$
 
 $$
 \check Q\{B_S(Z_{t-1})\}
-=\operatorname{diag}(\check q_t)B_S(Z_{t-1}).
+=\mathrm{diag}(\check q_t)B_S(Z_{t-1}).
 $$
 
 Properties:
@@ -2620,7 +2620,7 @@ Each node has memory $s_i(t)$ containing compressed historical information. For 
 
 $$
 s_i(t)=
-\operatorname{GRU}(s_i(t^-),m_i(t)),
+\mathrm{GRU}(s_i(t^-),m_i(t)),
 $$
 
 where $t^-$ means the state immediately before the current event.
@@ -2641,7 +2641,7 @@ Memory and embedding are separate:
 
 $$
 z_i(t)=
-\operatorname{Embed}(s_i(t),N_i(t)).
+\mathrm{Embed}(s_i(t),N_i(t)).
 $$
 
 The embedding module may use:

@@ -102,9 +102,9 @@ The critical design choice is what counts as a positive pair. A wrong choice tea
 >
 > $$
 > \ell=-\log
-> \frac{\exp(\operatorname{sim}(z,z^+)/\tau)}
-> {\exp(\operatorname{sim}(z,z^+)/\tau)+
-> \sum_j\exp(\operatorname{sim}(z,z_j^-)/\tau)}.
+> \frac{\exp(\mathrm{sim}(z,z^+)/\tau)}
+> {\exp(\mathrm{sim}(z,z^+)/\tau)+
+> \sum_j\exp(\mathrm{sim}(z,z_j^-)/\tau)}.
 > $$
 
 ---
@@ -126,8 +126,8 @@ Attention is content-based retrieval:
 > $$
 >
 > $$
-> \operatorname{Attention}(Q,K,V)
-> =\operatorname{softmax}
+> \mathrm{Attention}(Q,K,V)
+> =\mathrm{softmax}
 > \left(\frac{QK^\top}{\sqrt{d_k}}+M\right)V.
 > $$
 
@@ -322,7 +322,7 @@ Weak stationarity requires:
 
 $$
 \mathbb E[X_t]=\mu,\qquad
-\operatorname{Cov}(X_t,X_{t+k})=\gamma_k.
+\mathrm{Cov}(X_t,X_{t+k})=\gamma_k.
 $$
 
 Non-stationarity can come from trend, seasonality, level shifts, anomalies, or changing variance. Use detrending, seasonal adjustment, differencing, or suitable transformations.
@@ -674,8 +674,8 @@ DBSCAN finds arbitrary shapes and noise without preselecting cluster count, but 
 OPTICS uses:
 
 $$
-\operatorname{reach\_dist}(p,q)=
-\max(\operatorname{core\_dist}(p),d(p,q)).
+\mathrm{reach\_dist}(p,q)=
+\max(\mathrm{core\_dist}(p),d(p,q)).
 $$
 
 It outputs a reachability ordering:
@@ -701,7 +701,7 @@ Segment distance combines:
 - angular difference $d_\theta$.
 
 $$
-\operatorname{dist}(L_i,L_j)=
+\mathrm{dist}(L_i,L_j)=
 w_\perp d_\perp+
 w_\parallel d_\parallel+
 w_\theta d_\theta.
@@ -758,7 +758,7 @@ Problem with GCN followed by an RNN over node embeddings: every node needs a per
 EvolveGCN evolves model weights:
 
 $$
-W_t=\operatorname{RNN}(W_{t-1}),
+W_t=\mathrm{RNN}(W_{t-1}),
 $$
 
 $$
@@ -887,11 +887,11 @@ TGN is a modular event-based framework:
 
 $$
 s_i(t)=
-\operatorname{GRU}(s_i(t^-),m_i(t)),
+\mathrm{GRU}(s_i(t^-),m_i(t)),
 $$
 
 $$
-z_i(t)=\operatorname{Embed}(s_i(t),N_i(t)).
+z_i(t)=\mathrm{Embed}(s_i(t),N_i(t)).
 $$
 
 Memory stores compressed event history; the embedding module builds the representation needed for the current task. It may use graph attention, GraphSAGE, or identity mapping.

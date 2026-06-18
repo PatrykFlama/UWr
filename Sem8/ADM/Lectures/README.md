@@ -74,3 +74,14 @@ Reading:
 ## Lecture 13: EvolveGCN: Evolving Graph Convolutional Networks for Dynamic Graphs
 
 ## Lecture 14:  Gated Graph Recurrent Neural Networks
+
+## Lecture 15: Dynamic and Temporal Graph Neural Networks 
+[Traffic Prediction notebooks](https://github.com/RiccardoSpolaor/Verbal-Explanations-of-Spatio-Temporal-Graph-Neural-Networks-for-Traffic-Forecasting/blob/main/notebooks/01%20Building%20a%20STGNN%20for%20the%20Metr-LA%20dataset.ipynb) 
+
+[TGAT paper](https://arxiv.org/pdf/2002.07962) 
+
+[JODIE paper](https://arxiv.org/pdf/1908.01207) 
+
+[DyRep paper](https://arxiv.org/pdf/1803.04051) 
+
+[TGN paper](https://arxiv.org/pdf/2006.10637)

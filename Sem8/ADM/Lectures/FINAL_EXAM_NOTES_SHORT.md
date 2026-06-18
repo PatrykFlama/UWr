@@ -50,7 +50,13 @@ Use it for the second reading and final recall. For unclear concepts, return to 
   - [Two different settings](#two-different-settings)
   - [EvolveGCN](#evolvegcn)
   - [GRNN and gated GRNN](#grnn-and-gated-grnn)
-- [11. Last-minute comparison table](#11-last-minute-comparison-table)
+- [11. Continuous-time temporal GNNs](#11-continuous-time-temporal-gnns)
+  - [Snapshots versus events](#snapshots-versus-events)
+  - [TGAT](#tgat)
+  - [JODIE and DyRep](#jodie-and-dyrep)
+  - [TGN](#tgn)
+  - [Dynamic Graph Transformers](#dynamic-graph-transformers)
+- [12. Last-minute comparison table](#12-last-minute-comparison-table)
   - [Final recurring principles](#final-recurring-principles)
 
 
@@ -799,7 +805,124 @@ Mnemonic:
 
 ---
 
-# 11. Last-minute comparison table
+# 11. Continuous-time temporal GNNs
+
+## Snapshots versus events
+
+A dynamic graph may be represented as:
+
+- snapshots $G_1,\ldots,G_T$;
+- exact events $(u,v,t,m)$.
+
+Snapshots are easy to process but lose event order inside each interval. Event-based models preserve irregular time gaps and update only affected nodes.
+
+At query time $t$, only events from the past may be used. Including future edges or interactions is temporal leakage.
+
+Main paradigms:
+
+- recurrent node/graph states;
+- parameter evolution, such as EvolveGCN;
+- temporal attention;
+- explicit node memory;
+- temporal point processes.
+
+Temporal messages commonly use:
+
+$$
+m_{u\rightarrow v}(t)=
+f(h_u,h_v,\phi(\Delta t)),
+$$
+
+where $\phi(\Delta t)$ may be harmonic, learned, Fourier-based, or an attention bias.
+
+## TGAT
+
+TGAT represents nodes directly in continuous time. It attends over historical neighbors using node state and encoded relative time:
+
+$$
+e_{ij}=a(h_i,h_j,\phi(\Delta t_{ij})),
+\qquad
+\alpha_{ij}=
+\frac{\exp(e_{ij})}{\sum_k\exp(e_{ik})}.
+$$
+
+Use it when exact event times and time-dependent neighbor importance matter, especially for temporal link prediction.
+
+## JODIE and DyRep
+
+**JODIE:**
+
+- designed for bipartite user–item streams;
+- uses coupled user and item RNNs;
+- each event updates both embeddings;
+- projects a user state into the future:
+
+$$
+\widehat h_u(t+\Delta t)=
+\rho(h_u(t),\Delta t).
+$$
+
+**DyRep:**
+
+- separates communication events from association/structural events;
+- updates embeddings and neighborhood influence continuously;
+- uses a temporal point-process intensity $\lambda(t)$.
+
+$$
+p(t)=\lambda(t)
+\exp\left(-\int_0^t\lambda(\tau)\,d\tau\right).
+$$
+
+The intensity supports prediction of both who interacts and when.
+
+## TGN
+
+TGN is a modular event-based framework:
+
+1. node memory;
+2. message construction;
+3. message aggregation;
+4. memory update;
+5. embedding module.
+
+$$
+s_i(t)=
+\operatorname{GRU}(s_i(t^-),m_i(t)),
+$$
+
+$$
+z_i(t)=\operatorname{Embed}(s_i(t),N_i(t)).
+$$
+
+Memory stores compressed event history; the embedding module builds the representation needed for the current task. It may use graph attention, GraphSAGE, or identity mapping.
+
+## Dynamic Graph Transformers
+
+Graph Transformers treat nodes as tokens and encode graph structure as masks, biases, or edge features. Dynamic versions also include time-aware attention:
+
+Graphormer is the representative static Graph Transformer from the lecture; temporal modeling still has to be added.
+
+$$
+A_{ij}=f(h_i,h_j,\Delta t),
+$$
+
+or tokenize events $(u,v,t)$.
+
+Advantages: global reasoning and long-range dependencies.
+Limitations: $O(N^2)$ full attention, high memory cost, and the need to enforce temporal causality.
+
+Choose:
+
+- snapshots/EvolveGCN for coarse regular evolution;
+- TGAT for continuous temporal attention;
+- JODIE for bipartite interaction trajectories;
+- DyRep for who-and-when event modeling;
+- TGN for persistent memory with modular embeddings;
+- dynamic Graph Transformers for global reasoning when cost permits.
+
+---
+
+# 12. Last-minute comparison table
 
 | Compare | Key distinction |
 |---|---|
@@ -814,6 +937,8 @@ Mnemonic:
 | TRACLUS vs SeqScan | common sub-routes across objects vs stays in one ordered path |
 | Static GCN vs EvolveGCN | fixed graph model vs recurrently evolving GCN weights |
 | EvolveGCN vs GRNN | changing graph snapshots vs changing signals on a fixed graph |
+| Snapshot DGNN vs temporal GNN | discretized graph sequence vs exact irregular event stream |
+| TGAT vs JODIE vs DyRep vs TGN | attention vs coupled bipartite recurrence vs point process vs modular node memory |
 | TS2Vec vs T-Rep | contextual multiscale contrast vs contrast plus explicit learned time geometry |
 
 ## Final recurring principles
@@ -825,3 +950,4 @@ Mnemonic:
 5. Evaluation must reproduce deployment conditions.
 6. Every added flexibility introduces a failure mode.
 7. Always compare against strong simple baselines.
+8. For temporal graphs, state explicitly whether time means snapshots, a fixed-support signal sequence, or exact events.

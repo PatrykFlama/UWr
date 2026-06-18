@@ -123,8 +123,18 @@ These notes are designed to be self-contained and short enough to read twice in 
     - [Node gating](#node-gating)
     - [Edge gating](#edge-gating)
   - [10.10 EvolveGCN versus GRNN/GGRNN](#1010-evolvegcn-versus-grnnggrnn)
-- [11. Final comparison review](#11-final-comparison-review)
-  - [11.1 High-value conceptual comparisons](#111-high-value-conceptual-comparisons)
+- [11. Continuous-time temporal GNNs](#11-continuous-time-temporal-gnns)
+  - [11.1 Dynamic graph formulation and taxonomy](#111-dynamic-graph-formulation-and-taxonomy)
+  - [11.2 Snapshot time versus event time](#112-snapshot-time-versus-event-time)
+  - [11.3 Temporal messages and time encoding](#113-temporal-messages-and-time-encoding)
+  - [11.4 TGAT](#114-tgat)
+  - [11.5 JODIE](#115-jodie)
+  - [11.6 DyRep and temporal point processes](#116-dyrep-and-temporal-point-processes)
+  - [11.7 Temporal Graph Networks](#117-temporal-graph-networks)
+  - [11.8 Graph Transformers for dynamic graphs](#118-graph-transformers-for-dynamic-graphs)
+  - [11.9 Choosing a dynamic-graph paradigm](#119-choosing-a-dynamic-graph-paradigm)
+- [12. Final comparison review](#12-final-comparison-review)
+  - [12.1 High-value conceptual comparisons](#121-high-value-conceptual-comparisons)
     - [Supervised, self-supervised, and transfer learning](#supervised-self-supervised-and-transfer-learning)
     - [Contrastive versus masked learning](#contrastive-versus-masked-learning)
     - [RNN versus Transformer versus SSM](#rnn-versus-transformer-versus-ssm)
@@ -134,8 +144,9 @@ These notes are designed to be self-contained and short enough to read twice in 
     - [DBSCAN versus OPTICS](#dbscan-versus-optics)
     - [TRACLUS versus SeqScan](#traclus-versus-seqscan)
     - [Static GCN versus LightGCN versus EvolveGCN versus GRNN](#static-gcn-versus-lightgcn-versus-evolvegcn-versus-grnn)
-  - [11.2 Questions you should be able to answer](#112-questions-you-should-be-able-to-answer)
-  - [11.3 Recurring principles across the course](#113-recurring-principles-across-the-course)
+    - [Snapshot-based versus continuous-time temporal graphs](#snapshot-based-versus-continuous-time-temporal-graphs)
+  - [12.2 Questions you should be able to answer](#122-questions-you-should-be-able-to-answer)
+  - [12.3 Recurring principles across the course](#123-recurring-principles-across-the-course)
     - [Structure should match the data](#structure-should-match-the-data)
     - [Parameter sharing creates scalability](#parameter-sharing-creates-scalability)
     - [Normalization controls scale](#normalization-controls-scale)
@@ -2380,9 +2391,335 @@ Edge gating asks **which connections should transmit information**.
 
 ---
 
-# 11. Final comparison review
+# 11. Continuous-time temporal GNNs
 
-## 11.1 High-value conceptual comparisons
+## 11.1 Dynamic graph formulation and taxonomy
+
+Many real graphs evolve:
+
+- nodes and edges appear or disappear;
+- node and edge attributes change;
+- interactions happen at irregular times;
+- recent events may matter differently from old events.
+
+A dynamic graph snapshot can be written as:
+
+$$
+G_t=(V_t,E_t,X_t),
+$$
+
+where topology, node set, and attributes may all depend on time.
+
+Typical tasks:
+
+- **node level:** classification, state forecasting, anomaly detection;
+- **edge level:** temporal link prediction, interaction recommendation;
+- **graph level:** event forecasting and dynamic graph classification.
+
+The lecture distinguishes four broad paradigms:
+
+1. **recurrent dynamic GNNs:** recurrently update node or graph states;
+2. **parameter-evolving GNNs:** evolve GNN parameters, as in EvolveGCN;
+3. **attention-based temporal GNNs:** attend to time-stamped neighbors;
+4. **memory-based temporal GNNs:** maintain explicit per-node event histories.
+
+Continuous-time systems often combine memory, attention, and temporal point processes.
+
+## 11.2 Snapshot time versus event time
+
+### Discrete-time or snapshot models
+
+The graph is represented as:
+
+$$
+G_1,G_2,\ldots,G_T.
+$$
+
+All events within one time interval are merged into one snapshot.
+
+Advantages:
+
+- straightforward use of static GNN layers;
+- suitable when measurements naturally arrive at fixed intervals;
+- easier batching.
+
+Limitations:
+
+- temporal order inside a snapshot is lost;
+- results depend on the chosen interval width;
+- empty or highly uneven snapshots can occur;
+- discretization can blur irregular events.
+
+EvolveGCN is a representative snapshot-based model.
+
+### Continuous-time or event-based models
+
+The input is an ordered stream such as:
+
+$$
+(u,v,t,m),
+$$
+
+where nodes $u,v$ interact at exact time $t$, with optional message or edge feature $m$.
+
+Advantages:
+
+- preserves exact event order and irregular time gaps;
+- updates only affected nodes;
+- supports predictions at arbitrary times.
+
+The main correctness requirement is **temporal causality**: a representation at time $t$ may use only events occurring before or at $t$. Aggregating a graph built from future interactions causes information leakage.
+
+## 11.3 Temporal messages and time encoding
+
+A temporal message depends on node states and elapsed time:
+
+$$
+m_{u\rightarrow v}(t)
+=f\left(h_u,h_v,\Delta t\right).
+$$
+
+$\Delta t$ is usually relative time since a relevant past event. Relative time is often more meaningful than an absolute timestamp because it expresses recency.
+
+Time-encoding options:
+
+- sinusoidal or harmonic encoding;
+- learned time embeddings;
+- Fourier features;
+- relative-time bias added to attention scores.
+
+> **Formula box — harmonic time encoding**
+>
+> $$
+> \phi(\Delta t)=
+> [\cos(\omega_1\Delta t),\ldots,
+> \cos(\omega_k\Delta t)].
+> $$
+>
+> Different frequencies represent temporal patterns at different scales. Unlike a discrete position index, the function can be evaluated at arbitrary continuous times.
+
+Time encoding affects how temporal neighbors are compared; it does not by itself maintain a history. History must still be represented by recurrence, attention, memory, or their combination.
+
+## 11.4 TGAT
+
+**TGAT — Temporal Graph Attention Network** avoids snapshot discretization and computes node representations directly at a requested continuous time.
+
+Core idea:
+
+1. query a node at time $t$;
+2. collect relevant historical neighbors and their event times;
+3. encode each time difference;
+4. use temporal attention to weigh historical information;
+5. aggregate it into the node’s representation.
+
+> **Formula box — temporal attention**
+>
+> $$
+> e_{ij}=a(h_i,h_j,\phi(\Delta t_{ij})),
+> $$
+>
+> $$
+> \alpha_{ij}
+> =\frac{\exp(e_{ij})}
+> {\sum_k\exp(e_{ik})},
+> \qquad
+> h'_i=\sum_j\alpha_{ij}h_j.
+> $$
+
+Temporal distance directly affects attention. The model can learn that some old events remain important while some recent ones do not.
+
+For temporal link prediction:
+
+- observed interaction $(u,v,t)$ is positive;
+- a corrupted pair $(u,v^-,t)$ is negative;
+- a binary loss trains positive scores upward and negative scores downward.
+
+The negatives must be sampled using information available at time $t$.
+
+Strengths:
+
+- irregular continuous time;
+- content- and time-dependent neighbor importance;
+- multi-scale harmonic encoding.
+
+Limitations:
+
+- retrieving and recursively attending over temporal neighborhoods is expensive;
+- attention cost grows with sampled history;
+- event-time leakage must be prevented carefully.
+
+## 11.5 JODIE
+
+**JODIE — Joint Dynamic User–Item Embedding** is designed for bipartite interaction streams such as users interacting with movies, products, or posts.
+
+It uses two coupled recurrent networks:
+
+- one updates user embeddings;
+- one updates item embeddings.
+
+For event $(u,i,t)$, both participating embeddings are updated together. Their trajectories therefore evolve continuously through interaction space.
+
+JODIE’s distinctive operation is projecting a user embedding into the future:
+
+> **Formula box — JODIE projection**
+>
+> $$
+> \widehat h_u(t+\Delta t)
+> =\rho(h_u(t),\Delta t).
+> $$
+
+This estimates the user state before the next interaction and is useful for recommending the likely next item.
+
+Main assumptions:
+
+- the graph is bipartite;
+- node state changes primarily through interactions;
+- coupled user/item recurrence is more appropriate than one static embedding per entity.
+
+## 11.6 DyRep and temporal point processes
+
+**DyRep** models two event processes:
+
+1. **communication events:** interactions over an existing relation;
+2. **association events:** structural changes that create or modify relations.
+
+These processes can evolve at different temporal scales. An event $(u,v,t)$:
+
+- updates the participating embeddings;
+- propagates influence through their neighborhoods;
+- may modify graph structure.
+
+DyRep uses a **temporal point process**. Its intensity $\lambda(t)$ represents the instantaneous event rate conditioned on history.
+
+> **Formula box — point-process event time**
+>
+> $$
+> p(t)=\lambda(t)
+> \exp\left(-\int_0^t\lambda(\tau)\,d\tau\right).
+> $$
+>
+> The exponential term is the probability that no earlier event occurred. The model can therefore predict both **who interacts** and **when**.
+
+High intensity means an event is likely soon. The intensity is history-dependent, so embeddings and predicted event rates evolve together.
+
+## 11.7 Temporal Graph Networks
+
+**TGN — Temporal Graph Networks** is a modular framework for event-based temporal graphs.
+
+Main components:
+
+1. node memory;
+2. message function;
+3. message aggregator;
+4. memory updater;
+5. embedding module.
+
+### Node memory
+
+Each node has memory $s_i(t)$ containing compressed historical information. For a message $m_i(t)$:
+
+$$
+s_i(t)=
+\operatorname{GRU}(s_i(t^-),m_i(t)),
+$$
+
+where $t^-$ means the state immediately before the current event.
+
+### Message construction and aggregation
+
+For event $(u,v,t,e_{uv})$:
+
+$$
+m=f(s_u,s_v,e_{uv},\phi(\Delta t)).
+$$
+
+If several messages arrive before an update, an aggregator combines them, for example by taking the latest message or an order-invariant aggregation.
+
+### Embedding computation
+
+Memory and embedding are separate:
+
+$$
+z_i(t)=
+\operatorname{Embed}(s_i(t),N_i(t)).
+$$
+
+The embedding module may use:
+
+- temporal graph attention;
+- GraphSAGE-like neighborhood aggregation;
+- identity mapping from memory.
+
+This separation is important:
+
+- memory stores event history efficiently;
+- the embedding module constructs the representation needed for the current prediction;
+- several embedding architectures can share the same memory mechanism.
+
+TGN event loop:
+
+1. read memories before the event;
+2. construct messages;
+3. aggregate pending messages;
+4. update memories;
+5. compute embeddings;
+6. optimize the prediction loss.
+
+Complexity scales mainly with observed events and sampled neighborhoods rather than with every possible node pair.
+
+## 11.8 Graph Transformers for dynamic graphs
+
+Graph Transformers treat nodes as tokens and use self-attention instead of only local message passing. Graph structure can enter as:
+
+- an attention mask;
+- structural bias;
+- edge or distance encoding.
+
+**Graphormer** is the representative static Graph Transformer named in the lecture. Its global attention idea is relevant, but a static Graphormer does not by itself model event sequences or evolving edges.
+
+Advantages:
+
+- global reasoning;
+- short paths between distant nodes;
+- stronger long-range dependency modeling;
+- less reliance on many message-passing layers.
+
+A standard Graph Transformer is still static. A dynamic version must additionally represent time:
+
+$$
+A_{ij}=f(h_i,h_j,\Delta t),
+$$
+
+or tokenize events such as $(u,v,t)$. Practical architectures often combine memory with time-aware attention.
+
+Limitations:
+
+- full node attention has $O(N^2)$ time and memory;
+- large dynamic graphs require sampling, sparsity, or local/global hybrids;
+- event sequences and graph structure both need encoding;
+- global attention does not automatically enforce temporal causality.
+
+## 11.9 Choosing a dynamic-graph paradigm
+
+| Situation | Suitable paradigm |
+|---|---|
+| Graph naturally arrives in regular snapshots | recurrent or parameter-evolving DGNN |
+| Node identities change substantially between snapshots | EvolveGCN |
+| Fixed support with node signals changing in time | GRNN/GGRNN |
+| Exact irregular event times matter | temporal/event-based GNN |
+| Need time-aware historical neighbor weighting | TGAT |
+| Bipartite user–item stream and next-interaction prediction | JODIE |
+| Need to predict both event participants and event time | DyRep / temporal point process |
+| Need scalable persistent node histories with modular embeddings | TGN |
+| Need global long-range graph reasoning | dynamic Graph Transformer, subject to cost |
+
+The word **dynamic GNN** is often used broadly. For the exam, state the model’s time representation explicitly: snapshots, fixed-support graph process, or continuous event stream.
+
+---
+
+# 12. Final comparison review
+
+## 12.1 High-value conceptual comparisons
 
 ### Supervised, self-supervised, and transfer learning
 
@@ -2447,7 +2784,17 @@ Edge gating asks **which connections should transmit information**.
 - EvolveGCN: graph snapshots may change; evolve GCN weights;
 - GRNN: fixed topology, signals change; put graph filters inside recurrence.
 
-## 11.2 Questions you should be able to answer
+### Snapshot-based versus continuous-time temporal graphs
+
+- snapshot model: batches events into $G_1,\ldots,G_T$ and may lose within-window order;
+- continuous-time model: processes exact time-stamped events;
+- TGAT uses temporal attention over historical neighbors;
+- JODIE uses coupled recurrent user/item trajectories;
+- DyRep uses point-process intensities for who/when prediction;
+- TGN separates persistent node memory from current embedding computation;
+- dynamic Graph Transformers add time to global graph attention.
+
+## 12.2 Questions you should be able to answer
 
 1. Why can a low pretext-task loss still produce poor representations?
 2. Why does RotNet learn more than a four-class label in favorable cases?
@@ -2489,8 +2836,18 @@ Edge gating asks **which connections should transmit information**.
 38. What assumption distinguishes GRNN from EvolveGCN?
 39. What is controlled by time, node, and edge gates?
 40. Across the entire course, where do masking, parameter sharing, and normalization appear, and why?
+41. What information is lost when an event stream is discretized into snapshots?
+42. Why must a temporal neighborhood contain only events available at the query time?
+43. How does TGAT make attention time-aware?
+44. Why does JODIE update both user and item embeddings?
+45. What does the point-process intensity in DyRep represent?
+46. What is the difference between node memory and node embedding in TGN?
+47. Why can TGN scale with observed events rather than all possible node pairs?
+48. How does a dynamic Graph Transformer encode both structure and time?
+49. When would you choose TGAT, JODIE, DyRep, or TGN?
+50. What is the distinction among snapshot DGNNs, fixed-support graph processes, and continuous-time temporal GNNs?
 
-## 11.3 Recurring principles across the course
+## 12.3 Recurring principles across the course
 
 ### Structure should match the data
 
@@ -2498,6 +2855,7 @@ Edge gating asks **which connections should transmit information**.
 - GNNs use graph neighborhoods;
 - RNNs use temporal recurrence;
 - Transformers use content-based retrieval;
+- temporal GNNs use time-stamped interactions and causal history;
 - DTW uses flexible temporal alignment;
 - trajectory models combine space and order.
 
@@ -2518,6 +2876,7 @@ Edge gating asks **which connections should transmit information**.
 ### Masking controls information availability
 
 - causal masks prevent future leakage;
+- temporal-neighbor filtering prevents using future graph events;
 - SSL masks create reconstruction/context tasks;
 - SatMAE masks space, time, or spectrum;
 - masking assumptions determine what the model must infer.
@@ -2534,6 +2893,8 @@ Edge gating asks **which connections should transmit information**.
 
 - attention is expensive;
 - deep GNNs oversmooth/oversquash;
+- snapshot temporal graphs lose fine event order;
+- global graph attention has quadratic cost;
 - recursive forecasts accumulate errors;
 - contrastive learning can encode false invariances;
 - large pretrained models can leak benchmark data;
@@ -2543,4 +2904,4 @@ Edge gating asks **which connections should transmit information**.
 
 # Coverage note
 
-These notes cover the theoretical content of Lectures 1–14, including the Lecture 08 time-series presentations and notebooks. Lecture 02 and Lecture 03 contained the same Transformer presentation and were merged. The project-information PDF was excluded because it contains project logistics rather than exam theory. The vision lecture explicitly marked its model-interpretation section as outside the exam, so that section is not included.
+These notes cover the theoretical content of Lectures 1–15, including the Lecture 08 time-series presentations and notebooks. Lecture 02 and Lecture 03 contained the same Transformer presentation and were merged. The project-information PDF was excluded because it contains project logistics rather than exam theory. The vision lecture explicitly marked its model-interpretation section as outside the exam, so that section is not included.

@@ -286,7 +286,7 @@ The negative sampler matters because an unobserved item may be a false negative.
 
 $$
 \hat y=w_0+\sum_iw_ix_i+
-\sum_{i<j}\langle v_i,v_j\rangle x_ix_j.
+\sum_{i\lt j}\langle v_i,v_j\rangle x_ix_j.
 $$
 
 **LightFM:** sums embeddings of active user/item features. It combines interactions with metadata and helps cold start.

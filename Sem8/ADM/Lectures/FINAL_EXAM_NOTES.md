@@ -682,7 +682,7 @@ A **Factorization Machine (FM)** models sparse tabular data with first-order ter
 >
 > $$
 > \hat y(x)=w_0+\sum_iw_ix_i+
-> \sum_{i<j}\langle v_i,v_j\rangle x_ix_j.
+> \sum_{i\lt j}\langle v_i,v_j\rangle x_ix_j.
 > $$
 
 This combines the flexibility of polynomial feature interactions with parameter sharing similar to matrix factorization, making it useful for sparse recommender features.
@@ -2034,7 +2034,7 @@ Three components:
 > $$
 > d_\theta(L_i,L_j)=
 > \begin{cases}
-> \|L_j\|\sin\theta,&0^\circ\le\theta<90^\circ,\\
+> \|L_j\|\sin\theta,&0^\circ\le\theta\lt90^\circ,\\
 > \|L_j\|,&90^\circ\le\theta\le180^\circ.
 > \end{cases}
 > $$

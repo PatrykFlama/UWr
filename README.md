@@ -2,6 +2,13 @@
 
 [\[English\]](README.en.md)
 
+## [Semestr 8](Sem8/)
+- Języki Formalne i Złożoność Obliczeniowa
+- [Kryptografia](Sem8/Krypto/)
+- [Advanced Data Mining](Sem8/ADM/)
+- [Project: Deep Learning](Sem8/DL/)
+- Teoria Nazw
+
 ## [Semestr 7](Sem7/)
 - [Warsztat AI](Sem7/WAI/)
 - [Systemy Wbudowane](Sem7/Embedded/)

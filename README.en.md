@@ -3,6 +3,13 @@
 
 [\[Polish\]](README.md)
 
+## [Term 8](Sem8/)
+- Formal Languages and Computational Complexity
+- [Cryptography](Sem8/Krypto/)
+- [Advanced Data Mining](Sem8/ADM/)
+- [Project: Deep Learning](Sem8/DL/)
+- Name Theory
+
 ## [Term 7](Sem7/)
 - [AI workshop](Sem7/WAI/)
 - [Embedded Systems](Sem7/Embedded/)

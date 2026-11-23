@@ -3,6 +3,11 @@
 
 [\[Polish\]](README.md)
 
+## [Term 9](Sem9/)
+- Seminar: Generative AI
+- Seminar: Large Language Models
+- Seminar: Modern tools for developing web applications
+
 ## [Term 8](Sem8/)
 - Formal Languages and Computational Complexity
 - [Cryptography](Sem8/Krypto/)

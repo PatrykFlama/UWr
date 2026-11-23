@@ -2,6 +2,11 @@
 
 [\[English\]](README.en.md)
 
+## [Semestr 9](Sem9/)
+- Seminar: Generative AI
+- Seminarium: Wielkie modele językowe
+- Seminarium: Współczesne narzędzia do wytwarzania aplikacji webowych
+
 ## [Semestr 8](Sem8/)
 - Języki Formalne i Złożoność Obliczeniowa
 - [Kryptografia](Sem8/Krypto/)
